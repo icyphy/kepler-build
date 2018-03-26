@@ -14,13 +14,13 @@ which java
 
 # Get any updates to the build area.
 svn update
-/usr/local/bin/ant change-to -Dsuite=nightly
-/usr/local/bin/ant update
-/usr/local/bin/ant clean
-/usr/local/bin/ant compile eclipse netbeans idea
+ant change-to -Dsuite=nightly
+ant update
+ant clean
+ant compile eclipse netbeans idea
 
 which javadoc
-/usr/local/bin/ant javadoc
+ant javadoc
 
 export KEPLER_VERSION=2.4.0.1
 
