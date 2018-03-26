@@ -14,7 +14,11 @@ which java
 
 # Get any updates to the build area.
 svn update
-ant change-to -Dsuite=nightly
+
+mkdir logs
+ant change-to -Dsuite=nightly 2>&1 | grep -v GITHUB_TOKEN > logs/change-to.txt
+tail -100 logs/change-to.txt
+
 ant update
 ant clean
 ant compile eclipse netbeans idea
