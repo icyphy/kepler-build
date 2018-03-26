@@ -16,20 +16,46 @@ which java
 svn update
 
 mkdir logs
-ant change-to -Dsuite=nightly 2>&1 | grep -v GITHUB_TOKEN > logs/change-to.txt
-tail -100 logs/change-to.txt
+LOG=logs/change-to.txt
+echo "Running 'ant change-to -Dsuite=nightly', redirectoing output to $LOG: `date`"
+ant change-to -Dsuite=nightly 2>&1 | grep -v GITHUB_TOKEN > $LOG
+
+echo "Last 100 lines of $LOG: `date`"
+tail -100 $LOG
 
 ant update
 ant clean
 ant compile eclipse netbeans idea
 
 which javadoc
-ant javadoc
+LOG=logs/javadoc.txt
+echo "Running 'ant change-to -Dsuite=nightly', redirectoing output to $LOG: `date`"
+ant javadoc 2>&1 | grep -v GITHUB_TOKEN > $LOG
+
+echo "Last 100 lines of $LOG: `date`"
+tail -100 $LOG
+
 
 export KEPLER_VERSION=2.4.0.1
 
 # Remove the installers directory, the mac installer requires this.
 rm -rf ../finished-kepler-installers
+
+case `uname` in \
+    Darwin) osfile=macosx-x86;; \
+    Linux) osfile=linux-x64;; \
+esac; \
+
+L4J_TAR=/tmp/launch4j-3.11.tgz
+echo "Downloading  for $osfile: `date`";
+wget --quiet "https://osdn.net/frs/g_redir.php?m=kent&f=launch4j%2Flaunch4j-3%2F3.11%2Flaunch4j-3.11-$$osfile.tgz" -O $L4J_TAR
+
+ls -l resources || true
+ls -l resources/installer || true
+
+mkdir -p resources/installer
+
+(cd resources/installer/; tar -zxf $L4J_TAR)
 
 # Build the linux and windows installers.
 ant make-linux-installer -Dversion=$KEPLER_VERSION
