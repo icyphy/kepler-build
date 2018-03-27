@@ -81,13 +81,14 @@ ant make-windows-installer -Dversion=$KEPLER_VERSION
 
 echo "HOME: $HOME:"
 ls $HOME
-echo "../../finished-kepler-installers:"
-ls -l ../../finished-kepler-installers
 
-echo "/home/travis/build/icyphy/:"
-ls -l /home/travis/build/icyphy/
+echo "/home/travis/build/icyphy/finished-kepler-installers:"
+ls /home/travis/build/icyphy/finished-kepler-installers
 
-echo "/home/travis/build/icyphy/finished-kepler-installers"
-ls -lR /home/travis/build/icyphy/finished-kepler-installers
+echo "/home/travis/build/icyphy/finished-kepler-installers/linux:"
+ls -l /home/travis/build/icyphy/finished-kepler-installers/linux
+
+echo "/home/travis/build/icyphy/finished-kepler-installers/windows:"
+ls -l /home/travis/build/icyphy/finished-kepler-installers/windows
 
 
