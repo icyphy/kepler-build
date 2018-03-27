@@ -71,16 +71,12 @@ ls -l resources/installer || true
 
 # (cd resources/installer/; tar -zxf $L4J_TAR)
 
-ls -l resources/installer/launch4j/bin-linux
-ls -l resources/installer/launch4j/bin-linux/windres
-ls -l /home/travis/build/icyphy/kepler-build/build-area/resources/installer/launch4j/bin-linux/windres
-
 # Build the linux and windows installers.
 ant make-linux-installer -Dversion=$KEPLER_VERSION
 
-ls -l resources/installer/launch4j/bin-linux/windres
-ls -l /home/travis/build/icyphy/kepler-build/build-area/resources/installer/launch4j/bin-linux/windres
-
+# Under Ubuntu, need to do
+#  apt-get install lib32z1 lib32ncurses5
+# Otherwise, winres will report a missing file.
 ant make-windows-installer -Dversion=$KEPLER_VERSION
 
 echo "HOME: $HOME:"
