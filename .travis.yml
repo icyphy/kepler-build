@@ -1,3 +1,17 @@
 script:
         ./build-kepler.sh
-        
+
+deploy:
+  - provider: releases
+    api_key: $GITHUB_TOKEN
+    file_glob: true
+    file:
+      - $HOME/finished-kepler-installers/Kepler-2.4.0.1-linux.tar.gz
+      - $HOME/finished-kepler-installers/Kepler-2.4.0.1-win.exe
+      - $HOME/finished-kepler-installers/Kepler-2.4.0.1-win.jar
+    on:
+      tags: true
+      condition: $PT_TRAVIS_INSTALLERS = true
+    overwrite: true
+    skip_cleanup: true    
+    verbose: true
