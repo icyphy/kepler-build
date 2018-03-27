@@ -1,3 +1,15 @@
+env:
+  global:
+    # The deploy target uses TRAVIS_TAG.
+    - TRAVIS_TAG=weekly
+
+sudo: required
+before_script:
+  - sudo apt-get update
+  # Need to install 32-bit libraries so that we can run windres while
+  # building Windows installers.
+  - sudo apt-get install lib32z1 lib32ncurses5
+  
 script:
         ./build-kepler.sh
 
@@ -6,9 +18,9 @@ deploy:
     api_key: $GITHUB_TOKEN
     file_glob: true
     file:
-      - $HOME/finished-kepler-installers/Kepler-2.4.0.1-linux.tar.gz
-      - $HOME/finished-kepler-installers/Kepler-2.4.0.1-win.exe
-      - $HOME/finished-kepler-installers/Kepler-2.4.0.1-win.jar
+      - $HOME/build/icyphy/finished-kepler-installers/Kepler-2.4.0.1-linux.tar.gz
+      - $HOME/build/icyphy/finished-kepler-installers/Kepler-2.4.0.1-win.exe
+      - $HOME/build/icyphy/finished-kepler-installers/Kepler-2.4.0.1-win.jar
     on:
       tags: true
       condition: $PT_TRAVIS_INSTALLERS = true
