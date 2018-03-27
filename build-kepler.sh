@@ -49,8 +49,8 @@ echo "Last 100 lines of $LOG: `date`"
 tail -100 $LOG
 
 
-# Build the installers
-export KEPLER_VERSION=2.4.0.1
+# Build the installers. If you change this, then update https://kepler-project.org/users/downloads
+export KEPLER_VERSION=2.6.0.1
 
 # Remove the installers directory, the mac installer requires this.
 rm -rf ../finished-kepler-installers
