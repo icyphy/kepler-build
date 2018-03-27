@@ -83,7 +83,15 @@ ls -l /home/travis/build/icyphy/kepler-build/build-area/resources/installer/laun
 
 ant make-windows-installer -Dversion=$KEPLER_VERSION
 
+echo "HOME: $HOME:"
 ls $HOME
+echo "../../finished-kepler-installers:"
 ls -l ../../finished-kepler-installers
-ls -lR $HOME/finished-kepler-installers
+
+echo "/home/travis/build/icyphy/:"
+ls -l /home/travis/build/icyphy/
+
+echo "/home/travis/build/icyphy/finished-kepler-installers"
+ls -lR /home/travis/build/icyphy/finished-kepler-installers
+
 
