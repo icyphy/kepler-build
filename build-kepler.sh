@@ -73,9 +73,14 @@ ls -l resources/installer || true
 
 ls -l resources/installer/launch4j/bin-linux
 ls -l resources/installer/launch4j/bin-linux/windres
+ls -l /home/travis/build/icyphy/kepler-build/build-area/resources/installer/launch4j/bin-linux/windres
 
 # Build the linux and windows installers.
 ant make-linux-installer -Dversion=$KEPLER_VERSION
+
+ls -l resources/installer/launch4j/bin-linux/windres
+ls -l /home/travis/build/icyphy/kepler-build/build-area/resources/installer/launch4j/bin-linux/windres
+
 ant make-windows-installer -Dversion=$KEPLER_VERSION
 
 ls $HOME
