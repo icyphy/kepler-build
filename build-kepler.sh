@@ -71,6 +71,9 @@ ls -l resources/installer || true
 
 # (cd resources/installer/; tar -zxf $L4J_TAR)
 
+# Create the jar files for the installers.
+ant jar
+
 # Build the linux and windows installers.
 ant make-linux-installer -Dversion=$KEPLER_VERSION
 
