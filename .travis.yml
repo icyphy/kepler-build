@@ -18,12 +18,12 @@ deploy:
     api_key: $GITHUB_TOKEN
     file_glob: true
     file:
-      - $HOME/build/icyphy/finished-kepler-installers/Kepler-2.4.0.1-linux.tar.gz
-      - $HOME/build/icyphy/finished-kepler-installers/Kepler-2.4.0.1-win.exe
+      - $HOME/build/icyphy/finished-kepler-installers/linux/Kepler-2.4.0.1-linux.tar.gz
+      - $HOME/build/icyphy/finished-kepler-installers/windows/Kepler-2.4.0.1-win.exe
+      - $HOME/build/icyphy/finished-kepler-installers/windows/Kepler-2.4.0.1-win.jar
       - $HOME/build/icyphy/finished-kepler-installers/Kepler-2.4.0.1-win.jar
     on:
       tags: true
-      condition: $PT_TRAVIS_INSTALLERS = true
     overwrite: true
     skip_cleanup: true    
     verbose: true
