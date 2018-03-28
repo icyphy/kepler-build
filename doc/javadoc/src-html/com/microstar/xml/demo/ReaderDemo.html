@@ -1,0 +1,113 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../../../stylesheet.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>// ReaderDemo.java: demonstration application showing &amp;AElig;fred's reader stream.<a name="line.1"></a>
+<span class="sourceLineNo">002</span>// NO WARRANTY! See README, and copyright below.<a name="line.2"></a>
+<span class="sourceLineNo">003</span>// $Id$<a name="line.3"></a>
+<span class="sourceLineNo">004</span>// Modified 11/8/98 to add package statement.<a name="line.4"></a>
+<span class="sourceLineNo">005</span>package com.microstar.xml.demo;<a name="line.5"></a>
+<span class="sourceLineNo">006</span><a name="line.6"></a>
+<span class="sourceLineNo">007</span>import java.io.Reader;<a name="line.7"></a>
+<span class="sourceLineNo">008</span>import java.io.StringReader;<a name="line.8"></a>
+<span class="sourceLineNo">009</span><a name="line.9"></a>
+<span class="sourceLineNo">010</span>import com.microstar.xml.XmlParser;<a name="line.10"></a>
+<span class="sourceLineNo">011</span><a name="line.11"></a>
+<span class="sourceLineNo">012</span>/**<a name="line.12"></a>
+<span class="sourceLineNo">013</span> * Demonstration application showing &amp;AElig;fred's event stream from a stream.<a name="line.13"></a>
+<span class="sourceLineNo">014</span> * &lt;p&gt;Usage: &lt;code&gt;java StreamDemo&lt;/code&gt;<a name="line.14"></a>
+<span class="sourceLineNo">015</span> * @author Copyright (c) 1998 by Microstar Software Ltd.;<a name="line.15"></a>
+<span class="sourceLineNo">016</span> * @author written by David Megginson &amp;lt;dmeggins@microstar.com&amp;gt;<a name="line.16"></a>
+<span class="sourceLineNo">017</span> * @version 1.1<a name="line.17"></a>
+<span class="sourceLineNo">018</span> * @since Ptolemy II 0.2<a name="line.18"></a>
+<span class="sourceLineNo">019</span> * @see com.microstar.xml.XmlParser<a name="line.19"></a>
+<span class="sourceLineNo">020</span> * @see com.microstar.xml.XmlHandler<a name="line.20"></a>
+<span class="sourceLineNo">021</span> * @see XmlApp<a name="line.21"></a>
+<span class="sourceLineNo">022</span> * @see EventDemo<a name="line.22"></a>
+<span class="sourceLineNo">023</span> */<a name="line.23"></a>
+<span class="sourceLineNo">024</span>public class ReaderDemo extends EventDemo {<a name="line.24"></a>
+<span class="sourceLineNo">025</span>    public static void main(String[] args) throws Exception {<a name="line.25"></a>
+<span class="sourceLineNo">026</span>        ReaderDemo handler = new ReaderDemo();<a name="line.26"></a>
+<span class="sourceLineNo">027</span>        Reader reader;<a name="line.27"></a>
+<span class="sourceLineNo">028</span><a name="line.28"></a>
+<span class="sourceLineNo">029</span>        if (args.length != 0) {<a name="line.29"></a>
+<span class="sourceLineNo">030</span>            System.err.println("Usage: java ReaderDemo");<a name="line.30"></a>
+<span class="sourceLineNo">031</span>            System.exit(1);<a name="line.31"></a>
+<span class="sourceLineNo">032</span>        }<a name="line.32"></a>
+<span class="sourceLineNo">033</span><a name="line.33"></a>
+<span class="sourceLineNo">034</span>        reader = new StringReader(<a name="line.34"></a>
+<span class="sourceLineNo">035</span>                "&lt;doc&gt;\n&lt;title&gt;Sample&lt;/title&gt;\n&lt;p n=\"1\"&gt;Sample document&lt;/p&gt;\n&lt;/doc&gt;\n");<a name="line.35"></a>
+<span class="sourceLineNo">036</span><a name="line.36"></a>
+<span class="sourceLineNo">037</span>        XmlParser parser = new XmlParser();<a name="line.37"></a>
+<span class="sourceLineNo">038</span>        parser.setHandler(handler);<a name="line.38"></a>
+<span class="sourceLineNo">039</span>        parser.parse(null, null, reader);<a name="line.39"></a>
+<span class="sourceLineNo">040</span>    }<a name="line.40"></a>
+<span class="sourceLineNo">041</span>}<a name="line.41"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

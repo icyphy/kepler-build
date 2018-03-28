@@ -1,0 +1,642 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../../../stylesheet.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>/*<a name="line.1"></a>
+<span class="sourceLineNo">002</span> * Copyright (c) 2004-2010 The Regents of the University of California.<a name="line.2"></a>
+<span class="sourceLineNo">003</span> * All rights reserved.<a name="line.3"></a>
+<span class="sourceLineNo">004</span> *<a name="line.4"></a>
+<span class="sourceLineNo">005</span> * '$Author: welker $'<a name="line.5"></a>
+<span class="sourceLineNo">006</span> * '$Date: 2010-05-05 22:21:26 -0700 (Wed, 05 May 2010) $' <a name="line.6"></a>
+<span class="sourceLineNo">007</span> * '$Revision: 24234 $'<a name="line.7"></a>
+<span class="sourceLineNo">008</span> * <a name="line.8"></a>
+<span class="sourceLineNo">009</span> * Permission is hereby granted, without written agreement and without<a name="line.9"></a>
+<span class="sourceLineNo">010</span> * license or royalty fees, to use, copy, modify, and distribute this<a name="line.10"></a>
+<span class="sourceLineNo">011</span> * software and its documentation for any purpose, provided that the above<a name="line.11"></a>
+<span class="sourceLineNo">012</span> * copyright notice and the following two paragraphs appear in all copies<a name="line.12"></a>
+<span class="sourceLineNo">013</span> * of this software.<a name="line.13"></a>
+<span class="sourceLineNo">014</span> *<a name="line.14"></a>
+<span class="sourceLineNo">015</span> * IN NO EVENT SHALL THE UNIVERSITY OF CALIFORNIA BE LIABLE TO ANY PARTY<a name="line.15"></a>
+<span class="sourceLineNo">016</span> * FOR DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES<a name="line.16"></a>
+<span class="sourceLineNo">017</span> * ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION, EVEN IF<a name="line.17"></a>
+<span class="sourceLineNo">018</span> * THE UNIVERSITY OF CALIFORNIA HAS BEEN ADVISED OF THE POSSIBILITY OF<a name="line.18"></a>
+<span class="sourceLineNo">019</span> * SUCH DAMAGE.<a name="line.19"></a>
+<span class="sourceLineNo">020</span> *<a name="line.20"></a>
+<span class="sourceLineNo">021</span> * THE UNIVERSITY OF CALIFORNIA SPECIFICALLY DISCLAIMS ANY WARRANTIES,<a name="line.21"></a>
+<span class="sourceLineNo">022</span> * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF<a name="line.22"></a>
+<span class="sourceLineNo">023</span> * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE<a name="line.23"></a>
+<span class="sourceLineNo">024</span> * PROVIDED HEREUNDER IS ON AN "AS IS" BASIS, AND THE UNIVERSITY OF<a name="line.24"></a>
+<span class="sourceLineNo">025</span> * CALIFORNIA HAS NO OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT, UPDATES,<a name="line.25"></a>
+<span class="sourceLineNo">026</span> * ENHANCEMENTS, OR MODIFICATIONS.<a name="line.26"></a>
+<span class="sourceLineNo">027</span> *<a name="line.27"></a>
+<span class="sourceLineNo">028</span> */<a name="line.28"></a>
+<span class="sourceLineNo">029</span><a name="line.29"></a>
+<span class="sourceLineNo">030</span>package org.ecoinformatics.seek.sms;<a name="line.30"></a>
+<span class="sourceLineNo">031</span><a name="line.31"></a>
+<span class="sourceLineNo">032</span>/**<a name="line.32"></a>
+<span class="sourceLineNo">033</span> *@author    Shawn Bowers<a name="line.33"></a>
+<span class="sourceLineNo">034</span> *<a name="line.34"></a>
+<span class="sourceLineNo">035</span> *  A quick hack at a start to a local Kepler LSID suite of services<a name="line.35"></a>
+<span class="sourceLineNo">036</span> *  for kepler.  This ultimately is an implementation of each<a name="line.36"></a>
+<span class="sourceLineNo">037</span> *  LSIDxyzService, but is local to Kepler. Not sure how all of this<a name="line.37"></a>
+<span class="sourceLineNo">038</span> *  will eventually work ...<a name="line.38"></a>
+<span class="sourceLineNo">039</span> *<a name="line.39"></a>
+<span class="sourceLineNo">040</span> *  This class locally maintains the default actor library. The actor<a name="line.40"></a>
+<span class="sourceLineNo">041</span> *  library is passed at start up; and a hash table is created of all<a name="line.41"></a>
+<span class="sourceLineNo">042</span> *  named objects in the library.  New objects can be added, etc.<a name="line.42"></a>
+<span class="sourceLineNo">043</span> *  Each new addition or change should update default actor library,<a name="line.43"></a>
+<span class="sourceLineNo">044</span> *  persisting the change locally.<a name="line.44"></a>
+<span class="sourceLineNo">045</span> */<a name="line.45"></a>
+<span class="sourceLineNo">046</span><a name="line.46"></a>
+<span class="sourceLineNo">047</span>import java.io.BufferedWriter;<a name="line.47"></a>
+<span class="sourceLineNo">048</span>import java.io.File;<a name="line.48"></a>
+<span class="sourceLineNo">049</span>import java.io.FileWriter;<a name="line.49"></a>
+<span class="sourceLineNo">050</span>import java.util.Enumeration;<a name="line.50"></a>
+<span class="sourceLineNo">051</span>import java.util.Hashtable;<a name="line.51"></a>
+<span class="sourceLineNo">052</span>import java.util.Iterator;<a name="line.52"></a>
+<span class="sourceLineNo">053</span>import java.util.List;<a name="line.53"></a>
+<span class="sourceLineNo">054</span>import java.util.StringTokenizer;<a name="line.54"></a>
+<span class="sourceLineNo">055</span>import java.util.Vector;<a name="line.55"></a>
+<span class="sourceLineNo">056</span><a name="line.56"></a>
+<span class="sourceLineNo">057</span>import org.kepler.moml.NamedObjId;<a name="line.57"></a>
+<span class="sourceLineNo">058</span><a name="line.58"></a>
+<span class="sourceLineNo">059</span>import ptolemy.actor.lib.Const;<a name="line.59"></a>
+<span class="sourceLineNo">060</span>import ptolemy.kernel.ComponentEntity;<a name="line.60"></a>
+<span class="sourceLineNo">061</span>import ptolemy.kernel.CompositeEntity;<a name="line.61"></a>
+<span class="sourceLineNo">062</span>import ptolemy.kernel.util.Attribute;<a name="line.62"></a>
+<span class="sourceLineNo">063</span>import ptolemy.kernel.util.NamedObj;<a name="line.63"></a>
+<span class="sourceLineNo">064</span>import ptolemy.moml.EntityLibrary;<a name="line.64"></a>
+<span class="sourceLineNo">065</span>import ptolemy.vergil.tree.EntityTreeModel;<a name="line.65"></a>
+<span class="sourceLineNo">066</span>import ptolemy.vergil.tree.VisibleTreeModel;<a name="line.66"></a>
+<span class="sourceLineNo">067</span><a name="line.67"></a>
+<span class="sourceLineNo">068</span>/*<a name="line.68"></a>
+<span class="sourceLineNo">069</span> *  KeplerLocalLSIDService Interface<a name="line.69"></a>
+<span class="sourceLineNo">070</span> *  {<a name="line.70"></a>
+<span class="sourceLineNo">071</span> *  // singleton<a name="line.71"></a>
+<span class="sourceLineNo">072</span> *<a name="line.72"></a>
+<span class="sourceLineNo">073</span> *  KeplerLocalLSIDService instance();<a name="line.73"></a>
+<span class="sourceLineNo">074</span> *<a name="line.74"></a>
+<span class="sourceLineNo">075</span> *  // initialization hacks, called from TabbedLibraryPane at setup<a name="line.75"></a>
+<span class="sourceLineNo">076</span> *<a name="line.76"></a>
+<span class="sourceLineNo">077</span> *  void setBasicActorLibrary(EntityTreeModel _libraryModel);<a name="line.77"></a>
+<span class="sourceLineNo">078</span> *  EntityTreeModel getBasicActorLibrary();<a name="line.78"></a>
+<span class="sourceLineNo">079</span> *<a name="line.79"></a>
+<span class="sourceLineNo">080</span> *  // lsid ops<a name="line.80"></a>
+<span class="sourceLineNo">081</span> *<a name="line.81"></a>
+<span class="sourceLineNo">082</span> *  void assignLSID(String lsid, NamedObj obj);<a name="line.82"></a>
+<span class="sourceLineNo">083</span> *  void updateLSID(String lsid, NamedObj obj);<a name="line.83"></a>
+<span class="sourceLineNo">084</span> *  NamedObj getData(String lsid);<a name="line.84"></a>
+<span class="sourceLineNo">085</span> *  Iterator&lt;String&gt; getLSIDFor(NamedObj obj)<a name="line.85"></a>
+<span class="sourceLineNo">086</span> *<a name="line.86"></a>
+<span class="sourceLineNo">087</span> *  // helper ops<a name="line.87"></a>
+<span class="sourceLineNo">088</span> *<a name="line.88"></a>
+<span class="sourceLineNo">089</span> *  String createLSID(String namespace, String id);<a name="line.89"></a>
+<span class="sourceLineNo">090</span> *  String createLocallyUniqueLSID(String namespace);<a name="line.90"></a>
+<span class="sourceLineNo">091</span> *  boolean isAssignedLSID(String lsid);<a name="line.91"></a>
+<span class="sourceLineNo">092</span> *  boolean isWellFormedLSID(String lsid)<a name="line.92"></a>
+<span class="sourceLineNo">093</span> *  Iterator&lt;String&gt; assignedLSIDs();<a name="line.93"></a>
+<span class="sourceLineNo">094</span> *  void commitChanges()<a name="line.94"></a>
+<span class="sourceLineNo">095</span> *  }<a name="line.95"></a>
+<span class="sourceLineNo">096</span> */<a name="line.96"></a>
+<span class="sourceLineNo">097</span><a name="line.97"></a>
+<span class="sourceLineNo">098</span>/**<a name="line.98"></a>
+<span class="sourceLineNo">099</span> * Description of the Class<a name="line.99"></a>
+<span class="sourceLineNo">100</span> * <a name="line.100"></a>
+<span class="sourceLineNo">101</span> *@author berkley<a name="line.101"></a>
+<span class="sourceLineNo">102</span> *@created February 17, 2005<a name="line.102"></a>
+<span class="sourceLineNo">103</span> */<a name="line.103"></a>
+<span class="sourceLineNo">104</span>public class KeplerLocalLSIDService {<a name="line.104"></a>
+<span class="sourceLineNo">105</span><a name="line.105"></a>
+<span class="sourceLineNo">106</span>        /*<a name="line.106"></a>
+<span class="sourceLineNo">107</span>         * PRIVATE ATTRIBUTES<a name="line.107"></a>
+<span class="sourceLineNo">108</span>         */<a name="line.108"></a>
+<span class="sourceLineNo">109</span>        // singleton instance<a name="line.109"></a>
+<span class="sourceLineNo">110</span>        private static KeplerLocalLSIDService _service = null;<a name="line.110"></a>
+<span class="sourceLineNo">111</span><a name="line.111"></a>
+<span class="sourceLineNo">112</span>        // indexed, main-memory storage and management<a name="line.112"></a>
+<span class="sourceLineNo">113</span>        private Hashtable _assignedObjects = new Hashtable();<a name="line.113"></a>
+<span class="sourceLineNo">114</span>        // maps lsid -&gt; namedObj<a name="line.114"></a>
+<span class="sourceLineNo">115</span>        private EntityTreeModel _libraryModel = null;<a name="line.115"></a>
+<span class="sourceLineNo">116</span>        // orig. lib. of actors<a name="line.116"></a>
+<span class="sourceLineNo">117</span>        private Vector _managedLsids = new Vector();<a name="line.117"></a>
+<span class="sourceLineNo">118</span>        // list of managed lsids; that have been assigned<a name="line.118"></a>
+<span class="sourceLineNo">119</span>        private Hashtable _lastDomainId = new Hashtable();<a name="line.119"></a>
+<span class="sourceLineNo">120</span>        // for finding new, unqiue domains<a name="line.120"></a>
+<span class="sourceLineNo">121</span><a name="line.121"></a>
+<span class="sourceLineNo">122</span>        // references to the database of actors<a name="line.122"></a>
+<span class="sourceLineNo">123</span>        private static String KEPLER = System.getProperty("KEPLER");<a name="line.123"></a>
+<span class="sourceLineNo">124</span>        private static String KEPLERACTORLIB = KEPLER<a name="line.124"></a>
+<span class="sourceLineNo">125</span>                        + "/configs/ptolemy/configs/kepler/basicKeplerActorLibrary.xml";<a name="line.125"></a>
+<span class="sourceLineNo">126</span><a name="line.126"></a>
+<span class="sourceLineNo">127</span>        // prefix for identifier<a name="line.127"></a>
+<span class="sourceLineNo">128</span>        private static String URN = "urn";<a name="line.128"></a>
+<span class="sourceLineNo">129</span>        private static String LSID = "lsid";<a name="line.129"></a>
+<span class="sourceLineNo">130</span>        private static String DOMAIN = "localhost";<a name="line.130"></a>
+<span class="sourceLineNo">131</span><a name="line.131"></a>
+<span class="sourceLineNo">132</span>        /*<a name="line.132"></a>
+<span class="sourceLineNo">133</span>         * PROTECTED CONSTRUCTOR<a name="line.133"></a>
+<span class="sourceLineNo">134</span>         */<a name="line.134"></a>
+<span class="sourceLineNo">135</span>        /** Constructor for the KeplerLocalLSIDService object */<a name="line.135"></a>
+<span class="sourceLineNo">136</span>        protected KeplerLocalLSIDService() {<a name="line.136"></a>
+<span class="sourceLineNo">137</span>                // construct a default library, prior to setBasicActorLibrary<a name="line.137"></a>
+<span class="sourceLineNo">138</span>                _libraryModel = new VisibleTreeModel(new CompositeEntity());<a name="line.138"></a>
+<span class="sourceLineNo">139</span>        }<a name="line.139"></a>
+<span class="sourceLineNo">140</span><a name="line.140"></a>
+<span class="sourceLineNo">141</span>        /*<a name="line.141"></a>
+<span class="sourceLineNo">142</span>         * SINGLETON CONSTRUCTOR<a name="line.142"></a>
+<span class="sourceLineNo">143</span>         */<a name="line.143"></a>
+<span class="sourceLineNo">144</span><a name="line.144"></a>
+<span class="sourceLineNo">145</span>        /**<a name="line.145"></a>
+<span class="sourceLineNo">146</span>         *@return The unique instance of this class This must be called to<a name="line.146"></a>
+<span class="sourceLineNo">147</span>         *         create/obtain an instance of the service<a name="line.147"></a>
+<span class="sourceLineNo">148</span>         */<a name="line.148"></a>
+<span class="sourceLineNo">149</span>        public static KeplerLocalLSIDService instance() {<a name="line.149"></a>
+<span class="sourceLineNo">150</span>                if (_service == null) {<a name="line.150"></a>
+<span class="sourceLineNo">151</span>                        _service = new KeplerLocalLSIDService();<a name="line.151"></a>
+<span class="sourceLineNo">152</span>                }<a name="line.152"></a>
+<span class="sourceLineNo">153</span>                return _service;<a name="line.153"></a>
+<span class="sourceLineNo">154</span>        }<a name="line.154"></a>
+<span class="sourceLineNo">155</span><a name="line.155"></a>
+<span class="sourceLineNo">156</span>        /*<a name="line.156"></a>
+<span class="sourceLineNo">157</span>         * INITIALIZATION<a name="line.157"></a>
+<span class="sourceLineNo">158</span>         */<a name="line.158"></a>
+<span class="sourceLineNo">159</span><a name="line.159"></a>
+<span class="sourceLineNo">160</span>        /**<a name="line.160"></a>
+<span class="sourceLineNo">161</span>         * Assigns the current kepler actor library. Clears current set of lsid<a name="line.161"></a>
+<span class="sourceLineNo">162</span>         * objects. This operation is here because there isn't a great way in<a name="line.162"></a>
+<span class="sourceLineNo">163</span>         * Kepler/Ptolemy to access "global" objects. Here, we grab the library<a name="line.163"></a>
+<span class="sourceLineNo">164</span>         * model that is initially given to Kepler when the graph editor starts up.<a name="line.164"></a>
+<span class="sourceLineNo">165</span>         * <a name="line.165"></a>
+<span class="sourceLineNo">166</span>         *@param _libraryModel<a name="line.166"></a>
+<span class="sourceLineNo">167</span>         *            The current kepler actor library<a name="line.167"></a>
+<span class="sourceLineNo">168</span>         */<a name="line.168"></a>
+<span class="sourceLineNo">169</span>        public void setBasicActorLibrary(EntityTreeModel _libraryModel) {<a name="line.169"></a>
+<span class="sourceLineNo">170</span>                // clear the hashtable<a name="line.170"></a>
+<span class="sourceLineNo">171</span>                _assignedObjects = new Hashtable();<a name="line.171"></a>
+<span class="sourceLineNo">172</span>                // set the library model<a name="line.172"></a>
+<span class="sourceLineNo">173</span>                this._libraryModel = _libraryModel;<a name="line.173"></a>
+<span class="sourceLineNo">174</span>                // load up the hashtable<a name="line.174"></a>
+<span class="sourceLineNo">175</span>                getNamedObjIds(_libraryModel.getRoot());<a name="line.175"></a>
+<span class="sourceLineNo">176</span><a name="line.176"></a>
+<span class="sourceLineNo">177</span>        }<a name="line.177"></a>
+<span class="sourceLineNo">178</span><a name="line.178"></a>
+<span class="sourceLineNo">179</span>        /**<a name="line.179"></a>
+<span class="sourceLineNo">180</span>         * This operation provides access to the assigned library model.<a name="line.180"></a>
+<span class="sourceLineNo">181</span>         * <a name="line.181"></a>
+<span class="sourceLineNo">182</span>         *@return The current kepler actor library<a name="line.182"></a>
+<span class="sourceLineNo">183</span>         */<a name="line.183"></a>
+<span class="sourceLineNo">184</span>        public EntityTreeModel getBasicActorLibrary() {<a name="line.184"></a>
+<span class="sourceLineNo">185</span>                return _libraryModel;<a name="line.185"></a>
+<span class="sourceLineNo">186</span>        }<a name="line.186"></a>
+<span class="sourceLineNo">187</span><a name="line.187"></a>
+<span class="sourceLineNo">188</span>        // .........<a name="line.188"></a>
+<span class="sourceLineNo">189</span>        // recursive helper function to traverse and pull out the named<a name="line.189"></a>
+<span class="sourceLineNo">190</span>        // objects with ids<a name="line.190"></a>
+<span class="sourceLineNo">191</span>        // .........<a name="line.191"></a>
+<span class="sourceLineNo">192</span>        /**<a name="line.192"></a>
+<span class="sourceLineNo">193</span>         * Gets the namedObjIds attribute of the KeplerLocalLSIDService object<a name="line.193"></a>
+<span class="sourceLineNo">194</span>         * <a name="line.194"></a>
+<span class="sourceLineNo">195</span>         *@param parent<a name="line.195"></a>
+<span class="sourceLineNo">196</span>         *            Description of the Parameter<a name="line.196"></a>
+<span class="sourceLineNo">197</span>         */<a name="line.197"></a>
+<span class="sourceLineNo">198</span>        private void getNamedObjIds(Object parent) {<a name="line.198"></a>
+<span class="sourceLineNo">199</span>                // check if the parent has an id, and if so add to hashtable<a name="line.199"></a>
+<span class="sourceLineNo">200</span>                if (parent instanceof NamedObj) {<a name="line.200"></a>
+<span class="sourceLineNo">201</span>                        _addNamedObject((NamedObj) parent);<a name="line.201"></a>
+<span class="sourceLineNo">202</span>                }<a name="line.202"></a>
+<span class="sourceLineNo">203</span>                // iterator over children<a name="line.203"></a>
+<span class="sourceLineNo">204</span>                for (int i = 0; i &lt; _libraryModel.getChildCount(parent); i++) {<a name="line.204"></a>
+<span class="sourceLineNo">205</span>                        getNamedObjIds(_libraryModel.getChild(parent, i));<a name="line.205"></a>
+<span class="sourceLineNo">206</span>                }<a name="line.206"></a>
+<span class="sourceLineNo">207</span>        }<a name="line.207"></a>
+<span class="sourceLineNo">208</span><a name="line.208"></a>
+<span class="sourceLineNo">209</span>        /*<a name="line.209"></a>
+<span class="sourceLineNo">210</span>         * MAIN LSID OPERATIONS<a name="line.210"></a>
+<span class="sourceLineNo">211</span>         */<a name="line.211"></a>
+<span class="sourceLineNo">212</span><a name="line.212"></a>
+<span class="sourceLineNo">213</span>        /**<a name="line.213"></a>
+<span class="sourceLineNo">214</span>         * Adds a named object to an lsid that hasn't been previously assigned. The<a name="line.214"></a>
+<span class="sourceLineNo">215</span>         * lsid cannot be previously assigned to an object. To create a well-formed<a name="line.215"></a>
+<span class="sourceLineNo">216</span>         * lsid, use createLSID.<a name="line.216"></a>
+<span class="sourceLineNo">217</span>         * <a name="line.217"></a>
+<span class="sourceLineNo">218</span>         *@param obj<a name="line.218"></a>
+<span class="sourceLineNo">219</span>         *            The object to assign an lsid to<a name="line.219"></a>
+<span class="sourceLineNo">220</span>         *@param lsid<a name="line.220"></a>
+<span class="sourceLineNo">221</span>         *            Description of the Parameter<a name="line.221"></a>
+<span class="sourceLineNo">222</span>         *@exception IllegalLSIDAssignmentException<a name="line.222"></a>
+<span class="sourceLineNo">223</span>         *                Description of the Exception<a name="line.223"></a>
+<span class="sourceLineNo">224</span>         *@return true if the object was assigned to the lsid correctly, false<a name="line.224"></a>
+<span class="sourceLineNo">225</span>         *          otherwise.<a name="line.225"></a>
+<span class="sourceLineNo">226</span>         */<a name="line.226"></a>
+<span class="sourceLineNo">227</span>        public void assignLSID(String lsid, NamedObj obj)<a name="line.227"></a>
+<span class="sourceLineNo">228</span>                        throws IllegalLSIDAssignmentException {<a name="line.228"></a>
+<span class="sourceLineNo">229</span>                // the lsid must not be assigned<a name="line.229"></a>
+<span class="sourceLineNo">230</span>                if (_assignedObjects.containsKey(lsid)) {<a name="line.230"></a>
+<span class="sourceLineNo">231</span>                        throw new IllegalLSIDAssignmentException(lsid<a name="line.231"></a>
+<span class="sourceLineNo">232</span>                                        + " already assigned to an object");<a name="line.232"></a>
+<span class="sourceLineNo">233</span>                }<a name="line.233"></a>
+<span class="sourceLineNo">234</span><a name="line.234"></a>
+<span class="sourceLineNo">235</span>                // make sure there isn't already an obj with the same entity name<a name="line.235"></a>
+<span class="sourceLineNo">236</span>                // to be assigned<a name="line.236"></a>
+<span class="sourceLineNo">237</span>                Enumeration e = _assignedObjects.elements();<a name="line.237"></a>
+<span class="sourceLineNo">238</span>                while (e.hasMoreElements()) {<a name="line.238"></a>
+<span class="sourceLineNo">239</span>                        NamedObj assignedObj = (NamedObj) e.nextElement();<a name="line.239"></a>
+<span class="sourceLineNo">240</span>                        String name = assignedObj.getName();<a name="line.240"></a>
+<span class="sourceLineNo">241</span>                        if (name.equals(obj.getName())) {<a name="line.241"></a>
+<span class="sourceLineNo">242</span>                                String msg = "Object name '" + obj.getName()<a name="line.242"></a>
+<span class="sourceLineNo">243</span>                                                + "' already exists in library";<a name="line.243"></a>
+<span class="sourceLineNo">244</span>                                throw new IllegalLSIDAssignmentException(msg);<a name="line.244"></a>
+<span class="sourceLineNo">245</span>                        }<a name="line.245"></a>
+<span class="sourceLineNo">246</span>                }<a name="line.246"></a>
+<span class="sourceLineNo">247</span><a name="line.247"></a>
+<span class="sourceLineNo">248</span>                try {<a name="line.248"></a>
+<span class="sourceLineNo">249</span>                        // add the id<a name="line.249"></a>
+<span class="sourceLineNo">250</span>                        NamedObjId objId = new NamedObjId(obj, NamedObjId.NAME);<a name="line.250"></a>
+<span class="sourceLineNo">251</span>                        objId.setContainer(obj);<a name="line.251"></a>
+<span class="sourceLineNo">252</span>                        objId.setExpression(lsid);<a name="line.252"></a>
+<span class="sourceLineNo">253</span>                        // update the assigned objects<a name="line.253"></a>
+<span class="sourceLineNo">254</span>                        _assignedObjects.put(lsid, obj);<a name="line.254"></a>
+<span class="sourceLineNo">255</span>                        if (!_managedLsids.contains(lsid)) {<a name="line.255"></a>
+<span class="sourceLineNo">256</span>                                _managedLsids.add(lsid);<a name="line.256"></a>
+<span class="sourceLineNo">257</span>                        }<a name="line.257"></a>
+<span class="sourceLineNo">258</span>                } catch (ptolemy.kernel.util.NameDuplicationException nde) {<a name="line.258"></a>
+<span class="sourceLineNo">259</span>                        // don't add the entity id, but do add the lsid to the DB.<a name="line.259"></a>
+<span class="sourceLineNo">260</span>                        _assignedObjects.put(lsid, obj);<a name="line.260"></a>
+<span class="sourceLineNo">261</span>                        if (!_managedLsids.contains(lsid)) {<a name="line.261"></a>
+<span class="sourceLineNo">262</span>                                _managedLsids.add(lsid);<a name="line.262"></a>
+<span class="sourceLineNo">263</span>                        }<a name="line.263"></a>
+<span class="sourceLineNo">264</span>                } catch (Exception ex) {<a name="line.264"></a>
+<span class="sourceLineNo">265</span>                        throw new IllegalLSIDAssignmentException(ex.toString());<a name="line.265"></a>
+<span class="sourceLineNo">266</span>                }<a name="line.266"></a>
+<span class="sourceLineNo">267</span>        }<a name="line.267"></a>
+<span class="sourceLineNo">268</span><a name="line.268"></a>
+<span class="sourceLineNo">269</span>        /**<a name="line.269"></a>
+<span class="sourceLineNo">270</span>         * Updates a previously assigned lsid to be assigned the given object.<a name="line.270"></a>
+<span class="sourceLineNo">271</span>         * Removes the old object from the actor library, and adds the given object.<a name="line.271"></a>
+<span class="sourceLineNo">272</span>         * <a name="line.272"></a>
+<span class="sourceLineNo">273</span>         *@param lsid<a name="line.273"></a>
+<span class="sourceLineNo">274</span>         *            the lsid to update<a name="line.274"></a>
+<span class="sourceLineNo">275</span>         *@param obj<a name="line.275"></a>
+<span class="sourceLineNo">276</span>         *            the new object to connect to the lsid<a name="line.276"></a>
+<span class="sourceLineNo">277</span>         *@exception IllegalLSIDAssignmentException<a name="line.277"></a>
+<span class="sourceLineNo">278</span>         *                Description of the Exception<a name="line.278"></a>
+<span class="sourceLineNo">279</span>         */<a name="line.279"></a>
+<span class="sourceLineNo">280</span>        public void updateLSID(String lsid, NamedObj obj)<a name="line.280"></a>
+<span class="sourceLineNo">281</span>                        throws IllegalLSIDAssignmentException {<a name="line.281"></a>
+<span class="sourceLineNo">282</span>                // the lsid must be assigned<a name="line.282"></a>
+<span class="sourceLineNo">283</span>                if (!_assignedObjects.containsKey(lsid)) {<a name="line.283"></a>
+<span class="sourceLineNo">284</span>                        throw new IllegalLSIDAssignmentException(<a name="line.284"></a>
+<span class="sourceLineNo">285</span>                                        lsid<a name="line.285"></a>
+<span class="sourceLineNo">286</span>                                                        + " cannot be updated because it is not assigned to an object");<a name="line.286"></a>
+<span class="sourceLineNo">287</span>                }<a name="line.287"></a>
+<span class="sourceLineNo">288</span>                try {<a name="line.288"></a>
+<span class="sourceLineNo">289</span>                        NamedObj oldObj = (NamedObj) _assignedObjects.get(lsid);<a name="line.289"></a>
+<span class="sourceLineNo">290</span>                        if (oldObj instanceof Attribute) {<a name="line.290"></a>
+<span class="sourceLineNo">291</span>                                ((Attribute) oldObj).setContainer(null);<a name="line.291"></a>
+<span class="sourceLineNo">292</span>                        } else if (oldObj instanceof ComponentEntity) {<a name="line.292"></a>
+<span class="sourceLineNo">293</span>                                ((ComponentEntity) oldObj).setContainer(null);<a name="line.293"></a>
+<span class="sourceLineNo">294</span>                        }<a name="line.294"></a>
+<span class="sourceLineNo">295</span>                        _assignedObjects.remove(lsid);<a name="line.295"></a>
+<span class="sourceLineNo">296</span>                        // need to remove the object from the actor library!!!<a name="line.296"></a>
+<span class="sourceLineNo">297</span>                        assignLSID(lsid, obj);<a name="line.297"></a>
+<span class="sourceLineNo">298</span>                } catch (Exception e) {<a name="line.298"></a>
+<span class="sourceLineNo">299</span>                        throw new IllegalLSIDAssignmentException(e.toString());<a name="line.299"></a>
+<span class="sourceLineNo">300</span>                }<a name="line.300"></a>
+<span class="sourceLineNo">301</span>        }<a name="line.301"></a>
+<span class="sourceLineNo">302</span><a name="line.302"></a>
+<span class="sourceLineNo">303</span>        /*<a name="line.303"></a>
+<span class="sourceLineNo">304</span>         * LSID HELPER OPERATIONS<a name="line.304"></a>
+<span class="sourceLineNo">305</span>         */<a name="line.305"></a>
+<span class="sourceLineNo">306</span>        /**<a name="line.306"></a>
+<span class="sourceLineNo">307</span>         *@param namespace<a name="line.307"></a>
+<span class="sourceLineNo">308</span>         *            Description of the Parameter<a name="line.308"></a>
+<span class="sourceLineNo">309</span>         *@param id<a name="line.309"></a>
+<span class="sourceLineNo">310</span>         *            Description of the Parameter<a name="line.310"></a>
+<span class="sourceLineNo">311</span>         *@exception IllegalLSIDException<a name="line.311"></a>
+<span class="sourceLineNo">312</span>         *                Description of the Exception<a name="line.312"></a>
+<span class="sourceLineNo">313</span>         *@return an lsid with the default domain and the given namespace and id<a name="line.313"></a>
+<span class="sourceLineNo">314</span>         */<a name="line.314"></a>
+<span class="sourceLineNo">315</span>        public String createLSID(String namespace, String id)<a name="line.315"></a>
+<span class="sourceLineNo">316</span>                        throws IllegalLSIDException {<a name="line.316"></a>
+<span class="sourceLineNo">317</span>                String lsid = URN + ":" + LSID + ":" + DOMAIN + ":" + namespace + ":"<a name="line.317"></a>
+<span class="sourceLineNo">318</span>                                + id;<a name="line.318"></a>
+<span class="sourceLineNo">319</span>                if (!isWellFormedLSID(lsid)) {<a name="line.319"></a>
+<span class="sourceLineNo">320</span>                        throw new IllegalLSIDException(lsid);<a name="line.320"></a>
+<span class="sourceLineNo">321</span>                }<a name="line.321"></a>
+<span class="sourceLineNo">322</span>                return lsid;<a name="line.322"></a>
+<span class="sourceLineNo">323</span>        }<a name="line.323"></a>
+<span class="sourceLineNo">324</span><a name="line.324"></a>
+<span class="sourceLineNo">325</span>        /**<a name="line.325"></a>
+<span class="sourceLineNo">326</span>         * This is a simple algorithm that computes a new id for a given namespace<a name="line.326"></a>
+<span class="sourceLineNo">327</span>         * in the default domain. Appends a LOCALID to the id, so shouldn't be<a name="line.327"></a>
+<span class="sourceLineNo">328</span>         * duplicated in other ids in the same domain.<a name="line.328"></a>
+<span class="sourceLineNo">329</span>         * <a name="line.329"></a>
+<span class="sourceLineNo">330</span>         *@param namespace<a name="line.330"></a>
+<span class="sourceLineNo">331</span>         *            Description of the Parameter<a name="line.331"></a>
+<span class="sourceLineNo">332</span>         *@return a unqiue lsid, relevant to assigned lsids, for the given<a name="line.332"></a>
+<span class="sourceLineNo">333</span>         *          namespace.<a name="line.333"></a>
+<span class="sourceLineNo">334</span>         */<a name="line.334"></a>
+<span class="sourceLineNo">335</span>        public String createLocallyUniqueLSID(String namespace) {<a name="line.335"></a>
+<span class="sourceLineNo">336</span>                try {<a name="line.336"></a>
+<span class="sourceLineNo">337</span>                        boolean found = false;<a name="line.337"></a>
+<span class="sourceLineNo">338</span>                        Integer id = (Integer) _lastDomainId.get(namespace);<a name="line.338"></a>
+<span class="sourceLineNo">339</span>                        if (id == null)<a name="line.339"></a>
+<span class="sourceLineNo">340</span>                                id = new Integer(-1);<a name="line.340"></a>
+<span class="sourceLineNo">341</span>                        int newId = id.intValue();<a name="line.341"></a>
+<span class="sourceLineNo">342</span>                        while (!found) {<a name="line.342"></a>
+<span class="sourceLineNo">343</span>                                newId = newId + 1;<a name="line.343"></a>
+<span class="sourceLineNo">344</span>                                String lsid = createLSID(namespace, "LOCALID" + newId);<a name="line.344"></a>
+<span class="sourceLineNo">345</span>                                if (!isAssignedLSID(lsid)) {<a name="line.345"></a>
+<span class="sourceLineNo">346</span>                                        found = true;<a name="line.346"></a>
+<span class="sourceLineNo">347</span>                                        if (_lastDomainId.contains(namespace)) {<a name="line.347"></a>
+<span class="sourceLineNo">348</span>                                                _lastDomainId.remove(namespace);<a name="line.348"></a>
+<span class="sourceLineNo">349</span>                                        }<a name="line.349"></a>
+<span class="sourceLineNo">350</span>                                        _lastDomainId.put(namespace, new Integer(newId));<a name="line.350"></a>
+<span class="sourceLineNo">351</span>                                }<a name="line.351"></a>
+<span class="sourceLineNo">352</span>                        }<a name="line.352"></a>
+<span class="sourceLineNo">353</span>                        return createLSID(namespace, "LOCALID" + newId);<a name="line.353"></a>
+<span class="sourceLineNo">354</span>                } catch (Exception e) {<a name="line.354"></a>
+<span class="sourceLineNo">355</span>                        e.printStackTrace();<a name="line.355"></a>
+<span class="sourceLineNo">356</span>                }<a name="line.356"></a>
+<span class="sourceLineNo">357</span>                return null;<a name="line.357"></a>
+<span class="sourceLineNo">358</span>        }<a name="line.358"></a>
+<span class="sourceLineNo">359</span><a name="line.359"></a>
+<span class="sourceLineNo">360</span>        /**<a name="line.360"></a>
+<span class="sourceLineNo">361</span>         *@param obj<a name="line.361"></a>
+<span class="sourceLineNo">362</span>         *            Description of the Parameter<a name="line.362"></a>
+<span class="sourceLineNo">363</span>         *@return The lSIDFor value<a name="line.363"></a>
+<span class="sourceLineNo">364</span>         */<a name="line.364"></a>
+<span class="sourceLineNo">365</span>        public Iterator getLSIDFor(NamedObj obj) {<a name="line.365"></a>
+<span class="sourceLineNo">366</span>                Vector result = new Vector();<a name="line.366"></a>
+<span class="sourceLineNo">367</span><a name="line.367"></a>
+<span class="sourceLineNo">368</span>                if (_assignedObjects.containsValue(obj)) {<a name="line.368"></a>
+<span class="sourceLineNo">369</span>                        Enumeration keys = _assignedObjects.keys();<a name="line.369"></a>
+<span class="sourceLineNo">370</span>                        // for each key, check if the associated object equals<a name="line.370"></a>
+<span class="sourceLineNo">371</span>                        // this object and if so, add to result<a name="line.371"></a>
+<span class="sourceLineNo">372</span>                        while (keys.hasMoreElements()) {<a name="line.372"></a>
+<span class="sourceLineNo">373</span>                                String lsid = (String) keys.nextElement();<a name="line.373"></a>
+<span class="sourceLineNo">374</span>                                NamedObj tmp = (NamedObj) _assignedObjects.get(lsid);<a name="line.374"></a>
+<span class="sourceLineNo">375</span>                                if (tmp.equals(obj)) {<a name="line.375"></a>
+<span class="sourceLineNo">376</span>                                        result.add(lsid);<a name="line.376"></a>
+<span class="sourceLineNo">377</span>                                }<a name="line.377"></a>
+<span class="sourceLineNo">378</span>                        }<a name="line.378"></a>
+<span class="sourceLineNo">379</span>                }<a name="line.379"></a>
+<span class="sourceLineNo">380</span>                return result.iterator();<a name="line.380"></a>
+<span class="sourceLineNo">381</span>        }<a name="line.381"></a>
+<span class="sourceLineNo">382</span><a name="line.382"></a>
+<span class="sourceLineNo">383</span>        /**<a name="line.383"></a>
+<span class="sourceLineNo">384</span>         *@param lsid<a name="line.384"></a>
+<span class="sourceLineNo">385</span>         *            the lsid to test<a name="line.385"></a>
+<span class="sourceLineNo">386</span>         *@return true if the given lsid is known to the service<a name="line.386"></a>
+<span class="sourceLineNo">387</span>         */<a name="line.387"></a>
+<span class="sourceLineNo">388</span>        public boolean isAssignedLSID(String lsid) {<a name="line.388"></a>
+<span class="sourceLineNo">389</span>                return _managedLsids.contains(lsid);<a name="line.389"></a>
+<span class="sourceLineNo">390</span>        }<a name="line.390"></a>
+<span class="sourceLineNo">391</span><a name="line.391"></a>
+<span class="sourceLineNo">392</span>        /**<a name="line.392"></a>
+<span class="sourceLineNo">393</span>         *@param lsid<a name="line.393"></a>
+<span class="sourceLineNo">394</span>         *            the lsid to test<a name="line.394"></a>
+<span class="sourceLineNo">395</span>         *@return true if the lsid is well formed, false otherwise<a name="line.395"></a>
+<span class="sourceLineNo">396</span>         */<a name="line.396"></a>
+<span class="sourceLineNo">397</span>        public boolean isWellFormedLSID(String lsid) {<a name="line.397"></a>
+<span class="sourceLineNo">398</span>                String delim = ":";<a name="line.398"></a>
+<span class="sourceLineNo">399</span>                StringTokenizer strTok = new StringTokenizer(lsid, delim, false);<a name="line.399"></a>
+<span class="sourceLineNo">400</span>                String str = "";<a name="line.400"></a>
+<span class="sourceLineNo">401</span>                try {<a name="line.401"></a>
+<span class="sourceLineNo">402</span>                        // urn part<a name="line.402"></a>
+<span class="sourceLineNo">403</span>                        str = strTok.nextToken();<a name="line.403"></a>
+<span class="sourceLineNo">404</span>                        if (!str.equals(URN)) {<a name="line.404"></a>
+<span class="sourceLineNo">405</span>                                return false;<a name="line.405"></a>
+<span class="sourceLineNo">406</span>                        }<a name="line.406"></a>
+<span class="sourceLineNo">407</span>                        // lsid<a name="line.407"></a>
+<span class="sourceLineNo">408</span>                        str = strTok.nextToken();<a name="line.408"></a>
+<span class="sourceLineNo">409</span>                        if (!str.equals(LSID)) {<a name="line.409"></a>
+<span class="sourceLineNo">410</span>                                return false;<a name="line.410"></a>
+<span class="sourceLineNo">411</span>                        }<a name="line.411"></a>
+<span class="sourceLineNo">412</span>                        // the domain<a name="line.412"></a>
+<span class="sourceLineNo">413</span>                        str = strTok.nextToken();<a name="line.413"></a>
+<span class="sourceLineNo">414</span>                        if (containsWhiteSpace(str)) {<a name="line.414"></a>
+<span class="sourceLineNo">415</span>                                return false;<a name="line.415"></a>
+<span class="sourceLineNo">416</span>                        }<a name="line.416"></a>
+<span class="sourceLineNo">417</span>                        // the namespace<a name="line.417"></a>
+<span class="sourceLineNo">418</span>                        str = strTok.nextToken();<a name="line.418"></a>
+<span class="sourceLineNo">419</span>                        if (containsWhiteSpace(str)) {<a name="line.419"></a>
+<span class="sourceLineNo">420</span>                                return false;<a name="line.420"></a>
+<span class="sourceLineNo">421</span>                        }<a name="line.421"></a>
+<span class="sourceLineNo">422</span>                        // the id<a name="line.422"></a>
+<span class="sourceLineNo">423</span>                        str = strTok.nextToken();<a name="line.423"></a>
+<span class="sourceLineNo">424</span>                        if (containsWhiteSpace(str)) {<a name="line.424"></a>
+<span class="sourceLineNo">425</span>                                return false;<a name="line.425"></a>
+<span class="sourceLineNo">426</span>                        }<a name="line.426"></a>
+<span class="sourceLineNo">427</span>                        // the optional version<a name="line.427"></a>
+<span class="sourceLineNo">428</span>                        if (strTok.hasMoreTokens()<a name="line.428"></a>
+<span class="sourceLineNo">429</span>                                        &amp;&amp; containsWhiteSpace(strTok.nextToken())) {<a name="line.429"></a>
+<span class="sourceLineNo">430</span>                                return false;<a name="line.430"></a>
+<span class="sourceLineNo">431</span>                        }<a name="line.431"></a>
+<span class="sourceLineNo">432</span>                        // no more tokens<a name="line.432"></a>
+<span class="sourceLineNo">433</span>                        if (strTok.hasMoreTokens()) {<a name="line.433"></a>
+<span class="sourceLineNo">434</span>                                return false;<a name="line.434"></a>
+<span class="sourceLineNo">435</span>                        }<a name="line.435"></a>
+<span class="sourceLineNo">436</span>                        return true;<a name="line.436"></a>
+<span class="sourceLineNo">437</span>                } catch (Exception e) {<a name="line.437"></a>
+<span class="sourceLineNo">438</span>                        return false;<a name="line.438"></a>
+<span class="sourceLineNo">439</span>                }<a name="line.439"></a>
+<span class="sourceLineNo">440</span>        }<a name="line.440"></a>
+<span class="sourceLineNo">441</span><a name="line.441"></a>
+<span class="sourceLineNo">442</span>        /**<a name="line.442"></a>
+<span class="sourceLineNo">443</span>         * Description of the Method<a name="line.443"></a>
+<span class="sourceLineNo">444</span>         * <a name="line.444"></a>
+<span class="sourceLineNo">445</span>         *@param str<a name="line.445"></a>
+<span class="sourceLineNo">446</span>         *            Description of the Parameter<a name="line.446"></a>
+<span class="sourceLineNo">447</span>         *@return Description of the Return Value<a name="line.447"></a>
+<span class="sourceLineNo">448</span>         */<a name="line.448"></a>
+<span class="sourceLineNo">449</span>        private boolean containsWhiteSpace(String str) {<a name="line.449"></a>
+<span class="sourceLineNo">450</span>                StringTokenizer strTok = new StringTokenizer(str);<a name="line.450"></a>
+<span class="sourceLineNo">451</span>                return (strTok.countTokens() != 1);<a name="line.451"></a>
+<span class="sourceLineNo">452</span>        }<a name="line.452"></a>
+<span class="sourceLineNo">453</span><a name="line.453"></a>
+<span class="sourceLineNo">454</span>        /**<a name="line.454"></a>
+<span class="sourceLineNo">455</span>         *@param lsid<a name="line.455"></a>
+<span class="sourceLineNo">456</span>         *            Description of the Parameter<a name="line.456"></a>
+<span class="sourceLineNo">457</span>         *@return null if not a resolvable lsid (i.e., unknown lsid)<a name="line.457"></a>
+<span class="sourceLineNo">458</span>         */<a name="line.458"></a>
+<span class="sourceLineNo">459</span>        public NamedObj getData(String lsid) {<a name="line.459"></a>
+<span class="sourceLineNo">460</span>                return (NamedObj) _assignedObjects.get(lsid);<a name="line.460"></a>
+<span class="sourceLineNo">461</span>        }<a name="line.461"></a>
+<span class="sourceLineNo">462</span><a name="line.462"></a>
+<span class="sourceLineNo">463</span>        /**<a name="line.463"></a>
+<span class="sourceLineNo">464</span>         * Adds a new NamedObj instance to the engine<a name="line.464"></a>
+<span class="sourceLineNo">465</span>         * <a name="line.465"></a>
+<span class="sourceLineNo">466</span>         *@param obj<a name="line.466"></a>
+<span class="sourceLineNo">467</span>         *            the instance to add, which must have an NamedObjId property<a name="line.467"></a>
+<span class="sourceLineNo">468</span>         *@return true if the item was added successfully<a name="line.468"></a>
+<span class="sourceLineNo">469</span>         */<a name="line.469"></a>
+<span class="sourceLineNo">470</span>        private boolean _addNamedObject(NamedObj obj) {<a name="line.470"></a>
+<span class="sourceLineNo">471</span>                List idAtts = obj.attributeList(NamedObjId.class);<a name="line.471"></a>
+<span class="sourceLineNo">472</span>                Iterator iter = idAtts.iterator();<a name="line.472"></a>
+<span class="sourceLineNo">473</span>                boolean result = iter.hasNext();<a name="line.473"></a>
+<span class="sourceLineNo">474</span>                while (iter.hasNext()) {<a name="line.474"></a>
+<span class="sourceLineNo">475</span>                        NamedObjId id = (NamedObjId) iter.next();<a name="line.475"></a>
+<span class="sourceLineNo">476</span>                        // check if it is already there ...<a name="line.476"></a>
+<span class="sourceLineNo">477</span>                        if (!_assignedObjects.containsKey(id.getExpression())) {<a name="line.477"></a>
+<span class="sourceLineNo">478</span>                                String lsid = id.getExpression();<a name="line.478"></a>
+<span class="sourceLineNo">479</span>                                if (!_managedLsids.contains(lsid)) {<a name="line.479"></a>
+<span class="sourceLineNo">480</span>                                        _managedLsids.add(lsid);<a name="line.480"></a>
+<span class="sourceLineNo">481</span>                                }<a name="line.481"></a>
+<span class="sourceLineNo">482</span>                                _assignedObjects.put(lsid, obj);<a name="line.482"></a>
+<span class="sourceLineNo">483</span>                        }<a name="line.483"></a>
+<span class="sourceLineNo">484</span>                }<a name="line.484"></a>
+<span class="sourceLineNo">485</span>                return result;<a name="line.485"></a>
+<span class="sourceLineNo">486</span>        }<a name="line.486"></a>
+<span class="sourceLineNo">487</span><a name="line.487"></a>
+<span class="sourceLineNo">488</span>        /** TODO: throw error */<a name="line.488"></a>
+<span class="sourceLineNo">489</span>        public void commitChanges() {<a name="line.489"></a>
+<span class="sourceLineNo">490</span><a name="line.490"></a>
+<span class="sourceLineNo">491</span>                try {<a name="line.491"></a>
+<span class="sourceLineNo">492</span>                        // open the KEPLERACTORLIB file<a name="line.492"></a>
+<span class="sourceLineNo">493</span>                        File file = new File(KEPLERACTORLIB);<a name="line.493"></a>
+<span class="sourceLineNo">494</span>                        BufferedWriter output = new BufferedWriter(new FileWriter(file));<a name="line.494"></a>
+<span class="sourceLineNo">495</span><a name="line.495"></a>
+<span class="sourceLineNo">496</span>                        // write out the header of the file<a name="line.496"></a>
+<span class="sourceLineNo">497</span>                        output.write("&lt;?xml version=\"1.0\" standalone=\"no\"?&gt;\n");<a name="line.497"></a>
+<span class="sourceLineNo">498</span>                        output<a name="line.498"></a>
+<span class="sourceLineNo">499</span>                                        .write("&lt;!DOCTYPE plot PUBLIC \"-//UC Berkeley//DTD MoML 1//EN\"\n");<a name="line.499"></a>
+<span class="sourceLineNo">500</span>                        output<a name="line.500"></a>
+<span class="sourceLineNo">501</span>                                        .write("\"http://ptolemy.eecs.berkeley.edu/xml/dtd/MoML_1.dtd\"&gt;\n");<a name="line.501"></a>
+<span class="sourceLineNo">502</span>                        output.write("&lt;group&gt;\n");<a name="line.502"></a>
+<span class="sourceLineNo">503</span><a name="line.503"></a>
+<span class="sourceLineNo">504</span>                        // add each unique item in the hashtable to root<a name="line.504"></a>
+<span class="sourceLineNo">505</span>                        Vector objsToAdd = new Vector();<a name="line.505"></a>
+<span class="sourceLineNo">506</span>                        Enumeration e = _assignedObjects.elements();<a name="line.506"></a>
+<span class="sourceLineNo">507</span>                        while (e.hasMoreElements()) {<a name="line.507"></a>
+<span class="sourceLineNo">508</span>                                NamedObj obj = (NamedObj) e.nextElement();<a name="line.508"></a>
+<span class="sourceLineNo">509</span>                                if (!objsToAdd.contains(obj)) {<a name="line.509"></a>
+<span class="sourceLineNo">510</span>                                        objsToAdd.add(obj);<a name="line.510"></a>
+<span class="sourceLineNo">511</span>                                }<a name="line.511"></a>
+<span class="sourceLineNo">512</span>                        }<a name="line.512"></a>
+<span class="sourceLineNo">513</span><a name="line.513"></a>
+<span class="sourceLineNo">514</span>                        for (Iterator i = objsToAdd.iterator(); i.hasNext();) {<a name="line.514"></a>
+<span class="sourceLineNo">515</span>                                NamedObj obj = (NamedObj) i.next();<a name="line.515"></a>
+<span class="sourceLineNo">516</span>                                output.write("\n" + obj.exportMoML() + "\n");<a name="line.516"></a>
+<span class="sourceLineNo">517</span>                        }<a name="line.517"></a>
+<span class="sourceLineNo">518</span>                        output.write("&lt;/group&gt;\n");<a name="line.518"></a>
+<span class="sourceLineNo">519</span><a name="line.519"></a>
+<span class="sourceLineNo">520</span>                        // close the file<a name="line.520"></a>
+<span class="sourceLineNo">521</span>                        output.close();<a name="line.521"></a>
+<span class="sourceLineNo">522</span><a name="line.522"></a>
+<span class="sourceLineNo">523</span>                } catch (Exception e) {<a name="line.523"></a>
+<span class="sourceLineNo">524</span>                        e.printStackTrace();<a name="line.524"></a>
+<span class="sourceLineNo">525</span>                }<a name="line.525"></a>
+<span class="sourceLineNo">526</span><a name="line.526"></a>
+<span class="sourceLineNo">527</span>        }<a name="line.527"></a>
+<span class="sourceLineNo">528</span><a name="line.528"></a>
+<span class="sourceLineNo">529</span>        /**<a name="line.529"></a>
+<span class="sourceLineNo">530</span>         * Description of the Method<a name="line.530"></a>
+<span class="sourceLineNo">531</span>         * <a name="line.531"></a>
+<span class="sourceLineNo">532</span>         *@return Description of the Return Value<a name="line.532"></a>
+<span class="sourceLineNo">533</span>         */<a name="line.533"></a>
+<span class="sourceLineNo">534</span>        public Iterator assignedLSIDs() {<a name="line.534"></a>
+<span class="sourceLineNo">535</span>                return _managedLsids.iterator();<a name="line.535"></a>
+<span class="sourceLineNo">536</span>        }<a name="line.536"></a>
+<span class="sourceLineNo">537</span><a name="line.537"></a>
+<span class="sourceLineNo">538</span>        /*<a name="line.538"></a>
+<span class="sourceLineNo">539</span>         * Testing<a name="line.539"></a>
+<span class="sourceLineNo">540</span>         */<a name="line.540"></a>
+<span class="sourceLineNo">541</span><a name="line.541"></a>
+<span class="sourceLineNo">542</span>        // for testing<a name="line.542"></a>
+<span class="sourceLineNo">543</span>        /**<a name="line.543"></a>
+<span class="sourceLineNo">544</span>         * The main program for the KeplerLocalLSIDService class<a name="line.544"></a>
+<span class="sourceLineNo">545</span>         * <a name="line.545"></a>
+<span class="sourceLineNo">546</span>         *@param args<a name="line.546"></a>
+<span class="sourceLineNo">547</span>         *            The command line arguments<a name="line.547"></a>
+<span class="sourceLineNo">548</span>         */<a name="line.548"></a>
+<span class="sourceLineNo">549</span>        public static void main(String[] args) {<a name="line.549"></a>
+<span class="sourceLineNo">550</span>                KeplerLocalLSIDService serv = KeplerLocalLSIDService.instance();<a name="line.550"></a>
+<span class="sourceLineNo">551</span>                try {<a name="line.551"></a>
+<span class="sourceLineNo">552</span>                        System.out.println("&gt;&gt;&gt; Assigning const");<a name="line.552"></a>
+<span class="sourceLineNo">553</span>                        String lsid = serv.createLSID("bowers", "myFavoriteService");<a name="line.553"></a>
+<span class="sourceLineNo">554</span>                        Const c = new Const(new EntityLibrary(), "myConst");<a name="line.554"></a>
+<span class="sourceLineNo">555</span>                        serv.assignLSID(lsid, c);<a name="line.555"></a>
+<span class="sourceLineNo">556</span><a name="line.556"></a>
+<span class="sourceLineNo">557</span>                        System.out.println("&gt;&gt;&gt; Assigning another const");<a name="line.557"></a>
+<span class="sourceLineNo">558</span>                        String lsid0 = serv.createLSID("bowers", "myOtherFavoriteService");<a name="line.558"></a>
+<span class="sourceLineNo">559</span>                        System.out.println("&gt;&gt;&gt; Updating const");<a name="line.559"></a>
+<span class="sourceLineNo">560</span>                        Const c0 = new Const(new EntityLibrary(), "myFufuConst");<a name="line.560"></a>
+<span class="sourceLineNo">561</span>                        serv.updateLSID(lsid, c0);<a name="line.561"></a>
+<span class="sourceLineNo">562</span><a name="line.562"></a>
+<span class="sourceLineNo">563</span>                        serv.commitChanges();<a name="line.563"></a>
+<span class="sourceLineNo">564</span><a name="line.564"></a>
+<span class="sourceLineNo">565</span>                } catch (Exception e) {<a name="line.565"></a>
+<span class="sourceLineNo">566</span>                        e.printStackTrace();<a name="line.566"></a>
+<span class="sourceLineNo">567</span>                }<a name="line.567"></a>
+<span class="sourceLineNo">568</span>        }<a name="line.568"></a>
+<span class="sourceLineNo">569</span><a name="line.569"></a>
+<span class="sourceLineNo">570</span>}<a name="line.570"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

@@ -1,0 +1,772 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../stylesheet.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>/*<a name="line.1"></a>
+<span class="sourceLineNo">002</span>Below is the copyright agreement for the Ptolemy II system.<a name="line.2"></a>
+<span class="sourceLineNo">003</span><a name="line.3"></a>
+<span class="sourceLineNo">004</span>Copyright (c) 2010-2011 The Regents of the University of California.<a name="line.4"></a>
+<span class="sourceLineNo">005</span>All rights reserved.<a name="line.5"></a>
+<span class="sourceLineNo">006</span><a name="line.6"></a>
+<span class="sourceLineNo">007</span>Permission is hereby granted, without written agreement and without<a name="line.7"></a>
+<span class="sourceLineNo">008</span>license or royalty fees, to use, copy, modify, and distribute this<a name="line.8"></a>
+<span class="sourceLineNo">009</span>software and its documentation for any purpose, provided that the above<a name="line.9"></a>
+<span class="sourceLineNo">010</span>copyright notice and the following two paragraphs appear in all copies<a name="line.10"></a>
+<span class="sourceLineNo">011</span>of this software.<a name="line.11"></a>
+<span class="sourceLineNo">012</span><a name="line.12"></a>
+<span class="sourceLineNo">013</span>IN NO EVENT SHALL THE UNIVERSITY OF CALIFORNIA BE LIABLE TO ANY PARTY<a name="line.13"></a>
+<span class="sourceLineNo">014</span>FOR DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES<a name="line.14"></a>
+<span class="sourceLineNo">015</span>ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION, EVEN IF<a name="line.15"></a>
+<span class="sourceLineNo">016</span>THE UNIVERSITY OF CALIFORNIA HAS BEEN ADVISED OF THE POSSIBILITY OF<a name="line.16"></a>
+<span class="sourceLineNo">017</span>SUCH DAMAGE.<a name="line.17"></a>
+<span class="sourceLineNo">018</span><a name="line.18"></a>
+<span class="sourceLineNo">019</span>THE UNIVERSITY OF CALIFORNIA SPECIFICALLY DISCLAIMS ANY WARRANTIES,<a name="line.19"></a>
+<span class="sourceLineNo">020</span>INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF<a name="line.20"></a>
+<span class="sourceLineNo">021</span>MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE<a name="line.21"></a>
+<span class="sourceLineNo">022</span>PROVIDED HEREUNDER IS ON AN "AS IS" BASIS, AND THE UNIVERSITY OF<a name="line.22"></a>
+<span class="sourceLineNo">023</span>CALIFORNIA HAS NO OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT, UPDATES,<a name="line.23"></a>
+<span class="sourceLineNo">024</span>ENHANCEMENTS, OR MODIFICATIONS.<a name="line.24"></a>
+<span class="sourceLineNo">025</span><a name="line.25"></a>
+<span class="sourceLineNo">026</span>Ptolemy II includes the work of others, to see those copyrights, follow<a name="line.26"></a>
+<span class="sourceLineNo">027</span>the copyright link on the splash page or see copyright.htm.<a name="line.27"></a>
+<span class="sourceLineNo">028</span> */<a name="line.28"></a>
+<span class="sourceLineNo">029</span>package org.json;<a name="line.29"></a>
+<span class="sourceLineNo">030</span><a name="line.30"></a>
+<span class="sourceLineNo">031</span>import java.io.StringWriter;<a name="line.31"></a>
+<span class="sourceLineNo">032</span>import java.util.Collection;<a name="line.32"></a>
+<span class="sourceLineNo">033</span>import java.util.Iterator;<a name="line.33"></a>
+<span class="sourceLineNo">034</span>import java.util.Map;<a name="line.34"></a>
+<span class="sourceLineNo">035</span><a name="line.35"></a>
+<span class="sourceLineNo">036</span>/**<a name="line.36"></a>
+<span class="sourceLineNo">037</span> * Test class. This file is not formally a member of the org.json library.<a name="line.37"></a>
+<span class="sourceLineNo">038</span> * It is just a casual test tool.<a name="line.38"></a>
+<span class="sourceLineNo">039</span> */<a name="line.39"></a>
+<span class="sourceLineNo">040</span>public class Test {<a name="line.40"></a>
+<span class="sourceLineNo">041</span><a name="line.41"></a>
+<span class="sourceLineNo">042</span>    /**<a name="line.42"></a>
+<span class="sourceLineNo">043</span>     * Entry point.<a name="line.43"></a>
+<span class="sourceLineNo">044</span>     * @param args<a name="line.44"></a>
+<span class="sourceLineNo">045</span>     */<a name="line.45"></a>
+<span class="sourceLineNo">046</span>    public static void main(String args[]) {<a name="line.46"></a>
+<span class="sourceLineNo">047</span>        Iterator it;<a name="line.47"></a>
+<span class="sourceLineNo">048</span>        JSONArray a;<a name="line.48"></a>
+<span class="sourceLineNo">049</span>        JSONObject j;<a name="line.49"></a>
+<span class="sourceLineNo">050</span>        JSONStringer jj;<a name="line.50"></a>
+<span class="sourceLineNo">051</span>        Object o;<a name="line.51"></a>
+<span class="sourceLineNo">052</span>        String s;<a name="line.52"></a>
+<span class="sourceLineNo">053</span><a name="line.53"></a>
+<span class="sourceLineNo">054</span>        /**<a name="line.54"></a>
+<span class="sourceLineNo">055</span>         *  Obj is a typical class that implements JSONString. It also<a name="line.55"></a>
+<span class="sourceLineNo">056</span>         *  provides some beanie methods that can be used to<a name="line.56"></a>
+<span class="sourceLineNo">057</span>         *  construct a JSONObject. It also demonstrates constructing<a name="line.57"></a>
+<span class="sourceLineNo">058</span>         *  a JSONObject with an array of names.<a name="line.58"></a>
+<span class="sourceLineNo">059</span>         */<a name="line.59"></a>
+<span class="sourceLineNo">060</span>        class Obj implements JSONString {<a name="line.60"></a>
+<span class="sourceLineNo">061</span>            public String aString;<a name="line.61"></a>
+<span class="sourceLineNo">062</span>            public double aNumber;<a name="line.62"></a>
+<span class="sourceLineNo">063</span>            public boolean aBoolean;<a name="line.63"></a>
+<span class="sourceLineNo">064</span><a name="line.64"></a>
+<span class="sourceLineNo">065</span>            public Obj(String string, double n, boolean b) {<a name="line.65"></a>
+<span class="sourceLineNo">066</span>                this.aString = string;<a name="line.66"></a>
+<span class="sourceLineNo">067</span>                this.aNumber = n;<a name="line.67"></a>
+<span class="sourceLineNo">068</span>                this.aBoolean = b;<a name="line.68"></a>
+<span class="sourceLineNo">069</span>            }<a name="line.69"></a>
+<span class="sourceLineNo">070</span><a name="line.70"></a>
+<span class="sourceLineNo">071</span>            public double getNumber() {<a name="line.71"></a>
+<span class="sourceLineNo">072</span>                return this.aNumber;<a name="line.72"></a>
+<span class="sourceLineNo">073</span>            }<a name="line.73"></a>
+<span class="sourceLineNo">074</span><a name="line.74"></a>
+<span class="sourceLineNo">075</span>            public String getString() {<a name="line.75"></a>
+<span class="sourceLineNo">076</span>                return this.aString;<a name="line.76"></a>
+<span class="sourceLineNo">077</span>            }<a name="line.77"></a>
+<span class="sourceLineNo">078</span><a name="line.78"></a>
+<span class="sourceLineNo">079</span>            public boolean isBoolean() {<a name="line.79"></a>
+<span class="sourceLineNo">080</span>                return this.aBoolean;<a name="line.80"></a>
+<span class="sourceLineNo">081</span>            }<a name="line.81"></a>
+<span class="sourceLineNo">082</span><a name="line.82"></a>
+<span class="sourceLineNo">083</span>            public String getBENT() {<a name="line.83"></a>
+<span class="sourceLineNo">084</span>                return "All uppercase key";<a name="line.84"></a>
+<span class="sourceLineNo">085</span>            }<a name="line.85"></a>
+<span class="sourceLineNo">086</span><a name="line.86"></a>
+<span class="sourceLineNo">087</span>            public String getX() {<a name="line.87"></a>
+<span class="sourceLineNo">088</span>                return "x";<a name="line.88"></a>
+<span class="sourceLineNo">089</span>            }<a name="line.89"></a>
+<span class="sourceLineNo">090</span><a name="line.90"></a>
+<span class="sourceLineNo">091</span>            @Override<a name="line.91"></a>
+<span class="sourceLineNo">092</span>            public String toJSONString() {<a name="line.92"></a>
+<span class="sourceLineNo">093</span>                return "{" + JSONObject.quote(this.aString) + ":"<a name="line.93"></a>
+<span class="sourceLineNo">094</span>                        + JSONObject.doubleToString(this.aNumber) + "}";<a name="line.94"></a>
+<span class="sourceLineNo">095</span>            }<a name="line.95"></a>
+<span class="sourceLineNo">096</span><a name="line.96"></a>
+<span class="sourceLineNo">097</span>            @Override<a name="line.97"></a>
+<span class="sourceLineNo">098</span>            public String toString() {<a name="line.98"></a>
+<span class="sourceLineNo">099</span>                return this.getString() + " " + this.getNumber() + " "<a name="line.99"></a>
+<span class="sourceLineNo">100</span>                        + this.isBoolean() + "." + this.getBENT() + " "<a name="line.100"></a>
+<span class="sourceLineNo">101</span>                        + this.getX();<a name="line.101"></a>
+<span class="sourceLineNo">102</span>            }<a name="line.102"></a>
+<span class="sourceLineNo">103</span>        }<a name="line.103"></a>
+<span class="sourceLineNo">104</span><a name="line.104"></a>
+<span class="sourceLineNo">105</span>        Obj obj = new Obj("A beany object", 42, true);<a name="line.105"></a>
+<span class="sourceLineNo">106</span><a name="line.106"></a>
+<span class="sourceLineNo">107</span>        try {<a name="line.107"></a>
+<span class="sourceLineNo">108</span>            s = "[0.1]";<a name="line.108"></a>
+<span class="sourceLineNo">109</span>            a = new JSONArray(s);<a name="line.109"></a>
+<span class="sourceLineNo">110</span>            System.out.println(a.toString());<a name="line.110"></a>
+<span class="sourceLineNo">111</span>            System.out.println("");<a name="line.111"></a>
+<span class="sourceLineNo">112</span><a name="line.112"></a>
+<span class="sourceLineNo">113</span>            j = XML.toJSONObject(<a name="line.113"></a>
+<span class="sourceLineNo">114</span>                    "&lt;![CDATA[This is a collection of test patterns and examples for org.json.]]&gt;  Ignore the stuff past the end.  ");<a name="line.114"></a>
+<span class="sourceLineNo">115</span>            System.out.println(j.toString());<a name="line.115"></a>
+<span class="sourceLineNo">116</span>            System.out.println("");<a name="line.116"></a>
+<span class="sourceLineNo">117</span><a name="line.117"></a>
+<span class="sourceLineNo">118</span>            j = new JSONObject();<a name="line.118"></a>
+<span class="sourceLineNo">119</span>            o = null;<a name="line.119"></a>
+<span class="sourceLineNo">120</span>            j.put("booga", o);<a name="line.120"></a>
+<span class="sourceLineNo">121</span>            j.put("wooga", JSONObject.NULL);<a name="line.121"></a>
+<span class="sourceLineNo">122</span>            System.out.println(j.toString());<a name="line.122"></a>
+<span class="sourceLineNo">123</span>            System.out.println("");<a name="line.123"></a>
+<span class="sourceLineNo">124</span><a name="line.124"></a>
+<span class="sourceLineNo">125</span>            j = new JSONObject();<a name="line.125"></a>
+<span class="sourceLineNo">126</span>            j.increment("two");<a name="line.126"></a>
+<span class="sourceLineNo">127</span>            j.increment("two");<a name="line.127"></a>
+<span class="sourceLineNo">128</span>            System.out.println(j.toString());<a name="line.128"></a>
+<span class="sourceLineNo">129</span>            System.out.println("");<a name="line.129"></a>
+<span class="sourceLineNo">130</span><a name="line.130"></a>
+<span class="sourceLineNo">131</span>            s = "&lt;test&gt;&lt;blank&gt;&lt;/blank&gt;&lt;empty/&gt;&lt;/test&gt;";<a name="line.131"></a>
+<span class="sourceLineNo">132</span>            j = XML.toJSONObject(s);<a name="line.132"></a>
+<span class="sourceLineNo">133</span>            System.out.println(j.toString(2));<a name="line.133"></a>
+<span class="sourceLineNo">134</span>            System.out.println(XML.toString(j));<a name="line.134"></a>
+<span class="sourceLineNo">135</span>            System.out.println("");<a name="line.135"></a>
+<span class="sourceLineNo">136</span><a name="line.136"></a>
+<span class="sourceLineNo">137</span>            s = "{     \"list of lists\" : [         [1, 2, 3],         [4, 5, 6],     ] }";<a name="line.137"></a>
+<span class="sourceLineNo">138</span>            j = new JSONObject(s);<a name="line.138"></a>
+<span class="sourceLineNo">139</span>            System.out.println(j.toString(4));<a name="line.139"></a>
+<span class="sourceLineNo">140</span>            System.out.println(XML.toString(j));<a name="line.140"></a>
+<span class="sourceLineNo">141</span><a name="line.141"></a>
+<span class="sourceLineNo">142</span>            s = "&lt;recipe name=\"bread\" prep_time=\"5 mins\" cook_time=\"3 hours\"&gt; &lt;title&gt;Basic bread&lt;/title&gt; &lt;ingredient amount=\"8\" unit=\"dL\"&gt;Flour&lt;/ingredient&gt; &lt;ingredient amount=\"10\" unit=\"grams\"&gt;Yeast&lt;/ingredient&gt; &lt;ingredient amount=\"4\" unit=\"dL\" state=\"warm\"&gt;Water&lt;/ingredient&gt; &lt;ingredient amount=\"1\" unit=\"teaspoon\"&gt;Salt&lt;/ingredient&gt; &lt;instructions&gt; &lt;step&gt;Mix all ingredients together.&lt;/step&gt; &lt;step&gt;Knead thoroughly.&lt;/step&gt; &lt;step&gt;Cover with a cloth, and leave for one hour in warm room.&lt;/step&gt; &lt;step&gt;Knead again.&lt;/step&gt; &lt;step&gt;Place in a bread baking tin.&lt;/step&gt; &lt;step&gt;Cover with a cloth, and leave for one hour in warm room.&lt;/step&gt; &lt;step&gt;Bake in the oven at 180(degrees)C for 30 minutes.&lt;/step&gt; &lt;/instructions&gt; &lt;/recipe&gt; ";<a name="line.142"></a>
+<span class="sourceLineNo">143</span>            j = XML.toJSONObject(s);<a name="line.143"></a>
+<span class="sourceLineNo">144</span>            System.out.println(j.toString(4));<a name="line.144"></a>
+<span class="sourceLineNo">145</span>            System.out.println();<a name="line.145"></a>
+<span class="sourceLineNo">146</span><a name="line.146"></a>
+<span class="sourceLineNo">147</span>            j = JSONML.toJSONObject(s);<a name="line.147"></a>
+<span class="sourceLineNo">148</span>            System.out.println(j.toString());<a name="line.148"></a>
+<span class="sourceLineNo">149</span>            System.out.println(JSONML.toString(j));<a name="line.149"></a>
+<span class="sourceLineNo">150</span>            System.out.println();<a name="line.150"></a>
+<span class="sourceLineNo">151</span><a name="line.151"></a>
+<span class="sourceLineNo">152</span>            a = JSONML.toJSONArray(s);<a name="line.152"></a>
+<span class="sourceLineNo">153</span>            System.out.println(a.toString(4));<a name="line.153"></a>
+<span class="sourceLineNo">154</span>            System.out.println(JSONML.toString(a));<a name="line.154"></a>
+<span class="sourceLineNo">155</span>            System.out.println();<a name="line.155"></a>
+<span class="sourceLineNo">156</span><a name="line.156"></a>
+<span class="sourceLineNo">157</span>            s = "&lt;div id=\"demo\" class=\"JSONML\"&gt;&lt;p&gt;JSONML is a transformation between &lt;b&gt;JSON&lt;/b&gt; and &lt;b&gt;XML&lt;/b&gt; that preserves ordering of document features.&lt;/p&gt;&lt;p&gt;JSONML can work with JSON arrays or JSON objects.&lt;/p&gt;&lt;p&gt;Three&lt;br/&gt;little&lt;br/&gt;words&lt;/p&gt;&lt;/div&gt;";<a name="line.157"></a>
+<span class="sourceLineNo">158</span>            j = JSONML.toJSONObject(s);<a name="line.158"></a>
+<span class="sourceLineNo">159</span>            System.out.println(j.toString(4));<a name="line.159"></a>
+<span class="sourceLineNo">160</span>            System.out.println(JSONML.toString(j));<a name="line.160"></a>
+<span class="sourceLineNo">161</span>            System.out.println();<a name="line.161"></a>
+<span class="sourceLineNo">162</span><a name="line.162"></a>
+<span class="sourceLineNo">163</span>            a = JSONML.toJSONArray(s);<a name="line.163"></a>
+<span class="sourceLineNo">164</span>            System.out.println(a.toString(4));<a name="line.164"></a>
+<span class="sourceLineNo">165</span>            System.out.println(JSONML.toString(a));<a name="line.165"></a>
+<span class="sourceLineNo">166</span>            System.out.println();<a name="line.166"></a>
+<span class="sourceLineNo">167</span><a name="line.167"></a>
+<span class="sourceLineNo">168</span>            s = "&lt;person created=\"2006-11-11T19:23\" modified=\"2006-12-31T23:59\"&gt;\n &lt;firstName&gt;Robert&lt;/firstName&gt;\n &lt;lastName&gt;Smith&lt;/lastName&gt;\n &lt;address type=\"home\"&gt;\n &lt;street&gt;12345 Sixth Ave&lt;/street&gt;\n &lt;city&gt;Anytown&lt;/city&gt;\n &lt;state&gt;CA&lt;/state&gt;\n &lt;postalCode&gt;98765-4321&lt;/postalCode&gt;\n &lt;/address&gt;\n &lt;/person&gt;";<a name="line.168"></a>
+<span class="sourceLineNo">169</span>            j = XML.toJSONObject(s);<a name="line.169"></a>
+<span class="sourceLineNo">170</span>            System.out.println(j.toString(4));<a name="line.170"></a>
+<span class="sourceLineNo">171</span><a name="line.171"></a>
+<span class="sourceLineNo">172</span>            j = new JSONObject(obj);<a name="line.172"></a>
+<span class="sourceLineNo">173</span>            System.out.println(j.toString());<a name="line.173"></a>
+<span class="sourceLineNo">174</span><a name="line.174"></a>
+<span class="sourceLineNo">175</span>            s = "{ \"entity\": { \"imageURL\": \"\", \"name\": \"IXXXXXXXXXXXXX\", \"id\": 12336, \"ratingCount\": null, \"averageRating\": null } }";<a name="line.175"></a>
+<span class="sourceLineNo">176</span>            j = new JSONObject(s);<a name="line.176"></a>
+<span class="sourceLineNo">177</span>            System.out.println(j.toString(2));<a name="line.177"></a>
+<span class="sourceLineNo">178</span><a name="line.178"></a>
+<span class="sourceLineNo">179</span>            jj = new JSONStringer();<a name="line.179"></a>
+<span class="sourceLineNo">180</span>            s = jj.object().key("single").value("MARIE HAA'S").key("Johnny")<a name="line.180"></a>
+<span class="sourceLineNo">181</span>                    .value("MARIE HAA\\'S").key("foo").value("bar").key("baz")<a name="line.181"></a>
+<span class="sourceLineNo">182</span>                    .array().object().key("quux").value("Thanks, Josh!")<a name="line.182"></a>
+<span class="sourceLineNo">183</span>                    .endObject().endArray().key("obj keys")<a name="line.183"></a>
+<span class="sourceLineNo">184</span>                    .value(JSONObject.getNames(obj)).endObject().toString();<a name="line.184"></a>
+<span class="sourceLineNo">185</span>            System.out.println(s);<a name="line.185"></a>
+<span class="sourceLineNo">186</span><a name="line.186"></a>
+<span class="sourceLineNo">187</span>            System.out.println(new JSONStringer().object().key("a").array()<a name="line.187"></a>
+<span class="sourceLineNo">188</span>                    .array().array().value("b").endArray().endArray().endArray()<a name="line.188"></a>
+<span class="sourceLineNo">189</span>                    .endObject().toString());<a name="line.189"></a>
+<span class="sourceLineNo">190</span><a name="line.190"></a>
+<span class="sourceLineNo">191</span>            jj = new JSONStringer();<a name="line.191"></a>
+<span class="sourceLineNo">192</span>            jj.array();<a name="line.192"></a>
+<span class="sourceLineNo">193</span>            jj.value(1);<a name="line.193"></a>
+<span class="sourceLineNo">194</span>            jj.array();<a name="line.194"></a>
+<span class="sourceLineNo">195</span>            jj.value(null);<a name="line.195"></a>
+<span class="sourceLineNo">196</span>            jj.array();<a name="line.196"></a>
+<span class="sourceLineNo">197</span>            jj.object();<a name="line.197"></a>
+<span class="sourceLineNo">198</span>            jj.key("empty-array").array().endArray();<a name="line.198"></a>
+<span class="sourceLineNo">199</span>            jj.key("answer").value(42);<a name="line.199"></a>
+<span class="sourceLineNo">200</span>            jj.key("null").value(null);<a name="line.200"></a>
+<span class="sourceLineNo">201</span>            jj.key("false").value(false);<a name="line.201"></a>
+<span class="sourceLineNo">202</span>            jj.key("true").value(true);<a name="line.202"></a>
+<span class="sourceLineNo">203</span>            jj.key("big").value(123456789e+88);<a name="line.203"></a>
+<span class="sourceLineNo">204</span>            jj.key("small").value(123456789e-88);<a name="line.204"></a>
+<span class="sourceLineNo">205</span>            jj.key("empty-object").object().endObject();<a name="line.205"></a>
+<span class="sourceLineNo">206</span>            jj.key("long");<a name="line.206"></a>
+<span class="sourceLineNo">207</span>            jj.value(9223372036854775807L);<a name="line.207"></a>
+<span class="sourceLineNo">208</span>            jj.endObject();<a name="line.208"></a>
+<span class="sourceLineNo">209</span>            jj.value("two");<a name="line.209"></a>
+<span class="sourceLineNo">210</span>            jj.endArray();<a name="line.210"></a>
+<span class="sourceLineNo">211</span>            jj.value(true);<a name="line.211"></a>
+<span class="sourceLineNo">212</span>            jj.endArray();<a name="line.212"></a>
+<span class="sourceLineNo">213</span>            jj.value(98.6);<a name="line.213"></a>
+<span class="sourceLineNo">214</span>            jj.value(-100.0);<a name="line.214"></a>
+<span class="sourceLineNo">215</span>            jj.object();<a name="line.215"></a>
+<span class="sourceLineNo">216</span>            jj.endObject();<a name="line.216"></a>
+<span class="sourceLineNo">217</span>            jj.object();<a name="line.217"></a>
+<span class="sourceLineNo">218</span>            jj.key("one");<a name="line.218"></a>
+<span class="sourceLineNo">219</span>            jj.value(1.00);<a name="line.219"></a>
+<span class="sourceLineNo">220</span>            jj.endObject();<a name="line.220"></a>
+<span class="sourceLineNo">221</span>            jj.value(obj);<a name="line.221"></a>
+<span class="sourceLineNo">222</span>            jj.endArray();<a name="line.222"></a>
+<span class="sourceLineNo">223</span>            System.out.println(jj.toString());<a name="line.223"></a>
+<span class="sourceLineNo">224</span><a name="line.224"></a>
+<span class="sourceLineNo">225</span>            System.out.println(new JSONArray(jj.toString()).toString(4));<a name="line.225"></a>
+<span class="sourceLineNo">226</span><a name="line.226"></a>
+<span class="sourceLineNo">227</span>            int ar[] = { 1, 2, 3 };<a name="line.227"></a>
+<span class="sourceLineNo">228</span>            JSONArray ja = new JSONArray(ar);<a name="line.228"></a>
+<span class="sourceLineNo">229</span>            System.out.println(ja.toString());<a name="line.229"></a>
+<span class="sourceLineNo">230</span><a name="line.230"></a>
+<span class="sourceLineNo">231</span>            String sa[] = { "aString", "aNumber", "aBoolean" };<a name="line.231"></a>
+<span class="sourceLineNo">232</span>            j = new JSONObject(obj, sa);<a name="line.232"></a>
+<span class="sourceLineNo">233</span>            j.put("Testing JSONString interface", obj);<a name="line.233"></a>
+<span class="sourceLineNo">234</span>            System.out.println(j.toString(4));<a name="line.234"></a>
+<span class="sourceLineNo">235</span><a name="line.235"></a>
+<span class="sourceLineNo">236</span>            j = new JSONObject(<a name="line.236"></a>
+<span class="sourceLineNo">237</span>                    "{slashes: '///', closetag: '&lt;/script&gt;', backslash:'\\\\', ei: {quotes: '\"\\''},eo: {a: '\"quoted\"', b:\"don't\"}, quotes: [\"'\", '\"']}");<a name="line.237"></a>
+<span class="sourceLineNo">238</span>            System.out.println(j.toString(2));<a name="line.238"></a>
+<span class="sourceLineNo">239</span>            System.out.println(XML.toString(j));<a name="line.239"></a>
+<span class="sourceLineNo">240</span>            System.out.println("");<a name="line.240"></a>
+<span class="sourceLineNo">241</span><a name="line.241"></a>
+<span class="sourceLineNo">242</span>            j = new JSONObject(<a name="line.242"></a>
+<span class="sourceLineNo">243</span>                    "{foo: [true, false,9876543210,    0.0, 1.00000001,  1.000000000001, 1.00000000000000001,"<a name="line.243"></a>
+<span class="sourceLineNo">244</span>                            + " .00000000000000001, 2.00, 0.1, 2e100, -32,[],{}, \"string\"], "<a name="line.244"></a>
+<span class="sourceLineNo">245</span>                            + "  to   : null, op : 'Good',"<a name="line.245"></a>
+<span class="sourceLineNo">246</span>                            + "ten:10} postfix comment");<a name="line.246"></a>
+<span class="sourceLineNo">247</span>            j.put("String", "98.6");<a name="line.247"></a>
+<span class="sourceLineNo">248</span>            j.put("JSONObject", new JSONObject());<a name="line.248"></a>
+<span class="sourceLineNo">249</span>            j.put("JSONArray", new JSONArray());<a name="line.249"></a>
+<span class="sourceLineNo">250</span>            j.put("int", 57);<a name="line.250"></a>
+<span class="sourceLineNo">251</span>            j.put("double", 123456789012345678901234567890.);<a name="line.251"></a>
+<span class="sourceLineNo">252</span>            j.put("true", true);<a name="line.252"></a>
+<span class="sourceLineNo">253</span>            j.put("false", false);<a name="line.253"></a>
+<span class="sourceLineNo">254</span>            j.put("null", JSONObject.NULL);<a name="line.254"></a>
+<span class="sourceLineNo">255</span>            j.put("bool", "true");<a name="line.255"></a>
+<span class="sourceLineNo">256</span>            j.put("zero", -0.0);<a name="line.256"></a>
+<span class="sourceLineNo">257</span>            j.put("\\u2028", "\u2028");<a name="line.257"></a>
+<span class="sourceLineNo">258</span>            j.put("\\u2029", "\u2029");<a name="line.258"></a>
+<span class="sourceLineNo">259</span>            a = j.getJSONArray("foo");<a name="line.259"></a>
+<span class="sourceLineNo">260</span>            a.put(666);<a name="line.260"></a>
+<span class="sourceLineNo">261</span>            a.put(2001.99);<a name="line.261"></a>
+<span class="sourceLineNo">262</span>            a.put("so \"fine\".");<a name="line.262"></a>
+<span class="sourceLineNo">263</span>            a.put("so &lt;fine&gt;.");<a name="line.263"></a>
+<span class="sourceLineNo">264</span>            a.put(true);<a name="line.264"></a>
+<span class="sourceLineNo">265</span>            a.put(false);<a name="line.265"></a>
+<span class="sourceLineNo">266</span>            a.put(new JSONArray());<a name="line.266"></a>
+<span class="sourceLineNo">267</span>            a.put(new JSONObject());<a name="line.267"></a>
+<span class="sourceLineNo">268</span>            j.put("keys", JSONObject.getNames(j));<a name="line.268"></a>
+<span class="sourceLineNo">269</span>            System.out.println(j.toString(4));<a name="line.269"></a>
+<span class="sourceLineNo">270</span>            System.out.println(XML.toString(j));<a name="line.270"></a>
+<span class="sourceLineNo">271</span><a name="line.271"></a>
+<span class="sourceLineNo">272</span>            System.out.println("String: " + j.getDouble("String"));<a name="line.272"></a>
+<span class="sourceLineNo">273</span>            System.out.println("  bool: " + j.getBoolean("bool"));<a name="line.273"></a>
+<span class="sourceLineNo">274</span>            System.out.println("    to: " + j.getString("to"));<a name="line.274"></a>
+<span class="sourceLineNo">275</span>            System.out.println("  true: " + j.getString("true"));<a name="line.275"></a>
+<span class="sourceLineNo">276</span>            System.out.println("   foo: " + j.getJSONArray("foo"));<a name="line.276"></a>
+<span class="sourceLineNo">277</span>            System.out.println("    op: " + j.getString("op"));<a name="line.277"></a>
+<span class="sourceLineNo">278</span>            System.out.println("   ten: " + j.getInt("ten"));<a name="line.278"></a>
+<span class="sourceLineNo">279</span>            System.out.println("  oops: " + j.optBoolean("oops"));<a name="line.279"></a>
+<span class="sourceLineNo">280</span><a name="line.280"></a>
+<span class="sourceLineNo">281</span>            s = "&lt;xml one = 1 two=' \"2\" '&gt;&lt;five&gt;&lt;/five&gt;First \u0009&amp;lt;content&amp;gt;&lt;five&gt;&lt;/five&gt; This is \"content\". &lt;three&gt;  3  &lt;/three&gt;JSON does not preserve the sequencing of elements and contents.&lt;three&gt;  III  &lt;/three&gt;  &lt;three&gt;  T H R E E&lt;/three&gt;&lt;four/&gt;Content text is an implied structure in XML. &lt;six content=\"6\"/&gt;JSON does not have implied structure:&lt;seven&gt;7&lt;/seven&gt;everything is explicit.&lt;![CDATA[CDATA blocks&lt;are&gt;&lt;supported&gt;!]]&gt;&lt;/xml&gt;";<a name="line.281"></a>
+<span class="sourceLineNo">282</span>            j = XML.toJSONObject(s);<a name="line.282"></a>
+<span class="sourceLineNo">283</span>            System.out.println(j.toString(2));<a name="line.283"></a>
+<span class="sourceLineNo">284</span>            System.out.println(XML.toString(j));<a name="line.284"></a>
+<span class="sourceLineNo">285</span>            System.out.println("");<a name="line.285"></a>
+<span class="sourceLineNo">286</span><a name="line.286"></a>
+<span class="sourceLineNo">287</span>            ja = JSONML.toJSONArray(s);<a name="line.287"></a>
+<span class="sourceLineNo">288</span>            System.out.println(ja.toString(4));<a name="line.288"></a>
+<span class="sourceLineNo">289</span>            System.out.println(JSONML.toString(ja));<a name="line.289"></a>
+<span class="sourceLineNo">290</span>            System.out.println("");<a name="line.290"></a>
+<span class="sourceLineNo">291</span><a name="line.291"></a>
+<span class="sourceLineNo">292</span>            s = "&lt;xml do='0'&gt;uno&lt;a re='1' mi='2'&gt;dos&lt;b fa='3'/&gt;tres&lt;c&gt;true&lt;/c&gt;quatro&lt;/a&gt;cinqo&lt;d&gt;seis&lt;e/&gt;&lt;/d&gt;&lt;/xml&gt;";<a name="line.292"></a>
+<span class="sourceLineNo">293</span>            ja = JSONML.toJSONArray(s);<a name="line.293"></a>
+<span class="sourceLineNo">294</span>            System.out.println(ja.toString(4));<a name="line.294"></a>
+<span class="sourceLineNo">295</span>            System.out.println(JSONML.toString(ja));<a name="line.295"></a>
+<span class="sourceLineNo">296</span>            System.out.println("");<a name="line.296"></a>
+<span class="sourceLineNo">297</span><a name="line.297"></a>
+<span class="sourceLineNo">298</span>            s = "&lt;mapping&gt;&lt;empty/&gt;   &lt;class name = \"Customer\"&gt;      &lt;field name = \"ID\" type = \"string\"&gt;         &lt;bind-xml name=\"ID\" node=\"attribute\"/&gt;      &lt;/field&gt;      &lt;field name = \"FirstName\" type = \"FirstName\"/&gt;      &lt;field name = \"MI\" type = \"MI\"/&gt;      &lt;field name = \"LastName\" type = \"LastName\"/&gt;   &lt;/class&gt;   &lt;class name = \"FirstName\"&gt;      &lt;field name = \"text\"&gt;         &lt;bind-xml name = \"text\" node = \"text\"/&gt;      &lt;/field&gt;   &lt;/class&gt;   &lt;class name = \"MI\"&gt;      &lt;field name = \"text\"&gt;         &lt;bind-xml name = \"text\" node = \"text\"/&gt;      &lt;/field&gt;   &lt;/class&gt;   &lt;class name = \"LastName\"&gt;      &lt;field name = \"text\"&gt;         &lt;bind-xml name = \"text\" node = \"text\"/&gt;      &lt;/field&gt;   &lt;/class&gt;&lt;/mapping&gt;";<a name="line.298"></a>
+<span class="sourceLineNo">299</span>            j = XML.toJSONObject(s);<a name="line.299"></a>
+<span class="sourceLineNo">300</span><a name="line.300"></a>
+<span class="sourceLineNo">301</span>            System.out.println(j.toString(2));<a name="line.301"></a>
+<span class="sourceLineNo">302</span>            System.out.println(XML.toString(j));<a name="line.302"></a>
+<span class="sourceLineNo">303</span>            System.out.println("");<a name="line.303"></a>
+<span class="sourceLineNo">304</span>            ja = JSONML.toJSONArray(s);<a name="line.304"></a>
+<span class="sourceLineNo">305</span>            System.out.println(ja.toString(4));<a name="line.305"></a>
+<span class="sourceLineNo">306</span>            System.out.println(JSONML.toString(ja));<a name="line.306"></a>
+<span class="sourceLineNo">307</span>            System.out.println("");<a name="line.307"></a>
+<span class="sourceLineNo">308</span><a name="line.308"></a>
+<span class="sourceLineNo">309</span>            j = XML.toJSONObject(<a name="line.309"></a>
+<span class="sourceLineNo">310</span>                    "&lt;?xml version=\"1.0\" ?&gt;&lt;Book Author=\"Anonymous\"&gt;&lt;Title&gt;Sample Book&lt;/Title&gt;&lt;Chapter id=\"1\"&gt;This is chapter 1. It is not very long or interesting.&lt;/Chapter&gt;&lt;Chapter id=\"2\"&gt;This is chapter 2. Although it is longer than chapter 1, it is not any more interesting.&lt;/Chapter&gt;&lt;/Book&gt;");<a name="line.310"></a>
+<span class="sourceLineNo">311</span>            System.out.println(j.toString(2));<a name="line.311"></a>
+<span class="sourceLineNo">312</span>            System.out.println(XML.toString(j));<a name="line.312"></a>
+<span class="sourceLineNo">313</span>            System.out.println("");<a name="line.313"></a>
+<span class="sourceLineNo">314</span><a name="line.314"></a>
+<span class="sourceLineNo">315</span>            j = XML.toJSONObject(<a name="line.315"></a>
+<span class="sourceLineNo">316</span>                    "&lt;!DOCTYPE bCard 'http://www.cs.caltech.edu/~adam/schemas/bCard'&gt;&lt;bCard&gt;&lt;?xml default bCard        firstname = ''        lastname  = '' company   = '' email = '' homepage  = ''?&gt;&lt;bCard        firstname = 'Rohit'        lastname  = 'Khare'        company   = 'MCI'        email     = 'khare@mci.net'        homepage  = 'http://pest.w3.org/'/&gt;&lt;bCard        firstname = 'Adam'        lastname  = 'Rifkin'        company   = 'Caltech Infospheres Project'        email     = 'adam@cs.caltech.edu'        homepage  = 'http://www.cs.caltech.edu/~adam/'/&gt;&lt;/bCard&gt;");<a name="line.316"></a>
+<span class="sourceLineNo">317</span>            System.out.println(j.toString(2));<a name="line.317"></a>
+<span class="sourceLineNo">318</span>            System.out.println(XML.toString(j));<a name="line.318"></a>
+<span class="sourceLineNo">319</span>            System.out.println("");<a name="line.319"></a>
+<span class="sourceLineNo">320</span><a name="line.320"></a>
+<span class="sourceLineNo">321</span>            j = XML.toJSONObject(<a name="line.321"></a>
+<span class="sourceLineNo">322</span>                    "&lt;?xml version=\"1.0\"?&gt;&lt;customer&gt;    &lt;firstName&gt;        &lt;text&gt;Fred&lt;/text&gt;    &lt;/firstName&gt;    &lt;ID&gt;fbs0001&lt;/ID&gt;    &lt;lastName&gt; &lt;text&gt;Scerbo&lt;/text&gt;    &lt;/lastName&gt;    &lt;MI&gt;        &lt;text&gt;B&lt;/text&gt;    &lt;/MI&gt;&lt;/customer&gt;");<a name="line.322"></a>
+<span class="sourceLineNo">323</span>            System.out.println(j.toString(2));<a name="line.323"></a>
+<span class="sourceLineNo">324</span>            System.out.println(XML.toString(j));<a name="line.324"></a>
+<span class="sourceLineNo">325</span>            System.out.println("");<a name="line.325"></a>
+<span class="sourceLineNo">326</span><a name="line.326"></a>
+<span class="sourceLineNo">327</span>            j = XML.toJSONObject(<a name="line.327"></a>
+<span class="sourceLineNo">328</span>                    "&lt;!ENTITY tp-address PUBLIC '-//ABC University::Special Collections Library//TEXT (titlepage: name and address)//EN' 'tpspcoll.sgm'&gt;&lt;list type='simple'&gt;&lt;head&gt;Repository Address &lt;/head&gt;&lt;item&gt;Special Collections Library&lt;/item&gt;&lt;item&gt;ABC University&lt;/item&gt;&lt;item&gt;Main Library, 40 Circle Drive&lt;/item&gt;&lt;item&gt;Ourtown, Pennsylvania&lt;/item&gt;&lt;item&gt;17654 USA&lt;/item&gt;&lt;/list&gt;");<a name="line.328"></a>
+<span class="sourceLineNo">329</span>            System.out.println(j.toString());<a name="line.329"></a>
+<span class="sourceLineNo">330</span>            System.out.println(XML.toString(j));<a name="line.330"></a>
+<span class="sourceLineNo">331</span>            System.out.println("");<a name="line.331"></a>
+<span class="sourceLineNo">332</span><a name="line.332"></a>
+<span class="sourceLineNo">333</span>            j = XML.toJSONObject(<a name="line.333"></a>
+<span class="sourceLineNo">334</span>                    "&lt;test intertag status=ok&gt;&lt;empty/&gt;deluxe&lt;blip sweet=true&gt;&amp;amp;&amp;quot;toot&amp;quot;&amp;toot;&amp;#x41;&lt;/blip&gt;&lt;x&gt;eks&lt;/x&gt;&lt;w&gt;bonus&lt;/w&gt;&lt;w&gt;bonus2&lt;/w&gt;&lt;/test&gt;");<a name="line.334"></a>
+<span class="sourceLineNo">335</span>            System.out.println(j.toString(2));<a name="line.335"></a>
+<span class="sourceLineNo">336</span>            System.out.println(XML.toString(j));<a name="line.336"></a>
+<span class="sourceLineNo">337</span>            System.out.println("");<a name="line.337"></a>
+<span class="sourceLineNo">338</span><a name="line.338"></a>
+<span class="sourceLineNo">339</span>            j = HTTP.toJSONObject(<a name="line.339"></a>
+<span class="sourceLineNo">340</span>                    "GET / HTTP/1.0\nAccept: image/gif, image/x-xbitmap, image/jpeg, image/pjpeg, application/vnd.ms-powerpoint, application/vnd.ms-excel, application/msword, */*\nAccept-Language: en-us\nUser-Agent: Mozilla/4.0 (compatible; MSIE 5.5; Windows 98; Win 9x 4.90; T312461; Q312461)\nHost: www.nokko.com\nConnection: keep-alive\nAccept-encoding: gzip, deflate\n");<a name="line.340"></a>
+<span class="sourceLineNo">341</span>            System.out.println(j.toString(2));<a name="line.341"></a>
+<span class="sourceLineNo">342</span>            System.out.println(HTTP.toString(j));<a name="line.342"></a>
+<span class="sourceLineNo">343</span>            System.out.println("");<a name="line.343"></a>
+<span class="sourceLineNo">344</span><a name="line.344"></a>
+<span class="sourceLineNo">345</span>            j = HTTP.toJSONObject(<a name="line.345"></a>
+<span class="sourceLineNo">346</span>                    "HTTP/1.1 200 Oki Doki\nDate: Sun, 26 May 2002 17:38:52 GMT\nServer: Apache/1.3.23 (Unix) mod_perl/1.26\nKeep-Alive: timeout=15, max=100\nConnection: Keep-Alive\nTransfer-Encoding: chunked\nContent-Type: text/html\n");<a name="line.346"></a>
+<span class="sourceLineNo">347</span>            System.out.println(j.toString(2));<a name="line.347"></a>
+<span class="sourceLineNo">348</span>            System.out.println(HTTP.toString(j));<a name="line.348"></a>
+<span class="sourceLineNo">349</span>            System.out.println("");<a name="line.349"></a>
+<span class="sourceLineNo">350</span><a name="line.350"></a>
+<span class="sourceLineNo">351</span>            j = new JSONObject(<a name="line.351"></a>
+<span class="sourceLineNo">352</span>                    "{nix: null, nux: false, null: 'null', 'Request-URI': '/', Method: 'GET', 'HTTP-Version': 'HTTP/1.0'}");<a name="line.352"></a>
+<span class="sourceLineNo">353</span>            System.out.println(j.toString(2));<a name="line.353"></a>
+<span class="sourceLineNo">354</span>            System.out.println("isNull: " + j.isNull("nix"));<a name="line.354"></a>
+<span class="sourceLineNo">355</span>            System.out.println("   has: " + j.has("nix"));<a name="line.355"></a>
+<span class="sourceLineNo">356</span>            System.out.println(XML.toString(j));<a name="line.356"></a>
+<span class="sourceLineNo">357</span>            System.out.println(HTTP.toString(j));<a name="line.357"></a>
+<span class="sourceLineNo">358</span>            System.out.println("");<a name="line.358"></a>
+<span class="sourceLineNo">359</span><a name="line.359"></a>
+<span class="sourceLineNo">360</span>            j = XML.toJSONObject("&lt;?xml version='1.0' encoding='UTF-8'?&gt;"<a name="line.360"></a>
+<span class="sourceLineNo">361</span>                    + "\n\n" + "&lt;SOAP-ENV:Envelope"<a name="line.361"></a>
+<span class="sourceLineNo">362</span>                    + " xmlns:SOAP-ENV=\"http://schemas.xmlsoap.org/soap/envelope/\""<a name="line.362"></a>
+<span class="sourceLineNo">363</span>                    + " xmlns:xsi=\"http://www.w3.org/1999/XMLSchema-instance\""<a name="line.363"></a>
+<span class="sourceLineNo">364</span>                    + " xmlns:xsd=\"http://www.w3.org/1999/XMLSchema\"&gt;"<a name="line.364"></a>
+<span class="sourceLineNo">365</span>                    + "&lt;SOAP-ENV:Body&gt;&lt;ns1:doGoogleSearch"<a name="line.365"></a>
+<span class="sourceLineNo">366</span>                    + " xmlns:ns1=\"urn:GoogleSearch\""<a name="line.366"></a>
+<span class="sourceLineNo">367</span>                    + " SOAP-ENV:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\"&gt;"<a name="line.367"></a>
+<span class="sourceLineNo">368</span>                    + "&lt;key xsi:type=\"xsd:string\"&gt;GOOGLEKEY&lt;/key&gt; &lt;q"<a name="line.368"></a>
+<span class="sourceLineNo">369</span>                    + " xsi:type=\"xsd:string\"&gt;'+search+'&lt;/q&gt; &lt;start"<a name="line.369"></a>
+<span class="sourceLineNo">370</span>                    + " xsi:type=\"xsd:int\"&gt;0&lt;/start&gt; &lt;maxResults"<a name="line.370"></a>
+<span class="sourceLineNo">371</span>                    + " xsi:type=\"xsd:int\"&gt;10&lt;/maxResults&gt; &lt;filter"<a name="line.371"></a>
+<span class="sourceLineNo">372</span>                    + " xsi:type=\"xsd:boolean\"&gt;true&lt;/filter&gt; &lt;restrict"<a name="line.372"></a>
+<span class="sourceLineNo">373</span>                    + " xsi:type=\"xsd:string\"&gt;&lt;/restrict&gt; &lt;safeSearch"<a name="line.373"></a>
+<span class="sourceLineNo">374</span>                    + " xsi:type=\"xsd:boolean\"&gt;false&lt;/safeSearch&gt; &lt;lr"<a name="line.374"></a>
+<span class="sourceLineNo">375</span>                    + " xsi:type=\"xsd:string\"&gt;&lt;/lr&gt; &lt;ie"<a name="line.375"></a>
+<span class="sourceLineNo">376</span>                    + " xsi:type=\"xsd:string\"&gt;latin1&lt;/ie&gt; &lt;oe"<a name="line.376"></a>
+<span class="sourceLineNo">377</span>                    + " xsi:type=\"xsd:string\"&gt;latin1&lt;/oe&gt;"<a name="line.377"></a>
+<span class="sourceLineNo">378</span>                    + "&lt;/ns1:doGoogleSearch&gt;"<a name="line.378"></a>
+<span class="sourceLineNo">379</span>                    + "&lt;/SOAP-ENV:Body&gt;&lt;/SOAP-ENV:Envelope&gt;");<a name="line.379"></a>
+<span class="sourceLineNo">380</span>            System.out.println(j.toString(2));<a name="line.380"></a>
+<span class="sourceLineNo">381</span>            System.out.println(XML.toString(j));<a name="line.381"></a>
+<span class="sourceLineNo">382</span>            System.out.println("");<a name="line.382"></a>
+<span class="sourceLineNo">383</span><a name="line.383"></a>
+<span class="sourceLineNo">384</span>            j = new JSONObject(<a name="line.384"></a>
+<span class="sourceLineNo">385</span>                    "{Envelope: {Body: {\"ns1:doGoogleSearch\": {oe: \"latin1\", filter: true, q: \"'+search+'\", key: \"GOOGLEKEY\", maxResults: 10, \"SOAP-ENV:encodingStyle\": \"http://schemas.xmlsoap.org/soap/encoding/\", start: 0, ie: \"latin1\", safeSearch:false, \"xmlns:ns1\": \"urn:GoogleSearch\"}}}}");<a name="line.385"></a>
+<span class="sourceLineNo">386</span>            System.out.println(j.toString(2));<a name="line.386"></a>
+<span class="sourceLineNo">387</span>            System.out.println(XML.toString(j));<a name="line.387"></a>
+<span class="sourceLineNo">388</span>            System.out.println("");<a name="line.388"></a>
+<span class="sourceLineNo">389</span><a name="line.389"></a>
+<span class="sourceLineNo">390</span>            j = CookieList.toJSONObject("  f%oo = b+l=ah  ; o;n%40e = t.wo ");<a name="line.390"></a>
+<span class="sourceLineNo">391</span>            System.out.println(j.toString(2));<a name="line.391"></a>
+<span class="sourceLineNo">392</span>            System.out.println(CookieList.toString(j));<a name="line.392"></a>
+<span class="sourceLineNo">393</span>            System.out.println("");<a name="line.393"></a>
+<span class="sourceLineNo">394</span><a name="line.394"></a>
+<span class="sourceLineNo">395</span>            j = Cookie.toJSONObject(<a name="line.395"></a>
+<span class="sourceLineNo">396</span>                    "f%oo=blah; secure ;expires = April 24, 2002");<a name="line.396"></a>
+<span class="sourceLineNo">397</span>            System.out.println(j.toString(2));<a name="line.397"></a>
+<span class="sourceLineNo">398</span>            System.out.println(Cookie.toString(j));<a name="line.398"></a>
+<span class="sourceLineNo">399</span>            System.out.println("");<a name="line.399"></a>
+<span class="sourceLineNo">400</span><a name="line.400"></a>
+<span class="sourceLineNo">401</span>            j = new JSONObject(<a name="line.401"></a>
+<span class="sourceLineNo">402</span>                    "{script: 'It is not allowed in HTML to send a close script tag in a string&lt;script&gt;because it confuses browsers&lt;/script&gt;so we insert a backslash before the /'}");<a name="line.402"></a>
+<span class="sourceLineNo">403</span>            System.out.println(j.toString());<a name="line.403"></a>
+<span class="sourceLineNo">404</span>            System.out.println("");<a name="line.404"></a>
+<span class="sourceLineNo">405</span><a name="line.405"></a>
+<span class="sourceLineNo">406</span>            JSONTokener jt = new JSONTokener(<a name="line.406"></a>
+<span class="sourceLineNo">407</span>                    "{op:'test', to:'session', pre:1}{op:'test', to:'session', pre:2}");<a name="line.407"></a>
+<span class="sourceLineNo">408</span>            j = new JSONObject(jt);<a name="line.408"></a>
+<span class="sourceLineNo">409</span>            System.out.println(j.toString());<a name="line.409"></a>
+<span class="sourceLineNo">410</span>            System.out.println("pre: " + j.optInt("pre"));<a name="line.410"></a>
+<span class="sourceLineNo">411</span>            int i = jt.skipTo('{');<a name="line.411"></a>
+<span class="sourceLineNo">412</span>            System.out.println(i);<a name="line.412"></a>
+<span class="sourceLineNo">413</span>            j = new JSONObject(jt);<a name="line.413"></a>
+<span class="sourceLineNo">414</span>            System.out.println(j.toString());<a name="line.414"></a>
+<span class="sourceLineNo">415</span>            System.out.println("");<a name="line.415"></a>
+<span class="sourceLineNo">416</span><a name="line.416"></a>
+<span class="sourceLineNo">417</span>            a = CDL.toJSONArray(<a name="line.417"></a>
+<span class="sourceLineNo">418</span>                    "Comma delimited list test, '\"Strip\"Quotes', 'quote, comma', No quotes, 'Single Quotes', \"Double Quotes\"\n1,'2',\"3\"\n,'It is \"good,\"', \"It works.\"\n\n");<a name="line.418"></a>
+<span class="sourceLineNo">419</span><a name="line.419"></a>
+<span class="sourceLineNo">420</span>            s = CDL.toString(a);<a name="line.420"></a>
+<span class="sourceLineNo">421</span>            System.out.println(s);<a name="line.421"></a>
+<span class="sourceLineNo">422</span>            System.out.println("");<a name="line.422"></a>
+<span class="sourceLineNo">423</span>            System.out.println(a.toString(4));<a name="line.423"></a>
+<span class="sourceLineNo">424</span>            System.out.println("");<a name="line.424"></a>
+<span class="sourceLineNo">425</span>            a = CDL.toJSONArray(s);<a name="line.425"></a>
+<span class="sourceLineNo">426</span>            System.out.println(a.toString(4));<a name="line.426"></a>
+<span class="sourceLineNo">427</span>            System.out.println("");<a name="line.427"></a>
+<span class="sourceLineNo">428</span><a name="line.428"></a>
+<span class="sourceLineNo">429</span>            a = new JSONArray(<a name="line.429"></a>
+<span class="sourceLineNo">430</span>                    " [\"&lt;escape&gt;\", next is an implied null , , ok,] ");<a name="line.430"></a>
+<span class="sourceLineNo">431</span>            System.out.println(a.toString());<a name="line.431"></a>
+<span class="sourceLineNo">432</span>            System.out.println("");<a name="line.432"></a>
+<span class="sourceLineNo">433</span>            System.out.println(XML.toString(a));<a name="line.433"></a>
+<span class="sourceLineNo">434</span>            System.out.println("");<a name="line.434"></a>
+<span class="sourceLineNo">435</span><a name="line.435"></a>
+<span class="sourceLineNo">436</span>            j = new JSONObject(<a name="line.436"></a>
+<span class="sourceLineNo">437</span>                    "{ fun =&gt; with non-standard forms ; forgiving =&gt; This package can be used to parse formats that are similar to but not stricting conforming to JSON; why=To make it easier to migrate existing data to JSON,one = [[1.00]]; uno=[[{1=&gt;1}]];'+':+6e66 ;pluses=+++;empty = '' , 'double':0.666,true: TRUE, false: FALSE, null=NULL;[true] = [[!,@;*]]; string=&gt;  o. k. ; \r oct=0666; hex=0x666; dec=666; o=0999; noh=0x0x}");<a name="line.437"></a>
+<span class="sourceLineNo">438</span>            System.out.println(j.toString(4));<a name="line.438"></a>
+<span class="sourceLineNo">439</span>            System.out.println("");<a name="line.439"></a>
+<span class="sourceLineNo">440</span>            if (j.getBoolean("true") &amp;&amp; !j.getBoolean("false")) {<a name="line.440"></a>
+<span class="sourceLineNo">441</span>                System.out.println("It's all good");<a name="line.441"></a>
+<span class="sourceLineNo">442</span>            }<a name="line.442"></a>
+<span class="sourceLineNo">443</span><a name="line.443"></a>
+<span class="sourceLineNo">444</span>            System.out.println("");<a name="line.444"></a>
+<span class="sourceLineNo">445</span>            j = new JSONObject(j,<a name="line.445"></a>
+<span class="sourceLineNo">446</span>                    new String[] { "dec", "oct", "hex", "missing" });<a name="line.446"></a>
+<span class="sourceLineNo">447</span>            System.out.println(j.toString(4));<a name="line.447"></a>
+<span class="sourceLineNo">448</span><a name="line.448"></a>
+<span class="sourceLineNo">449</span>            System.out.println("");<a name="line.449"></a>
+<span class="sourceLineNo">450</span>            System.out.println(<a name="line.450"></a>
+<span class="sourceLineNo">451</span>                    new JSONStringer().array().value(a).value(j).endArray());<a name="line.451"></a>
+<span class="sourceLineNo">452</span><a name="line.452"></a>
+<span class="sourceLineNo">453</span>            j = new JSONObject(<a name="line.453"></a>
+<span class="sourceLineNo">454</span>                    "{string: \"98.6\", long: 2147483648, int: 2147483647, longer: 9223372036854775807, double: 9223372036854775808}");<a name="line.454"></a>
+<span class="sourceLineNo">455</span>            System.out.println(j.toString(4));<a name="line.455"></a>
+<span class="sourceLineNo">456</span><a name="line.456"></a>
+<span class="sourceLineNo">457</span>            System.out.println("\ngetInt");<a name="line.457"></a>
+<span class="sourceLineNo">458</span>            System.out.println("int    " + j.getInt("int"));<a name="line.458"></a>
+<span class="sourceLineNo">459</span>            System.out.println("long   " + j.getInt("long"));<a name="line.459"></a>
+<span class="sourceLineNo">460</span>            System.out.println("longer " + j.getInt("longer"));<a name="line.460"></a>
+<span class="sourceLineNo">461</span>            //System.out.println("double " + j.getInt("double"));<a name="line.461"></a>
+<span class="sourceLineNo">462</span>            //System.out.println("string " + j.getInt("string"));<a name="line.462"></a>
+<span class="sourceLineNo">463</span><a name="line.463"></a>
+<span class="sourceLineNo">464</span>            System.out.println("\ngetLong");<a name="line.464"></a>
+<span class="sourceLineNo">465</span>            System.out.println("int    " + j.getLong("int"));<a name="line.465"></a>
+<span class="sourceLineNo">466</span>            System.out.println("long   " + j.getLong("long"));<a name="line.466"></a>
+<span class="sourceLineNo">467</span>            System.out.println("longer " + j.getLong("longer"));<a name="line.467"></a>
+<span class="sourceLineNo">468</span>            //System.out.println("double " + j.getLong("double"));<a name="line.468"></a>
+<span class="sourceLineNo">469</span>            //System.out.println("string " + j.getLong("string"));<a name="line.469"></a>
+<span class="sourceLineNo">470</span><a name="line.470"></a>
+<span class="sourceLineNo">471</span>            System.out.println("\ngetDouble");<a name="line.471"></a>
+<span class="sourceLineNo">472</span>            System.out.println("int    " + j.getDouble("int"));<a name="line.472"></a>
+<span class="sourceLineNo">473</span>            System.out.println("long   " + j.getDouble("long"));<a name="line.473"></a>
+<span class="sourceLineNo">474</span>            System.out.println("longer " + j.getDouble("longer"));<a name="line.474"></a>
+<span class="sourceLineNo">475</span>            System.out.println("double " + j.getDouble("double"));<a name="line.475"></a>
+<span class="sourceLineNo">476</span>            System.out.println("string " + j.getDouble("string"));<a name="line.476"></a>
+<span class="sourceLineNo">477</span><a name="line.477"></a>
+<span class="sourceLineNo">478</span>            j.put("good sized", 9223372036854775807L);<a name="line.478"></a>
+<span class="sourceLineNo">479</span>            System.out.println(j.toString(4));<a name="line.479"></a>
+<span class="sourceLineNo">480</span><a name="line.480"></a>
+<span class="sourceLineNo">481</span>            a = new JSONArray(<a name="line.481"></a>
+<span class="sourceLineNo">482</span>                    "[2147483647, 2147483648, 9223372036854775807, 9223372036854775808]");<a name="line.482"></a>
+<span class="sourceLineNo">483</span>            System.out.println(a.toString(4));<a name="line.483"></a>
+<span class="sourceLineNo">484</span><a name="line.484"></a>
+<span class="sourceLineNo">485</span>            System.out.println("\nKeys: ");<a name="line.485"></a>
+<span class="sourceLineNo">486</span>            it = j.keys();<a name="line.486"></a>
+<span class="sourceLineNo">487</span>            while (it.hasNext()) {<a name="line.487"></a>
+<span class="sourceLineNo">488</span>                s = (String) it.next();<a name="line.488"></a>
+<span class="sourceLineNo">489</span>                System.out.println(s + ": " + j.getString(s));<a name="line.489"></a>
+<span class="sourceLineNo">490</span>            }<a name="line.490"></a>
+<span class="sourceLineNo">491</span><a name="line.491"></a>
+<span class="sourceLineNo">492</span>            System.out.println("\naccumulate: ");<a name="line.492"></a>
+<span class="sourceLineNo">493</span>            j = new JSONObject();<a name="line.493"></a>
+<span class="sourceLineNo">494</span>            j.accumulate("stooge", "Curly");<a name="line.494"></a>
+<span class="sourceLineNo">495</span>            j.accumulate("stooge", "Larry");<a name="line.495"></a>
+<span class="sourceLineNo">496</span>            j.accumulate("stooge", "Moe");<a name="line.496"></a>
+<span class="sourceLineNo">497</span>            a = j.getJSONArray("stooge");<a name="line.497"></a>
+<span class="sourceLineNo">498</span>            a.put(5, "Shemp");<a name="line.498"></a>
+<span class="sourceLineNo">499</span>            System.out.println(j.toString(4));<a name="line.499"></a>
+<span class="sourceLineNo">500</span><a name="line.500"></a>
+<span class="sourceLineNo">501</span>            System.out.println("\nwrite:");<a name="line.501"></a>
+<span class="sourceLineNo">502</span>            System.out.println(j.write(new StringWriter()));<a name="line.502"></a>
+<span class="sourceLineNo">503</span><a name="line.503"></a>
+<span class="sourceLineNo">504</span>            s = "&lt;xml empty&gt;&lt;a&gt;&lt;/a&gt;&lt;a&gt;1&lt;/a&gt;&lt;a&gt;22&lt;/a&gt;&lt;a&gt;333&lt;/a&gt;&lt;/xml&gt;";<a name="line.504"></a>
+<span class="sourceLineNo">505</span>            j = XML.toJSONObject(s);<a name="line.505"></a>
+<span class="sourceLineNo">506</span>            System.out.println(j.toString(4));<a name="line.506"></a>
+<span class="sourceLineNo">507</span>            System.out.println(XML.toString(j));<a name="line.507"></a>
+<span class="sourceLineNo">508</span><a name="line.508"></a>
+<span class="sourceLineNo">509</span>            s = "&lt;book&gt;&lt;chapter&gt;Content of the first chapter&lt;/chapter&gt;&lt;chapter&gt;Content of the second chapter      &lt;chapter&gt;Content of the first subchapter&lt;/chapter&gt;      &lt;chapter&gt;Content of the second subchapter&lt;/chapter&gt;&lt;/chapter&gt;&lt;chapter&gt;Third Chapter&lt;/chapter&gt;&lt;/book&gt;";<a name="line.509"></a>
+<span class="sourceLineNo">510</span>            j = XML.toJSONObject(s);<a name="line.510"></a>
+<span class="sourceLineNo">511</span>            System.out.println(j.toString(4));<a name="line.511"></a>
+<span class="sourceLineNo">512</span>            System.out.println(XML.toString(j));<a name="line.512"></a>
+<span class="sourceLineNo">513</span><a name="line.513"></a>
+<span class="sourceLineNo">514</span>            a = JSONML.toJSONArray(s);<a name="line.514"></a>
+<span class="sourceLineNo">515</span>            System.out.println(a.toString(4));<a name="line.515"></a>
+<span class="sourceLineNo">516</span>            System.out.println(JSONML.toString(a));<a name="line.516"></a>
+<span class="sourceLineNo">517</span><a name="line.517"></a>
+<span class="sourceLineNo">518</span>            Collection c = null;<a name="line.518"></a>
+<span class="sourceLineNo">519</span>            Map m = null;<a name="line.519"></a>
+<span class="sourceLineNo">520</span><a name="line.520"></a>
+<span class="sourceLineNo">521</span>            j = new JSONObject(m);<a name="line.521"></a>
+<span class="sourceLineNo">522</span>            a = new JSONArray(c);<a name="line.522"></a>
+<span class="sourceLineNo">523</span>            j.append("stooge", "Joe DeRita");<a name="line.523"></a>
+<span class="sourceLineNo">524</span>            j.append("stooge", "Shemp");<a name="line.524"></a>
+<span class="sourceLineNo">525</span>            j.accumulate("stooges", "Curly");<a name="line.525"></a>
+<span class="sourceLineNo">526</span>            j.accumulate("stooges", "Larry");<a name="line.526"></a>
+<span class="sourceLineNo">527</span>            j.accumulate("stooges", "Moe");<a name="line.527"></a>
+<span class="sourceLineNo">528</span>            j.accumulate("stoogearray", j.get("stooges"));<a name="line.528"></a>
+<span class="sourceLineNo">529</span>            j.put("map", m);<a name="line.529"></a>
+<span class="sourceLineNo">530</span>            j.put("collection", c);<a name="line.530"></a>
+<span class="sourceLineNo">531</span>            j.put("array", a);<a name="line.531"></a>
+<span class="sourceLineNo">532</span>            a.put(m);<a name="line.532"></a>
+<span class="sourceLineNo">533</span>            a.put(c);<a name="line.533"></a>
+<span class="sourceLineNo">534</span>            System.out.println(j.toString(4));<a name="line.534"></a>
+<span class="sourceLineNo">535</span><a name="line.535"></a>
+<span class="sourceLineNo">536</span>            s = "{plist=Apple; AnimalSmells = { pig = piggish; lamb = lambish; worm = wormy; }; AnimalSounds = { pig = oink; lamb = baa; worm = baa;  Lisa = \"Why is the worm talking like a lamb?\" } ; AnimalColors = { pig = pink; lamb = black; worm = pink; } } ";<a name="line.536"></a>
+<span class="sourceLineNo">537</span>            j = new JSONObject(s);<a name="line.537"></a>
+<span class="sourceLineNo">538</span>            System.out.println(j.toString(4));<a name="line.538"></a>
+<span class="sourceLineNo">539</span><a name="line.539"></a>
+<span class="sourceLineNo">540</span>            s = " (\"San Francisco\", \"New York\", \"Seoul\", \"London\", \"Seattle\", \"Shanghai\")";<a name="line.540"></a>
+<span class="sourceLineNo">541</span>            a = new JSONArray(s);<a name="line.541"></a>
+<span class="sourceLineNo">542</span>            System.out.println(a.toString());<a name="line.542"></a>
+<span class="sourceLineNo">543</span><a name="line.543"></a>
+<span class="sourceLineNo">544</span>            s = "&lt;a ichi='1' ni='2'&gt;&lt;b&gt;The content of b&lt;/b&gt; and &lt;c san='3'&gt;The content of c&lt;/c&gt;&lt;d&gt;do&lt;/d&gt;&lt;e&gt;&lt;/e&gt;&lt;d&gt;re&lt;/d&gt;&lt;f/&gt;&lt;d&gt;mi&lt;/d&gt;&lt;/a&gt;";<a name="line.544"></a>
+<span class="sourceLineNo">545</span>            j = XML.toJSONObject(s);<a name="line.545"></a>
+<span class="sourceLineNo">546</span><a name="line.546"></a>
+<span class="sourceLineNo">547</span>            System.out.println(j.toString(2));<a name="line.547"></a>
+<span class="sourceLineNo">548</span>            System.out.println(XML.toString(j));<a name="line.548"></a>
+<span class="sourceLineNo">549</span>            System.out.println("");<a name="line.549"></a>
+<span class="sourceLineNo">550</span>            ja = JSONML.toJSONArray(s);<a name="line.550"></a>
+<span class="sourceLineNo">551</span>            System.out.println(ja.toString(4));<a name="line.551"></a>
+<span class="sourceLineNo">552</span>            System.out.println(JSONML.toString(ja));<a name="line.552"></a>
+<span class="sourceLineNo">553</span>            System.out.println("");<a name="line.553"></a>
+<span class="sourceLineNo">554</span><a name="line.554"></a>
+<span class="sourceLineNo">555</span>            s = "&lt;Root&gt;&lt;MsgType type=\"node\"&gt;&lt;BatchType type=\"string\"&gt;111111111111111&lt;/BatchType&gt;&lt;/MsgType&gt;&lt;/Root&gt;";<a name="line.555"></a>
+<span class="sourceLineNo">556</span>            j = JSONML.toJSONObject(s);<a name="line.556"></a>
+<span class="sourceLineNo">557</span>            System.out.println(j);<a name="line.557"></a>
+<span class="sourceLineNo">558</span>            ja = JSONML.toJSONArray(s);<a name="line.558"></a>
+<span class="sourceLineNo">559</span>            System.out.println(ja);<a name="line.559"></a>
+<span class="sourceLineNo">560</span><a name="line.560"></a>
+<span class="sourceLineNo">561</span>            System.out.println("\nTesting Exceptions: ");<a name="line.561"></a>
+<span class="sourceLineNo">562</span><a name="line.562"></a>
+<span class="sourceLineNo">563</span>            System.out.print("Exception: ");<a name="line.563"></a>
+<span class="sourceLineNo">564</span>            try {<a name="line.564"></a>
+<span class="sourceLineNo">565</span>                a = new JSONArray("[\n\r\n\r}");<a name="line.565"></a>
+<span class="sourceLineNo">566</span>                System.out.println(a.toString());<a name="line.566"></a>
+<span class="sourceLineNo">567</span>            } catch (Exception e) {<a name="line.567"></a>
+<span class="sourceLineNo">568</span>                System.out.println(e);<a name="line.568"></a>
+<span class="sourceLineNo">569</span>            }<a name="line.569"></a>
+<span class="sourceLineNo">570</span><a name="line.570"></a>
+<span class="sourceLineNo">571</span>            System.out.print("Exception: ");<a name="line.571"></a>
+<span class="sourceLineNo">572</span>            try {<a name="line.572"></a>
+<span class="sourceLineNo">573</span>                a = new JSONArray("&lt;\n\r\n\r      ");<a name="line.573"></a>
+<span class="sourceLineNo">574</span>                System.out.println(a.toString());<a name="line.574"></a>
+<span class="sourceLineNo">575</span>            } catch (Exception e) {<a name="line.575"></a>
+<span class="sourceLineNo">576</span>                System.out.println(e);<a name="line.576"></a>
+<span class="sourceLineNo">577</span>            }<a name="line.577"></a>
+<span class="sourceLineNo">578</span><a name="line.578"></a>
+<span class="sourceLineNo">579</span>            System.out.print("Exception: ");<a name="line.579"></a>
+<span class="sourceLineNo">580</span>            try {<a name="line.580"></a>
+<span class="sourceLineNo">581</span>                a = new JSONArray();<a name="line.581"></a>
+<span class="sourceLineNo">582</span>                a.put(Double.NEGATIVE_INFINITY);<a name="line.582"></a>
+<span class="sourceLineNo">583</span>                a.put(Double.NaN);<a name="line.583"></a>
+<span class="sourceLineNo">584</span>                System.out.println(a.toString());<a name="line.584"></a>
+<span class="sourceLineNo">585</span>            } catch (Exception e) {<a name="line.585"></a>
+<span class="sourceLineNo">586</span>                System.out.println(e);<a name="line.586"></a>
+<span class="sourceLineNo">587</span>            }<a name="line.587"></a>
+<span class="sourceLineNo">588</span>            System.out.print("Exception: ");<a name="line.588"></a>
+<span class="sourceLineNo">589</span>            try {<a name="line.589"></a>
+<span class="sourceLineNo">590</span>                System.out.println(j.getDouble("stooge"));<a name="line.590"></a>
+<span class="sourceLineNo">591</span>            } catch (Exception e) {<a name="line.591"></a>
+<span class="sourceLineNo">592</span>                System.out.println(e);<a name="line.592"></a>
+<span class="sourceLineNo">593</span>            }<a name="line.593"></a>
+<span class="sourceLineNo">594</span>            System.out.print("Exception: ");<a name="line.594"></a>
+<span class="sourceLineNo">595</span>            try {<a name="line.595"></a>
+<span class="sourceLineNo">596</span>                System.out.println(j.getDouble("howard"));<a name="line.596"></a>
+<span class="sourceLineNo">597</span>            } catch (Exception e) {<a name="line.597"></a>
+<span class="sourceLineNo">598</span>                System.out.println(e);<a name="line.598"></a>
+<span class="sourceLineNo">599</span>            }<a name="line.599"></a>
+<span class="sourceLineNo">600</span>            System.out.print("Exception: ");<a name="line.600"></a>
+<span class="sourceLineNo">601</span>            try {<a name="line.601"></a>
+<span class="sourceLineNo">602</span>                System.out.println(j.put(null, "howard"));<a name="line.602"></a>
+<span class="sourceLineNo">603</span>            } catch (Exception e) {<a name="line.603"></a>
+<span class="sourceLineNo">604</span>                System.out.println(e);<a name="line.604"></a>
+<span class="sourceLineNo">605</span>            }<a name="line.605"></a>
+<span class="sourceLineNo">606</span>            System.out.print("Exception: ");<a name="line.606"></a>
+<span class="sourceLineNo">607</span>            try {<a name="line.607"></a>
+<span class="sourceLineNo">608</span>                System.out.println(a.getDouble(0));<a name="line.608"></a>
+<span class="sourceLineNo">609</span>            } catch (Exception e) {<a name="line.609"></a>
+<span class="sourceLineNo">610</span>                System.out.println(e);<a name="line.610"></a>
+<span class="sourceLineNo">611</span>            }<a name="line.611"></a>
+<span class="sourceLineNo">612</span>            System.out.print("Exception: ");<a name="line.612"></a>
+<span class="sourceLineNo">613</span>            try {<a name="line.613"></a>
+<span class="sourceLineNo">614</span>                System.out.println(a.get(-1));<a name="line.614"></a>
+<span class="sourceLineNo">615</span>            } catch (Exception e) {<a name="line.615"></a>
+<span class="sourceLineNo">616</span>                System.out.println(e);<a name="line.616"></a>
+<span class="sourceLineNo">617</span>            }<a name="line.617"></a>
+<span class="sourceLineNo">618</span>            System.out.print("Exception: ");<a name="line.618"></a>
+<span class="sourceLineNo">619</span>            try {<a name="line.619"></a>
+<span class="sourceLineNo">620</span>                System.out.println(a.put(Double.NaN));<a name="line.620"></a>
+<span class="sourceLineNo">621</span>            } catch (Exception e) {<a name="line.621"></a>
+<span class="sourceLineNo">622</span>                System.out.println(e);<a name="line.622"></a>
+<span class="sourceLineNo">623</span>            }<a name="line.623"></a>
+<span class="sourceLineNo">624</span>            System.out.print("Exception: ");<a name="line.624"></a>
+<span class="sourceLineNo">625</span>            try {<a name="line.625"></a>
+<span class="sourceLineNo">626</span>                j = XML.toJSONObject("&lt;a&gt;&lt;b&gt;    ");<a name="line.626"></a>
+<span class="sourceLineNo">627</span>            } catch (Exception e) {<a name="line.627"></a>
+<span class="sourceLineNo">628</span>                System.out.println(e);<a name="line.628"></a>
+<span class="sourceLineNo">629</span>            }<a name="line.629"></a>
+<span class="sourceLineNo">630</span>            System.out.print("Exception: ");<a name="line.630"></a>
+<span class="sourceLineNo">631</span>            try {<a name="line.631"></a>
+<span class="sourceLineNo">632</span>                j = XML.toJSONObject("&lt;a&gt;&lt;/b&gt;    ");<a name="line.632"></a>
+<span class="sourceLineNo">633</span>            } catch (Exception e) {<a name="line.633"></a>
+<span class="sourceLineNo">634</span>                System.out.println(e);<a name="line.634"></a>
+<span class="sourceLineNo">635</span>            }<a name="line.635"></a>
+<span class="sourceLineNo">636</span>            System.out.print("Exception: ");<a name="line.636"></a>
+<span class="sourceLineNo">637</span>            try {<a name="line.637"></a>
+<span class="sourceLineNo">638</span>                j = XML.toJSONObject("&lt;a&gt;&lt;/a    ");<a name="line.638"></a>
+<span class="sourceLineNo">639</span>            } catch (Exception e) {<a name="line.639"></a>
+<span class="sourceLineNo">640</span>                System.out.println(e);<a name="line.640"></a>
+<span class="sourceLineNo">641</span>            }<a name="line.641"></a>
+<span class="sourceLineNo">642</span>            System.out.print("Exception: ");<a name="line.642"></a>
+<span class="sourceLineNo">643</span>            try {<a name="line.643"></a>
+<span class="sourceLineNo">644</span>                ja = new JSONArray(new Object());<a name="line.644"></a>
+<span class="sourceLineNo">645</span>                System.out.println(ja.toString());<a name="line.645"></a>
+<span class="sourceLineNo">646</span>            } catch (Exception e) {<a name="line.646"></a>
+<span class="sourceLineNo">647</span>                System.out.println(e);<a name="line.647"></a>
+<span class="sourceLineNo">648</span>            }<a name="line.648"></a>
+<span class="sourceLineNo">649</span><a name="line.649"></a>
+<span class="sourceLineNo">650</span>            System.out.print("Exception: ");<a name="line.650"></a>
+<span class="sourceLineNo">651</span>            try {<a name="line.651"></a>
+<span class="sourceLineNo">652</span>                s = "[)";<a name="line.652"></a>
+<span class="sourceLineNo">653</span>                a = new JSONArray(s);<a name="line.653"></a>
+<span class="sourceLineNo">654</span>                System.out.println(a.toString());<a name="line.654"></a>
+<span class="sourceLineNo">655</span>            } catch (Exception e) {<a name="line.655"></a>
+<span class="sourceLineNo">656</span>                System.out.println(e);<a name="line.656"></a>
+<span class="sourceLineNo">657</span>            }<a name="line.657"></a>
+<span class="sourceLineNo">658</span><a name="line.658"></a>
+<span class="sourceLineNo">659</span>            System.out.print("Exception: ");<a name="line.659"></a>
+<span class="sourceLineNo">660</span>            try {<a name="line.660"></a>
+<span class="sourceLineNo">661</span>                s = "&lt;xml";<a name="line.661"></a>
+<span class="sourceLineNo">662</span>                ja = JSONML.toJSONArray(s);<a name="line.662"></a>
+<span class="sourceLineNo">663</span>                System.out.println(ja.toString(4));<a name="line.663"></a>
+<span class="sourceLineNo">664</span>            } catch (Exception e) {<a name="line.664"></a>
+<span class="sourceLineNo">665</span>                System.out.println(e);<a name="line.665"></a>
+<span class="sourceLineNo">666</span>            }<a name="line.666"></a>
+<span class="sourceLineNo">667</span><a name="line.667"></a>
+<span class="sourceLineNo">668</span>            System.out.print("Exception: ");<a name="line.668"></a>
+<span class="sourceLineNo">669</span>            try {<a name="line.669"></a>
+<span class="sourceLineNo">670</span>                s = "&lt;right&gt;&lt;/wrong&gt;";<a name="line.670"></a>
+<span class="sourceLineNo">671</span>                ja = JSONML.toJSONArray(s);<a name="line.671"></a>
+<span class="sourceLineNo">672</span>                System.out.println(ja.toString(4));<a name="line.672"></a>
+<span class="sourceLineNo">673</span>            } catch (Exception e) {<a name="line.673"></a>
+<span class="sourceLineNo">674</span>                System.out.println(e);<a name="line.674"></a>
+<span class="sourceLineNo">675</span>            }<a name="line.675"></a>
+<span class="sourceLineNo">676</span><a name="line.676"></a>
+<span class="sourceLineNo">677</span>            System.out.print("Exception: ");<a name="line.677"></a>
+<span class="sourceLineNo">678</span>            try {<a name="line.678"></a>
+<span class="sourceLineNo">679</span>                s = "{\"koda\": true, \"koda\": true}";<a name="line.679"></a>
+<span class="sourceLineNo">680</span>                j = new JSONObject(s);<a name="line.680"></a>
+<span class="sourceLineNo">681</span>                System.out.println(j.toString(4));<a name="line.681"></a>
+<span class="sourceLineNo">682</span>            } catch (Exception e) {<a name="line.682"></a>
+<span class="sourceLineNo">683</span>                System.out.println(e);<a name="line.683"></a>
+<span class="sourceLineNo">684</span>            }<a name="line.684"></a>
+<span class="sourceLineNo">685</span><a name="line.685"></a>
+<span class="sourceLineNo">686</span>            System.out.print("Exception: ");<a name="line.686"></a>
+<span class="sourceLineNo">687</span>            try {<a name="line.687"></a>
+<span class="sourceLineNo">688</span>                jj = new JSONStringer();<a name="line.688"></a>
+<span class="sourceLineNo">689</span>                s = jj.object().key("bosanda").value("MARIE HAA'S")<a name="line.689"></a>
+<span class="sourceLineNo">690</span>                        .key("bosanda").value("MARIE HAA\\'S").endObject()<a name="line.690"></a>
+<span class="sourceLineNo">691</span>                        .toString();<a name="line.691"></a>
+<span class="sourceLineNo">692</span>                System.out.println(j.toString(4));<a name="line.692"></a>
+<span class="sourceLineNo">693</span>            } catch (Exception e) {<a name="line.693"></a>
+<span class="sourceLineNo">694</span>                System.out.println(e);<a name="line.694"></a>
+<span class="sourceLineNo">695</span>            }<a name="line.695"></a>
+<span class="sourceLineNo">696</span>        } catch (Exception e) {<a name="line.696"></a>
+<span class="sourceLineNo">697</span>            System.out.println(e.toString());<a name="line.697"></a>
+<span class="sourceLineNo">698</span>        }<a name="line.698"></a>
+<span class="sourceLineNo">699</span>    }<a name="line.699"></a>
+<span class="sourceLineNo">700</span>}<a name="line.700"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

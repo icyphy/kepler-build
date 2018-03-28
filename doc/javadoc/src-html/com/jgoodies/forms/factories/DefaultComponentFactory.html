@@ -1,0 +1,550 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../../../stylesheet.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>/*<a name="line.1"></a>
+<span class="sourceLineNo">002</span> * Copyright (c) 2002-2007 JGoodies Karsten Lentzsch. All Rights Reserved.<a name="line.2"></a>
+<span class="sourceLineNo">003</span> *<a name="line.3"></a>
+<span class="sourceLineNo">004</span> * Redistribution and use in source and binary forms, with or without<a name="line.4"></a>
+<span class="sourceLineNo">005</span> * modification, are permitted provided that the following conditions are met:<a name="line.5"></a>
+<span class="sourceLineNo">006</span> *<a name="line.6"></a>
+<span class="sourceLineNo">007</span> *  o Redistributions of source code must retain the above copyright notice,<a name="line.7"></a>
+<span class="sourceLineNo">008</span> *    this list of conditions and the following disclaimer.<a name="line.8"></a>
+<span class="sourceLineNo">009</span> *<a name="line.9"></a>
+<span class="sourceLineNo">010</span> *  o Redistributions in binary form must reproduce the above copyright notice,<a name="line.10"></a>
+<span class="sourceLineNo">011</span> *    this list of conditions and the following disclaimer in the documentation<a name="line.11"></a>
+<span class="sourceLineNo">012</span> *    and/or other materials provided with the distribution.<a name="line.12"></a>
+<span class="sourceLineNo">013</span> *<a name="line.13"></a>
+<span class="sourceLineNo">014</span> *  o Neither the name of JGoodies Karsten Lentzsch nor the names of<a name="line.14"></a>
+<span class="sourceLineNo">015</span> *    its contributors may be used to endorse or promote products derived<a name="line.15"></a>
+<span class="sourceLineNo">016</span> *    from this software without specific prior written permission.<a name="line.16"></a>
+<span class="sourceLineNo">017</span> *<a name="line.17"></a>
+<span class="sourceLineNo">018</span> * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"<a name="line.18"></a>
+<span class="sourceLineNo">019</span> * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,<a name="line.19"></a>
+<span class="sourceLineNo">020</span> * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR<a name="line.20"></a>
+<span class="sourceLineNo">021</span> * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR<a name="line.21"></a>
+<span class="sourceLineNo">022</span> * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,<a name="line.22"></a>
+<span class="sourceLineNo">023</span> * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,<a name="line.23"></a>
+<span class="sourceLineNo">024</span> * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;<a name="line.24"></a>
+<span class="sourceLineNo">025</span> * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,<a name="line.25"></a>
+<span class="sourceLineNo">026</span> * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE<a name="line.26"></a>
+<span class="sourceLineNo">027</span> * OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,<a name="line.27"></a>
+<span class="sourceLineNo">028</span> * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.<a name="line.28"></a>
+<span class="sourceLineNo">029</span> */<a name="line.29"></a>
+<span class="sourceLineNo">030</span><a name="line.30"></a>
+<span class="sourceLineNo">031</span>package com.jgoodies.forms.factories;<a name="line.31"></a>
+<span class="sourceLineNo">032</span><a name="line.32"></a>
+<span class="sourceLineNo">033</span>import java.awt.Color;<a name="line.33"></a>
+<span class="sourceLineNo">034</span>import java.awt.Component;<a name="line.34"></a>
+<span class="sourceLineNo">035</span>import java.awt.Container;<a name="line.35"></a>
+<span class="sourceLineNo">036</span>import java.awt.Dimension;<a name="line.36"></a>
+<span class="sourceLineNo">037</span>import java.awt.Font;<a name="line.37"></a>
+<span class="sourceLineNo">038</span>import java.awt.FontMetrics;<a name="line.38"></a>
+<span class="sourceLineNo">039</span>import java.awt.Insets;<a name="line.39"></a>
+<span class="sourceLineNo">040</span>import java.awt.LayoutManager;<a name="line.40"></a>
+<span class="sourceLineNo">041</span><a name="line.41"></a>
+<span class="sourceLineNo">042</span>import javax.swing.JComponent;<a name="line.42"></a>
+<span class="sourceLineNo">043</span>import javax.swing.JLabel;<a name="line.43"></a>
+<span class="sourceLineNo">044</span>import javax.swing.JPanel;<a name="line.44"></a>
+<span class="sourceLineNo">045</span>import javax.swing.JSeparator;<a name="line.45"></a>
+<span class="sourceLineNo">046</span>import javax.swing.SwingConstants;<a name="line.46"></a>
+<span class="sourceLineNo">047</span>import javax.swing.UIManager;<a name="line.47"></a>
+<span class="sourceLineNo">048</span><a name="line.48"></a>
+<span class="sourceLineNo">049</span>import com.jgoodies.forms.layout.Sizes;<a name="line.49"></a>
+<span class="sourceLineNo">050</span>import com.jgoodies.forms.util.Utilities;<a name="line.50"></a>
+<span class="sourceLineNo">051</span><a name="line.51"></a>
+<span class="sourceLineNo">052</span>/**<a name="line.52"></a>
+<span class="sourceLineNo">053</span> * A singleton implementation of the {@link ComponentFactory} interface<a name="line.53"></a>
+<span class="sourceLineNo">054</span> * that creates UI components as required by the<a name="line.54"></a>
+<span class="sourceLineNo">055</span> * {@link com.jgoodies.forms.builder.PanelBuilder}.&lt;p&gt;<a name="line.55"></a>
+<span class="sourceLineNo">056</span> *<a name="line.56"></a>
+<span class="sourceLineNo">057</span> * The texts used in methods &lt;code&gt;#createLabel(String)&lt;/code&gt; and<a name="line.57"></a>
+<span class="sourceLineNo">058</span> * &lt;code&gt;#createTitle(String)&lt;/code&gt; can contain an optional mnemonic marker.<a name="line.58"></a>
+<span class="sourceLineNo">059</span> * The mnemonic and mnemonic index are indicated by a single ampersand<a name="line.59"></a>
+<span class="sourceLineNo">060</span> * (&lt;tt&gt;&amp;amp;&lt;/tt&gt;). For example &lt;tt&gt;&amp;quot;&amp;amp;Save&amp;quot;&lt;/tt&gt;,<a name="line.60"></a>
+<span class="sourceLineNo">061</span> * or &lt;tt&gt;&amp;quot;Save&amp;nbsp;&amp;amp;as&amp;quot;&lt;/tt&gt;. To use the ampersand itself<a name="line.61"></a>
+<span class="sourceLineNo">062</span> * duplicate it, for example &lt;tt&gt;&amp;quot;Look&amp;amp;&amp;amp;Feel&amp;quot;&lt;/tt&gt;.<a name="line.62"></a>
+<span class="sourceLineNo">063</span> *<a name="line.63"></a>
+<span class="sourceLineNo">064</span> * @author Karsten Lentzsch<a name="line.64"></a>
+<span class="sourceLineNo">065</span> * @version $Revision$<a name="line.65"></a>
+<span class="sourceLineNo">066</span> */<a name="line.66"></a>
+<span class="sourceLineNo">067</span><a name="line.67"></a>
+<span class="sourceLineNo">068</span>public final class DefaultComponentFactory implements ComponentFactory {<a name="line.68"></a>
+<span class="sourceLineNo">069</span><a name="line.69"></a>
+<span class="sourceLineNo">070</span>    /**<a name="line.70"></a>
+<span class="sourceLineNo">071</span>     * Holds the single instance of this class.<a name="line.71"></a>
+<span class="sourceLineNo">072</span>     */<a name="line.72"></a>
+<span class="sourceLineNo">073</span>    private static final DefaultComponentFactory INSTANCE = new DefaultComponentFactory();<a name="line.73"></a>
+<span class="sourceLineNo">074</span><a name="line.74"></a>
+<span class="sourceLineNo">075</span>    /**<a name="line.75"></a>
+<span class="sourceLineNo">076</span>     * The character used to indicate the mnemonic position for labels.<a name="line.76"></a>
+<span class="sourceLineNo">077</span>     */<a name="line.77"></a>
+<span class="sourceLineNo">078</span>    private static final char MNEMONIC_MARKER = '&amp;';<a name="line.78"></a>
+<span class="sourceLineNo">079</span><a name="line.79"></a>
+<span class="sourceLineNo">080</span>    // Instance *************************************************************<a name="line.80"></a>
+<span class="sourceLineNo">081</span><a name="line.81"></a>
+<span class="sourceLineNo">082</span>    private DefaultComponentFactory() {<a name="line.82"></a>
+<span class="sourceLineNo">083</span>        // Suppresses default constructor, ensuring non-instantiability.<a name="line.83"></a>
+<span class="sourceLineNo">084</span>    }<a name="line.84"></a>
+<span class="sourceLineNo">085</span><a name="line.85"></a>
+<span class="sourceLineNo">086</span>    /**<a name="line.86"></a>
+<span class="sourceLineNo">087</span>     * Returns the sole instance of this factory class.<a name="line.87"></a>
+<span class="sourceLineNo">088</span>     *<a name="line.88"></a>
+<span class="sourceLineNo">089</span>     * @return the sole instance of this factory class<a name="line.89"></a>
+<span class="sourceLineNo">090</span>     */<a name="line.90"></a>
+<span class="sourceLineNo">091</span>    public static DefaultComponentFactory getInstance() {<a name="line.91"></a>
+<span class="sourceLineNo">092</span>        return INSTANCE;<a name="line.92"></a>
+<span class="sourceLineNo">093</span>    }<a name="line.93"></a>
+<span class="sourceLineNo">094</span><a name="line.94"></a>
+<span class="sourceLineNo">095</span>    // Component Creation ***************************************************<a name="line.95"></a>
+<span class="sourceLineNo">096</span><a name="line.96"></a>
+<span class="sourceLineNo">097</span>    /**<a name="line.97"></a>
+<span class="sourceLineNo">098</span>     * Creates and returns a label with an optional mnemonic.<a name="line.98"></a>
+<span class="sourceLineNo">099</span>     *<a name="line.99"></a>
+<span class="sourceLineNo">100</span>     * &lt;pre&gt;<a name="line.100"></a>
+<span class="sourceLineNo">101</span>     * createLabel("Name");       // No mnemonic<a name="line.101"></a>
+<span class="sourceLineNo">102</span>     * createLabel("N&amp;amp;ame");      // Mnemonic is 'a'<a name="line.102"></a>
+<span class="sourceLineNo">103</span>     * createLabel("Save &amp;amp;as");   // Mnemonic is the second 'a'<a name="line.103"></a>
+<span class="sourceLineNo">104</span>     * createLabel("Look&amp;amp;&amp;amp;Feel"); // No mnemonic, text is Look&amp;amp;Feel<a name="line.104"></a>
+<span class="sourceLineNo">105</span>     * &lt;/pre&gt;<a name="line.105"></a>
+<span class="sourceLineNo">106</span>     *<a name="line.106"></a>
+<span class="sourceLineNo">107</span>     * @param textWithMnemonic  the label's text -<a name="line.107"></a>
+<span class="sourceLineNo">108</span>     *     may contain an ampersand (&lt;tt&gt;&amp;amp;&lt;/tt&gt;) to mark a mnemonic<a name="line.108"></a>
+<span class="sourceLineNo">109</span>     * @return an label with optional mnemonic<a name="line.109"></a>
+<span class="sourceLineNo">110</span>     */<a name="line.110"></a>
+<span class="sourceLineNo">111</span>    @Override<a name="line.111"></a>
+<span class="sourceLineNo">112</span>    public JLabel createLabel(String textWithMnemonic) {<a name="line.112"></a>
+<span class="sourceLineNo">113</span>        JLabel label = new JLabel();<a name="line.113"></a>
+<span class="sourceLineNo">114</span>        setTextAndMnemonic(label, textWithMnemonic);<a name="line.114"></a>
+<span class="sourceLineNo">115</span>        return label;<a name="line.115"></a>
+<span class="sourceLineNo">116</span>    }<a name="line.116"></a>
+<span class="sourceLineNo">117</span><a name="line.117"></a>
+<span class="sourceLineNo">118</span>    /**<a name="line.118"></a>
+<span class="sourceLineNo">119</span>     * Creates and returns a title label that uses the foreground color<a name="line.119"></a>
+<span class="sourceLineNo">120</span>     * and font of a &lt;code&gt;TitledBorder&lt;/code&gt;.<a name="line.120"></a>
+<span class="sourceLineNo">121</span>     *<a name="line.121"></a>
+<span class="sourceLineNo">122</span>     * &lt;pre&gt;<a name="line.122"></a>
+<span class="sourceLineNo">123</span>     * createTitle("Name");       // No mnemonic<a name="line.123"></a>
+<span class="sourceLineNo">124</span>     * createTitle("N&amp;amp;ame");      // Mnemonic is 'a'<a name="line.124"></a>
+<span class="sourceLineNo">125</span>     * createTitle("Save &amp;amp;as");   // Mnemonic is the second 'a'<a name="line.125"></a>
+<span class="sourceLineNo">126</span>     * createTitle("Look&amp;amp;&amp;amp;Feel"); // No mnemonic, text is Look&amp;amp;Feel<a name="line.126"></a>
+<span class="sourceLineNo">127</span>     * &lt;/pre&gt;<a name="line.127"></a>
+<span class="sourceLineNo">128</span>     *<a name="line.128"></a>
+<span class="sourceLineNo">129</span>     * @param textWithMnemonic  the label's text -<a name="line.129"></a>
+<span class="sourceLineNo">130</span>     *     may contain an ampersand (&lt;tt&gt;&amp;amp;&lt;/tt&gt;) to mark a mnemonic<a name="line.130"></a>
+<span class="sourceLineNo">131</span>     * @return an emphasized title label<a name="line.131"></a>
+<span class="sourceLineNo">132</span>     */<a name="line.132"></a>
+<span class="sourceLineNo">133</span>    @Override<a name="line.133"></a>
+<span class="sourceLineNo">134</span>    public JLabel createTitle(String textWithMnemonic) {<a name="line.134"></a>
+<span class="sourceLineNo">135</span>        JLabel label = new TitleLabel();<a name="line.135"></a>
+<span class="sourceLineNo">136</span>        setTextAndMnemonic(label, textWithMnemonic);<a name="line.136"></a>
+<span class="sourceLineNo">137</span>        label.setVerticalAlignment(SwingConstants.CENTER);<a name="line.137"></a>
+<span class="sourceLineNo">138</span>        return label;<a name="line.138"></a>
+<span class="sourceLineNo">139</span>    }<a name="line.139"></a>
+<span class="sourceLineNo">140</span><a name="line.140"></a>
+<span class="sourceLineNo">141</span>    /**<a name="line.141"></a>
+<span class="sourceLineNo">142</span>     * Creates and returns a labeled separator with the label in the left-hand<a name="line.142"></a>
+<span class="sourceLineNo">143</span>     * side. Useful to separate paragraphs in a panel; often a better choice<a name="line.143"></a>
+<span class="sourceLineNo">144</span>     * than a &lt;code&gt;TitledBorder&lt;/code&gt;.<a name="line.144"></a>
+<span class="sourceLineNo">145</span>     *<a name="line.145"></a>
+<span class="sourceLineNo">146</span>     * &lt;pre&gt;<a name="line.146"></a>
+<span class="sourceLineNo">147</span>     * createSeparator("Name");       // No mnemonic<a name="line.147"></a>
+<span class="sourceLineNo">148</span>     * createSeparator("N&amp;amp;ame");      // Mnemonic is 'a'<a name="line.148"></a>
+<span class="sourceLineNo">149</span>     * createSeparator("Save &amp;amp;as");   // Mnemonic is the second 'a'<a name="line.149"></a>
+<span class="sourceLineNo">150</span>     * createSeparator("Look&amp;amp;&amp;amp;Feel"); // No mnemonic, text is Look&amp;amp;Feel<a name="line.150"></a>
+<span class="sourceLineNo">151</span>     * &lt;/pre&gt;<a name="line.151"></a>
+<span class="sourceLineNo">152</span>     *<a name="line.152"></a>
+<span class="sourceLineNo">153</span>     * @param textWithMnemonic  the label's text -<a name="line.153"></a>
+<span class="sourceLineNo">154</span>     *     may contain an ampersand (&lt;tt&gt;&amp;amp;&lt;/tt&gt;) to mark a mnemonic<a name="line.154"></a>
+<span class="sourceLineNo">155</span>     * @return a title label with separator on the side<a name="line.155"></a>
+<span class="sourceLineNo">156</span>     */<a name="line.156"></a>
+<span class="sourceLineNo">157</span>    public JComponent createSeparator(String textWithMnemonic) {<a name="line.157"></a>
+<span class="sourceLineNo">158</span>        return createSeparator(textWithMnemonic, SwingConstants.LEFT);<a name="line.158"></a>
+<span class="sourceLineNo">159</span>    }<a name="line.159"></a>
+<span class="sourceLineNo">160</span><a name="line.160"></a>
+<span class="sourceLineNo">161</span>    /**<a name="line.161"></a>
+<span class="sourceLineNo">162</span>     * Creates and returns a labeled separator. Useful to separate<a name="line.162"></a>
+<span class="sourceLineNo">163</span>     * paragraphs in a panel, which is often a better choice than a<a name="line.163"></a>
+<span class="sourceLineNo">164</span>     * &lt;code&gt;TitledBorder&lt;/code&gt;.<a name="line.164"></a>
+<span class="sourceLineNo">165</span>     *<a name="line.165"></a>
+<span class="sourceLineNo">166</span>     * &lt;pre&gt;<a name="line.166"></a>
+<span class="sourceLineNo">167</span>     * final int LEFT = SwingConstants.LEFT;<a name="line.167"></a>
+<span class="sourceLineNo">168</span>     * createSeparator("Name",       LEFT); // No mnemonic<a name="line.168"></a>
+<span class="sourceLineNo">169</span>     * createSeparator("N&amp;amp;ame",      LEFT); // Mnemonic is 'a'<a name="line.169"></a>
+<span class="sourceLineNo">170</span>     * createSeparator("Save &amp;amp;as",   LEFT); // Mnemonic is the second 'a'<a name="line.170"></a>
+<span class="sourceLineNo">171</span>     * createSeparator("Look&amp;amp;&amp;amp;Feel", LEFT); // No mnemonic, text is Look&amp;amp;Feel<a name="line.171"></a>
+<span class="sourceLineNo">172</span>     * &lt;/pre&gt;<a name="line.172"></a>
+<span class="sourceLineNo">173</span>     *<a name="line.173"></a>
+<span class="sourceLineNo">174</span>     * @param textWithMnemonic  the label's text -<a name="line.174"></a>
+<span class="sourceLineNo">175</span>     *     may contain an ampersand (&lt;tt&gt;&amp;amp;&lt;/tt&gt;) to mark a mnemonic<a name="line.175"></a>
+<span class="sourceLineNo">176</span>     * @param alignment text alignment, one of &lt;code&gt;SwingConstants.LEFT&lt;/code&gt;,<a name="line.176"></a>
+<span class="sourceLineNo">177</span>     *     &lt;code&gt;SwingConstants.CENTER&lt;/code&gt;, &lt;code&gt;SwingConstants.RIGHT&lt;/code&gt;<a name="line.177"></a>
+<span class="sourceLineNo">178</span>     * @return a separator with title label<a name="line.178"></a>
+<span class="sourceLineNo">179</span>     */<a name="line.179"></a>
+<span class="sourceLineNo">180</span>    @Override<a name="line.180"></a>
+<span class="sourceLineNo">181</span>    public JComponent createSeparator(String textWithMnemonic, int alignment) {<a name="line.181"></a>
+<span class="sourceLineNo">182</span>        if (textWithMnemonic == null || textWithMnemonic.length() == 0) {<a name="line.182"></a>
+<span class="sourceLineNo">183</span>            return new JSeparator();<a name="line.183"></a>
+<span class="sourceLineNo">184</span>        }<a name="line.184"></a>
+<span class="sourceLineNo">185</span>        JLabel title = createTitle(textWithMnemonic);<a name="line.185"></a>
+<span class="sourceLineNo">186</span>        title.setHorizontalAlignment(alignment);<a name="line.186"></a>
+<span class="sourceLineNo">187</span>        return createSeparator(title);<a name="line.187"></a>
+<span class="sourceLineNo">188</span>    }<a name="line.188"></a>
+<span class="sourceLineNo">189</span><a name="line.189"></a>
+<span class="sourceLineNo">190</span>    /**<a name="line.190"></a>
+<span class="sourceLineNo">191</span>     * Creates and returns a labeled separator. Useful to separate<a name="line.191"></a>
+<span class="sourceLineNo">192</span>     * paragraphs in a panel, which is often a better choice than a<a name="line.192"></a>
+<span class="sourceLineNo">193</span>     * &lt;code&gt;TitledBorder&lt;/code&gt;.<a name="line.193"></a>
+<span class="sourceLineNo">194</span>     *<a name="line.194"></a>
+<span class="sourceLineNo">195</span>     * &lt;p&gt;The label's position is determined by the label's horizontal alignment,<a name="line.195"></a>
+<span class="sourceLineNo">196</span>     * which must be one of:<a name="line.196"></a>
+<span class="sourceLineNo">197</span>     * &lt;code&gt;SwingConstants.LEFT&lt;/code&gt;,<a name="line.197"></a>
+<span class="sourceLineNo">198</span>     * &lt;code&gt;SwingConstants.CENTER&lt;/code&gt;,<a name="line.198"></a>
+<span class="sourceLineNo">199</span>     * &lt;code&gt;SwingConstants.RIGHT&lt;/code&gt;.&lt;/p&gt;<a name="line.199"></a>
+<span class="sourceLineNo">200</span>     *<a name="line.200"></a>
+<span class="sourceLineNo">201</span>     * &lt;p&gt;TODO: Since this method has been marked public in version 1.0.6,<a name="line.201"></a>
+<span class="sourceLineNo">202</span>     * we need to precisely describe the semantic of this method.&lt;/p&gt;<a name="line.202"></a>
+<span class="sourceLineNo">203</span>     *<a name="line.203"></a>
+<span class="sourceLineNo">204</span>     * &lt;p&gt;TODO: Check if we can relax the constraint for the label alignment<a name="line.204"></a>
+<span class="sourceLineNo">205</span>     * and also accept LEADING and TRAILING.&lt;/p&gt;<a name="line.205"></a>
+<span class="sourceLineNo">206</span>     *<a name="line.206"></a>
+<span class="sourceLineNo">207</span>     * @param label       the title label component<a name="line.207"></a>
+<span class="sourceLineNo">208</span>     * @return a separator with title label<a name="line.208"></a>
+<span class="sourceLineNo">209</span>     * @exception NullPointerException if the label is &lt;code&gt;null&lt;/code&gt;<a name="line.209"></a>
+<span class="sourceLineNo">210</span>     *<a name="line.210"></a>
+<span class="sourceLineNo">211</span>     * @since 1.0.6<a name="line.211"></a>
+<span class="sourceLineNo">212</span>     */<a name="line.212"></a>
+<span class="sourceLineNo">213</span>    public JComponent createSeparator(JLabel label) {<a name="line.213"></a>
+<span class="sourceLineNo">214</span>        if (label == null) {<a name="line.214"></a>
+<span class="sourceLineNo">215</span>            throw new NullPointerException("The label must not be null.");<a name="line.215"></a>
+<span class="sourceLineNo">216</span>        }<a name="line.216"></a>
+<span class="sourceLineNo">217</span><a name="line.217"></a>
+<span class="sourceLineNo">218</span>        JPanel panel = new JPanel(<a name="line.218"></a>
+<span class="sourceLineNo">219</span>                new TitledSeparatorLayout(!Utilities.isLafAqua()));<a name="line.219"></a>
+<span class="sourceLineNo">220</span>        panel.setOpaque(false);<a name="line.220"></a>
+<span class="sourceLineNo">221</span>        panel.add(label);<a name="line.221"></a>
+<span class="sourceLineNo">222</span>        panel.add(new JSeparator());<a name="line.222"></a>
+<span class="sourceLineNo">223</span>        if (label.getHorizontalAlignment() == SwingConstants.CENTER) {<a name="line.223"></a>
+<span class="sourceLineNo">224</span>            panel.add(new JSeparator());<a name="line.224"></a>
+<span class="sourceLineNo">225</span>        }<a name="line.225"></a>
+<span class="sourceLineNo">226</span>        return panel;<a name="line.226"></a>
+<span class="sourceLineNo">227</span>    }<a name="line.227"></a>
+<span class="sourceLineNo">228</span><a name="line.228"></a>
+<span class="sourceLineNo">229</span>    // Helper Code ***********************************************************<a name="line.229"></a>
+<span class="sourceLineNo">230</span><a name="line.230"></a>
+<span class="sourceLineNo">231</span>    /**<a name="line.231"></a>
+<span class="sourceLineNo">232</span>     * Sets the text of the given label and optionally a mnemonic.<a name="line.232"></a>
+<span class="sourceLineNo">233</span>     * The given text may contain an ampersand (&lt;tt&gt;&amp;amp;&lt;/tt&gt;)<a name="line.233"></a>
+<span class="sourceLineNo">234</span>     * to mark a mnemonic and its position. Such a marker indicates<a name="line.234"></a>
+<span class="sourceLineNo">235</span>     * that the character that follows the ampersand shall be the mnemonic.<a name="line.235"></a>
+<span class="sourceLineNo">236</span>     * If you want to use the ampersand itself duplicate it, for example<a name="line.236"></a>
+<span class="sourceLineNo">237</span>     * &lt;tt&gt;&amp;quot;Look&amp;amp;&amp;amp;Feel&amp;quot&lt;/tt&gt;.<a name="line.237"></a>
+<span class="sourceLineNo">238</span>     *<a name="line.238"></a>
+<span class="sourceLineNo">239</span>     * @param label             the label that gets a mnemonic<a name="line.239"></a>
+<span class="sourceLineNo">240</span>     * @param textWithMnemonic  the text with optional mnemonic marker<a name="line.240"></a>
+<span class="sourceLineNo">241</span>     */<a name="line.241"></a>
+<span class="sourceLineNo">242</span>    private static void setTextAndMnemonic(JLabel label,<a name="line.242"></a>
+<span class="sourceLineNo">243</span>            String textWithMnemonic) {<a name="line.243"></a>
+<span class="sourceLineNo">244</span>        int markerIndex = textWithMnemonic.indexOf(MNEMONIC_MARKER);<a name="line.244"></a>
+<span class="sourceLineNo">245</span>        // No marker at all<a name="line.245"></a>
+<span class="sourceLineNo">246</span>        if (markerIndex == -1) {<a name="line.246"></a>
+<span class="sourceLineNo">247</span>            label.setText(textWithMnemonic);<a name="line.247"></a>
+<span class="sourceLineNo">248</span>            return;<a name="line.248"></a>
+<span class="sourceLineNo">249</span>        }<a name="line.249"></a>
+<span class="sourceLineNo">250</span>        int mnemonicIndex = -1;<a name="line.250"></a>
+<span class="sourceLineNo">251</span>        int begin = 0;<a name="line.251"></a>
+<span class="sourceLineNo">252</span>        int end;<a name="line.252"></a>
+<span class="sourceLineNo">253</span>        int length = textWithMnemonic.length();<a name="line.253"></a>
+<span class="sourceLineNo">254</span>        int quotedMarkers = 0;<a name="line.254"></a>
+<span class="sourceLineNo">255</span>        StringBuffer buffer = new StringBuffer();<a name="line.255"></a>
+<span class="sourceLineNo">256</span>        do {<a name="line.256"></a>
+<span class="sourceLineNo">257</span>            // Check whether the next index has a mnemonic marker, too<a name="line.257"></a>
+<span class="sourceLineNo">258</span>            if (markerIndex + 1 &lt; length &amp;&amp; textWithMnemonic<a name="line.258"></a>
+<span class="sourceLineNo">259</span>                    .charAt(markerIndex + 1) == MNEMONIC_MARKER) {<a name="line.259"></a>
+<span class="sourceLineNo">260</span>                end = markerIndex + 1;<a name="line.260"></a>
+<span class="sourceLineNo">261</span>                quotedMarkers++;<a name="line.261"></a>
+<span class="sourceLineNo">262</span>            } else {<a name="line.262"></a>
+<span class="sourceLineNo">263</span>                end = markerIndex;<a name="line.263"></a>
+<span class="sourceLineNo">264</span>                if (mnemonicIndex == -1) {<a name="line.264"></a>
+<span class="sourceLineNo">265</span>                    mnemonicIndex = markerIndex - quotedMarkers;<a name="line.265"></a>
+<span class="sourceLineNo">266</span>                }<a name="line.266"></a>
+<span class="sourceLineNo">267</span>            }<a name="line.267"></a>
+<span class="sourceLineNo">268</span>            buffer.append(textWithMnemonic.substring(begin, end));<a name="line.268"></a>
+<span class="sourceLineNo">269</span>            begin = end + 1;<a name="line.269"></a>
+<span class="sourceLineNo">270</span>            markerIndex = begin &lt; length<a name="line.270"></a>
+<span class="sourceLineNo">271</span>                    ? textWithMnemonic.indexOf(MNEMONIC_MARKER, begin)<a name="line.271"></a>
+<span class="sourceLineNo">272</span>                    : -1;<a name="line.272"></a>
+<span class="sourceLineNo">273</span>        } while (markerIndex != -1);<a name="line.273"></a>
+<span class="sourceLineNo">274</span>        buffer.append(textWithMnemonic.substring(begin));<a name="line.274"></a>
+<span class="sourceLineNo">275</span><a name="line.275"></a>
+<span class="sourceLineNo">276</span>        String text = buffer.toString();<a name="line.276"></a>
+<span class="sourceLineNo">277</span>        label.setText(text);<a name="line.277"></a>
+<span class="sourceLineNo">278</span>        if (mnemonicIndex != -1 &amp;&amp; mnemonicIndex &lt; text.length()) {<a name="line.278"></a>
+<span class="sourceLineNo">279</span>            label.setDisplayedMnemonic(text.charAt(mnemonicIndex));<a name="line.279"></a>
+<span class="sourceLineNo">280</span>            label.setDisplayedMnemonicIndex(mnemonicIndex);<a name="line.280"></a>
+<span class="sourceLineNo">281</span>        }<a name="line.281"></a>
+<span class="sourceLineNo">282</span>    }<a name="line.282"></a>
+<span class="sourceLineNo">283</span><a name="line.283"></a>
+<span class="sourceLineNo">284</span>    /**<a name="line.284"></a>
+<span class="sourceLineNo">285</span>     * A label that uses the TitleBorder font and color.<a name="line.285"></a>
+<span class="sourceLineNo">286</span>     */<a name="line.286"></a>
+<span class="sourceLineNo">287</span>    @SuppressWarnings("serial")<a name="line.287"></a>
+<span class="sourceLineNo">288</span>    private static final class TitleLabel extends JLabel {<a name="line.288"></a>
+<span class="sourceLineNo">289</span><a name="line.289"></a>
+<span class="sourceLineNo">290</span>        private TitleLabel() {<a name="line.290"></a>
+<span class="sourceLineNo">291</span>            // Just invoke the super constructor.<a name="line.291"></a>
+<span class="sourceLineNo">292</span>        }<a name="line.292"></a>
+<span class="sourceLineNo">293</span><a name="line.293"></a>
+<span class="sourceLineNo">294</span>        /**<a name="line.294"></a>
+<span class="sourceLineNo">295</span>         * TODO: For the Synth-based L&amp;amp;f we should consider asking<a name="line.295"></a>
+<span class="sourceLineNo">296</span>         * a &lt;code&gt;TitledBorder&lt;/code&gt; instance for its font and color using<a name="line.296"></a>
+<span class="sourceLineNo">297</span>         * &lt;code&gt;#getTitleFont&lt;/code&gt; and &lt;code&gt;#getTitleColor&lt;/code&gt; resp.<a name="line.297"></a>
+<span class="sourceLineNo">298</span>         */<a name="line.298"></a>
+<span class="sourceLineNo">299</span>        @Override<a name="line.299"></a>
+<span class="sourceLineNo">300</span>        public void updateUI() {<a name="line.300"></a>
+<span class="sourceLineNo">301</span>            super.updateUI();<a name="line.301"></a>
+<span class="sourceLineNo">302</span>            Color foreground = getTitleColor();<a name="line.302"></a>
+<span class="sourceLineNo">303</span>            if (foreground != null) {<a name="line.303"></a>
+<span class="sourceLineNo">304</span>                setForeground(foreground);<a name="line.304"></a>
+<span class="sourceLineNo">305</span>            }<a name="line.305"></a>
+<span class="sourceLineNo">306</span>            setFont(getTitleFont());<a name="line.306"></a>
+<span class="sourceLineNo">307</span>        }<a name="line.307"></a>
+<span class="sourceLineNo">308</span><a name="line.308"></a>
+<span class="sourceLineNo">309</span>        private Color getTitleColor() {<a name="line.309"></a>
+<span class="sourceLineNo">310</span>            return UIManager.getColor("TitledBorder.titleColor");<a name="line.310"></a>
+<span class="sourceLineNo">311</span>        }<a name="line.311"></a>
+<span class="sourceLineNo">312</span><a name="line.312"></a>
+<span class="sourceLineNo">313</span>        /**<a name="line.313"></a>
+<span class="sourceLineNo">314</span>         * Looks up and returns the font used for title labels.<a name="line.314"></a>
+<span class="sourceLineNo">315</span>         * Since Mac Aqua uses an inappropriate titled border font,<a name="line.315"></a>
+<span class="sourceLineNo">316</span>         * we use a bold label font instead. Actually if the title<a name="line.316"></a>
+<span class="sourceLineNo">317</span>         * is used in a titled separator, the bold weight is questionable.<a name="line.317"></a>
+<span class="sourceLineNo">318</span>         * It seems that most native Aqua tools use a plain label in<a name="line.318"></a>
+<span class="sourceLineNo">319</span>         * titled separators.<a name="line.319"></a>
+<span class="sourceLineNo">320</span>         *<a name="line.320"></a>
+<span class="sourceLineNo">321</span>         * @return the font used for title labels<a name="line.321"></a>
+<span class="sourceLineNo">322</span>         */<a name="line.322"></a>
+<span class="sourceLineNo">323</span>        private Font getTitleFont() {<a name="line.323"></a>
+<span class="sourceLineNo">324</span>            return Utilities.isLafAqua()<a name="line.324"></a>
+<span class="sourceLineNo">325</span>                    ? UIManager.getFont("Label.font").deriveFont(Font.BOLD)<a name="line.325"></a>
+<span class="sourceLineNo">326</span>                    : UIManager.getFont("TitledBorder.font");<a name="line.326"></a>
+<span class="sourceLineNo">327</span>        }<a name="line.327"></a>
+<span class="sourceLineNo">328</span><a name="line.328"></a>
+<span class="sourceLineNo">329</span>    }<a name="line.329"></a>
+<span class="sourceLineNo">330</span><a name="line.330"></a>
+<span class="sourceLineNo">331</span>    /**<a name="line.331"></a>
+<span class="sourceLineNo">332</span>     * A layout for the title label and separator(s) in titled separators.<a name="line.332"></a>
+<span class="sourceLineNo">333</span>     */<a name="line.333"></a>
+<span class="sourceLineNo">334</span>    private static final class TitledSeparatorLayout implements LayoutManager {<a name="line.334"></a>
+<span class="sourceLineNo">335</span><a name="line.335"></a>
+<span class="sourceLineNo">336</span>        private final boolean centerSeparators;<a name="line.336"></a>
+<span class="sourceLineNo">337</span><a name="line.337"></a>
+<span class="sourceLineNo">338</span>        /**<a name="line.338"></a>
+<span class="sourceLineNo">339</span>         * Constructs a TitledSeparatorLayout that either centers the separators<a name="line.339"></a>
+<span class="sourceLineNo">340</span>         * or aligns them along the font baseline of the title label.<a name="line.340"></a>
+<span class="sourceLineNo">341</span>         *<a name="line.341"></a>
+<span class="sourceLineNo">342</span>         * @param centerSeparators  true to center, false to align along<a name="line.342"></a>
+<span class="sourceLineNo">343</span>         *     the font baseline of the title label<a name="line.343"></a>
+<span class="sourceLineNo">344</span>         */<a name="line.344"></a>
+<span class="sourceLineNo">345</span>        private TitledSeparatorLayout(boolean centerSeparators) {<a name="line.345"></a>
+<span class="sourceLineNo">346</span>            this.centerSeparators = centerSeparators;<a name="line.346"></a>
+<span class="sourceLineNo">347</span>        }<a name="line.347"></a>
+<span class="sourceLineNo">348</span><a name="line.348"></a>
+<span class="sourceLineNo">349</span>        /**<a name="line.349"></a>
+<span class="sourceLineNo">350</span>         * Does nothing. This layout manager looks up the components<a name="line.350"></a>
+<span class="sourceLineNo">351</span>         * from the layout container and used the component's index<a name="line.351"></a>
+<span class="sourceLineNo">352</span>         * in the child array to identify the label and separators.<a name="line.352"></a>
+<span class="sourceLineNo">353</span>         *<a name="line.353"></a>
+<span class="sourceLineNo">354</span>         * @param name the string to be associated with the component<a name="line.354"></a>
+<span class="sourceLineNo">355</span>         * @param comp the component to be added<a name="line.355"></a>
+<span class="sourceLineNo">356</span>         */<a name="line.356"></a>
+<span class="sourceLineNo">357</span>        @Override<a name="line.357"></a>
+<span class="sourceLineNo">358</span>        public void addLayoutComponent(String name, Component comp) {<a name="line.358"></a>
+<span class="sourceLineNo">359</span>            // Does nothing.<a name="line.359"></a>
+<span class="sourceLineNo">360</span>        }<a name="line.360"></a>
+<span class="sourceLineNo">361</span><a name="line.361"></a>
+<span class="sourceLineNo">362</span>        /**<a name="line.362"></a>
+<span class="sourceLineNo">363</span>         * Does nothing. This layout manager looks up the components<a name="line.363"></a>
+<span class="sourceLineNo">364</span>         * from the layout container and used the component's index<a name="line.364"></a>
+<span class="sourceLineNo">365</span>         * in the child array to identify the label and separators.<a name="line.365"></a>
+<span class="sourceLineNo">366</span>         *<a name="line.366"></a>
+<span class="sourceLineNo">367</span>         * @param comp the component to be removed<a name="line.367"></a>
+<span class="sourceLineNo">368</span>         */<a name="line.368"></a>
+<span class="sourceLineNo">369</span>        @Override<a name="line.369"></a>
+<span class="sourceLineNo">370</span>        public void removeLayoutComponent(Component comp) {<a name="line.370"></a>
+<span class="sourceLineNo">371</span>            // Does nothing.<a name="line.371"></a>
+<span class="sourceLineNo">372</span>        }<a name="line.372"></a>
+<span class="sourceLineNo">373</span><a name="line.373"></a>
+<span class="sourceLineNo">374</span>        /**<a name="line.374"></a>
+<span class="sourceLineNo">375</span>         * Computes and returns the minimum size dimensions<a name="line.375"></a>
+<span class="sourceLineNo">376</span>         * for the specified container. Forwards this request<a name="line.376"></a>
+<span class="sourceLineNo">377</span>         * to &lt;code&gt;#preferredLayoutSize&lt;/code&gt;.<a name="line.377"></a>
+<span class="sourceLineNo">378</span>         *<a name="line.378"></a>
+<span class="sourceLineNo">379</span>         * @param parent the component to be laid out<a name="line.379"></a>
+<span class="sourceLineNo">380</span>         * @return the container's minimum size.<a name="line.380"></a>
+<span class="sourceLineNo">381</span>         * @see #preferredLayoutSize(Container)<a name="line.381"></a>
+<span class="sourceLineNo">382</span>         */<a name="line.382"></a>
+<span class="sourceLineNo">383</span>        @Override<a name="line.383"></a>
+<span class="sourceLineNo">384</span>        public Dimension minimumLayoutSize(Container parent) {<a name="line.384"></a>
+<span class="sourceLineNo">385</span>            return preferredLayoutSize(parent);<a name="line.385"></a>
+<span class="sourceLineNo">386</span>        }<a name="line.386"></a>
+<span class="sourceLineNo">387</span><a name="line.387"></a>
+<span class="sourceLineNo">388</span>        /**<a name="line.388"></a>
+<span class="sourceLineNo">389</span>         * Computes and returns the preferred size dimensions<a name="line.389"></a>
+<span class="sourceLineNo">390</span>         * for the specified container. Returns the title label's<a name="line.390"></a>
+<span class="sourceLineNo">391</span>         * preferred size.<a name="line.391"></a>
+<span class="sourceLineNo">392</span>         *<a name="line.392"></a>
+<span class="sourceLineNo">393</span>         * @param parent the component to be laid out<a name="line.393"></a>
+<span class="sourceLineNo">394</span>         * @return the container's preferred size.<a name="line.394"></a>
+<span class="sourceLineNo">395</span>         * @see #minimumLayoutSize(Container)<a name="line.395"></a>
+<span class="sourceLineNo">396</span>         */<a name="line.396"></a>
+<span class="sourceLineNo">397</span>        @Override<a name="line.397"></a>
+<span class="sourceLineNo">398</span>        public Dimension preferredLayoutSize(Container parent) {<a name="line.398"></a>
+<span class="sourceLineNo">399</span>            Component label = getLabel(parent);<a name="line.399"></a>
+<span class="sourceLineNo">400</span>            Dimension labelSize = label.getPreferredSize();<a name="line.400"></a>
+<span class="sourceLineNo">401</span>            Insets insets = parent.getInsets();<a name="line.401"></a>
+<span class="sourceLineNo">402</span>            int width = labelSize.width + insets.left + insets.right;<a name="line.402"></a>
+<span class="sourceLineNo">403</span>            int height = labelSize.height + insets.top + insets.bottom;<a name="line.403"></a>
+<span class="sourceLineNo">404</span>            return new Dimension(width, height);<a name="line.404"></a>
+<span class="sourceLineNo">405</span>        }<a name="line.405"></a>
+<span class="sourceLineNo">406</span><a name="line.406"></a>
+<span class="sourceLineNo">407</span>        /**<a name="line.407"></a>
+<span class="sourceLineNo">408</span>         * Lays out the specified container.<a name="line.408"></a>
+<span class="sourceLineNo">409</span>         *<a name="line.409"></a>
+<span class="sourceLineNo">410</span>         * @param parent the container to be laid out<a name="line.410"></a>
+<span class="sourceLineNo">411</span>         */<a name="line.411"></a>
+<span class="sourceLineNo">412</span>        @Override<a name="line.412"></a>
+<span class="sourceLineNo">413</span>        public void layoutContainer(Container parent) {<a name="line.413"></a>
+<span class="sourceLineNo">414</span>            synchronized (parent.getTreeLock()) {<a name="line.414"></a>
+<span class="sourceLineNo">415</span>                // Look up the parent size and insets<a name="line.415"></a>
+<span class="sourceLineNo">416</span>                Dimension size = parent.getSize();<a name="line.416"></a>
+<span class="sourceLineNo">417</span>                Insets insets = parent.getInsets();<a name="line.417"></a>
+<span class="sourceLineNo">418</span>                int width = size.width - insets.left - insets.right;<a name="line.418"></a>
+<span class="sourceLineNo">419</span><a name="line.419"></a>
+<span class="sourceLineNo">420</span>                // Look up components and their sizes<a name="line.420"></a>
+<span class="sourceLineNo">421</span>                JLabel label = getLabel(parent);<a name="line.421"></a>
+<span class="sourceLineNo">422</span>                Dimension labelSize = label.getPreferredSize();<a name="line.422"></a>
+<span class="sourceLineNo">423</span>                int labelWidth = labelSize.width;<a name="line.423"></a>
+<span class="sourceLineNo">424</span>                int labelHeight = labelSize.height;<a name="line.424"></a>
+<span class="sourceLineNo">425</span>                Component separator1 = parent.getComponent(1);<a name="line.425"></a>
+<span class="sourceLineNo">426</span>                int separatorHeight = separator1.getPreferredSize().height;<a name="line.426"></a>
+<span class="sourceLineNo">427</span><a name="line.427"></a>
+<span class="sourceLineNo">428</span>                FontMetrics metrics = label.getFontMetrics(label.getFont());<a name="line.428"></a>
+<span class="sourceLineNo">429</span>                int ascent = metrics.getMaxAscent();<a name="line.429"></a>
+<span class="sourceLineNo">430</span>                int hGapDlu = centerSeparators ? 3 : 1;<a name="line.430"></a>
+<span class="sourceLineNo">431</span>                int hGap = Sizes.dialogUnitXAsPixel(hGapDlu, label);<a name="line.431"></a>
+<span class="sourceLineNo">432</span>                int vOffset = centerSeparators<a name="line.432"></a>
+<span class="sourceLineNo">433</span>                        ? 1 + (labelHeight - separatorHeight) / 2<a name="line.433"></a>
+<span class="sourceLineNo">434</span>                        : ascent - separatorHeight / 2;<a name="line.434"></a>
+<span class="sourceLineNo">435</span><a name="line.435"></a>
+<span class="sourceLineNo">436</span>                int alignment = label.getHorizontalAlignment();<a name="line.436"></a>
+<span class="sourceLineNo">437</span>                int y = insets.top;<a name="line.437"></a>
+<span class="sourceLineNo">438</span>                if (alignment == SwingConstants.LEFT) {<a name="line.438"></a>
+<span class="sourceLineNo">439</span>                    int x = insets.left;<a name="line.439"></a>
+<span class="sourceLineNo">440</span>                    label.setBounds(x, y, labelWidth, labelHeight);<a name="line.440"></a>
+<span class="sourceLineNo">441</span>                    x += labelWidth;<a name="line.441"></a>
+<span class="sourceLineNo">442</span>                    x += hGap;<a name="line.442"></a>
+<span class="sourceLineNo">443</span>                    int separatorWidth = size.width - insets.right - x;<a name="line.443"></a>
+<span class="sourceLineNo">444</span>                    separator1.setBounds(x, y + vOffset, separatorWidth,<a name="line.444"></a>
+<span class="sourceLineNo">445</span>                            separatorHeight);<a name="line.445"></a>
+<span class="sourceLineNo">446</span>                } else if (alignment == SwingConstants.RIGHT) {<a name="line.446"></a>
+<span class="sourceLineNo">447</span>                    int x = insets.left + width - labelWidth;<a name="line.447"></a>
+<span class="sourceLineNo">448</span>                    label.setBounds(x, y, labelWidth, labelHeight);<a name="line.448"></a>
+<span class="sourceLineNo">449</span>                    x -= hGap;<a name="line.449"></a>
+<span class="sourceLineNo">450</span>                    x--;<a name="line.450"></a>
+<span class="sourceLineNo">451</span>                    int separatorWidth = x - insets.left;<a name="line.451"></a>
+<span class="sourceLineNo">452</span>                    separator1.setBounds(insets.left, y + vOffset,<a name="line.452"></a>
+<span class="sourceLineNo">453</span>                            separatorWidth, separatorHeight);<a name="line.453"></a>
+<span class="sourceLineNo">454</span>                } else {<a name="line.454"></a>
+<span class="sourceLineNo">455</span>                    int xOffset = (width - labelWidth - 2 * hGap) / 2;<a name="line.455"></a>
+<span class="sourceLineNo">456</span>                    int x = insets.left;<a name="line.456"></a>
+<span class="sourceLineNo">457</span>                    separator1.setBounds(x, y + vOffset, xOffset - 1,<a name="line.457"></a>
+<span class="sourceLineNo">458</span>                            separatorHeight);<a name="line.458"></a>
+<span class="sourceLineNo">459</span>                    x += xOffset;<a name="line.459"></a>
+<span class="sourceLineNo">460</span>                    x += hGap;<a name="line.460"></a>
+<span class="sourceLineNo">461</span>                    label.setBounds(x, y, labelWidth, labelHeight);<a name="line.461"></a>
+<span class="sourceLineNo">462</span>                    x += labelWidth;<a name="line.462"></a>
+<span class="sourceLineNo">463</span>                    x += hGap;<a name="line.463"></a>
+<span class="sourceLineNo">464</span>                    Component separator2 = parent.getComponent(2);<a name="line.464"></a>
+<span class="sourceLineNo">465</span>                    int separatorWidth = size.width - insets.right - x;<a name="line.465"></a>
+<span class="sourceLineNo">466</span>                    separator2.setBounds(x, y + vOffset, separatorWidth,<a name="line.466"></a>
+<span class="sourceLineNo">467</span>                            separatorHeight);<a name="line.467"></a>
+<span class="sourceLineNo">468</span>                }<a name="line.468"></a>
+<span class="sourceLineNo">469</span>            }<a name="line.469"></a>
+<span class="sourceLineNo">470</span>        }<a name="line.470"></a>
+<span class="sourceLineNo">471</span><a name="line.471"></a>
+<span class="sourceLineNo">472</span>        private JLabel getLabel(Container parent) {<a name="line.472"></a>
+<span class="sourceLineNo">473</span>            return (JLabel) parent.getComponent(0);<a name="line.473"></a>
+<span class="sourceLineNo">474</span>        }<a name="line.474"></a>
+<span class="sourceLineNo">475</span><a name="line.475"></a>
+<span class="sourceLineNo">476</span>    }<a name="line.476"></a>
+<span class="sourceLineNo">477</span><a name="line.477"></a>
+<span class="sourceLineNo">478</span>}<a name="line.478"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

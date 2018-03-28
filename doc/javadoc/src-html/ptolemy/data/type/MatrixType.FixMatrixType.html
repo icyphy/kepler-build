@@ -1,0 +1,587 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../../stylesheet.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>/* The base type of matrix token classes.<a name="line.1"></a>
+<span class="sourceLineNo">002</span><a name="line.2"></a>
+<span class="sourceLineNo">003</span> Copyright (c) 2006-2014 The Regents of the University of California.<a name="line.3"></a>
+<span class="sourceLineNo">004</span> All rights reserved.<a name="line.4"></a>
+<span class="sourceLineNo">005</span> Permission is hereby granted, without written agreement and without<a name="line.5"></a>
+<span class="sourceLineNo">006</span> license or royalty fees, to use, copy, modify, and distribute this<a name="line.6"></a>
+<span class="sourceLineNo">007</span> software and its documentation for any purpose, provided that the above<a name="line.7"></a>
+<span class="sourceLineNo">008</span> copyright notice and the following two paragraphs appear in all copies<a name="line.8"></a>
+<span class="sourceLineNo">009</span> of this software.<a name="line.9"></a>
+<span class="sourceLineNo">010</span><a name="line.10"></a>
+<span class="sourceLineNo">011</span> IN NO EVENT SHALL THE UNIVERSITY OF CALIFORNIA BE LIABLE TO ANY PARTY<a name="line.11"></a>
+<span class="sourceLineNo">012</span> FOR DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES<a name="line.12"></a>
+<span class="sourceLineNo">013</span> ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION, EVEN IF<a name="line.13"></a>
+<span class="sourceLineNo">014</span> THE UNIVERSITY OF CALIFORNIA HAS BEEN ADVISED OF THE POSSIBILITY OF<a name="line.14"></a>
+<span class="sourceLineNo">015</span> SUCH DAMAGE.<a name="line.15"></a>
+<span class="sourceLineNo">016</span><a name="line.16"></a>
+<span class="sourceLineNo">017</span> THE UNIVERSITY OF CALIFORNIA SPECIFICALLY DISCLAIMS ANY WARRANTIES,<a name="line.17"></a>
+<span class="sourceLineNo">018</span> INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF<a name="line.18"></a>
+<span class="sourceLineNo">019</span> MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE<a name="line.19"></a>
+<span class="sourceLineNo">020</span> PROVIDED HEREUNDER IS ON AN "AS IS" BASIS, AND THE UNIVERSITY OF<a name="line.20"></a>
+<span class="sourceLineNo">021</span> CALIFORNIA HAS NO OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT, UPDATES,<a name="line.21"></a>
+<span class="sourceLineNo">022</span> ENHANCEMENTS, OR MODIFICATIONS.<a name="line.22"></a>
+<span class="sourceLineNo">023</span><a name="line.23"></a>
+<span class="sourceLineNo">024</span> PT_COPYRIGHT_VERSION_2<a name="line.24"></a>
+<span class="sourceLineNo">025</span> COPYRIGHTENDKEY<a name="line.25"></a>
+<span class="sourceLineNo">026</span><a name="line.26"></a>
+<span class="sourceLineNo">027</span> */<a name="line.27"></a>
+<span class="sourceLineNo">028</span>package ptolemy.data.type;<a name="line.28"></a>
+<span class="sourceLineNo">029</span><a name="line.29"></a>
+<span class="sourceLineNo">030</span>import ptolemy.data.BooleanMatrixToken;<a name="line.30"></a>
+<span class="sourceLineNo">031</span>import ptolemy.data.ComplexMatrixToken;<a name="line.31"></a>
+<span class="sourceLineNo">032</span>import ptolemy.data.ComplexToken;<a name="line.32"></a>
+<span class="sourceLineNo">033</span>import ptolemy.data.DoubleMatrixToken;<a name="line.33"></a>
+<span class="sourceLineNo">034</span>import ptolemy.data.DoubleToken;<a name="line.34"></a>
+<span class="sourceLineNo">035</span>import ptolemy.data.FixMatrixToken;<a name="line.35"></a>
+<span class="sourceLineNo">036</span>import ptolemy.data.FixToken;<a name="line.36"></a>
+<span class="sourceLineNo">037</span>import ptolemy.data.IntMatrixToken;<a name="line.37"></a>
+<span class="sourceLineNo">038</span>import ptolemy.data.IntToken;<a name="line.38"></a>
+<span class="sourceLineNo">039</span>import ptolemy.data.LongMatrixToken;<a name="line.39"></a>
+<span class="sourceLineNo">040</span>import ptolemy.data.LongToken;<a name="line.40"></a>
+<span class="sourceLineNo">041</span>import ptolemy.data.MatrixToken;<a name="line.41"></a>
+<span class="sourceLineNo">042</span>import ptolemy.data.Token;<a name="line.42"></a>
+<span class="sourceLineNo">043</span>import ptolemy.graph.CPO;<a name="line.43"></a>
+<span class="sourceLineNo">044</span>import ptolemy.kernel.util.IllegalActionException;<a name="line.44"></a>
+<span class="sourceLineNo">045</span>import ptolemy.kernel.util.InternalErrorException;<a name="line.45"></a>
+<span class="sourceLineNo">046</span>import ptolemy.math.Complex;<a name="line.46"></a>
+<span class="sourceLineNo">047</span>import ptolemy.math.FixPoint;<a name="line.47"></a>
+<span class="sourceLineNo">048</span><a name="line.48"></a>
+<span class="sourceLineNo">049</span>///////////////////////////////////////////////////////////////////<a name="line.49"></a>
+<span class="sourceLineNo">050</span>//// MatrixType<a name="line.50"></a>
+<span class="sourceLineNo">051</span><a name="line.51"></a>
+<span class="sourceLineNo">052</span>/**<a name="line.52"></a>
+<span class="sourceLineNo">053</span> The base type of matrix token classes. This type functions as a union<a name="line.53"></a>
+<span class="sourceLineNo">054</span> of the various matrix types. It allows for the creation of arrays<a name="line.54"></a>
+<span class="sourceLineNo">055</span> that consist of diverse matrix types, because the array type will<a name="line.55"></a>
+<span class="sourceLineNo">056</span> be {matrix}.<a name="line.56"></a>
+<span class="sourceLineNo">057</span><a name="line.57"></a>
+<span class="sourceLineNo">058</span> @author Steve Neuendorffer and Edward A. Lee<a name="line.58"></a>
+<span class="sourceLineNo">059</span> @version $Id$<a name="line.59"></a>
+<span class="sourceLineNo">060</span> @since Ptolemy II 5.2<a name="line.60"></a>
+<span class="sourceLineNo">061</span> @Pt.ProposedRating Red (yuhong)<a name="line.61"></a>
+<span class="sourceLineNo">062</span> @Pt.AcceptedRating Red<a name="line.62"></a>
+<span class="sourceLineNo">063</span> */<a name="line.63"></a>
+<span class="sourceLineNo">064</span>public class MatrixType extends StructuredType implements Cloneable {<a name="line.64"></a>
+<span class="sourceLineNo">065</span><a name="line.65"></a>
+<span class="sourceLineNo">066</span>    /** Construct a new matrix type that represents matrix tokens of the<a name="line.66"></a>
+<span class="sourceLineNo">067</span>     *  given class with the given number of rows and columns.<a name="line.67"></a>
+<span class="sourceLineNo">068</span>     *  @param c The token class.<a name="line.68"></a>
+<span class="sourceLineNo">069</span>     *  @param type The element type.<a name="line.69"></a>
+<span class="sourceLineNo">070</span>     *  @param name The name.<a name="line.70"></a>
+<span class="sourceLineNo">071</span>     */<a name="line.71"></a>
+<span class="sourceLineNo">072</span>    public MatrixType(Class c, Type type, String name) {<a name="line.72"></a>
+<span class="sourceLineNo">073</span>        _tokenClass = c;<a name="line.73"></a>
+<span class="sourceLineNo">074</span>        _elementType = type;<a name="line.74"></a>
+<span class="sourceLineNo">075</span>        _name = name;<a name="line.75"></a>
+<span class="sourceLineNo">076</span>        BaseType._addType(this, name, c);<a name="line.76"></a>
+<span class="sourceLineNo">077</span>    }<a name="line.77"></a>
+<span class="sourceLineNo">078</span><a name="line.78"></a>
+<span class="sourceLineNo">079</span>    ///////////////////////////////////////////////////////////////////<a name="line.79"></a>
+<span class="sourceLineNo">080</span>    ////                         public methods                    ////<a name="line.80"></a>
+<span class="sourceLineNo">081</span><a name="line.81"></a>
+<span class="sourceLineNo">082</span>    /** Return this, that is, return the reference to this object.<a name="line.82"></a>
+<span class="sourceLineNo">083</span>     *  @return A MatrixType.<a name="line.83"></a>
+<span class="sourceLineNo">084</span>     */<a name="line.84"></a>
+<span class="sourceLineNo">085</span>    @Override<a name="line.85"></a>
+<span class="sourceLineNo">086</span>    public Object clone() {<a name="line.86"></a>
+<span class="sourceLineNo">087</span>        return this;<a name="line.87"></a>
+<span class="sourceLineNo">088</span>    }<a name="line.88"></a>
+<span class="sourceLineNo">089</span><a name="line.89"></a>
+<span class="sourceLineNo">090</span>    /** If the argument is an instance of this class or a subclass,<a name="line.90"></a>
+<span class="sourceLineNo">091</span>     *  then return the token. Otherwise, throw an exception.<a name="line.91"></a>
+<span class="sourceLineNo">092</span>     *  @param token A token.<a name="line.92"></a>
+<span class="sourceLineNo">093</span>     *  @return An instance of this class.<a name="line.93"></a>
+<span class="sourceLineNo">094</span>     *  @exception IllegalActionException If the argument is not<a name="line.94"></a>
+<span class="sourceLineNo">095</span>     *   an instance of this class.<a name="line.95"></a>
+<span class="sourceLineNo">096</span>     */<a name="line.96"></a>
+<span class="sourceLineNo">097</span>    @Override<a name="line.97"></a>
+<span class="sourceLineNo">098</span>    public Token convert(Token token) throws IllegalActionException {<a name="line.98"></a>
+<span class="sourceLineNo">099</span>        if (token instanceof MatrixToken) {<a name="line.99"></a>
+<span class="sourceLineNo">100</span>            return token;<a name="line.100"></a>
+<span class="sourceLineNo">101</span>        }<a name="line.101"></a>
+<span class="sourceLineNo">102</span>        throw new IllegalActionException(Token<a name="line.102"></a>
+<span class="sourceLineNo">103</span>                .notSupportedIncomparableConversionMessage(token, "matrix"));<a name="line.103"></a>
+<span class="sourceLineNo">104</span>    }<a name="line.104"></a>
+<span class="sourceLineNo">105</span><a name="line.105"></a>
+<span class="sourceLineNo">106</span>    /** Determine if the argument represents the same MatrixType as this<a name="line.106"></a>
+<span class="sourceLineNo">107</span>     *  object.<a name="line.107"></a>
+<span class="sourceLineNo">108</span>     *  @param object A Type.<a name="line.108"></a>
+<span class="sourceLineNo">109</span>     *  @return True if the argument type is a matrix type representing the<a name="line.109"></a>
+<span class="sourceLineNo">110</span>     *  same class, with the same number of rows and columns.<a name="line.110"></a>
+<span class="sourceLineNo">111</span>     */<a name="line.111"></a>
+<span class="sourceLineNo">112</span>    @Override<a name="line.112"></a>
+<span class="sourceLineNo">113</span>    public boolean equals(Object object) {<a name="line.113"></a>
+<span class="sourceLineNo">114</span>        if (!(object instanceof MatrixType)) {<a name="line.114"></a>
+<span class="sourceLineNo">115</span>            return false;<a name="line.115"></a>
+<span class="sourceLineNo">116</span>        }<a name="line.116"></a>
+<span class="sourceLineNo">117</span><a name="line.117"></a>
+<span class="sourceLineNo">118</span>        MatrixType matrixType = (MatrixType) object;<a name="line.118"></a>
+<span class="sourceLineNo">119</span><a name="line.119"></a>
+<span class="sourceLineNo">120</span>        if (matrixType.getTokenClass() != _tokenClass) {<a name="line.120"></a>
+<span class="sourceLineNo">121</span>            return false;<a name="line.121"></a>
+<span class="sourceLineNo">122</span>        }<a name="line.122"></a>
+<span class="sourceLineNo">123</span><a name="line.123"></a>
+<span class="sourceLineNo">124</span>        return true;<a name="line.124"></a>
+<span class="sourceLineNo">125</span>    }<a name="line.125"></a>
+<span class="sourceLineNo">126</span><a name="line.126"></a>
+<span class="sourceLineNo">127</span>    /** Return the type of the elements contained in an instance of<a name="line.127"></a>
+<span class="sourceLineNo">128</span>     *  this matrix type.  Tokens of the type returned by this method<a name="line.128"></a>
+<span class="sourceLineNo">129</span>     *  will be returned by the getElementAsToken of matrices that<a name="line.129"></a>
+<span class="sourceLineNo">130</span>     *  have this type. If this is an instance of this base class<a name="line.130"></a>
+<span class="sourceLineNo">131</span>     *  rather than the specific matrix types, then return null.<a name="line.131"></a>
+<span class="sourceLineNo">132</span>     *  @return The type of the elements.<a name="line.132"></a>
+<span class="sourceLineNo">133</span>     */<a name="line.133"></a>
+<span class="sourceLineNo">134</span>    public Type getElementType() {<a name="line.134"></a>
+<span class="sourceLineNo">135</span>        return _elementType;<a name="line.135"></a>
+<span class="sourceLineNo">136</span>    }<a name="line.136"></a>
+<span class="sourceLineNo">137</span><a name="line.137"></a>
+<span class="sourceLineNo">138</span>    /** Return a matrix type whose element type is the given element<a name="line.138"></a>
+<span class="sourceLineNo">139</span>     *  type.<a name="line.139"></a>
+<span class="sourceLineNo">140</span>     *  @param elementType The type of the element.<a name="line.140"></a>
+<span class="sourceLineNo">141</span>     *  @return The matrix type.<a name="line.141"></a>
+<span class="sourceLineNo">142</span>     *  @exception IllegalActionException If the elementType is not a<a name="line.142"></a>
+<span class="sourceLineNo">143</span>     *  type that has a corresponding matrix type.<a name="line.143"></a>
+<span class="sourceLineNo">144</span>     */<a name="line.144"></a>
+<span class="sourceLineNo">145</span>    public static MatrixType getMatrixTypeForElementType(Type elementType)<a name="line.145"></a>
+<span class="sourceLineNo">146</span>            throws IllegalActionException {<a name="line.146"></a>
+<span class="sourceLineNo">147</span>        MatrixType matrixType;<a name="line.147"></a>
+<span class="sourceLineNo">148</span><a name="line.148"></a>
+<span class="sourceLineNo">149</span>        if (elementType.equals(BaseType.UNKNOWN)) {<a name="line.149"></a>
+<span class="sourceLineNo">150</span>            throw new IllegalActionException(<a name="line.150"></a>
+<span class="sourceLineNo">151</span>                    "Cannot resolve type for " + "matrix construction.");<a name="line.151"></a>
+<span class="sourceLineNo">152</span>        } else if (elementType.equals(BaseType.BOOLEAN)) {<a name="line.152"></a>
+<span class="sourceLineNo">153</span>            matrixType = BaseType.BOOLEAN_MATRIX;<a name="line.153"></a>
+<span class="sourceLineNo">154</span>        } else if (elementType.equals(BaseType.INT)) {<a name="line.154"></a>
+<span class="sourceLineNo">155</span>            matrixType = BaseType.INT_MATRIX;<a name="line.155"></a>
+<span class="sourceLineNo">156</span>        } else if (elementType.equals(BaseType.LONG)) {<a name="line.156"></a>
+<span class="sourceLineNo">157</span>            matrixType = BaseType.LONG_MATRIX;<a name="line.157"></a>
+<span class="sourceLineNo">158</span>        } else if (elementType.equals(BaseType.DOUBLE)) {<a name="line.158"></a>
+<span class="sourceLineNo">159</span>            matrixType = BaseType.DOUBLE_MATRIX;<a name="line.159"></a>
+<span class="sourceLineNo">160</span>        } else if (elementType.equals(BaseType.COMPLEX)) {<a name="line.160"></a>
+<span class="sourceLineNo">161</span>            matrixType = BaseType.COMPLEX_MATRIX;<a name="line.161"></a>
+<span class="sourceLineNo">162</span>        } else if (elementType instanceof FixType) {<a name="line.162"></a>
+<span class="sourceLineNo">163</span>            matrixType = BaseType.FIX_MATRIX;<a name="line.163"></a>
+<span class="sourceLineNo">164</span>        } else if (elementType.equals(BaseType.UNSIZED_FIX)) {<a name="line.164"></a>
+<span class="sourceLineNo">165</span>            matrixType = BaseType.FIX_MATRIX;<a name="line.165"></a>
+<span class="sourceLineNo">166</span>        } else {<a name="line.166"></a>
+<span class="sourceLineNo">167</span>            throw new IllegalActionException("Type " + elementType<a name="line.167"></a>
+<span class="sourceLineNo">168</span>                    + " does not have a corresponding matrix type.");<a name="line.168"></a>
+<span class="sourceLineNo">169</span>        }<a name="line.169"></a>
+<span class="sourceLineNo">170</span><a name="line.170"></a>
+<span class="sourceLineNo">171</span>        return matrixType;<a name="line.171"></a>
+<span class="sourceLineNo">172</span>    }<a name="line.172"></a>
+<span class="sourceLineNo">173</span><a name="line.173"></a>
+<span class="sourceLineNo">174</span>    /** Return the class for tokens that this type represents.<a name="line.174"></a>
+<span class="sourceLineNo">175</span>     *  @return A class that represents a matrix token.<a name="line.175"></a>
+<span class="sourceLineNo">176</span>     */<a name="line.176"></a>
+<span class="sourceLineNo">177</span>    @Override<a name="line.177"></a>
+<span class="sourceLineNo">178</span>    public Class getTokenClass() {<a name="line.178"></a>
+<span class="sourceLineNo">179</span>        return _tokenClass;<a name="line.179"></a>
+<span class="sourceLineNo">180</span>    }<a name="line.180"></a>
+<span class="sourceLineNo">181</span><a name="line.181"></a>
+<span class="sourceLineNo">182</span>    /** Return a hash code value for this object.<a name="line.182"></a>
+<span class="sourceLineNo">183</span>     *  @return The hash code for the token class of this type.<a name="line.183"></a>
+<span class="sourceLineNo">184</span>     */<a name="line.184"></a>
+<span class="sourceLineNo">185</span>    @Override<a name="line.185"></a>
+<span class="sourceLineNo">186</span>    public int hashCode() {<a name="line.186"></a>
+<span class="sourceLineNo">187</span>        return getTokenClass().hashCode();<a name="line.187"></a>
+<span class="sourceLineNo">188</span>    }<a name="line.188"></a>
+<span class="sourceLineNo">189</span><a name="line.189"></a>
+<span class="sourceLineNo">190</span>    /** Set the elements that have declared type BaseType.UNKNOWN to the<a name="line.190"></a>
+<span class="sourceLineNo">191</span>     *  specified type.<a name="line.191"></a>
+<span class="sourceLineNo">192</span>     *  @param type A Type.<a name="line.192"></a>
+<span class="sourceLineNo">193</span>     */<a name="line.193"></a>
+<span class="sourceLineNo">194</span>    @Override<a name="line.194"></a>
+<span class="sourceLineNo">195</span>    public void initialize(Type type) {<a name="line.195"></a>
+<span class="sourceLineNo">196</span>        // Ignore... This type has no components that are unknown.<a name="line.196"></a>
+<span class="sourceLineNo">197</span>    }<a name="line.197"></a>
+<span class="sourceLineNo">198</span><a name="line.198"></a>
+<span class="sourceLineNo">199</span>    /** Return true if the element type is abstract.<a name="line.199"></a>
+<span class="sourceLineNo">200</span>     *  @return True.<a name="line.200"></a>
+<span class="sourceLineNo">201</span>     */<a name="line.201"></a>
+<span class="sourceLineNo">202</span>    @Override<a name="line.202"></a>
+<span class="sourceLineNo">203</span>    public boolean isAbstract() {<a name="line.203"></a>
+<span class="sourceLineNo">204</span>        return _elementType.isAbstract();<a name="line.204"></a>
+<span class="sourceLineNo">205</span>    }<a name="line.205"></a>
+<span class="sourceLineNo">206</span><a name="line.206"></a>
+<span class="sourceLineNo">207</span>    /** Test if the argument type is compatible with this type. The method<a name="line.207"></a>
+<span class="sourceLineNo">208</span>     *  returns true if this type is UNKNOWN, since any type is a substitution<a name="line.208"></a>
+<span class="sourceLineNo">209</span>     *  instance of it. If this type is not UNKNOWN, this method returns true<a name="line.209"></a>
+<span class="sourceLineNo">210</span>     *  if the argument type is less than or equal to this type in the type<a name="line.210"></a>
+<span class="sourceLineNo">211</span>     *  lattice, and false otherwise.<a name="line.211"></a>
+<span class="sourceLineNo">212</span>     *  @param type An instance of Type.<a name="line.212"></a>
+<span class="sourceLineNo">213</span>     *  @return True if the argument is compatible with this type.<a name="line.213"></a>
+<span class="sourceLineNo">214</span>     */<a name="line.214"></a>
+<span class="sourceLineNo">215</span>    @Override<a name="line.215"></a>
+<span class="sourceLineNo">216</span>    public boolean isCompatible(Type type) {<a name="line.216"></a>
+<span class="sourceLineNo">217</span>        int typeInfo = TypeLattice.compare(this, type);<a name="line.217"></a>
+<span class="sourceLineNo">218</span>        return typeInfo == CPO.SAME || typeInfo == CPO.HIGHER;<a name="line.218"></a>
+<span class="sourceLineNo">219</span>    }<a name="line.219"></a>
+<span class="sourceLineNo">220</span><a name="line.220"></a>
+<span class="sourceLineNo">221</span>    /** Test if this Type is a constant. A Type is a constant if it<a name="line.221"></a>
+<span class="sourceLineNo">222</span>     *  does not contain BaseType.UNKNOWN in any level within it.<a name="line.222"></a>
+<span class="sourceLineNo">223</span>     *  @return False.<a name="line.223"></a>
+<span class="sourceLineNo">224</span>     */<a name="line.224"></a>
+<span class="sourceLineNo">225</span>    @Override<a name="line.225"></a>
+<span class="sourceLineNo">226</span>    public boolean isConstant() {<a name="line.226"></a>
+<span class="sourceLineNo">227</span>        return true;<a name="line.227"></a>
+<span class="sourceLineNo">228</span>    }<a name="line.228"></a>
+<span class="sourceLineNo">229</span><a name="line.229"></a>
+<span class="sourceLineNo">230</span>    /** Return true, indicating that instances of this type can<a name="line.230"></a>
+<span class="sourceLineNo">231</span>     *  exist.<a name="line.231"></a>
+<span class="sourceLineNo">232</span>     *  @return True.<a name="line.232"></a>
+<span class="sourceLineNo">233</span>     */<a name="line.233"></a>
+<span class="sourceLineNo">234</span>    @Override<a name="line.234"></a>
+<span class="sourceLineNo">235</span>    public boolean isInstantiable() {<a name="line.235"></a>
+<span class="sourceLineNo">236</span>        return _elementType.isInstantiable();<a name="line.236"></a>
+<span class="sourceLineNo">237</span>    }<a name="line.237"></a>
+<span class="sourceLineNo">238</span><a name="line.238"></a>
+<span class="sourceLineNo">239</span>    /** Test if the argument is a substitution instance of this type.<a name="line.239"></a>
+<span class="sourceLineNo">240</span>     *  @param type A Type.<a name="line.240"></a>
+<span class="sourceLineNo">241</span>     *  @return False.<a name="line.241"></a>
+<span class="sourceLineNo">242</span>     */<a name="line.242"></a>
+<span class="sourceLineNo">243</span>    @Override<a name="line.243"></a>
+<span class="sourceLineNo">244</span>    public boolean isSubstitutionInstance(Type type) {<a name="line.244"></a>
+<span class="sourceLineNo">245</span>        if (type instanceof StructuredType) {<a name="line.245"></a>
+<span class="sourceLineNo">246</span>            return ((StructuredType) type)<a name="line.246"></a>
+<span class="sourceLineNo">247</span>                    ._getRepresentative() == _getRepresentative();<a name="line.247"></a>
+<span class="sourceLineNo">248</span>        } else {<a name="line.248"></a>
+<span class="sourceLineNo">249</span>            return false;<a name="line.249"></a>
+<span class="sourceLineNo">250</span>        }<a name="line.250"></a>
+<span class="sourceLineNo">251</span>    }<a name="line.251"></a>
+<span class="sourceLineNo">252</span><a name="line.252"></a>
+<span class="sourceLineNo">253</span>    /** Return the string representation of this type.<a name="line.253"></a>
+<span class="sourceLineNo">254</span>     *  @return A String.<a name="line.254"></a>
+<span class="sourceLineNo">255</span>     */<a name="line.255"></a>
+<span class="sourceLineNo">256</span>    @Override<a name="line.256"></a>
+<span class="sourceLineNo">257</span>    public String toString() {<a name="line.257"></a>
+<span class="sourceLineNo">258</span>        return _name;<a name="line.258"></a>
+<span class="sourceLineNo">259</span>    }<a name="line.259"></a>
+<span class="sourceLineNo">260</span><a name="line.260"></a>
+<span class="sourceLineNo">261</span>    /** Update this StructuredType to the specified Structured Type.<a name="line.261"></a>
+<span class="sourceLineNo">262</span>     ** The specified type must have the same structure as this type.<a name="line.262"></a>
+<span class="sourceLineNo">263</span>     *  This method will only update the component type that is<a name="line.263"></a>
+<span class="sourceLineNo">264</span>     *  BaseType.UNKNOWN, and leave the constant part of this type intact.<a name="line.264"></a>
+<span class="sourceLineNo">265</span>     *  @param newType A StructuredType.<a name="line.265"></a>
+<span class="sourceLineNo">266</span>     *  @exception IllegalActionException If the specified type has a<a name="line.266"></a>
+<span class="sourceLineNo">267</span>     *   different structure.<a name="line.267"></a>
+<span class="sourceLineNo">268</span>     */<a name="line.268"></a>
+<span class="sourceLineNo">269</span>    @Override<a name="line.269"></a>
+<span class="sourceLineNo">270</span>    public void updateType(StructuredType newType)<a name="line.270"></a>
+<span class="sourceLineNo">271</span>            throws IllegalActionException {<a name="line.271"></a>
+<span class="sourceLineNo">272</span>        if (newType._getRepresentative() != _getRepresentative()) {<a name="line.272"></a>
+<span class="sourceLineNo">273</span>            throw new InternalErrorException("MatrixType.updateType: Cannot "<a name="line.273"></a>
+<span class="sourceLineNo">274</span>                    + "updateType the element type to " + newType + ".");<a name="line.274"></a>
+<span class="sourceLineNo">275</span>        }<a name="line.275"></a>
+<span class="sourceLineNo">276</span>    }<a name="line.276"></a>
+<span class="sourceLineNo">277</span><a name="line.277"></a>
+<span class="sourceLineNo">278</span>    /** The boolean matrix data type. */<a name="line.278"></a>
+<span class="sourceLineNo">279</span>    public static class BooleanMatrixType extends MatrixType {<a name="line.279"></a>
+<span class="sourceLineNo">280</span>        public BooleanMatrixType() {<a name="line.280"></a>
+<span class="sourceLineNo">281</span>            super(BooleanMatrixToken.class, BaseType.BOOLEAN, "[boolean]");<a name="line.281"></a>
+<span class="sourceLineNo">282</span>        }<a name="line.282"></a>
+<span class="sourceLineNo">283</span><a name="line.283"></a>
+<span class="sourceLineNo">284</span>        @Override<a name="line.284"></a>
+<span class="sourceLineNo">285</span>        public Token convert(Token token) throws IllegalActionException {<a name="line.285"></a>
+<span class="sourceLineNo">286</span>            if (token instanceof MatrixToken) {<a name="line.286"></a>
+<span class="sourceLineNo">287</span>                return BooleanMatrixToken.convert(token);<a name="line.287"></a>
+<span class="sourceLineNo">288</span>            } else {<a name="line.288"></a>
+<span class="sourceLineNo">289</span>                // NOTE: No point in converting to a boolean matrix,<a name="line.289"></a>
+<span class="sourceLineNo">290</span>                // since you can't do anything with it.<a name="line.290"></a>
+<span class="sourceLineNo">291</span>                throw new IllegalActionException(<a name="line.291"></a>
+<span class="sourceLineNo">292</span>                        Token.notSupportedConversionMessage(token, toString()));<a name="line.292"></a>
+<span class="sourceLineNo">293</span>            }<a name="line.293"></a>
+<span class="sourceLineNo">294</span>        }<a name="line.294"></a>
+<span class="sourceLineNo">295</span>    }<a name="line.295"></a>
+<span class="sourceLineNo">296</span><a name="line.296"></a>
+<span class="sourceLineNo">297</span>    /** The complex matrix data type. */<a name="line.297"></a>
+<span class="sourceLineNo">298</span>    public static class ComplexMatrixType extends MatrixType {<a name="line.298"></a>
+<span class="sourceLineNo">299</span>        public ComplexMatrixType() {<a name="line.299"></a>
+<span class="sourceLineNo">300</span>            super(ComplexMatrixToken.class, BaseType.COMPLEX, "[complex]");<a name="line.300"></a>
+<span class="sourceLineNo">301</span>        }<a name="line.301"></a>
+<span class="sourceLineNo">302</span><a name="line.302"></a>
+<span class="sourceLineNo">303</span>        @Override<a name="line.303"></a>
+<span class="sourceLineNo">304</span>        public Token convert(Token token) throws IllegalActionException {<a name="line.304"></a>
+<span class="sourceLineNo">305</span>            if (token instanceof MatrixToken) {<a name="line.305"></a>
+<span class="sourceLineNo">306</span>                return ComplexMatrixToken.convert(token);<a name="line.306"></a>
+<span class="sourceLineNo">307</span>            } else {<a name="line.307"></a>
+<span class="sourceLineNo">308</span>                if (token.isNil()) {<a name="line.308"></a>
+<span class="sourceLineNo">309</span>                    throw new IllegalActionException(Token<a name="line.309"></a>
+<span class="sourceLineNo">310</span>                            .notSupportedConversionMessage(token, toString()));<a name="line.310"></a>
+<span class="sourceLineNo">311</span>                }<a name="line.311"></a>
+<span class="sourceLineNo">312</span>                // Try to create a new [complex] type with just one member.<a name="line.312"></a>
+<span class="sourceLineNo">313</span>                // The following conversion will fail if the member cannot<a name="line.313"></a>
+<span class="sourceLineNo">314</span>                // be converted to an int.<a name="line.314"></a>
+<span class="sourceLineNo">315</span>                ComplexToken singleMember = ComplexToken.convert(token);<a name="line.315"></a>
+<span class="sourceLineNo">316</span>                Complex[][] matrix = new Complex[1][1];<a name="line.316"></a>
+<span class="sourceLineNo">317</span>                matrix[0][0] = singleMember.complexValue();<a name="line.317"></a>
+<span class="sourceLineNo">318</span>                return new ComplexMatrixToken(matrix);<a name="line.318"></a>
+<span class="sourceLineNo">319</span>            }<a name="line.319"></a>
+<span class="sourceLineNo">320</span><a name="line.320"></a>
+<span class="sourceLineNo">321</span>        }<a name="line.321"></a>
+<span class="sourceLineNo">322</span>    }<a name="line.322"></a>
+<span class="sourceLineNo">323</span><a name="line.323"></a>
+<span class="sourceLineNo">324</span>    /** The double matrix data type. */<a name="line.324"></a>
+<span class="sourceLineNo">325</span>    public static class DoubleMatrixType extends MatrixType {<a name="line.325"></a>
+<span class="sourceLineNo">326</span>        public DoubleMatrixType() {<a name="line.326"></a>
+<span class="sourceLineNo">327</span>            super(DoubleMatrixToken.class, BaseType.DOUBLE, "[double]");<a name="line.327"></a>
+<span class="sourceLineNo">328</span>        }<a name="line.328"></a>
+<span class="sourceLineNo">329</span><a name="line.329"></a>
+<span class="sourceLineNo">330</span>        @Override<a name="line.330"></a>
+<span class="sourceLineNo">331</span>        public Token convert(Token token) throws IllegalActionException {<a name="line.331"></a>
+<span class="sourceLineNo">332</span>            if (token instanceof MatrixToken) {<a name="line.332"></a>
+<span class="sourceLineNo">333</span>                return DoubleMatrixToken.convert(token);<a name="line.333"></a>
+<span class="sourceLineNo">334</span>            } else {<a name="line.334"></a>
+<span class="sourceLineNo">335</span>                if (token.isNil()) {<a name="line.335"></a>
+<span class="sourceLineNo">336</span>                    // MatrixTokens do not support nil because there is no<a name="line.336"></a>
+<span class="sourceLineNo">337</span>                    // way to represent a nil double as a Java.lang.Double.<a name="line.337"></a>
+<span class="sourceLineNo">338</span>                    // Double.NaN is a possibility, but NaN is a value, whereas<a name="line.338"></a>
+<span class="sourceLineNo">339</span>                    // nil is the absent value.  Other types, like int do<a name="line.339"></a>
+<span class="sourceLineNo">340</span>                    // not have NaN, so we catch this problem here.<a name="line.340"></a>
+<span class="sourceLineNo">341</span>                    // Note that this code is called by the "cast" expression<a name="line.341"></a>
+<span class="sourceLineNo">342</span>                    // language method from data.expr.UtilityFunctions<a name="line.342"></a>
+<span class="sourceLineNo">343</span>                    throw new IllegalActionException(Token<a name="line.343"></a>
+<span class="sourceLineNo">344</span>                            .notSupportedConversionMessage(token, toString()));<a name="line.344"></a>
+<span class="sourceLineNo">345</span>                }<a name="line.345"></a>
+<span class="sourceLineNo">346</span>                // Try to create a new [double] type with just one member.<a name="line.346"></a>
+<span class="sourceLineNo">347</span>                // The following conversion will fail if the member cannot<a name="line.347"></a>
+<span class="sourceLineNo">348</span>                // be converted to an int.<a name="line.348"></a>
+<span class="sourceLineNo">349</span>                DoubleToken singleMember = DoubleToken.convert(token);<a name="line.349"></a>
+<span class="sourceLineNo">350</span>                double[] matrix = new double[1];<a name="line.350"></a>
+<span class="sourceLineNo">351</span>                matrix[0] = singleMember.doubleValue();<a name="line.351"></a>
+<span class="sourceLineNo">352</span>                return new DoubleMatrixToken(matrix, 1, 1);<a name="line.352"></a>
+<span class="sourceLineNo">353</span>            }<a name="line.353"></a>
+<span class="sourceLineNo">354</span>        }<a name="line.354"></a>
+<span class="sourceLineNo">355</span>    }<a name="line.355"></a>
+<span class="sourceLineNo">356</span><a name="line.356"></a>
+<span class="sourceLineNo">357</span>    /** The integer matrix data type. */<a name="line.357"></a>
+<span class="sourceLineNo">358</span>    public static class IntMatrixType extends MatrixType {<a name="line.358"></a>
+<span class="sourceLineNo">359</span>        public IntMatrixType() {<a name="line.359"></a>
+<span class="sourceLineNo">360</span>            super(IntMatrixToken.class, BaseType.INT, "[int]");<a name="line.360"></a>
+<span class="sourceLineNo">361</span>        }<a name="line.361"></a>
+<span class="sourceLineNo">362</span><a name="line.362"></a>
+<span class="sourceLineNo">363</span>        @Override<a name="line.363"></a>
+<span class="sourceLineNo">364</span>        public Token convert(Token token) throws IllegalActionException {<a name="line.364"></a>
+<span class="sourceLineNo">365</span>            if (token instanceof MatrixToken) {<a name="line.365"></a>
+<span class="sourceLineNo">366</span>                return IntMatrixToken.convert(token);<a name="line.366"></a>
+<span class="sourceLineNo">367</span>            } else {<a name="line.367"></a>
+<span class="sourceLineNo">368</span>                if (token.isNil()) {<a name="line.368"></a>
+<span class="sourceLineNo">369</span>                    throw new IllegalActionException(Token<a name="line.369"></a>
+<span class="sourceLineNo">370</span>                            .notSupportedConversionMessage(token, toString()));<a name="line.370"></a>
+<span class="sourceLineNo">371</span>                }<a name="line.371"></a>
+<span class="sourceLineNo">372</span><a name="line.372"></a>
+<span class="sourceLineNo">373</span>                // Try to create a new [int] type with just one member.<a name="line.373"></a>
+<span class="sourceLineNo">374</span>                // The following conversion will fail if the member cannot<a name="line.374"></a>
+<span class="sourceLineNo">375</span>                // be converted to an int.<a name="line.375"></a>
+<span class="sourceLineNo">376</span>                IntToken singleMember = IntToken.convert(token);<a name="line.376"></a>
+<span class="sourceLineNo">377</span>                int[] matrix = new int[1];<a name="line.377"></a>
+<span class="sourceLineNo">378</span>                matrix[0] = singleMember.intValue();<a name="line.378"></a>
+<span class="sourceLineNo">379</span>                return new IntMatrixToken(matrix, 1, 1);<a name="line.379"></a>
+<span class="sourceLineNo">380</span>            }<a name="line.380"></a>
+<span class="sourceLineNo">381</span>        }<a name="line.381"></a>
+<span class="sourceLineNo">382</span>    }<a name="line.382"></a>
+<span class="sourceLineNo">383</span><a name="line.383"></a>
+<span class="sourceLineNo">384</span>    /** The fix matrix data type. */<a name="line.384"></a>
+<span class="sourceLineNo">385</span>    public static class FixMatrixType extends MatrixType {<a name="line.385"></a>
+<span class="sourceLineNo">386</span>        public FixMatrixType() {<a name="line.386"></a>
+<span class="sourceLineNo">387</span>            super(FixMatrixToken.class, BaseType.UNSIZED_FIX, "[fixedpoint]");<a name="line.387"></a>
+<span class="sourceLineNo">388</span>        }<a name="line.388"></a>
+<span class="sourceLineNo">389</span><a name="line.389"></a>
+<span class="sourceLineNo">390</span>        @Override<a name="line.390"></a>
+<span class="sourceLineNo">391</span>        public Token convert(Token token) throws IllegalActionException {<a name="line.391"></a>
+<span class="sourceLineNo">392</span>            if (token instanceof MatrixToken) {<a name="line.392"></a>
+<span class="sourceLineNo">393</span>                return FixMatrixToken.convert(token);<a name="line.393"></a>
+<span class="sourceLineNo">394</span>            } else {<a name="line.394"></a>
+<span class="sourceLineNo">395</span>                if (token.isNil()) {<a name="line.395"></a>
+<span class="sourceLineNo">396</span>                    throw new IllegalActionException(Token<a name="line.396"></a>
+<span class="sourceLineNo">397</span>                            .notSupportedConversionMessage(token, toString()));<a name="line.397"></a>
+<span class="sourceLineNo">398</span>                }<a name="line.398"></a>
+<span class="sourceLineNo">399</span>                // Try to create a new [fix] type with just one member.<a name="line.399"></a>
+<span class="sourceLineNo">400</span>                // The following conversion will fail if the member cannot<a name="line.400"></a>
+<span class="sourceLineNo">401</span>                // be converted to an int.<a name="line.401"></a>
+<span class="sourceLineNo">402</span>                FixToken singleMember = FixToken.convert(token);<a name="line.402"></a>
+<span class="sourceLineNo">403</span>                FixPoint[][] matrix = new FixPoint[1][1];<a name="line.403"></a>
+<span class="sourceLineNo">404</span>                matrix[0][0] = singleMember.fixValue();<a name="line.404"></a>
+<span class="sourceLineNo">405</span>                return new FixMatrixToken(matrix);<a name="line.405"></a>
+<span class="sourceLineNo">406</span>            }<a name="line.406"></a>
+<span class="sourceLineNo">407</span>        }<a name="line.407"></a>
+<span class="sourceLineNo">408</span>    }<a name="line.408"></a>
+<span class="sourceLineNo">409</span><a name="line.409"></a>
+<span class="sourceLineNo">410</span>    /** The long matrix data type. */<a name="line.410"></a>
+<span class="sourceLineNo">411</span>    public static class LongMatrixType extends MatrixType {<a name="line.411"></a>
+<span class="sourceLineNo">412</span>        public LongMatrixType() {<a name="line.412"></a>
+<span class="sourceLineNo">413</span>            super(LongMatrixToken.class, BaseType.LONG, "[long]");<a name="line.413"></a>
+<span class="sourceLineNo">414</span>        }<a name="line.414"></a>
+<span class="sourceLineNo">415</span><a name="line.415"></a>
+<span class="sourceLineNo">416</span>        @Override<a name="line.416"></a>
+<span class="sourceLineNo">417</span>        public Token convert(Token token) throws IllegalActionException {<a name="line.417"></a>
+<span class="sourceLineNo">418</span>            if (token instanceof MatrixToken) {<a name="line.418"></a>
+<span class="sourceLineNo">419</span>                return LongMatrixToken.convert(token);<a name="line.419"></a>
+<span class="sourceLineNo">420</span>            } else {<a name="line.420"></a>
+<span class="sourceLineNo">421</span>                if (token.isNil()) {<a name="line.421"></a>
+<span class="sourceLineNo">422</span>                    throw new IllegalActionException(Token<a name="line.422"></a>
+<span class="sourceLineNo">423</span>                            .notSupportedConversionMessage(token, toString()));<a name="line.423"></a>
+<span class="sourceLineNo">424</span>                }<a name="line.424"></a>
+<span class="sourceLineNo">425</span>                // Try to create a new [long] type with just one member.<a name="line.425"></a>
+<span class="sourceLineNo">426</span>                // The following conversion will fail if the member cannot<a name="line.426"></a>
+<span class="sourceLineNo">427</span>                // be converted to an int.<a name="line.427"></a>
+<span class="sourceLineNo">428</span>                LongToken singleMember = LongToken.convert(token);<a name="line.428"></a>
+<span class="sourceLineNo">429</span>                long[] matrix = new long[1];<a name="line.429"></a>
+<span class="sourceLineNo">430</span>                matrix[0] = singleMember.longValue();<a name="line.430"></a>
+<span class="sourceLineNo">431</span>                return new LongMatrixToken(matrix, 1, 1);<a name="line.431"></a>
+<span class="sourceLineNo">432</span>            }<a name="line.432"></a>
+<span class="sourceLineNo">433</span>        }<a name="line.433"></a>
+<span class="sourceLineNo">434</span>    }<a name="line.434"></a>
+<span class="sourceLineNo">435</span><a name="line.435"></a>
+<span class="sourceLineNo">436</span>    ///////////////////////////////////////////////////////////////////<a name="line.436"></a>
+<span class="sourceLineNo">437</span>    ////                         protected methods                 ////<a name="line.437"></a>
+<span class="sourceLineNo">438</span><a name="line.438"></a>
+<span class="sourceLineNo">439</span>    /** Compare this type with the specified type. The specified type<a name="line.439"></a>
+<span class="sourceLineNo">440</span>     *  must be of the same structured type, otherwise an exception will<a name="line.440"></a>
+<span class="sourceLineNo">441</span>     *  be thrown.<a name="line.441"></a>
+<span class="sourceLineNo">442</span>     *  This method returns one of ptolemy.graph.CPO.LOWER,<a name="line.442"></a>
+<span class="sourceLineNo">443</span>     *  ptolemy.graph.CPO.SAME, ptolemy.graph.CPO.HIGHER,<a name="line.443"></a>
+<span class="sourceLineNo">444</span>     *  ptolemy.graph.CPO.INCOMPARABLE, indicating this type is lower<a name="line.444"></a>
+<span class="sourceLineNo">445</span>     *  than, equal to, higher than, or incomparable with the<a name="line.445"></a>
+<span class="sourceLineNo">446</span>     *  specified type in the type hierarchy, respectively.<a name="line.446"></a>
+<span class="sourceLineNo">447</span>     *  @param type a StructuredType.<a name="line.447"></a>
+<span class="sourceLineNo">448</span>     *  @return An integer.<a name="line.448"></a>
+<span class="sourceLineNo">449</span>     *  @exception IllegalArgumentException If the specified type is<a name="line.449"></a>
+<span class="sourceLineNo">450</span>     *   not the same structured type as this one.<a name="line.450"></a>
+<span class="sourceLineNo">451</span>     */<a name="line.451"></a>
+<span class="sourceLineNo">452</span>    @Override<a name="line.452"></a>
+<span class="sourceLineNo">453</span>    protected int _compare(StructuredType type) {<a name="line.453"></a>
+<span class="sourceLineNo">454</span>        return CPO.SAME;<a name="line.454"></a>
+<span class="sourceLineNo">455</span><a name="line.455"></a>
+<span class="sourceLineNo">456</span>        //         if (equals(type)) {<a name="line.456"></a>
+<span class="sourceLineNo">457</span>        //             return CPO.SAME;<a name="line.457"></a>
+<span class="sourceLineNo">458</span>        //         } else {<a name="line.458"></a>
+<span class="sourceLineNo">459</span>        //             return CPO.LOWER;<a name="line.459"></a>
+<span class="sourceLineNo">460</span>        //         }<a name="line.460"></a>
+<span class="sourceLineNo">461</span>    }<a name="line.461"></a>
+<span class="sourceLineNo">462</span><a name="line.462"></a>
+<span class="sourceLineNo">463</span>    /** Return a static instance of this structured type. The return<a name="line.463"></a>
+<span class="sourceLineNo">464</span>     *  value is used by TypeLattice to represent this type.<a name="line.464"></a>
+<span class="sourceLineNo">465</span>     *  @return a StructuredType.<a name="line.465"></a>
+<span class="sourceLineNo">466</span>     */<a name="line.466"></a>
+<span class="sourceLineNo">467</span>    @Override<a name="line.467"></a>
+<span class="sourceLineNo">468</span>    protected StructuredType _getRepresentative() {<a name="line.468"></a>
+<span class="sourceLineNo">469</span>        return this;<a name="line.469"></a>
+<span class="sourceLineNo">470</span>    }<a name="line.470"></a>
+<span class="sourceLineNo">471</span><a name="line.471"></a>
+<span class="sourceLineNo">472</span>    /** Return the greatest lower bound of this type with the specified<a name="line.472"></a>
+<span class="sourceLineNo">473</span>     *  type. The specified type must be of the same structured type,<a name="line.473"></a>
+<span class="sourceLineNo">474</span>     *  otherwise an exception will be thrown.<a name="line.474"></a>
+<span class="sourceLineNo">475</span>     *  @param type a StructuredType.<a name="line.475"></a>
+<span class="sourceLineNo">476</span>     *  @return a StructuredType.<a name="line.476"></a>
+<span class="sourceLineNo">477</span>     *  @exception IllegalArgumentException If the specified type is<a name="line.477"></a>
+<span class="sourceLineNo">478</span>     *   not the same structured type as this one.<a name="line.478"></a>
+<span class="sourceLineNo">479</span>     */<a name="line.479"></a>
+<span class="sourceLineNo">480</span>    @Override<a name="line.480"></a>
+<span class="sourceLineNo">481</span>    protected StructuredType _greatestLowerBound(StructuredType type) {<a name="line.481"></a>
+<span class="sourceLineNo">482</span>        return this;<a name="line.482"></a>
+<span class="sourceLineNo">483</span>    }<a name="line.483"></a>
+<span class="sourceLineNo">484</span><a name="line.484"></a>
+<span class="sourceLineNo">485</span>    /** Return the least upper bound of this type with the specified<a name="line.485"></a>
+<span class="sourceLineNo">486</span>     *  type. The specified type must be of the same structured type,<a name="line.486"></a>
+<span class="sourceLineNo">487</span>     *  otherwise an exception will be thrown.<a name="line.487"></a>
+<span class="sourceLineNo">488</span>     *  @param type a StructuredType.<a name="line.488"></a>
+<span class="sourceLineNo">489</span>     *  @return a StructuredType.<a name="line.489"></a>
+<span class="sourceLineNo">490</span>     *  @exception IllegalArgumentException If the specified type is<a name="line.490"></a>
+<span class="sourceLineNo">491</span>     *   not the same structured type as this one.<a name="line.491"></a>
+<span class="sourceLineNo">492</span>     */<a name="line.492"></a>
+<span class="sourceLineNo">493</span>    @Override<a name="line.493"></a>
+<span class="sourceLineNo">494</span>    protected StructuredType _leastUpperBound(StructuredType type) {<a name="line.494"></a>
+<span class="sourceLineNo">495</span>        return this;<a name="line.495"></a>
+<span class="sourceLineNo">496</span><a name="line.496"></a>
+<span class="sourceLineNo">497</span>        //         if (equals(type)) {<a name="line.497"></a>
+<span class="sourceLineNo">498</span>        //             return this;<a name="line.498"></a>
+<span class="sourceLineNo">499</span>        //         } else {<a name="line.499"></a>
+<span class="sourceLineNo">500</span>        //             return type;<a name="line.500"></a>
+<span class="sourceLineNo">501</span>        //         }<a name="line.501"></a>
+<span class="sourceLineNo">502</span>    }<a name="line.502"></a>
+<span class="sourceLineNo">503</span><a name="line.503"></a>
+<span class="sourceLineNo">504</span>    ///////////////////////////////////////////////////////////////////<a name="line.504"></a>
+<span class="sourceLineNo">505</span>    ////                         private variables                 ////<a name="line.505"></a>
+<span class="sourceLineNo">506</span><a name="line.506"></a>
+<span class="sourceLineNo">507</span>    /** The type of MatrixToken that this class represents. */<a name="line.507"></a>
+<span class="sourceLineNo">508</span>    private Class _tokenClass;<a name="line.508"></a>
+<span class="sourceLineNo">509</span><a name="line.509"></a>
+<span class="sourceLineNo">510</span>    /** The type of the elements of the matrix, or ScalarType for this base class. */<a name="line.510"></a>
+<span class="sourceLineNo">511</span>    private Type _elementType;<a name="line.511"></a>
+<span class="sourceLineNo">512</span><a name="line.512"></a>
+<span class="sourceLineNo">513</span>    /** The name of this instance. */<a name="line.513"></a>
+<span class="sourceLineNo">514</span>    private String _name;<a name="line.514"></a>
+<span class="sourceLineNo">515</span>}<a name="line.515"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

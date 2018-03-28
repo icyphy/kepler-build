@@ -1,0 +1,226 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../../stylesheet.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>/**<a name="line.1"></a>
+<span class="sourceLineNo">002</span> *  '$Author: crawl $'<a name="line.2"></a>
+<span class="sourceLineNo">003</span> *  '$Date: 2015-08-24 15:45:41 -0700 (Mon, 24 Aug 2015) $'<a name="line.3"></a>
+<span class="sourceLineNo">004</span> *  '$Revision: 33631 $'<a name="line.4"></a>
+<span class="sourceLineNo">005</span> *<a name="line.5"></a>
+<span class="sourceLineNo">006</span> *  For Details:<a name="line.6"></a>
+<span class="sourceLineNo">007</span> *  http://www.kepler-project.org<a name="line.7"></a>
+<span class="sourceLineNo">008</span> *<a name="line.8"></a>
+<span class="sourceLineNo">009</span> *  Copyright (c) 2010 The Regents of the<a name="line.9"></a>
+<span class="sourceLineNo">010</span> *  University of California. All rights reserved. Permission is hereby granted,<a name="line.10"></a>
+<span class="sourceLineNo">011</span> *  without written agreement and without license or royalty fees, to use, copy,<a name="line.11"></a>
+<span class="sourceLineNo">012</span> *  modify, and distribute this software and its documentation for any purpose,<a name="line.12"></a>
+<span class="sourceLineNo">013</span> *  provided that the above copyright notice and the following two paragraphs<a name="line.13"></a>
+<span class="sourceLineNo">014</span> *  appear in all copies of this software. IN NO EVENT SHALL THE UNIVERSITY OF<a name="line.14"></a>
+<span class="sourceLineNo">015</span> *  CALIFORNIA BE LIABLE TO ANY PARTY FOR DIRECT, INDIRECT, SPECIAL, INCIDENTAL,<a name="line.15"></a>
+<span class="sourceLineNo">016</span> *  OR CONSEQUENTIAL DAMAGES ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS<a name="line.16"></a>
+<span class="sourceLineNo">017</span> *  DOCUMENTATION, EVEN IF THE UNIVERSITY OF CALIFORNIA HAS BEEN ADVISED OF THE<a name="line.17"></a>
+<span class="sourceLineNo">018</span> *  POSSIBILITY OF SUCH DAMAGE. THE UNIVERSITY OF CALIFORNIA SPECIFICALLY<a name="line.18"></a>
+<span class="sourceLineNo">019</span> *  DISCLAIMS ANY WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED<a name="line.19"></a>
+<span class="sourceLineNo">020</span> *  WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. THE<a name="line.20"></a>
+<span class="sourceLineNo">021</span> *  SOFTWARE PROVIDED HEREUNDER IS ON AN "AS IS" BASIS, AND THE UNIVERSITY OF<a name="line.21"></a>
+<span class="sourceLineNo">022</span> *  CALIFORNIA HAS NO OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT, UPDATES,<a name="line.22"></a>
+<span class="sourceLineNo">023</span> *  ENHANCEMENTS, OR MODIFICATIONS.<a name="line.23"></a>
+<span class="sourceLineNo">024</span> */<a name="line.24"></a>
+<span class="sourceLineNo">025</span>package org.kepler.kar;<a name="line.25"></a>
+<span class="sourceLineNo">026</span><a name="line.26"></a>
+<span class="sourceLineNo">027</span>import java.io.IOException;<a name="line.27"></a>
+<span class="sourceLineNo">028</span>import java.net.URL;<a name="line.28"></a>
+<span class="sourceLineNo">029</span>import java.util.HashSet;<a name="line.29"></a>
+<span class="sourceLineNo">030</span>import java.util.Set;<a name="line.30"></a>
+<span class="sourceLineNo">031</span><a name="line.31"></a>
+<span class="sourceLineNo">032</span>import com.sun.javadoc.ClassDoc;<a name="line.32"></a>
+<span class="sourceLineNo">033</span>import com.sun.javadoc.RootDoc;<a name="line.33"></a>
+<span class="sourceLineNo">034</span><a name="line.34"></a>
+<span class="sourceLineNo">035</span>import ptolemy.util.ClassUtilities;<a name="line.35"></a>
+<span class="sourceLineNo">036</span><a name="line.36"></a>
+<span class="sourceLineNo">037</span>/** A doclet to find the paths of all super classes for an object.<a name="line.37"></a>
+<span class="sourceLineNo">038</span> * <a name="line.38"></a>
+<span class="sourceLineNo">039</span> *  @author Daniel Crawl<a name="line.39"></a>
+<span class="sourceLineNo">040</span> *  @version $Id: SuperClassPathFinderDoclet.java 33631 2015-08-24 22:45:41Z crawl $<a name="line.40"></a>
+<span class="sourceLineNo">041</span> */<a name="line.41"></a>
+<span class="sourceLineNo">042</span><a name="line.42"></a>
+<span class="sourceLineNo">043</span>public class SuperClassPathFinderDoclet {<a name="line.43"></a>
+<span class="sourceLineNo">044</span>    <a name="line.44"></a>
+<span class="sourceLineNo">045</span>    /** The entry point called from javadoc. */<a name="line.45"></a>
+<span class="sourceLineNo">046</span>    public static boolean start(RootDoc root) {<a name="line.46"></a>
+<span class="sourceLineNo">047</span><a name="line.47"></a>
+<span class="sourceLineNo">048</span>        _classFiles.clear();<a name="line.48"></a>
+<span class="sourceLineNo">049</span>        <a name="line.49"></a>
+<span class="sourceLineNo">050</span>        try {<a name="line.50"></a>
+<span class="sourceLineNo">051</span>            ClassDoc[] classes = root.classes();<a name="line.51"></a>
+<span class="sourceLineNo">052</span>            _className = classes[0].qualifiedName();<a name="line.52"></a>
+<span class="sourceLineNo">053</span>            for (int i = 0; i &lt; classes.length; i++) {<a name="line.53"></a>
+<span class="sourceLineNo">054</span>                String name = classes[i].qualifiedName();<a name="line.54"></a>
+<span class="sourceLineNo">055</span>                // skip nested classes<a name="line.55"></a>
+<span class="sourceLineNo">056</span>                if(i &gt; 0 &amp;&amp; name.startsWith(_className)) {<a name="line.56"></a>
+<span class="sourceLineNo">057</span>                    //System.out.println("skipping nested class " + name);<a name="line.57"></a>
+<span class="sourceLineNo">058</span>                    continue;<a name="line.58"></a>
+<span class="sourceLineNo">059</span>                }<a name="line.59"></a>
+<span class="sourceLineNo">060</span>                String filename = getFileNameForClassName(name);<a name="line.60"></a>
+<span class="sourceLineNo">061</span>                if (filename != null &amp;&amp; !_classFiles.contains(filename)) {<a name="line.61"></a>
+<span class="sourceLineNo">062</span>                    _classFiles.add(filename);<a name="line.62"></a>
+<span class="sourceLineNo">063</span>                    _addSuperClasses(classes[i]);<a name="line.63"></a>
+<span class="sourceLineNo">064</span>                }<a name="line.64"></a>
+<span class="sourceLineNo">065</span>            }<a name="line.65"></a>
+<span class="sourceLineNo">066</span>        } catch (Exception e) {<a name="line.66"></a>
+<span class="sourceLineNo">067</span>            System.out.println("ERROR " + e.getClass() + ": " + e.getMessage());<a name="line.67"></a>
+<span class="sourceLineNo">068</span>            e.printStackTrace();<a name="line.68"></a>
+<span class="sourceLineNo">069</span>        }<a name="line.69"></a>
+<span class="sourceLineNo">070</span>        return true;<a name="line.70"></a>
+<span class="sourceLineNo">071</span>    }<a name="line.71"></a>
+<span class="sourceLineNo">072</span>    <a name="line.72"></a>
+<span class="sourceLineNo">073</span>    /** Get the collection of path names. */<a name="line.73"></a>
+<span class="sourceLineNo">074</span>    public static Set&lt;String&gt; getClassFiles() {<a name="line.74"></a>
+<span class="sourceLineNo">075</span>        return new HashSet&lt;String&gt;(_classFiles);<a name="line.75"></a>
+<span class="sourceLineNo">076</span>    }<a name="line.76"></a>
+<span class="sourceLineNo">077</span>    <a name="line.77"></a>
+<span class="sourceLineNo">078</span>    /** Get the class name of the primary object. */<a name="line.78"></a>
+<span class="sourceLineNo">079</span>    public static String getClassName() {<a name="line.79"></a>
+<span class="sourceLineNo">080</span>        return _className;<a name="line.80"></a>
+<span class="sourceLineNo">081</span>    }<a name="line.81"></a>
+<span class="sourceLineNo">082</span><a name="line.82"></a>
+<span class="sourceLineNo">083</span>    /** Recursively add the super classes of the object. */<a name="line.83"></a>
+<span class="sourceLineNo">084</span>    private static void _addSuperClasses(ClassDoc classDoc) throws ClassNotFoundException {<a name="line.84"></a>
+<span class="sourceLineNo">085</span>        ClassDoc superClassDoc = classDoc.superclass();<a name="line.85"></a>
+<span class="sourceLineNo">086</span>        if (superClassDoc != null) {<a name="line.86"></a>
+<span class="sourceLineNo">087</span>            String name = superClassDoc.qualifiedName();<a name="line.87"></a>
+<span class="sourceLineNo">088</span>            String filename = getFileNameForClassName(name);<a name="line.88"></a>
+<span class="sourceLineNo">089</span>            //System.out.println("name = " + name);<a name="line.89"></a>
+<span class="sourceLineNo">090</span>            if (superClassDoc != null &amp;&amp; filename != null &amp;&amp; !_classFiles.contains(filename)<a name="line.90"></a>
+<span class="sourceLineNo">091</span>                    // for actors, stop at TypedAtomicActor and TypedCompositeActor<a name="line.91"></a>
+<span class="sourceLineNo">092</span>                    &amp;&amp; !name.equals("ptolemy.actor.TypedAtomicActor")<a name="line.92"></a>
+<span class="sourceLineNo">093</span>                    &amp;&amp; !name.equals("ptolemy.actor.TypedCompositeActor")<a name="line.93"></a>
+<span class="sourceLineNo">094</span>                    // for parameters stop at Variable<a name="line.94"></a>
+<span class="sourceLineNo">095</span>                    &amp;&amp; !name.equals("ptolemy.data.expr.Variable")<a name="line.95"></a>
+<span class="sourceLineNo">096</span>                    // for directors stop at Attribute<a name="line.96"></a>
+<span class="sourceLineNo">097</span>                    &amp;&amp; !name.equals("ptolemy.kernel.util.Attribute")) {<a name="line.97"></a>
+<span class="sourceLineNo">098</span>                _classFiles.add(filename);<a name="line.98"></a>
+<span class="sourceLineNo">099</span>                _addSuperClasses(superClassDoc);<a name="line.99"></a>
+<span class="sourceLineNo">100</span>            }<a name="line.100"></a>
+<span class="sourceLineNo">101</span>        }<a name="line.101"></a>
+<span class="sourceLineNo">102</span>    }<a name="line.102"></a>
+<span class="sourceLineNo">103</span>    <a name="line.103"></a>
+<span class="sourceLineNo">104</span>    /** Return the path for a fully-qualified class name. */<a name="line.104"></a>
+<span class="sourceLineNo">105</span>    public static String getFileNameForClassName(String className) throws ClassNotFoundException {<a name="line.105"></a>
+<span class="sourceLineNo">106</span>        String filename = className.replace('.', '/');<a name="line.106"></a>
+<span class="sourceLineNo">107</span><a name="line.107"></a>
+<span class="sourceLineNo">108</span>        // Inner classes: Get rid of everything past the first $<a name="line.108"></a>
+<span class="sourceLineNo">109</span>        if (filename.indexOf("$") != -1) {<a name="line.109"></a>
+<span class="sourceLineNo">110</span>            filename = filename.substring(0, filename.indexOf("$"));<a name="line.110"></a>
+<span class="sourceLineNo">111</span>        }<a name="line.111"></a>
+<span class="sourceLineNo">112</span><a name="line.112"></a>
+<span class="sourceLineNo">113</span>        filename += ".java";<a name="line.113"></a>
+<span class="sourceLineNo">114</span>        //System.out.println("filename = " + filename);<a name="line.114"></a>
+<span class="sourceLineNo">115</span>        URL url = ClassLoader.getSystemResource(filename);<a name="line.115"></a>
+<span class="sourceLineNo">116</span>        //System.out.println("url = " + url);        <a name="line.116"></a>
+<span class="sourceLineNo">117</span>        <a name="line.117"></a>
+<span class="sourceLineNo">118</span>        if(url == null) {<a name="line.118"></a>
+<span class="sourceLineNo">119</span><a name="line.119"></a>
+<span class="sourceLineNo">120</span>            try {<a name="line.120"></a>
+<span class="sourceLineNo">121</span>                url = ClassUtilities.sourceResource(filename);<a name="line.121"></a>
+<span class="sourceLineNo">122</span>            } catch (IOException e) {<a name="line.122"></a>
+<span class="sourceLineNo">123</span>                System.out.println("ERROR trying to find file for class " + className + ": " + e.getMessage());<a name="line.123"></a>
+<span class="sourceLineNo">124</span>            }<a name="line.124"></a>
+<span class="sourceLineNo">125</span>            <a name="line.125"></a>
+<span class="sourceLineNo">126</span>            if(url == null) {<a name="line.126"></a>
+<span class="sourceLineNo">127</span>                // see if class is a nested class<a name="line.127"></a>
+<span class="sourceLineNo">128</span>                Class&lt;?&gt; clazz = null;<a name="line.128"></a>
+<span class="sourceLineNo">129</span>                try {<a name="line.129"></a>
+<span class="sourceLineNo">130</span>                     clazz = Class.forName(className);<a name="line.130"></a>
+<span class="sourceLineNo">131</span>                } catch(ClassNotFoundException e) {<a name="line.131"></a>
+<span class="sourceLineNo">132</span>                   System.out.println("WARNING: could not instiante class " + className +<a name="line.132"></a>
+<span class="sourceLineNo">133</span>                           " (Maybe it's a customized composite actor?)");<a name="line.133"></a>
+<span class="sourceLineNo">134</span>                   return null;<a name="line.134"></a>
+<span class="sourceLineNo">135</span>                }<a name="line.135"></a>
+<span class="sourceLineNo">136</span>                if(clazz.getEnclosingClass() == null) {<a name="line.136"></a>
+<span class="sourceLineNo">137</span>                    System.out.println("WARNING: could not find path for class " + className);<a name="line.137"></a>
+<span class="sourceLineNo">138</span>                }// else { System.out.println("ignoring nested class " + className); }<a name="line.138"></a>
+<span class="sourceLineNo">139</span>            }<a name="line.139"></a>
+<span class="sourceLineNo">140</span>        }<a name="line.140"></a>
+<span class="sourceLineNo">141</span>        <a name="line.141"></a>
+<span class="sourceLineNo">142</span>        if(url != null) {<a name="line.142"></a>
+<span class="sourceLineNo">143</span>            return url.getPath();<a name="line.143"></a>
+<span class="sourceLineNo">144</span>        }<a name="line.144"></a>
+<span class="sourceLineNo">145</span>        return null;<a name="line.145"></a>
+<span class="sourceLineNo">146</span>        <a name="line.146"></a>
+<span class="sourceLineNo">147</span>    }<a name="line.147"></a>
+<span class="sourceLineNo">148</span><a name="line.148"></a>
+<span class="sourceLineNo">149</span>    /** A collection of path names. */<a name="line.149"></a>
+<span class="sourceLineNo">150</span>    private static final Set&lt;String&gt; _classFiles = new HashSet&lt;String&gt;();<a name="line.150"></a>
+<span class="sourceLineNo">151</span>    <a name="line.151"></a>
+<span class="sourceLineNo">152</span>    /** The class name of the primary object. */<a name="line.152"></a>
+<span class="sourceLineNo">153</span>    private static String _className;<a name="line.153"></a>
+<span class="sourceLineNo">154</span>}<a name="line.154"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

@@ -1,0 +1,525 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../../../stylesheet.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>/* An actor that outputs strings read from a text file or URL.<a name="line.1"></a>
+<span class="sourceLineNo">002</span><a name="line.2"></a>
+<span class="sourceLineNo">003</span> @Copyright (c) 2002-2015 The Regents of the University of California.<a name="line.3"></a>
+<span class="sourceLineNo">004</span> All rights reserved.<a name="line.4"></a>
+<span class="sourceLineNo">005</span><a name="line.5"></a>
+<span class="sourceLineNo">006</span> Permission is hereby granted, without written agreement and without<a name="line.6"></a>
+<span class="sourceLineNo">007</span> license or royalty fees, to use, copy, modify, and distribute this<a name="line.7"></a>
+<span class="sourceLineNo">008</span> software and its documentation for any purpose, provided that the<a name="line.8"></a>
+<span class="sourceLineNo">009</span> above copyright notice and the following two paragraphs appear in all<a name="line.9"></a>
+<span class="sourceLineNo">010</span> copies of this software.<a name="line.10"></a>
+<span class="sourceLineNo">011</span><a name="line.11"></a>
+<span class="sourceLineNo">012</span> IN NO EVENT SHALL THE UNIVERSITY OF CALIFORNIA BE LIABLE TO ANY PARTY<a name="line.12"></a>
+<span class="sourceLineNo">013</span> FOR DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES<a name="line.13"></a>
+<span class="sourceLineNo">014</span> ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION, EVEN IF<a name="line.14"></a>
+<span class="sourceLineNo">015</span> THE UNIVERSITY OF CALIFORNIA HAS BEEN ADVISED OF THE POSSIBILITY OF<a name="line.15"></a>
+<span class="sourceLineNo">016</span> SUCH DAMAGE.<a name="line.16"></a>
+<span class="sourceLineNo">017</span><a name="line.17"></a>
+<span class="sourceLineNo">018</span> THE UNIVERSITY OF CALIFORNIA SPECIFICALLY DISCLAIMS ANY WARRANTIES,<a name="line.18"></a>
+<span class="sourceLineNo">019</span> INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF<a name="line.19"></a>
+<span class="sourceLineNo">020</span> MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE<a name="line.20"></a>
+<span class="sourceLineNo">021</span> PROVIDED HEREUNDER IS ON AN "AS IS" BASIS, AND THE UNIVERSITY OF<a name="line.21"></a>
+<span class="sourceLineNo">022</span> CALIFORNIA HAS NO OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT, UPDATES,<a name="line.22"></a>
+<span class="sourceLineNo">023</span> ENHANCEMENTS, OR MODIFICATIONS.<a name="line.23"></a>
+<span class="sourceLineNo">024</span><a name="line.24"></a>
+<span class="sourceLineNo">025</span> PT_COPYRIGHT_VERSION 2<a name="line.25"></a>
+<span class="sourceLineNo">026</span> COPYRIGHTENDKEY<a name="line.26"></a>
+<span class="sourceLineNo">027</span> */<a name="line.27"></a>
+<span class="sourceLineNo">028</span>package ptolemy.actor.lib.io;<a name="line.28"></a>
+<span class="sourceLineNo">029</span><a name="line.29"></a>
+<span class="sourceLineNo">030</span>import java.io.IOException;<a name="line.30"></a>
+<span class="sourceLineNo">031</span>import java.util.ArrayList;<a name="line.31"></a>
+<span class="sourceLineNo">032</span>import java.util.HashSet;<a name="line.32"></a>
+<span class="sourceLineNo">033</span>import java.util.Set;<a name="line.33"></a>
+<span class="sourceLineNo">034</span>import java.util.StringTokenizer;<a name="line.34"></a>
+<span class="sourceLineNo">035</span><a name="line.35"></a>
+<span class="sourceLineNo">036</span>import ptolemy.data.BooleanToken;<a name="line.36"></a>
+<span class="sourceLineNo">037</span>import ptolemy.data.OrderedRecordToken;<a name="line.37"></a>
+<span class="sourceLineNo">038</span>import ptolemy.data.RecordToken;<a name="line.38"></a>
+<span class="sourceLineNo">039</span>import ptolemy.data.StringToken;<a name="line.39"></a>
+<span class="sourceLineNo">040</span>import ptolemy.data.Token;<a name="line.40"></a>
+<span class="sourceLineNo">041</span>import ptolemy.data.expr.ASTPtRootNode;<a name="line.41"></a>
+<span class="sourceLineNo">042</span>import ptolemy.data.expr.FileParameter;<a name="line.42"></a>
+<span class="sourceLineNo">043</span>import ptolemy.data.expr.ModelScope;<a name="line.43"></a>
+<span class="sourceLineNo">044</span>import ptolemy.data.expr.Parameter;<a name="line.44"></a>
+<span class="sourceLineNo">045</span>import ptolemy.data.expr.ParseTreeEvaluator;<a name="line.45"></a>
+<span class="sourceLineNo">046</span>import ptolemy.data.expr.ParserScope;<a name="line.46"></a>
+<span class="sourceLineNo">047</span>import ptolemy.data.expr.PtParser;<a name="line.47"></a>
+<span class="sourceLineNo">048</span>import ptolemy.data.expr.SingletonParameter;<a name="line.48"></a>
+<span class="sourceLineNo">049</span>import ptolemy.data.expr.StringParameter;<a name="line.49"></a>
+<span class="sourceLineNo">050</span>import ptolemy.data.expr.Variable;<a name="line.50"></a>
+<span class="sourceLineNo">051</span>import ptolemy.data.type.BaseType;<a name="line.51"></a>
+<span class="sourceLineNo">052</span>import ptolemy.data.type.Type;<a name="line.52"></a>
+<span class="sourceLineNo">053</span>import ptolemy.graph.Inequality;<a name="line.53"></a>
+<span class="sourceLineNo">054</span>import ptolemy.kernel.CompositeEntity;<a name="line.54"></a>
+<span class="sourceLineNo">055</span>import ptolemy.kernel.util.Attribute;<a name="line.55"></a>
+<span class="sourceLineNo">056</span>import ptolemy.kernel.util.IllegalActionException;<a name="line.56"></a>
+<span class="sourceLineNo">057</span>import ptolemy.kernel.util.NameDuplicationException;<a name="line.57"></a>
+<span class="sourceLineNo">058</span>import ptolemy.kernel.util.Settable;<a name="line.58"></a>
+<span class="sourceLineNo">059</span><a name="line.59"></a>
+<span class="sourceLineNo">060</span>///////////////////////////////////////////////////////////////////<a name="line.60"></a>
+<span class="sourceLineNo">061</span>//// CSVReader<a name="line.61"></a>
+<span class="sourceLineNo">062</span><a name="line.62"></a>
+<span class="sourceLineNo">063</span>/**<a name="line.63"></a>
+<span class="sourceLineNo">064</span> &lt;p&gt;<a name="line.64"></a>
+<span class="sourceLineNo">065</span> This actor reads a file or URL, one line at a time, and outputs each line<a name="line.65"></a>
+<span class="sourceLineNo">066</span> except the first as a record. The first line of the file gives<a name="line.66"></a>
+<span class="sourceLineNo">067</span> the names of the fields of the output records.<a name="line.67"></a>
+<span class="sourceLineNo">068</span> The remaining lines give the values of the fields.<a name="line.68"></a>
+<span class="sourceLineNo">069</span> The output is an ordered<a name="line.69"></a>
+<span class="sourceLineNo">070</span> record token, which means that the order defined in the<a name="line.70"></a>
+<span class="sourceLineNo">071</span> first line is preserved.<a name="line.71"></a>
+<span class="sourceLineNo">072</span> &lt;/p&gt;&lt;p&gt;<a name="line.72"></a>
+<span class="sourceLineNo">073</span> &lt;b&gt;NOTE:&lt;/b&gt; By default, this actor imposes no type constraints<a name="line.73"></a>
+<span class="sourceLineNo">074</span> on its output. To use it in a model, you must either enable<a name="line.74"></a>
+<span class="sourceLineNo">075</span> backward type inference (a parameter at the top level of the model),<a name="line.75"></a>
+<span class="sourceLineNo">076</span> or explicitly declare the output type (by selecting Configure-Ports<a name="line.76"></a>
+<span class="sourceLineNo">077</span> in the context menu). If you use backward type inference, then the<a name="line.77"></a>
+<span class="sourceLineNo">078</span> constraints are inferred from how you use the output. For example,<a name="line.78"></a>
+<span class="sourceLineNo">079</span> if you extract a record field of a particular type, then the output<a name="line.79"></a>
+<span class="sourceLineNo">080</span> will be constrained to be a record that contains that field.<a name="line.80"></a>
+<span class="sourceLineNo">081</span> If you declare output types specifically, then every line read<a name="line.81"></a>
+<span class="sourceLineNo">082</span> from the file must conform.<a name="line.82"></a>
+<span class="sourceLineNo">083</span> For example, if you set the output the type<a name="line.83"></a>
+<span class="sourceLineNo">084</span> constraint to "[x = int, y = double]" then the output will be an<a name="line.84"></a>
+<span class="sourceLineNo">085</span> ordered record where the first field is named "x" and has type int,<a name="line.85"></a>
+<span class="sourceLineNo">086</span> and the second field is named "y" and has type double.<a name="line.86"></a>
+<span class="sourceLineNo">087</span> If any line in the file violates this typing, then an exception<a name="line.87"></a>
+<span class="sourceLineNo">088</span> will be thrown.<a name="line.88"></a>
+<span class="sourceLineNo">089</span> &lt;/p&gt;&lt;p&gt;<a name="line.89"></a>
+<span class="sourceLineNo">090</span> If any line has more values than<a name="line.90"></a>
+<span class="sourceLineNo">091</span> the first line, then the trailing values will be ignored.<a name="line.91"></a>
+<span class="sourceLineNo">092</span> If any line has fewer values than the first line, then the<a name="line.92"></a>
+<span class="sourceLineNo">093</span> field values will be an empty string.<a name="line.93"></a>
+<span class="sourceLineNo">094</span> &lt;/p&gt;&lt;p&gt;<a name="line.94"></a>
+<span class="sourceLineNo">095</span> By default, the separator between field names and values is a comma,<a name="line.95"></a>
+<span class="sourceLineNo">096</span> so the file format is the standard CSV (comma-separated value) format.<a name="line.96"></a>
+<span class="sourceLineNo">097</span> The &lt;i&gt;separator&lt;/i&gt; parameter enables changing the separator to<a name="line.97"></a>
+<span class="sourceLineNo">098</span> tabs or semicolons.<a name="line.98"></a>
+<span class="sourceLineNo">099</span> &lt;/p&gt;&lt;p&gt;<a name="line.99"></a>
+<span class="sourceLineNo">100</span> The file or URL is specified using any form acceptable<a name="line.100"></a>
+<span class="sourceLineNo">101</span> to FileParameter.<a name="line.101"></a>
+<span class="sourceLineNo">102</span> &lt;/p&gt;&lt;p&gt;<a name="line.102"></a>
+<span class="sourceLineNo">103</span> Before an end of file is reached, the &lt;i&gt;endOfFile&lt;/i&gt;<a name="line.103"></a>
+<span class="sourceLineNo">104</span> output produces &lt;i&gt;false&lt;/i&gt;.  In the iteration where the last line<a name="line.104"></a>
+<span class="sourceLineNo">105</span> of the file is read and produced on the &lt;i&gt;output&lt;/i&gt; port, this actor<a name="line.105"></a>
+<span class="sourceLineNo">106</span> produces &lt;i&gt;true&lt;/i&gt; on the &lt;i&gt;endOfFile&lt;/i&gt; port. In that iteration,<a name="line.106"></a>
+<span class="sourceLineNo">107</span> postfire() returns false.  If the actor is iterated again, after the end<a name="line.107"></a>
+<span class="sourceLineNo">108</span> of file, then prefire() and postfire() will both return false, &lt;i&gt;output&lt;/i&gt;<a name="line.108"></a>
+<span class="sourceLineNo">109</span> will produce the string "EOF", and &lt;i&gt;endOfFile&lt;/i&gt; will produce &lt;i&gt;true&lt;/i&gt;.<a name="line.109"></a>
+<span class="sourceLineNo">110</span> &lt;/p&gt;&lt;p&gt;<a name="line.110"></a>
+<span class="sourceLineNo">111</span> In some domains (such as SDF), returning false in postfire()<a name="line.111"></a>
+<span class="sourceLineNo">112</span> causes the model to cease executing.<a name="line.112"></a>
+<span class="sourceLineNo">113</span> In other domains (such as DE), this causes the director to avoid<a name="line.113"></a>
+<span class="sourceLineNo">114</span> further firings of this actor.  So usually, the actor will not be<a name="line.114"></a>
+<span class="sourceLineNo">115</span> invoked again after the end of file is reached.<a name="line.115"></a>
+<span class="sourceLineNo">116</span> &lt;/p&gt;&lt;p&gt;<a name="line.116"></a>
+<span class="sourceLineNo">117</span> This actor reads ahead in the file so that it can produce an output<a name="line.117"></a>
+<span class="sourceLineNo">118</span> &lt;i&gt;true&lt;/i&gt; on &lt;i&gt;endOfFile&lt;/i&gt; in the same iteration where it outputs<a name="line.118"></a>
+<span class="sourceLineNo">119</span> the last line.  It reads the first two lines in preinitialize(), and<a name="line.119"></a>
+<span class="sourceLineNo">120</span> subsequently reads a new line in each invocation of postfire(). The<a name="line.120"></a>
+<span class="sourceLineNo">121</span> data type of the output is also set in preinitialize(), after reading<a name="line.121"></a>
+<span class="sourceLineNo">122</span> the first line, which defines the structure of the record.<a name="line.122"></a>
+<span class="sourceLineNo">123</span> line read is produced on the &lt;i&gt;output&lt;/i&gt; in the next iteration<a name="line.123"></a>
+<span class="sourceLineNo">124</span> after it is read.<a name="line.124"></a>
+<span class="sourceLineNo">125</span> &lt;/p&gt;<a name="line.125"></a>
+<span class="sourceLineNo">126</span><a name="line.126"></a>
+<span class="sourceLineNo">127</span> @see FileParameter<a name="line.127"></a>
+<span class="sourceLineNo">128</span> @author  Edward A. Lee<a name="line.128"></a>
+<span class="sourceLineNo">129</span> @version $Id$<a name="line.129"></a>
+<span class="sourceLineNo">130</span> @since Ptolemy II 10.0<a name="line.130"></a>
+<span class="sourceLineNo">131</span> @Pt.ProposedRating Yellow (eal)<a name="line.131"></a>
+<span class="sourceLineNo">132</span> @Pt.AcceptedRating Red (cxh)<a name="line.132"></a>
+<span class="sourceLineNo">133</span> */<a name="line.133"></a>
+<span class="sourceLineNo">134</span>public class CSVReader extends LineReader {<a name="line.134"></a>
+<span class="sourceLineNo">135</span>    /** Construct an actor with the given container and name.<a name="line.135"></a>
+<span class="sourceLineNo">136</span>     *  @param container The container.<a name="line.136"></a>
+<span class="sourceLineNo">137</span>     *  @param name The name of this actor.<a name="line.137"></a>
+<span class="sourceLineNo">138</span>     *  @exception IllegalActionException If the actor cannot be contained<a name="line.138"></a>
+<span class="sourceLineNo">139</span>     *   by the proposed container.<a name="line.139"></a>
+<span class="sourceLineNo">140</span>     *  @exception NameDuplicationException If the container already has an<a name="line.140"></a>
+<span class="sourceLineNo">141</span>     *   actor with this name.<a name="line.141"></a>
+<span class="sourceLineNo">142</span>     */<a name="line.142"></a>
+<span class="sourceLineNo">143</span>    public CSVReader(CompositeEntity container, String name)<a name="line.143"></a>
+<span class="sourceLineNo">144</span>            throws IllegalActionException, NameDuplicationException {<a name="line.144"></a>
+<span class="sourceLineNo">145</span>        super(container, name);<a name="line.145"></a>
+<span class="sourceLineNo">146</span><a name="line.146"></a>
+<span class="sourceLineNo">147</span>        numberOfLinesToSkip.setVisibility(Settable.NONE);<a name="line.147"></a>
+<span class="sourceLineNo">148</span><a name="line.148"></a>
+<span class="sourceLineNo">149</span>        separator = new StringParameter(this, "separator");<a name="line.149"></a>
+<span class="sourceLineNo">150</span>        separator.setExpression("comma");<a name="line.150"></a>
+<span class="sourceLineNo">151</span>        separator.addChoice("comma");<a name="line.151"></a>
+<span class="sourceLineNo">152</span>        separator.addChoice("tab");<a name="line.152"></a>
+<span class="sourceLineNo">153</span>        separator.addChoice("semicolon");<a name="line.153"></a>
+<span class="sourceLineNo">154</span><a name="line.154"></a>
+<span class="sourceLineNo">155</span>        trimSpaces = new Parameter(this, "trimSpaces");<a name="line.155"></a>
+<span class="sourceLineNo">156</span>        trimSpaces.setTypeEquals(BaseType.BOOLEAN);<a name="line.156"></a>
+<span class="sourceLineNo">157</span>        trimSpaces.setExpression("true");<a name="line.157"></a>
+<span class="sourceLineNo">158</span><a name="line.158"></a>
+<span class="sourceLineNo">159</span>        new SingletonParameter(endOfFile, "_showName")<a name="line.159"></a>
+<span class="sourceLineNo">160</span>                .setToken(BooleanToken.TRUE);<a name="line.160"></a>
+<span class="sourceLineNo">161</span><a name="line.161"></a>
+<span class="sourceLineNo">162</span>        // Base class declares the output to be of type string, so we<a name="line.162"></a>
+<span class="sourceLineNo">163</span>        // have to first undo that.<a name="line.163"></a>
+<span class="sourceLineNo">164</span>        output.setTypeEquals(BaseType.UNKNOWN);<a name="line.164"></a>
+<span class="sourceLineNo">165</span>        // Do not force the output to be a record because downstream<a name="line.165"></a>
+<span class="sourceLineNo">166</span>        // types may be general, in which case, backward type inference<a name="line.166"></a>
+<span class="sourceLineNo">167</span>        // will want to resolve to general, which is fine. I.e., resolving<a name="line.167"></a>
+<span class="sourceLineNo">168</span>        // to anything above record types is also OK.<a name="line.168"></a>
+<span class="sourceLineNo">169</span>        // output.setTypeAtMost(RecordType.EMPTY_RECORD);<a name="line.169"></a>
+<span class="sourceLineNo">170</span><a name="line.170"></a>
+<span class="sourceLineNo">171</span>        _attachText("_iconDescription", "&lt;svg&gt;\n" + "&lt;rect x=\"-25\" y=\"-20\" "<a name="line.171"></a>
+<span class="sourceLineNo">172</span>                + "width=\"50\" height=\"40\" " + "style=\"fill:white\"/&gt;\n"<a name="line.172"></a>
+<span class="sourceLineNo">173</span>                + "&lt;polygon points=\"-15,-10 -12,-10 -8,-14 -1,-14 3,-10"<a name="line.173"></a>
+<span class="sourceLineNo">174</span>                + " 15,-10 15,10, -15,10\" " + "style=\"fill:red\"/&gt;\n"<a name="line.174"></a>
+<span class="sourceLineNo">175</span>                + "&lt;text x=\"-11\" y=\"4\""<a name="line.175"></a>
+<span class="sourceLineNo">176</span>                + "style=\"font-size:11; fill:white; font-family:SansSerif\"&gt;"<a name="line.176"></a>
+<span class="sourceLineNo">177</span>                + "CSV&lt;/text&gt;\n" + "&lt;/svg&gt;\n");<a name="line.177"></a>
+<span class="sourceLineNo">178</span>    }<a name="line.178"></a>
+<span class="sourceLineNo">179</span><a name="line.179"></a>
+<span class="sourceLineNo">180</span>    ///////////////////////////////////////////////////////////////////<a name="line.180"></a>
+<span class="sourceLineNo">181</span>    ////                     ports and parameters                  ////<a name="line.181"></a>
+<span class="sourceLineNo">182</span><a name="line.182"></a>
+<span class="sourceLineNo">183</span>    /** A specification of the separator between items in the table.<a name="line.183"></a>
+<span class="sourceLineNo">184</span>     *  The default is "comma", which results in assuming that fields<a name="line.184"></a>
+<span class="sourceLineNo">185</span>     *  are separated by commas. If the value is changed to "tab", then<a name="line.185"></a>
+<span class="sourceLineNo">186</span>     *  a tab separator will be used. If the value is "semicolon", then<a name="line.186"></a>
+<span class="sourceLineNo">187</span>     *  a semicolon separator will be used. If the value is anything<a name="line.187"></a>
+<span class="sourceLineNo">188</span>     *  else, then the value of the parameter, whatever it is, will<a name="line.188"></a>
+<span class="sourceLineNo">189</span>     *  be the separator.<a name="line.189"></a>
+<span class="sourceLineNo">190</span>     */<a name="line.190"></a>
+<span class="sourceLineNo">191</span>    public StringParameter separator;<a name="line.191"></a>
+<span class="sourceLineNo">192</span><a name="line.192"></a>
+<span class="sourceLineNo">193</span>    /** If true, then trim spaces around each field name and value.<a name="line.193"></a>
+<span class="sourceLineNo">194</span>     *  This is a boolean that defaults to true. If you change it<a name="line.194"></a>
+<span class="sourceLineNo">195</span>     *  to false, then all spaces in the field names and values are<a name="line.195"></a>
+<span class="sourceLineNo">196</span>     *  preserved. Note that if there are spaces in the field names,<a name="line.196"></a>
+<span class="sourceLineNo">197</span>     *  then the value of the record cannot be read by the<a name="line.197"></a>
+<span class="sourceLineNo">198</span>     *  expression evaluator, so spaces in field names are not<a name="line.198"></a>
+<span class="sourceLineNo">199</span>     *  recommended.<a name="line.199"></a>
+<span class="sourceLineNo">200</span>     */<a name="line.200"></a>
+<span class="sourceLineNo">201</span>    public Parameter trimSpaces;<a name="line.201"></a>
+<span class="sourceLineNo">202</span><a name="line.202"></a>
+<span class="sourceLineNo">203</span>    ///////////////////////////////////////////////////////////////////<a name="line.203"></a>
+<span class="sourceLineNo">204</span>    ////                         public methods                    ////<a name="line.204"></a>
+<span class="sourceLineNo">205</span><a name="line.205"></a>
+<span class="sourceLineNo">206</span>    /** If the specified attribute is &lt;i&gt;separator&lt;/i&gt; then set a local<a name="line.206"></a>
+<span class="sourceLineNo">207</span>     *  variable with the value of the separator.<a name="line.207"></a>
+<span class="sourceLineNo">208</span>     *  @param attribute The attribute that has changed.<a name="line.208"></a>
+<span class="sourceLineNo">209</span>     *  @exception IllegalActionException If the specified attribute<a name="line.209"></a>
+<span class="sourceLineNo">210</span>     *   is &lt;i&gt;fileOrURL&lt;/i&gt; and the file cannot be opened, or the previously<a name="line.210"></a>
+<span class="sourceLineNo">211</span>     *   opened file cannot be closed; or if the attribute is<a name="line.211"></a>
+<span class="sourceLineNo">212</span>     *   &lt;i&gt;numberOfLinesToSkip&lt;/i&gt; and its value is negative.<a name="line.212"></a>
+<span class="sourceLineNo">213</span>     */<a name="line.213"></a>
+<span class="sourceLineNo">214</span>    @Override<a name="line.214"></a>
+<span class="sourceLineNo">215</span>    public void attributeChanged(Attribute attribute)<a name="line.215"></a>
+<span class="sourceLineNo">216</span>            throws IllegalActionException {<a name="line.216"></a>
+<span class="sourceLineNo">217</span>        if (attribute == separator) {<a name="line.217"></a>
+<span class="sourceLineNo">218</span>            _delimiter = separator.stringValue();<a name="line.218"></a>
+<span class="sourceLineNo">219</span>            if (_delimiter.equals("comma")) {<a name="line.219"></a>
+<span class="sourceLineNo">220</span>                _delimiter = ",";<a name="line.220"></a>
+<span class="sourceLineNo">221</span>            } else if (_delimiter.equals("tab")) {<a name="line.221"></a>
+<span class="sourceLineNo">222</span>                _delimiter = "\t";<a name="line.222"></a>
+<span class="sourceLineNo">223</span>            } else if (_delimiter.equals("semicolon")) {<a name="line.223"></a>
+<span class="sourceLineNo">224</span>                _delimiter = ";";<a name="line.224"></a>
+<span class="sourceLineNo">225</span>            } else {<a name="line.225"></a>
+<span class="sourceLineNo">226</span>                _delimiter = separator.stringValue();<a name="line.226"></a>
+<span class="sourceLineNo">227</span>            }<a name="line.227"></a>
+<span class="sourceLineNo">228</span>        } else {<a name="line.228"></a>
+<span class="sourceLineNo">229</span>            super.attributeChanged(attribute);<a name="line.229"></a>
+<span class="sourceLineNo">230</span>        }<a name="line.230"></a>
+<span class="sourceLineNo">231</span>    }<a name="line.231"></a>
+<span class="sourceLineNo">232</span><a name="line.232"></a>
+<span class="sourceLineNo">233</span>    /** Output the data read in the preinitialize() or in the previous<a name="line.233"></a>
+<span class="sourceLineNo">234</span>     *  invocation of postfire(), if there is any.<a name="line.234"></a>
+<span class="sourceLineNo">235</span>     *  @exception IllegalActionException If there's no director.<a name="line.235"></a>
+<span class="sourceLineNo">236</span>     */<a name="line.236"></a>
+<span class="sourceLineNo">237</span>    @Override<a name="line.237"></a>
+<span class="sourceLineNo">238</span>    public void fire() throws IllegalActionException {<a name="line.238"></a>
+<span class="sourceLineNo">239</span>        // Cannot invoke super.fire() because it produces the wrong<a name="line.239"></a>
+<span class="sourceLineNo">240</span>        // output.<a name="line.240"></a>
+<span class="sourceLineNo">241</span>        // super.fire();<a name="line.241"></a>
+<span class="sourceLineNo">242</span><a name="line.242"></a>
+<span class="sourceLineNo">243</span>        // Duplicated from the AtomicActor base class:<a name="line.243"></a>
+<span class="sourceLineNo">244</span>        if (_debugging) {<a name="line.244"></a>
+<span class="sourceLineNo">245</span>            _debug("Called fire()");<a name="line.245"></a>
+<span class="sourceLineNo">246</span>        }<a name="line.246"></a>
+<span class="sourceLineNo">247</span><a name="line.247"></a>
+<span class="sourceLineNo">248</span>        // Duplicated from the Source base class:<a name="line.248"></a>
+<span class="sourceLineNo">249</span>        for (int i = 0; i &lt; trigger.getWidth(); i++) {<a name="line.249"></a>
+<span class="sourceLineNo">250</span>            if (trigger.hasToken(i)) {<a name="line.250"></a>
+<span class="sourceLineNo">251</span>                trigger.get(i);<a name="line.251"></a>
+<span class="sourceLineNo">252</span>            }<a name="line.252"></a>
+<span class="sourceLineNo">253</span>        }<a name="line.253"></a>
+<span class="sourceLineNo">254</span><a name="line.254"></a>
+<span class="sourceLineNo">255</span>        if (_firstFiring) {<a name="line.255"></a>
+<span class="sourceLineNo">256</span>            _openAndReadFirstTwoLines();<a name="line.256"></a>
+<span class="sourceLineNo">257</span>            _firstFiring = false;<a name="line.257"></a>
+<span class="sourceLineNo">258</span><a name="line.258"></a>
+<span class="sourceLineNo">259</span>            if (_currentLine == null) {<a name="line.259"></a>
+<span class="sourceLineNo">260</span>                throw new IllegalActionException("File has no data.");<a name="line.260"></a>
+<span class="sourceLineNo">261</span>            }<a name="line.261"></a>
+<span class="sourceLineNo">262</span>            StringTokenizer tokenizer = new StringTokenizer(_currentLine,<a name="line.262"></a>
+<span class="sourceLineNo">263</span>                    _delimiter);<a name="line.263"></a>
+<span class="sourceLineNo">264</span>            ArrayList&lt;String&gt; fieldNames = new ArrayList&lt;String&gt;();<a name="line.264"></a>
+<span class="sourceLineNo">265</span>            while (tokenizer.hasMoreElements()) {<a name="line.265"></a>
+<span class="sourceLineNo">266</span>                String nextName = tokenizer.nextToken();<a name="line.266"></a>
+<span class="sourceLineNo">267</span>                if (((BooleanToken) trimSpaces.getToken()).booleanValue()) {<a name="line.267"></a>
+<span class="sourceLineNo">268</span>                    nextName = nextName.trim();<a name="line.268"></a>
+<span class="sourceLineNo">269</span>                }<a name="line.269"></a>
+<span class="sourceLineNo">270</span>                fieldNames.add(nextName);<a name="line.270"></a>
+<span class="sourceLineNo">271</span>            }<a name="line.271"></a>
+<span class="sourceLineNo">272</span>            _fieldNames = new String[1];<a name="line.272"></a>
+<span class="sourceLineNo">273</span>            _fieldNames = fieldNames.toArray(_fieldNames);<a name="line.273"></a>
+<span class="sourceLineNo">274</span><a name="line.274"></a>
+<span class="sourceLineNo">275</span>            // Type[] fieldTypes = new Type[_fieldNames.length];<a name="line.275"></a>
+<span class="sourceLineNo">276</span>            // for (int i = 0; i &lt; _fieldNames.length; i++) {<a name="line.276"></a>
+<span class="sourceLineNo">277</span>            //     fieldTypes[i] = BaseType.STRING;<a name="line.277"></a>
+<span class="sourceLineNo">278</span>            // }<a name="line.278"></a>
+<span class="sourceLineNo">279</span><a name="line.279"></a>
+<span class="sourceLineNo">280</span>            // Skip the first line, which only has header information.<a name="line.280"></a>
+<span class="sourceLineNo">281</span>            _currentLine = _nextLine;<a name="line.281"></a>
+<span class="sourceLineNo">282</span>            try {<a name="line.282"></a>
+<span class="sourceLineNo">283</span>                _nextLine = _reader.readLine();<a name="line.283"></a>
+<span class="sourceLineNo">284</span>            } catch (IOException ex) {<a name="line.284"></a>
+<span class="sourceLineNo">285</span>                throw new IllegalActionException(this, ex,<a name="line.285"></a>
+<span class="sourceLineNo">286</span>                        "initialize() failed");<a name="line.286"></a>
+<span class="sourceLineNo">287</span>            }<a name="line.287"></a>
+<span class="sourceLineNo">288</span>        }<a name="line.288"></a>
+<span class="sourceLineNo">289</span><a name="line.289"></a>
+<span class="sourceLineNo">290</span>        if (_currentLine != null) {<a name="line.290"></a>
+<span class="sourceLineNo">291</span>            StringTokenizer tokenizer = new StringTokenizer(_currentLine,<a name="line.291"></a>
+<span class="sourceLineNo">292</span>                    _delimiter);<a name="line.292"></a>
+<span class="sourceLineNo">293</span>            int i = 0;<a name="line.293"></a>
+<span class="sourceLineNo">294</span>            Token[] fieldValues = new Token[_fieldNames.length];<a name="line.294"></a>
+<span class="sourceLineNo">295</span>            while (tokenizer.hasMoreTokens()) {<a name="line.295"></a>
+<span class="sourceLineNo">296</span>                if (i &gt;= _fieldNames.length) {<a name="line.296"></a>
+<span class="sourceLineNo">297</span>                    // Ignore additional fields.<a name="line.297"></a>
+<span class="sourceLineNo">298</span>                    break;<a name="line.298"></a>
+<span class="sourceLineNo">299</span>                }<a name="line.299"></a>
+<span class="sourceLineNo">300</span>                String nextToken = tokenizer.nextToken();<a name="line.300"></a>
+<span class="sourceLineNo">301</span>                if (((BooleanToken) trimSpaces.getToken()).booleanValue()) {<a name="line.301"></a>
+<span class="sourceLineNo">302</span>                    nextToken = nextToken.trim();<a name="line.302"></a>
+<span class="sourceLineNo">303</span>                }<a name="line.303"></a>
+<span class="sourceLineNo">304</span>                if (_parser == null) {<a name="line.304"></a>
+<span class="sourceLineNo">305</span>                    _parser = new PtParser();<a name="line.305"></a>
+<span class="sourceLineNo">306</span>                }<a name="line.306"></a>
+<span class="sourceLineNo">307</span><a name="line.307"></a>
+<span class="sourceLineNo">308</span>                ASTPtRootNode parseTree = null;<a name="line.308"></a>
+<span class="sourceLineNo">309</span>                try {<a name="line.309"></a>
+<span class="sourceLineNo">310</span>                    parseTree = _parser.generateParseTree(nextToken);<a name="line.310"></a>
+<span class="sourceLineNo">311</span>                } catch (Exception ex) {<a name="line.311"></a>
+<span class="sourceLineNo">312</span>                    // If the field cannot be parsed, then interpret<a name="line.312"></a>
+<span class="sourceLineNo">313</span>                    // the field as a string.<a name="line.313"></a>
+<span class="sourceLineNo">314</span>                    fieldValues[i] = new StringToken(nextToken);<a name="line.314"></a>
+<span class="sourceLineNo">315</span>                }<a name="line.315"></a>
+<span class="sourceLineNo">316</span>                if (parseTree != null) {<a name="line.316"></a>
+<span class="sourceLineNo">317</span>                    if (_parseTreeEvaluator == null) {<a name="line.317"></a>
+<span class="sourceLineNo">318</span>                        _parseTreeEvaluator = new ParseTreeEvaluator();<a name="line.318"></a>
+<span class="sourceLineNo">319</span>                    }<a name="line.319"></a>
+<span class="sourceLineNo">320</span><a name="line.320"></a>
+<span class="sourceLineNo">321</span>                    if (_scope == null) {<a name="line.321"></a>
+<span class="sourceLineNo">322</span>                        _scope = new ExpressionScope();<a name="line.322"></a>
+<span class="sourceLineNo">323</span>                    }<a name="line.323"></a>
+<span class="sourceLineNo">324</span><a name="line.324"></a>
+<span class="sourceLineNo">325</span>                    try {<a name="line.325"></a>
+<span class="sourceLineNo">326</span>                        fieldValues[i] = _parseTreeEvaluator<a name="line.326"></a>
+<span class="sourceLineNo">327</span>                                .evaluateParseTree(parseTree, _scope);<a name="line.327"></a>
+<span class="sourceLineNo">328</span>                    } catch (Exception ex) {<a name="line.328"></a>
+<span class="sourceLineNo">329</span>                        // If the field cannot be evaluated, then interpret<a name="line.329"></a>
+<span class="sourceLineNo">330</span>                        // the field as a string.<a name="line.330"></a>
+<span class="sourceLineNo">331</span>                        fieldValues[i] = new StringToken(nextToken);<a name="line.331"></a>
+<span class="sourceLineNo">332</span>                    }<a name="line.332"></a>
+<span class="sourceLineNo">333</span>                }<a name="line.333"></a>
+<span class="sourceLineNo">334</span><a name="line.334"></a>
+<span class="sourceLineNo">335</span>                i++;<a name="line.335"></a>
+<span class="sourceLineNo">336</span>            }<a name="line.336"></a>
+<span class="sourceLineNo">337</span>            while (i &lt; _fieldNames.length) {<a name="line.337"></a>
+<span class="sourceLineNo">338</span>                fieldValues[i] = new StringToken("");<a name="line.338"></a>
+<span class="sourceLineNo">339</span>                i++;<a name="line.339"></a>
+<span class="sourceLineNo">340</span>            }<a name="line.340"></a>
+<span class="sourceLineNo">341</span>            RecordToken outputValue = new OrderedRecordToken(_fieldNames,<a name="line.341"></a>
+<span class="sourceLineNo">342</span>                    fieldValues);<a name="line.342"></a>
+<span class="sourceLineNo">343</span>            output.broadcast(outputValue);<a name="line.343"></a>
+<span class="sourceLineNo">344</span>        }<a name="line.344"></a>
+<span class="sourceLineNo">345</span>        if (_nextLine == null) {<a name="line.345"></a>
+<span class="sourceLineNo">346</span>            endOfFile.broadcast(BooleanToken.TRUE);<a name="line.346"></a>
+<span class="sourceLineNo">347</span>        } else {<a name="line.347"></a>
+<span class="sourceLineNo">348</span>            endOfFile.broadcast(BooleanToken.FALSE);<a name="line.348"></a>
+<span class="sourceLineNo">349</span>        }<a name="line.349"></a>
+<span class="sourceLineNo">350</span>    }<a name="line.350"></a>
+<span class="sourceLineNo">351</span><a name="line.351"></a>
+<span class="sourceLineNo">352</span>    /** Wrapup execution of this actor.  This method overrides the<a name="line.352"></a>
+<span class="sourceLineNo">353</span>     *  base class to discard the internal parser to save memory.<a name="line.353"></a>
+<span class="sourceLineNo">354</span>     */<a name="line.354"></a>
+<span class="sourceLineNo">355</span>    @Override<a name="line.355"></a>
+<span class="sourceLineNo">356</span>    public void wrapup() {<a name="line.356"></a>
+<span class="sourceLineNo">357</span>        _parser = null;<a name="line.357"></a>
+<span class="sourceLineNo">358</span>    }<a name="line.358"></a>
+<span class="sourceLineNo">359</span><a name="line.359"></a>
+<span class="sourceLineNo">360</span>    ///////////////////////////////////////////////////////////////////<a name="line.360"></a>
+<span class="sourceLineNo">361</span>    ////                         protected methods                 ////<a name="line.361"></a>
+<span class="sourceLineNo">362</span><a name="line.362"></a>
+<span class="sourceLineNo">363</span>    /** Override the default to eliminate the default type constraints/.<a name="line.363"></a>
+<span class="sourceLineNo">364</span>     *  @return An empty set of type constraints<a name="line.364"></a>
+<span class="sourceLineNo">365</span>     */<a name="line.365"></a>
+<span class="sourceLineNo">366</span>    @Override<a name="line.366"></a>
+<span class="sourceLineNo">367</span>    protected Set&lt;Inequality&gt; _defaultTypeConstraints() {<a name="line.367"></a>
+<span class="sourceLineNo">368</span>        return new HashSet&lt;Inequality&gt;();<a name="line.368"></a>
+<span class="sourceLineNo">369</span>    }<a name="line.369"></a>
+<span class="sourceLineNo">370</span><a name="line.370"></a>
+<span class="sourceLineNo">371</span>    ///////////////////////////////////////////////////////////////////<a name="line.371"></a>
+<span class="sourceLineNo">372</span>    ////                         private members                   ////<a name="line.372"></a>
+<span class="sourceLineNo">373</span><a name="line.373"></a>
+<span class="sourceLineNo">374</span>    /** The delimiter. */<a name="line.374"></a>
+<span class="sourceLineNo">375</span>    private String _delimiter = ",";<a name="line.375"></a>
+<span class="sourceLineNo">376</span><a name="line.376"></a>
+<span class="sourceLineNo">377</span>    /** Field names for the output record. */<a name="line.377"></a>
+<span class="sourceLineNo">378</span>    private String[] _fieldNames;<a name="line.378"></a>
+<span class="sourceLineNo">379</span><a name="line.379"></a>
+<span class="sourceLineNo">380</span>    /** The parse tree evaluator to use. */<a name="line.380"></a>
+<span class="sourceLineNo">381</span>    private ParseTreeEvaluator _parseTreeEvaluator = null;<a name="line.381"></a>
+<span class="sourceLineNo">382</span><a name="line.382"></a>
+<span class="sourceLineNo">383</span>    /** The parser to use. */<a name="line.383"></a>
+<span class="sourceLineNo">384</span>    private PtParser _parser = null;<a name="line.384"></a>
+<span class="sourceLineNo">385</span><a name="line.385"></a>
+<span class="sourceLineNo">386</span>    /** The scope for the parser. */<a name="line.386"></a>
+<span class="sourceLineNo">387</span>    private ParserScope _scope = null;<a name="line.387"></a>
+<span class="sourceLineNo">388</span><a name="line.388"></a>
+<span class="sourceLineNo">389</span>    ///////////////////////////////////////////////////////////////////<a name="line.389"></a>
+<span class="sourceLineNo">390</span>    ////                         inner classes                     ////<a name="line.390"></a>
+<span class="sourceLineNo">391</span><a name="line.391"></a>
+<span class="sourceLineNo">392</span>    // FIXME: This is copied from ExpressionToToken. Some way to share?<a name="line.392"></a>
+<span class="sourceLineNo">393</span>    private class ExpressionScope extends ModelScope {<a name="line.393"></a>
+<span class="sourceLineNo">394</span>        /** Look up and return the attribute with the specified name in the<a name="line.394"></a>
+<span class="sourceLineNo">395</span>         *  scope. Return null if such an attribute does not exist.<a name="line.395"></a>
+<span class="sourceLineNo">396</span>         *  @return The attribute with the specified name in the scope.<a name="line.396"></a>
+<span class="sourceLineNo">397</span>         */<a name="line.397"></a>
+<span class="sourceLineNo">398</span>        @Override<a name="line.398"></a>
+<span class="sourceLineNo">399</span>        public Token get(String name) throws IllegalActionException {<a name="line.399"></a>
+<span class="sourceLineNo">400</span>            Variable result = getScopedVariable(null, CSVReader.this, name);<a name="line.400"></a>
+<span class="sourceLineNo">401</span><a name="line.401"></a>
+<span class="sourceLineNo">402</span>            if (result != null) {<a name="line.402"></a>
+<span class="sourceLineNo">403</span>                return result.getToken();<a name="line.403"></a>
+<span class="sourceLineNo">404</span>            }<a name="line.404"></a>
+<span class="sourceLineNo">405</span><a name="line.405"></a>
+<span class="sourceLineNo">406</span>            return null;<a name="line.406"></a>
+<span class="sourceLineNo">407</span>        }<a name="line.407"></a>
+<span class="sourceLineNo">408</span><a name="line.408"></a>
+<span class="sourceLineNo">409</span>        /** Look up and return the type of the attribute with the<a name="line.409"></a>
+<span class="sourceLineNo">410</span>         *  specified name in the scope. Return null if such an<a name="line.410"></a>
+<span class="sourceLineNo">411</span>         *  attribute does not exist.<a name="line.411"></a>
+<span class="sourceLineNo">412</span>         *  @return The attribute with the specified name in the scope.<a name="line.412"></a>
+<span class="sourceLineNo">413</span>         */<a name="line.413"></a>
+<span class="sourceLineNo">414</span>        @Override<a name="line.414"></a>
+<span class="sourceLineNo">415</span>        public Type getType(String name) throws IllegalActionException {<a name="line.415"></a>
+<span class="sourceLineNo">416</span>            Variable result = getScopedVariable(null, CSVReader.this, name);<a name="line.416"></a>
+<span class="sourceLineNo">417</span><a name="line.417"></a>
+<span class="sourceLineNo">418</span>            if (result != null) {<a name="line.418"></a>
+<span class="sourceLineNo">419</span>                return (Type) result.getTypeTerm().getValue();<a name="line.419"></a>
+<span class="sourceLineNo">420</span>            }<a name="line.420"></a>
+<span class="sourceLineNo">421</span><a name="line.421"></a>
+<span class="sourceLineNo">422</span>            return null;<a name="line.422"></a>
+<span class="sourceLineNo">423</span>        }<a name="line.423"></a>
+<span class="sourceLineNo">424</span><a name="line.424"></a>
+<span class="sourceLineNo">425</span>        /** Look up and return the type term for the specified name<a name="line.425"></a>
+<span class="sourceLineNo">426</span>         *  in the scope. Return null if the name is not defined in this<a name="line.426"></a>
+<span class="sourceLineNo">427</span>         *  scope, or is a constant type.<a name="line.427"></a>
+<span class="sourceLineNo">428</span>         *  @return The InequalityTerm associated with the given name in<a name="line.428"></a>
+<span class="sourceLineNo">429</span>         *  the scope.<a name="line.429"></a>
+<span class="sourceLineNo">430</span>         *  @exception IllegalActionException If a value in the scope<a name="line.430"></a>
+<span class="sourceLineNo">431</span>         *  exists with the given name, but cannot be evaluated.<a name="line.431"></a>
+<span class="sourceLineNo">432</span>         */<a name="line.432"></a>
+<span class="sourceLineNo">433</span>        @Override<a name="line.433"></a>
+<span class="sourceLineNo">434</span>        public ptolemy.graph.InequalityTerm getTypeTerm(String name)<a name="line.434"></a>
+<span class="sourceLineNo">435</span>                throws IllegalActionException {<a name="line.435"></a>
+<span class="sourceLineNo">436</span>            Variable result = getScopedVariable(null, CSVReader.this, name);<a name="line.436"></a>
+<span class="sourceLineNo">437</span><a name="line.437"></a>
+<span class="sourceLineNo">438</span>            if (result != null) {<a name="line.438"></a>
+<span class="sourceLineNo">439</span>                return result.getTypeTerm();<a name="line.439"></a>
+<span class="sourceLineNo">440</span>            }<a name="line.440"></a>
+<span class="sourceLineNo">441</span><a name="line.441"></a>
+<span class="sourceLineNo">442</span>            return null;<a name="line.442"></a>
+<span class="sourceLineNo">443</span>        }<a name="line.443"></a>
+<span class="sourceLineNo">444</span><a name="line.444"></a>
+<span class="sourceLineNo">445</span>        /** Return the list of identifiers within the scope.<a name="line.445"></a>
+<span class="sourceLineNo">446</span>         *  @return The list of identifiers within the scope.<a name="line.446"></a>
+<span class="sourceLineNo">447</span>         */<a name="line.447"></a>
+<span class="sourceLineNo">448</span>        @Override<a name="line.448"></a>
+<span class="sourceLineNo">449</span>        public Set identifierSet() {<a name="line.449"></a>
+<span class="sourceLineNo">450</span>            return getAllScopedVariableNames(null, CSVReader.this);<a name="line.450"></a>
+<span class="sourceLineNo">451</span>        }<a name="line.451"></a>
+<span class="sourceLineNo">452</span>    }<a name="line.452"></a>
+<span class="sourceLineNo">453</span>}<a name="line.453"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

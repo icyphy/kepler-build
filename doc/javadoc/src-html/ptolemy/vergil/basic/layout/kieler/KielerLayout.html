@@ -1,0 +1,1808 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../../../../stylesheet.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>/* Layout interface between the Ptolemy Diva editor and the KIELER<a name="line.1"></a>
+<span class="sourceLineNo">002</span> * layout library.*/<a name="line.2"></a>
+<span class="sourceLineNo">003</span>/*<a name="line.3"></a>
+<span class="sourceLineNo">004</span> @Copyright (c) 2009-2016 The Regents of the University of California.<a name="line.4"></a>
+<span class="sourceLineNo">005</span> All rights reserved.<a name="line.5"></a>
+<span class="sourceLineNo">006</span><a name="line.6"></a>
+<span class="sourceLineNo">007</span> Permission is hereby granted, without written agreement and without<a name="line.7"></a>
+<span class="sourceLineNo">008</span> license or royalty fees, to use, copy, modify, and distribute this<a name="line.8"></a>
+<span class="sourceLineNo">009</span> software and its documentation for any purpose, provided that the<a name="line.9"></a>
+<span class="sourceLineNo">010</span> above copyright notice and the following two paragraphs appear in all<a name="line.10"></a>
+<span class="sourceLineNo">011</span> copies of this software.<a name="line.11"></a>
+<span class="sourceLineNo">012</span><a name="line.12"></a>
+<span class="sourceLineNo">013</span> IN NO EVENT SHALL THE UNIVERSITY OF CALIFORNIA BE LIABLE TO ANY PARTY<a name="line.13"></a>
+<span class="sourceLineNo">014</span> FOR DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES<a name="line.14"></a>
+<span class="sourceLineNo">015</span> ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION, EVEN IF<a name="line.15"></a>
+<span class="sourceLineNo">016</span> THE UNIVERSITY OF CALIFORNIA HAS BEEN ADVISED OF THE POSSIBILITY OF<a name="line.16"></a>
+<span class="sourceLineNo">017</span> SUCH DAMAGE.<a name="line.17"></a>
+<span class="sourceLineNo">018</span><a name="line.18"></a>
+<span class="sourceLineNo">019</span> THE UNIVERSITY OF CALIFORNIA SPECIFICALLY DISCLAIMS ANY WARRANTIES,<a name="line.19"></a>
+<span class="sourceLineNo">020</span> INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF<a name="line.20"></a>
+<span class="sourceLineNo">021</span> MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE<a name="line.21"></a>
+<span class="sourceLineNo">022</span> PROVIDED HEREUNDER IS ON AN "AS IS" BASIS, AND THE UNIVERSITY OF<a name="line.22"></a>
+<span class="sourceLineNo">023</span> CALIFORNIA HAS NO OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT, UPDATES,<a name="line.23"></a>
+<span class="sourceLineNo">024</span> ENHANCEMENTS, OR MODIFICATIONS.<a name="line.24"></a>
+<span class="sourceLineNo">025</span><a name="line.25"></a>
+<span class="sourceLineNo">026</span> PT_COPYRIGHT_VERSION_2<a name="line.26"></a>
+<span class="sourceLineNo">027</span> COPYRIGHTENDKEY<a name="line.27"></a>
+<span class="sourceLineNo">028</span> */<a name="line.28"></a>
+<span class="sourceLineNo">029</span><a name="line.29"></a>
+<span class="sourceLineNo">030</span>package ptolemy.vergil.basic.layout.kieler;<a name="line.30"></a>
+<span class="sourceLineNo">031</span><a name="line.31"></a>
+<span class="sourceLineNo">032</span>import java.awt.Dimension;<a name="line.32"></a>
+<span class="sourceLineNo">033</span>import java.awt.geom.AffineTransform;<a name="line.33"></a>
+<span class="sourceLineNo">034</span>import java.awt.geom.Point2D;<a name="line.34"></a>
+<span class="sourceLineNo">035</span>import java.awt.geom.Rectangle2D;<a name="line.35"></a>
+<span class="sourceLineNo">036</span>import java.util.Iterator;<a name="line.36"></a>
+<span class="sourceLineNo">037</span>import java.util.LinkedList;<a name="line.37"></a>
+<span class="sourceLineNo">038</span>import java.util.List;<a name="line.38"></a>
+<span class="sourceLineNo">039</span>import java.util.Map;<a name="line.39"></a>
+<span class="sourceLineNo">040</span><a name="line.40"></a>
+<span class="sourceLineNo">041</span>import javax.swing.SwingConstants;<a name="line.41"></a>
+<span class="sourceLineNo">042</span><a name="line.42"></a>
+<span class="sourceLineNo">043</span>import com.google.common.collect.BiMap;<a name="line.43"></a>
+<span class="sourceLineNo">044</span>import com.google.common.collect.HashBiMap;<a name="line.44"></a>
+<span class="sourceLineNo">045</span>import com.google.common.collect.Iterators;<a name="line.45"></a>
+<span class="sourceLineNo">046</span>import com.google.common.collect.LinkedListMultimap;<a name="line.46"></a>
+<span class="sourceLineNo">047</span>import com.google.common.collect.ListMultimap;<a name="line.47"></a>
+<span class="sourceLineNo">048</span>import com.google.common.collect.Lists;<a name="line.48"></a>
+<span class="sourceLineNo">049</span>import com.google.common.collect.Maps;<a name="line.49"></a>
+<span class="sourceLineNo">050</span><a name="line.50"></a>
+<span class="sourceLineNo">051</span>import de.cau.cs.kieler.core.alg.BasicProgressMonitor;<a name="line.51"></a>
+<span class="sourceLineNo">052</span>import de.cau.cs.kieler.core.alg.DefaultFactory;<a name="line.52"></a>
+<span class="sourceLineNo">053</span>import de.cau.cs.kieler.core.alg.IKielerProgressMonitor;<a name="line.53"></a>
+<span class="sourceLineNo">054</span>import de.cau.cs.kieler.core.alg.InstancePool;<a name="line.54"></a>
+<span class="sourceLineNo">055</span>import de.cau.cs.kieler.core.kgraph.KEdge;<a name="line.55"></a>
+<span class="sourceLineNo">056</span>import de.cau.cs.kieler.core.kgraph.KLabel;<a name="line.56"></a>
+<span class="sourceLineNo">057</span>import de.cau.cs.kieler.core.kgraph.KNode;<a name="line.57"></a>
+<span class="sourceLineNo">058</span>import de.cau.cs.kieler.core.kgraph.KPort;<a name="line.58"></a>
+<span class="sourceLineNo">059</span>import de.cau.cs.kieler.core.math.KVector;<a name="line.59"></a>
+<span class="sourceLineNo">060</span>import de.cau.cs.kieler.core.util.Pair;<a name="line.60"></a>
+<span class="sourceLineNo">061</span>import de.cau.cs.kieler.kiml.AbstractLayoutProvider;<a name="line.61"></a>
+<span class="sourceLineNo">062</span>import de.cau.cs.kieler.kiml.klayoutdata.KEdgeLayout;<a name="line.62"></a>
+<span class="sourceLineNo">063</span>import de.cau.cs.kieler.kiml.klayoutdata.KLayoutData;<a name="line.63"></a>
+<span class="sourceLineNo">064</span>import de.cau.cs.kieler.kiml.klayoutdata.KPoint;<a name="line.64"></a>
+<span class="sourceLineNo">065</span>import de.cau.cs.kieler.kiml.klayoutdata.KShapeLayout;<a name="line.65"></a>
+<span class="sourceLineNo">066</span>import de.cau.cs.kieler.kiml.options.Alignment;<a name="line.66"></a>
+<span class="sourceLineNo">067</span>import de.cau.cs.kieler.kiml.options.Direction;<a name="line.67"></a>
+<span class="sourceLineNo">068</span>import de.cau.cs.kieler.kiml.options.EdgeLabelPlacement;<a name="line.68"></a>
+<span class="sourceLineNo">069</span>import de.cau.cs.kieler.kiml.options.EdgeRouting;<a name="line.69"></a>
+<span class="sourceLineNo">070</span>import de.cau.cs.kieler.kiml.options.LayoutOptions;<a name="line.70"></a>
+<span class="sourceLineNo">071</span>import de.cau.cs.kieler.kiml.options.PortConstraints;<a name="line.71"></a>
+<span class="sourceLineNo">072</span>import de.cau.cs.kieler.kiml.options.PortSide;<a name="line.72"></a>
+<span class="sourceLineNo">073</span>import de.cau.cs.kieler.kiml.options.SizeConstraint;<a name="line.73"></a>
+<span class="sourceLineNo">074</span>import de.cau.cs.kieler.kiml.util.KimlUtil;<a name="line.74"></a>
+<span class="sourceLineNo">075</span>import de.cau.cs.kieler.klay.layered.LayeredLayoutProvider;<a name="line.75"></a>
+<span class="sourceLineNo">076</span>import de.cau.cs.kieler.klay.layered.p3order.CrossingMinimizationStrategy;<a name="line.76"></a>
+<span class="sourceLineNo">077</span>import de.cau.cs.kieler.klay.layered.p4nodes.NodePlacementStrategy;<a name="line.77"></a>
+<span class="sourceLineNo">078</span>import de.cau.cs.kieler.klay.layered.properties.LayerConstraint;<a name="line.78"></a>
+<span class="sourceLineNo">079</span>import de.cau.cs.kieler.klay.layered.properties.Properties;<a name="line.79"></a>
+<span class="sourceLineNo">080</span>import diva.canvas.CanvasComponent;<a name="line.80"></a>
+<span class="sourceLineNo">081</span>import diva.canvas.CompositeFigure;<a name="line.81"></a>
+<span class="sourceLineNo">082</span>import diva.canvas.Figure;<a name="line.82"></a>
+<span class="sourceLineNo">083</span>import diva.canvas.connector.AbstractConnector;<a name="line.83"></a>
+<span class="sourceLineNo">084</span>import diva.canvas.toolbox.LabelFigure;<a name="line.84"></a>
+<span class="sourceLineNo">085</span>import diva.graph.GraphModel;<a name="line.85"></a>
+<span class="sourceLineNo">086</span>import diva.graph.layout.AbstractGlobalLayout;<a name="line.86"></a>
+<span class="sourceLineNo">087</span>import diva.graph.layout.LayoutTarget;<a name="line.87"></a>
+<span class="sourceLineNo">088</span>import diva.graph.modular.EdgeModel;<a name="line.88"></a>
+<span class="sourceLineNo">089</span>import ptolemy.actor.Actor;<a name="line.89"></a>
+<span class="sourceLineNo">090</span>import ptolemy.actor.CompositeActor;<a name="line.90"></a>
+<span class="sourceLineNo">091</span>import ptolemy.actor.Director;<a name="line.91"></a>
+<span class="sourceLineNo">092</span>import ptolemy.actor.TypedIOPort;<a name="line.92"></a>
+<span class="sourceLineNo">093</span>import ptolemy.domains.modal.kernel.State;<a name="line.93"></a>
+<span class="sourceLineNo">094</span>import ptolemy.domains.modal.kernel.Transition;<a name="line.94"></a>
+<span class="sourceLineNo">095</span>import ptolemy.gui.Top;<a name="line.95"></a>
+<span class="sourceLineNo">096</span>import ptolemy.kernel.ComponentPort;<a name="line.96"></a>
+<span class="sourceLineNo">097</span>import ptolemy.kernel.CompositeEntity;<a name="line.97"></a>
+<span class="sourceLineNo">098</span>import ptolemy.kernel.Entity;<a name="line.98"></a>
+<span class="sourceLineNo">099</span>import ptolemy.kernel.Port;<a name="line.99"></a>
+<span class="sourceLineNo">100</span>import ptolemy.kernel.Relation;<a name="line.100"></a>
+<span class="sourceLineNo">101</span>import ptolemy.kernel.util.Attribute;<a name="line.101"></a>
+<span class="sourceLineNo">102</span>import ptolemy.kernel.util.IllegalActionException;<a name="line.102"></a>
+<span class="sourceLineNo">103</span>import ptolemy.kernel.util.InternalErrorException;<a name="line.103"></a>
+<span class="sourceLineNo">104</span>import ptolemy.kernel.util.Locatable;<a name="line.104"></a>
+<span class="sourceLineNo">105</span>import ptolemy.kernel.util.Location;<a name="line.105"></a>
+<span class="sourceLineNo">106</span>import ptolemy.kernel.util.NamedObj;<a name="line.106"></a>
+<span class="sourceLineNo">107</span>import ptolemy.moml.Vertex;<a name="line.107"></a>
+<span class="sourceLineNo">108</span>import ptolemy.vergil.actor.ActorGraphModel;<a name="line.108"></a>
+<span class="sourceLineNo">109</span>import ptolemy.vergil.actor.ActorGraphModel.ExternalPortModel;<a name="line.109"></a>
+<span class="sourceLineNo">110</span>import ptolemy.vergil.actor.IOPortController;<a name="line.110"></a>
+<span class="sourceLineNo">111</span>import ptolemy.vergil.actor.KielerLayoutConnector;<a name="line.111"></a>
+<span class="sourceLineNo">112</span>import ptolemy.vergil.actor.KielerLayoutUtil;<a name="line.112"></a>
+<span class="sourceLineNo">113</span>import ptolemy.vergil.actor.LayoutHint;<a name="line.113"></a>
+<span class="sourceLineNo">114</span>import ptolemy.vergil.actor.PortTerminal;<a name="line.114"></a>
+<span class="sourceLineNo">115</span>import ptolemy.vergil.basic.RelativeLocatable;<a name="line.115"></a>
+<span class="sourceLineNo">116</span>import ptolemy.vergil.basic.RelativeLocation;<a name="line.116"></a>
+<span class="sourceLineNo">117</span>import ptolemy.vergil.kernel.Link;<a name="line.117"></a>
+<span class="sourceLineNo">118</span>import ptolemy.vergil.kernel.RelativeLinkFigure;<a name="line.118"></a>
+<span class="sourceLineNo">119</span>import ptolemy.vergil.modal.FSMGraphModel;<a name="line.119"></a>
+<span class="sourceLineNo">120</span>import ptolemy.vergil.modal.KielerLayoutArcConnector;<a name="line.120"></a>
+<span class="sourceLineNo">121</span>import ptolemy.vergil.toolbox.SnapConstraint;<a name="line.121"></a>
+<span class="sourceLineNo">122</span><a name="line.122"></a>
+<span class="sourceLineNo">123</span>///////////////////////////////////////////////////////////////////<a name="line.123"></a>
+<span class="sourceLineNo">124</span>////KielerLayout<a name="line.124"></a>
+<span class="sourceLineNo">125</span>/**<a name="line.125"></a>
+<span class="sourceLineNo">126</span> * Ptolemy Layouter that uses the KIELER layout algorithm from an external<a name="line.126"></a>
+<span class="sourceLineNo">127</span> * library to layout a given ptolemy model.<a name="line.127"></a>
+<span class="sourceLineNo">128</span> * &lt;p&gt;<a name="line.128"></a>
+<span class="sourceLineNo">129</span> * See http://www.informatik.uni-kiel.de/rtsys/kieler/ for more information<a name="line.129"></a>
+<span class="sourceLineNo">130</span> * about KIELER.<a name="line.130"></a>
+<span class="sourceLineNo">131</span> * &lt;/p&gt;<a name="line.131"></a>
+<span class="sourceLineNo">132</span> * &lt;p&gt;&lt;b&gt;<a name="line.132"></a>
+<span class="sourceLineNo">133</span> * KIELER - Kiel Integrated Environment for Layout for the Eclipse<a name="line.133"></a>
+<span class="sourceLineNo">134</span> * RichClientPlatform<a name="line.134"></a>
+<span class="sourceLineNo">135</span> * &lt;/b&gt;&lt;/p&gt;<a name="line.135"></a>
+<span class="sourceLineNo">136</span> * &lt;p&gt;<a name="line.136"></a>
+<span class="sourceLineNo">137</span> * The KIELER project tries to enhance graphical modeling pragmatics. Next to<a name="line.137"></a>
+<span class="sourceLineNo">138</span> * higher level solutions (meta layout, view management, structure-based editing,<a name="line.138"></a>
+<span class="sourceLineNo">139</span> * etc.) developed for Eclipse models, it also implements custom layout algorithms.<a name="line.139"></a>
+<span class="sourceLineNo">140</span> * &lt;/p&gt;<a name="line.140"></a>
+<span class="sourceLineNo">141</span> * &lt;p&gt;<a name="line.141"></a>
+<span class="sourceLineNo">142</span> * This class interfaces a standalone KIELER layout algorithm for actor oriented<a name="line.142"></a>
+<span class="sourceLineNo">143</span> * port based graphical diagrams with a Ptolemy diagram.<a name="line.143"></a>
+<span class="sourceLineNo">144</span> * &lt;/p&gt;<a name="line.144"></a>
+<span class="sourceLineNo">145</span> * &lt;p&gt;<a name="line.145"></a>
+<span class="sourceLineNo">146</span> * While KIELER is mainly developed for an Eclipse environment, most algorithms<a name="line.146"></a>
+<span class="sourceLineNo">147</span> * are also available standalone and can be used in a non-Eclipse environment.<a name="line.147"></a>
+<span class="sourceLineNo">148</span> * This class is an approach to leverage this by employing the algorithms within Ptolemy.<a name="line.148"></a>
+<span class="sourceLineNo">149</span> * Two standalone external libraries are required, one containing KIELER classes<a name="line.149"></a>
+<span class="sourceLineNo">150</span> * and a small subset of the Eclipse Modeling Framework (EMF), the other<a name="line.150"></a>
+<span class="sourceLineNo">151</span> * containing the Google Guava library, which is used as utility.<a name="line.151"></a>
+<span class="sourceLineNo">152</span> * &lt;/p&gt;<a name="line.152"></a>
+<span class="sourceLineNo">153</span> * &lt;p&gt;<a name="line.153"></a>
+<span class="sourceLineNo">154</span> * Calling the layout() method will create a new KIELER graph data structure, run<a name="line.154"></a>
+<span class="sourceLineNo">155</span> * KIELER layout algorithms on it and augment it with resulting layout<a name="line.155"></a>
+<span class="sourceLineNo">156</span> * information (locations and sizes of nodes, bend points of connections). Then<a name="line.156"></a>
+<span class="sourceLineNo">157</span> * this layout is applied to the Ptolemy model. Moving of nodes in Ptolemy is<a name="line.157"></a>
+<span class="sourceLineNo">158</span> * done via adding or changing location attributes.<a name="line.158"></a>
+<span class="sourceLineNo">159</span> * &lt;/p&gt;<a name="line.159"></a>
+<span class="sourceLineNo">160</span> * &lt;p&gt;<a name="line.160"></a>
+<span class="sourceLineNo">161</span> * Setting bend points was not supported in Ptolemy. Ptolemy's built-in<a name="line.161"></a>
+<span class="sourceLineNo">162</span> * connection routing does not consider obstacle avoidance, hence overlaps<a name="line.162"></a>
+<span class="sourceLineNo">163</span> * with other nodes and connections might appear. In order to gap this problem,<a name="line.163"></a>
+<span class="sourceLineNo">164</span> * the actual drawing of the connections is performed by {@link KielerLayoutConnector}<a name="line.164"></a>
+<span class="sourceLineNo">165</span> * instead of the standard Manhattan connector.<a name="line.165"></a>
+<span class="sourceLineNo">166</span> * This KielerLayout stores bend points of connections<a name="line.166"></a>
+<span class="sourceLineNo">167</span> * persistently in a Ptolemy model via {@link LayoutHint} attributes<a name="line.167"></a>
+<span class="sourceLineNo">168</span> * attached to relations. The KielerLayoutConnector then reads these<a name="line.168"></a>
+<span class="sourceLineNo">169</span> * attributes and routes the edges accordingly. If the bend points are not<a name="line.169"></a>
+<span class="sourceLineNo">170</span> * valid anymore, the attribute is removed and layout has to be performed again.<a name="line.170"></a>
+<span class="sourceLineNo">171</span> * &lt;/p&gt;<a name="line.171"></a>
+<span class="sourceLineNo">172</span> * @author Hauke Fuhrmann (&lt;a href="mailto:haf@informatik.uni-kiel.de"&gt;haf&lt;/a&gt;),<a name="line.172"></a>
+<span class="sourceLineNo">173</span> *         Christian Motika (&lt;a href="mailto:cmot@informatik.uni-kiel.de"&gt;cmot&lt;/a&gt;),<a name="line.173"></a>
+<span class="sourceLineNo">174</span> *         Miro Sp&amp;ouml;nemann (&lt;a href="mailto:msp@informatik.uni-kiel.de"&gt;msp&lt;/a&gt;) ,<a name="line.174"></a>
+<span class="sourceLineNo">175</span> *         Christoph Daniel Schulze (&lt;a href="mailto:cds@informatik.uni-kiel.de"&gt;cds&lt;/a&gt;),<a name="line.175"></a>
+<span class="sourceLineNo">176</span> *         Ulf Rueegg<a name="line.176"></a>
+<span class="sourceLineNo">177</span> * @version $Id$<a name="line.177"></a>
+<span class="sourceLineNo">178</span> * @since Ptolemy II 8.0<a name="line.178"></a>
+<span class="sourceLineNo">179</span> * @Pt.ProposedRating Red (cxh)<a name="line.179"></a>
+<span class="sourceLineNo">180</span> * @Pt.AcceptedRating Red (cxh)<a name="line.180"></a>
+<span class="sourceLineNo">181</span> */<a name="line.181"></a>
+<span class="sourceLineNo">182</span>public class KielerLayout extends AbstractGlobalLayout {<a name="line.182"></a>
+<span class="sourceLineNo">183</span><a name="line.183"></a>
+<span class="sourceLineNo">184</span>    /**<a name="line.184"></a>
+<span class="sourceLineNo">185</span>     * Construct an instance taking a LayoutTarget for specifying some methods<a name="line.185"></a>
+<span class="sourceLineNo">186</span>     * for layout handling as given by the standard Ptolemy<a name="line.186"></a>
+<span class="sourceLineNo">187</span>     * AbstractGlobalLayout. The KielerLayout will need access to the top level<a name="line.187"></a>
+<span class="sourceLineNo">188</span>     * Ptolemy model, so either use corresponding constructor or call setModel()<a name="line.188"></a>
+<span class="sourceLineNo">189</span>     * prior to layout invocation.<a name="line.189"></a>
+<span class="sourceLineNo">190</span>     *<a name="line.190"></a>
+<span class="sourceLineNo">191</span>     * @param target The LayoutTarget on which layout will be performed<a name="line.191"></a>
+<span class="sourceLineNo">192</span>     */<a name="line.192"></a>
+<span class="sourceLineNo">193</span>    public KielerLayout(LayoutTarget target) {<a name="line.193"></a>
+<span class="sourceLineNo">194</span>        super(target);<a name="line.194"></a>
+<span class="sourceLineNo">195</span>    }<a name="line.195"></a>
+<span class="sourceLineNo">196</span><a name="line.196"></a>
+<span class="sourceLineNo">197</span>    /**<a name="line.197"></a>
+<span class="sourceLineNo">198</span>     * Construct an instance setting the LayoutTarget as requested by the<a name="line.198"></a>
+<span class="sourceLineNo">199</span>     * AbstractGlobalLayout and the containing Ptolemy model. Preferred<a name="line.199"></a>
+<span class="sourceLineNo">200</span>     * constructor.<a name="line.200"></a>
+<span class="sourceLineNo">201</span>     *<a name="line.201"></a>
+<span class="sourceLineNo">202</span>     * @param target The LayoutTarget on which layout will be performed<a name="line.202"></a>
+<span class="sourceLineNo">203</span>     * @param ptolemyContainer The composite actor that contains all elements to<a name="line.203"></a>
+<span class="sourceLineNo">204</span>     *            be layouted<a name="line.204"></a>
+<span class="sourceLineNo">205</span>     */<a name="line.205"></a>
+<span class="sourceLineNo">206</span>    public KielerLayout(LayoutTarget target, CompositeActor ptolemyContainer) {<a name="line.206"></a>
+<span class="sourceLineNo">207</span>        super(target);<a name="line.207"></a>
+<span class="sourceLineNo">208</span>        this.setModel(ptolemyContainer);<a name="line.208"></a>
+<span class="sourceLineNo">209</span>    }<a name="line.209"></a>
+<span class="sourceLineNo">210</span><a name="line.210"></a>
+<span class="sourceLineNo">211</span>    ///////////////////////////////////////////////////////////////////<a name="line.211"></a>
+<span class="sourceLineNo">212</span>    ////                         public methods                    ////<a name="line.212"></a>
+<span class="sourceLineNo">213</span><a name="line.213"></a>
+<span class="sourceLineNo">214</span>    /**<a name="line.214"></a>
+<span class="sourceLineNo">215</span>     * Layout the given composite. Main entry point for the layout action.<a name="line.215"></a>
+<span class="sourceLineNo">216</span>     * Create a KIELER KGraph data structure corresponding to the Ptolemy model,<a name="line.216"></a>
+<span class="sourceLineNo">217</span>     * instantiate a KIELER layout algorithm (AbstractLayoutProvider) and run<a name="line.217"></a>
+<span class="sourceLineNo">218</span>     * its doLayout() method on the KGraph. The KGraph is augmented with<a name="line.218"></a>
+<span class="sourceLineNo">219</span>     * layout information (position and sizes of objects and bend points for<a name="line.219"></a>
+<span class="sourceLineNo">220</span>     * connections). This information is then reapplied to the ptolemy model by<a name="line.220"></a>
+<span class="sourceLineNo">221</span>     * stating MoMLChangeRequests with location attributes for nodes.<a name="line.221"></a>
+<span class="sourceLineNo">222</span>     * Connection bend points are applied using {@link LayoutHint}s.<a name="line.222"></a>
+<span class="sourceLineNo">223</span>     *<a name="line.223"></a>
+<span class="sourceLineNo">224</span>     * @param composite the container of the diagram in terms of a GraphModel.<a name="line.224"></a>
+<span class="sourceLineNo">225</span>     */<a name="line.225"></a>
+<span class="sourceLineNo">226</span>    @Override<a name="line.226"></a>
+<span class="sourceLineNo">227</span>    public void layout(Object composite) {<a name="line.227"></a>
+<span class="sourceLineNo">228</span><a name="line.228"></a>
+<span class="sourceLineNo">229</span>        KielerLayoutConnector.setLayoutInProgress(true);<a name="line.229"></a>
+<span class="sourceLineNo">230</span>        KielerLayoutArcConnector.setLayoutInProgress(true);<a name="line.230"></a>
+<span class="sourceLineNo">231</span><a name="line.231"></a>
+<span class="sourceLineNo">232</span>        // some variables for time statistics<a name="line.232"></a>
+<span class="sourceLineNo">233</span>        long overallTime = System.currentTimeMillis();<a name="line.233"></a>
+<span class="sourceLineNo">234</span><a name="line.234"></a>
+<span class="sourceLineNo">235</span>        _report("Performing KIELER layout... ");<a name="line.235"></a>
+<span class="sourceLineNo">236</span>        long graphOverhead = overallTime;<a name="line.236"></a>
+<span class="sourceLineNo">237</span><a name="line.237"></a>
+<span class="sourceLineNo">238</span>        _graphModel = getLayoutTarget().getGraphModel();<a name="line.238"></a>
+<span class="sourceLineNo">239</span><a name="line.239"></a>
+<span class="sourceLineNo">240</span>        // Create a KGraph for the KIELER layout algorithm.<a name="line.240"></a>
+<span class="sourceLineNo">241</span>        KNode parentNode = KimlUtil.createInitializedNode();<a name="line.241"></a>
+<span class="sourceLineNo">242</span>        KShapeLayout parentLayout = parentNode.getData(KShapeLayout.class);<a name="line.242"></a>
+<span class="sourceLineNo">243</span>        if (_top != null) {<a name="line.243"></a>
+<span class="sourceLineNo">244</span>            Dimension contentSize = _top.getContentSize();<a name="line.244"></a>
+<span class="sourceLineNo">245</span>            parentLayout.setWidth(contentSize.width);<a name="line.245"></a>
+<span class="sourceLineNo">246</span>            parentLayout.setHeight(contentSize.height);<a name="line.246"></a>
+<span class="sourceLineNo">247</span>        }<a name="line.247"></a>
+<span class="sourceLineNo">248</span><a name="line.248"></a>
+<span class="sourceLineNo">249</span>        // Some layouts (such as FSM) may build a skeleton<a name="line.249"></a>
+<span class="sourceLineNo">250</span>        // of hierarchical nodes to separate certain elements<a name="line.250"></a>
+<span class="sourceLineNo">251</span>        // of the diagram from each other<a name="line.251"></a>
+<span class="sourceLineNo">252</span>        // The 'mainModelNode' is the node that is supposed<a name="line.252"></a>
+<span class="sourceLineNo">253</span>        // to hold the actual elements of the ptolemy model<a name="line.253"></a>
+<span class="sourceLineNo">254</span>        KNode mainModelNode = parentNode;<a name="line.254"></a>
+<span class="sourceLineNo">255</span>        KShapeLayout mainModelLayout = parentLayout;<a name="line.255"></a>
+<span class="sourceLineNo">256</span>        if (_graphModel instanceof FSMGraphModel) {<a name="line.256"></a>
+<span class="sourceLineNo">257</span>            // create a FSM skeleton to separate input and output ports<a name="line.257"></a>
+<span class="sourceLineNo">258</span>            mainModelNode = _createFsmSkeleton(parentNode);<a name="line.258"></a>
+<span class="sourceLineNo">259</span>            mainModelLayout = mainModelNode.getData(KShapeLayout.class);<a name="line.259"></a>
+<span class="sourceLineNo">260</span>        }<a name="line.260"></a>
+<span class="sourceLineNo">261</span><a name="line.261"></a>
+<span class="sourceLineNo">262</span>        try {<a name="line.262"></a>
+<span class="sourceLineNo">263</span>            // Configure the layout algorithm by annotating the graph.<a name="line.263"></a>
+<span class="sourceLineNo">264</span>            Parameters parameters = new Parameters(_compositeEntity);<a name="line.264"></a>
+<span class="sourceLineNo">265</span>            parameters.configureLayout(mainModelLayout,<a name="line.265"></a>
+<span class="sourceLineNo">266</span>                    getLayoutTarget().getGraphModel());<a name="line.266"></a>
+<span class="sourceLineNo">267</span><a name="line.267"></a>
+<span class="sourceLineNo">268</span>            // Now read Ptolemy model and fill the KGraph with the model data.<a name="line.268"></a>
+<span class="sourceLineNo">269</span>            _createGraph(composite, mainModelNode);<a name="line.269"></a>
+<span class="sourceLineNo">270</span>            graphOverhead = System.currentTimeMillis() - graphOverhead;<a name="line.270"></a>
+<span class="sourceLineNo">271</span><a name="line.271"></a>
+<span class="sourceLineNo">272</span>            // Create the layout provider which performs the actual layout algorithm.<a name="line.272"></a>
+<span class="sourceLineNo">273</span>            InstancePool&lt;AbstractLayoutProvider&gt; layouterPool = _getLayouterPool();<a name="line.273"></a>
+<span class="sourceLineNo">274</span>            AbstractLayoutProvider layoutProvider = layouterPool.fetch();<a name="line.274"></a>
+<span class="sourceLineNo">275</span><a name="line.275"></a>
+<span class="sourceLineNo">276</span>            // Create a progress monitor for execution time measurement.<a name="line.276"></a>
+<span class="sourceLineNo">277</span>            IKielerProgressMonitor progressMonitor = new BasicProgressMonitor();<a name="line.277"></a>
+<span class="sourceLineNo">278</span><a name="line.278"></a>
+<span class="sourceLineNo">279</span>            // Perform layout on the created graph.<a name="line.279"></a>
+<span class="sourceLineNo">280</span>            _recursivelyLayout(parentNode, layoutProvider, progressMonitor);<a name="line.280"></a>
+<span class="sourceLineNo">281</span><a name="line.281"></a>
+<span class="sourceLineNo">282</span>            // Write to XML file for debugging layout (requires XMI resource factory).<a name="line.282"></a>
+<span class="sourceLineNo">283</span>            if (DEBUG) {<a name="line.283"></a>
+<span class="sourceLineNo">284</span>                KimlUtil.persistDataElements(parentNode);<a name="line.284"></a>
+<span class="sourceLineNo">285</span>                KielerGraphUtil._writeToFile(parentNode);<a name="line.285"></a>
+<span class="sourceLineNo">286</span>            }<a name="line.286"></a>
+<span class="sourceLineNo">287</span><a name="line.287"></a>
+<span class="sourceLineNo">288</span>            // Set initial position as the bounding box of the hierarchical node.<a name="line.288"></a>
+<span class="sourceLineNo">289</span>            KVector offset = KielerGraphUtil._getUpperLeftCorner(parentNode);<a name="line.289"></a>
+<span class="sourceLineNo">290</span>            parentLayout.setXpos(parentLayout.getXpos() - (float) offset.x);<a name="line.290"></a>
+<span class="sourceLineNo">291</span>            parentLayout.setYpos(parentLayout.getYpos() - (float) offset.y);<a name="line.291"></a>
+<span class="sourceLineNo">292</span><a name="line.292"></a>
+<span class="sourceLineNo">293</span>            long momlRequestOverhead = System.currentTimeMillis();<a name="line.293"></a>
+<span class="sourceLineNo">294</span><a name="line.294"></a>
+<span class="sourceLineNo">295</span>            // Create a special change request to apply the computed layout to the model.<a name="line.295"></a>
+<span class="sourceLineNo">296</span>            ApplyLayoutRequest layoutRequest = new ApplyLayoutRequest(<a name="line.296"></a>
+<span class="sourceLineNo">297</span>                    _compositeEntity);<a name="line.297"></a>
+<span class="sourceLineNo">298</span><a name="line.298"></a>
+<span class="sourceLineNo">299</span>            // Apply layout to ptolemy model.<a name="line.299"></a>
+<span class="sourceLineNo">300</span>            _recursivelyApplyLayout(parentNode, layoutRequest);<a name="line.300"></a>
+<span class="sourceLineNo">301</span><a name="line.301"></a>
+<span class="sourceLineNo">302</span>            // Let the composite actor execute the actual changes.<a name="line.302"></a>
+<span class="sourceLineNo">303</span>            _compositeEntity.requestChange(layoutRequest);<a name="line.303"></a>
+<span class="sourceLineNo">304</span><a name="line.304"></a>
+<span class="sourceLineNo">305</span>            momlRequestOverhead = System.currentTimeMillis()<a name="line.305"></a>
+<span class="sourceLineNo">306</span>                    - momlRequestOverhead;<a name="line.306"></a>
+<span class="sourceLineNo">307</span>            overallTime = System.currentTimeMillis() - overallTime;<a name="line.307"></a>
+<span class="sourceLineNo">308</span>            _report("KIELER layout done in " + overallTime<a name="line.308"></a>
+<span class="sourceLineNo">309</span>                    + "ms (Graph conversion " + graphOverhead + "ms, Algorithm "<a name="line.309"></a>
+<span class="sourceLineNo">310</span>                    + Math.round(progressMonitor.getExecutionTime() * 1000)<a name="line.310"></a>
+<span class="sourceLineNo">311</span>                    + "ms, MoMLChanges " + momlRequestOverhead + "ms).");<a name="line.311"></a>
+<span class="sourceLineNo">312</span><a name="line.312"></a>
+<span class="sourceLineNo">313</span>            // Release the layout provider back to the instance pool for later reuse.<a name="line.313"></a>
+<span class="sourceLineNo">314</span>            layouterPool.release(layoutProvider);<a name="line.314"></a>
+<span class="sourceLineNo">315</span><a name="line.315"></a>
+<span class="sourceLineNo">316</span>        } catch (IllegalActionException exception) {<a name="line.316"></a>
+<span class="sourceLineNo">317</span>            // Throw some Ptolemy runtime exception.<a name="line.317"></a>
+<span class="sourceLineNo">318</span>            throw new InternalErrorException(exception);<a name="line.318"></a>
+<span class="sourceLineNo">319</span>        }<a name="line.319"></a>
+<span class="sourceLineNo">320</span><a name="line.320"></a>
+<span class="sourceLineNo">321</span>        KielerLayoutConnector.setLayoutInProgress(false);<a name="line.321"></a>
+<span class="sourceLineNo">322</span>        KielerLayoutArcConnector.setLayoutInProgress(false);<a name="line.322"></a>
+<span class="sourceLineNo">323</span>    }<a name="line.323"></a>
+<span class="sourceLineNo">324</span><a name="line.324"></a>
+<span class="sourceLineNo">325</span>    /**<a name="line.325"></a>
+<span class="sourceLineNo">326</span>     * Set the Ptolemy Model that contains the graph that is to be layouted. The<a name="line.326"></a>
+<span class="sourceLineNo">327</span>     * layouter will require access to the Ptolemy model because the lower level<a name="line.327"></a>
+<span class="sourceLineNo">328</span>     * Diva abstraction does not consider certain properties required by the<a name="line.328"></a>
+<span class="sourceLineNo">329</span>     * KIELER layouter such as port positions.<a name="line.329"></a>
+<span class="sourceLineNo">330</span>     *<a name="line.330"></a>
+<span class="sourceLineNo">331</span>     * @param model The parent composite entity which internal diagram shall be layouted.<a name="line.331"></a>
+<span class="sourceLineNo">332</span>     */<a name="line.332"></a>
+<span class="sourceLineNo">333</span>    public void setModel(CompositeEntity model) {<a name="line.333"></a>
+<span class="sourceLineNo">334</span>        this._compositeEntity = model;<a name="line.334"></a>
+<span class="sourceLineNo">335</span>    }<a name="line.335"></a>
+<span class="sourceLineNo">336</span><a name="line.336"></a>
+<span class="sourceLineNo">337</span>    /**<a name="line.337"></a>
+<span class="sourceLineNo">338</span>     * Set the Top window to enable status reports on the status bar.<a name="line.338"></a>
+<span class="sourceLineNo">339</span>     *<a name="line.339"></a>
+<span class="sourceLineNo">340</span>     * @param top The Top window<a name="line.340"></a>
+<span class="sourceLineNo">341</span>     */<a name="line.341"></a>
+<span class="sourceLineNo">342</span>    public void setTop(Top top) {<a name="line.342"></a>
+<span class="sourceLineNo">343</span>        this._top = top;<a name="line.343"></a>
+<span class="sourceLineNo">344</span>    }<a name="line.344"></a>
+<span class="sourceLineNo">345</span><a name="line.345"></a>
+<span class="sourceLineNo">346</span>    ///////////////////////////////////////////////////////////////////<a name="line.346"></a>
+<span class="sourceLineNo">347</span>    ////                         protected methods                 ////<a name="line.347"></a>
+<span class="sourceLineNo">348</span><a name="line.348"></a>
+<span class="sourceLineNo">349</span>    /**<a name="line.349"></a>
+<span class="sourceLineNo">350</span>     * Return a pool for layout provider instances that can be reused in subsequent layout<a name="line.350"></a>
+<span class="sourceLineNo">351</span>     * runs. New instances can be fetched from the pool and should be released back to<a name="line.351"></a>
+<span class="sourceLineNo">352</span>     * the pool after use.<a name="line.352"></a>
+<span class="sourceLineNo">353</span>     *<a name="line.353"></a>
+<span class="sourceLineNo">354</span>     * @return a layout provider pool<a name="line.354"></a>
+<span class="sourceLineNo">355</span>     */<a name="line.355"></a>
+<span class="sourceLineNo">356</span>    protected static synchronized InstancePool&lt;AbstractLayoutProvider&gt; _getLayouterPool() {<a name="line.356"></a>
+<span class="sourceLineNo">357</span>        if (_layoutProviderPool == null) {<a name="line.357"></a>
+<span class="sourceLineNo">358</span>            _layoutProviderPool = new InstancePool&lt;AbstractLayoutProvider&gt;(<a name="line.358"></a>
+<span class="sourceLineNo">359</span>                    new DefaultFactory(LayeredLayoutProvider.class));<a name="line.359"></a>
+<span class="sourceLineNo">360</span>        }<a name="line.360"></a>
+<span class="sourceLineNo">361</span>        return _layoutProviderPool;<a name="line.361"></a>
+<span class="sourceLineNo">362</span>    }<a name="line.362"></a>
+<span class="sourceLineNo">363</span><a name="line.363"></a>
+<span class="sourceLineNo">364</span>    ///////////////////////////////////////////////////////////////////<a name="line.364"></a>
+<span class="sourceLineNo">365</span>    ////                         private methods                   ////<a name="line.365"></a>
+<span class="sourceLineNo">366</span><a name="line.366"></a>
+<span class="sourceLineNo">367</span>    /**<a name="line.367"></a>
+<span class="sourceLineNo">368</span>     * Performs a recursive layout inside-out (if necessary).<a name="line.368"></a>
+<span class="sourceLineNo">369</span>     *<a name="line.369"></a>
+<span class="sourceLineNo">370</span>     * @param parentNode<a name="line.370"></a>
+<span class="sourceLineNo">371</span>     *          a node for which to apply the layout<a name="line.371"></a>
+<span class="sourceLineNo">372</span>     * @param layoutProvider<a name="line.372"></a>
+<span class="sourceLineNo">373</span>     *          the layout provider to execute the layout<a name="line.373"></a>
+<span class="sourceLineNo">374</span>     * @param progressMonitor<a name="line.374"></a>
+<span class="sourceLineNo">375</span>     *          a progress monitor to measure execution time<a name="line.375"></a>
+<span class="sourceLineNo">376</span>     */<a name="line.376"></a>
+<span class="sourceLineNo">377</span>    private void _recursivelyLayout(KNode parentNode,<a name="line.377"></a>
+<span class="sourceLineNo">378</span>            AbstractLayoutProvider layoutProvider,<a name="line.378"></a>
+<span class="sourceLineNo">379</span>            IKielerProgressMonitor progressMonitor) {<a name="line.379"></a>
+<span class="sourceLineNo">380</span><a name="line.380"></a>
+<span class="sourceLineNo">381</span>        for (KNode child : parentNode.getChildren()) {<a name="line.381"></a>
+<span class="sourceLineNo">382</span>            if (!child.getChildren().isEmpty()) {<a name="line.382"></a>
+<span class="sourceLineNo">383</span>                layoutProvider.doLayout(child, progressMonitor.subTask(1));<a name="line.383"></a>
+<span class="sourceLineNo">384</span>            }<a name="line.384"></a>
+<span class="sourceLineNo">385</span>        }<a name="line.385"></a>
+<span class="sourceLineNo">386</span><a name="line.386"></a>
+<span class="sourceLineNo">387</span>        layoutProvider.doLayout(parentNode, progressMonitor);<a name="line.387"></a>
+<span class="sourceLineNo">388</span>    }<a name="line.388"></a>
+<span class="sourceLineNo">389</span><a name="line.389"></a>
+<span class="sourceLineNo">390</span>    /**<a name="line.390"></a>
+<span class="sourceLineNo">391</span>     * Recusively applies {@link #_applyLayout(KNode)} to any {@link KNode}<a name="line.391"></a>
+<span class="sourceLineNo">392</span>     * that has further children.<a name="line.392"></a>
+<span class="sourceLineNo">393</span>     *<a name="line.393"></a>
+<span class="sourceLineNo">394</span>     * @param parentNode The KIELER graph object containing all layout information<a name="line.394"></a>
+<span class="sourceLineNo">395</span>     *            to apply to the Ptolemy model<a name="line.395"></a>
+<span class="sourceLineNo">396</span>     * @param layoutRequest the common layout request for the current layout run<a name="line.396"></a>
+<span class="sourceLineNo">397</span>     * @exception IllegalActionException if routing of edges fails.<a name="line.397"></a>
+<span class="sourceLineNo">398</span>     */<a name="line.398"></a>
+<span class="sourceLineNo">399</span>    private void _recursivelyApplyLayout(KNode parentNode,<a name="line.399"></a>
+<span class="sourceLineNo">400</span>            ApplyLayoutRequest layoutRequest) throws IllegalActionException {<a name="line.400"></a>
+<span class="sourceLineNo">401</span><a name="line.401"></a>
+<span class="sourceLineNo">402</span>        // the _applyLayout method applies positions to the<a name="line.402"></a>
+<span class="sourceLineNo">403</span>        // children of a node<a name="line.403"></a>
+<span class="sourceLineNo">404</span>        if (!parentNode.getChildren().isEmpty()) {<a name="line.404"></a>
+<span class="sourceLineNo">405</span>            _applyLayout(parentNode, layoutRequest);<a name="line.405"></a>
+<span class="sourceLineNo">406</span><a name="line.406"></a>
+<span class="sourceLineNo">407</span>            for (KNode child : parentNode.getChildren()) {<a name="line.407"></a>
+<span class="sourceLineNo">408</span>                if (!child.getChildren().isEmpty()) {<a name="line.408"></a>
+<span class="sourceLineNo">409</span>                    _recursivelyApplyLayout(child, layoutRequest);<a name="line.409"></a>
+<span class="sourceLineNo">410</span>                }<a name="line.410"></a>
+<span class="sourceLineNo">411</span>            }<a name="line.411"></a>
+<span class="sourceLineNo">412</span>        }<a name="line.412"></a>
+<span class="sourceLineNo">413</span>    }<a name="line.413"></a>
+<span class="sourceLineNo">414</span><a name="line.414"></a>
+<span class="sourceLineNo">415</span>    /**<a name="line.415"></a>
+<span class="sourceLineNo">416</span>     * Traverse a composite KNode containing corresponding KIELER nodes, ports<a name="line.416"></a>
+<span class="sourceLineNo">417</span>     * and edges for the Ptolemy model and apply all layout information<a name="line.417"></a>
+<span class="sourceLineNo">418</span>     * contained by it back to the Ptolemy model. Do most changes to the Ptolemy<a name="line.418"></a>
+<span class="sourceLineNo">419</span>     * model via MoMLChangeRequests. Set location attributes for all visible<a name="line.419"></a>
+<span class="sourceLineNo">420</span>     * Ptolemy nodes.<a name="line.420"></a>
+<span class="sourceLineNo">421</span>     * Optionally route edges by inserting {@link LayoutHint} attributes.<a name="line.421"></a>
+<span class="sourceLineNo">422</span>     *<a name="line.422"></a>
+<span class="sourceLineNo">423</span>     * @param parentNode The KIELER graph object containing all layout information<a name="line.423"></a>
+<span class="sourceLineNo">424</span>     *            to apply to the Ptolemy model<a name="line.424"></a>
+<span class="sourceLineNo">425</span>     * @param layoutRequest the common layout request for the current layout run<a name="line.425"></a>
+<span class="sourceLineNo">426</span>     * @exception IllegalActionException if routing of edges fails.<a name="line.426"></a>
+<span class="sourceLineNo">427</span>     */<a name="line.427"></a>
+<span class="sourceLineNo">428</span>    private void _applyLayout(KNode parentNode,<a name="line.428"></a>
+<span class="sourceLineNo">429</span>            ApplyLayoutRequest layoutRequest) throws IllegalActionException {<a name="line.429"></a>
+<span class="sourceLineNo">430</span><a name="line.430"></a>
+<span class="sourceLineNo">431</span>        // Apply node layout.<a name="line.431"></a>
+<span class="sourceLineNo">432</span>        for (KNode knode : parentNode.getChildren()) {<a name="line.432"></a>
+<span class="sourceLineNo">433</span>            KShapeLayout nodeLayout = knode.getData(KShapeLayout.class);<a name="line.433"></a>
+<span class="sourceLineNo">434</span>            KVector nodePos = nodeLayout.createVector();<a name="line.434"></a>
+<span class="sourceLineNo">435</span>            Object divaNode = _kieler2ptolemyDivaNodes.get(knode);<a name="line.435"></a>
+<span class="sourceLineNo">436</span>            if (divaNode instanceof Location) {<a name="line.436"></a>
+<span class="sourceLineNo">437</span>                Locatable location = (Location) divaNode;<a name="line.437"></a>
+<span class="sourceLineNo">438</span><a name="line.438"></a>
+<span class="sourceLineNo">439</span>                // Transform coordinate systems.<a name="line.439"></a>
+<span class="sourceLineNo">440</span>                KimlUtil.toAbsolute(nodePos, parentNode);<a name="line.440"></a>
+<span class="sourceLineNo">441</span>                _kNode2Ptolemy(nodePos, divaNode, location);<a name="line.441"></a>
+<span class="sourceLineNo">442</span><a name="line.442"></a>
+<span class="sourceLineNo">443</span>                // Calculate the snap-to-grid coordinates.<a name="line.443"></a>
+<span class="sourceLineNo">444</span>                double[] snapToGridNodePoint = SnapConstraint<a name="line.444"></a>
+<span class="sourceLineNo">445</span>                        .constrainPoint(nodePos.x, nodePos.y);<a name="line.445"></a>
+<span class="sourceLineNo">446</span><a name="line.446"></a>
+<span class="sourceLineNo">447</span>                // Include the new location in the request.<a name="line.447"></a>
+<span class="sourceLineNo">448</span>                layoutRequest.addLocation(location, snapToGridNodePoint[0],<a name="line.448"></a>
+<span class="sourceLineNo">449</span>                        snapToGridNodePoint[1]);<a name="line.449"></a>
+<span class="sourceLineNo">450</span>            }<a name="line.450"></a>
+<span class="sourceLineNo">451</span>        }<a name="line.451"></a>
+<span class="sourceLineNo">452</span><a name="line.452"></a>
+<span class="sourceLineNo">453</span>        GraphModel graphModel = getLayoutTarget().getGraphModel();<a name="line.453"></a>
+<span class="sourceLineNo">454</span>        if (graphModel instanceof ActorGraphModel) {<a name="line.454"></a>
+<span class="sourceLineNo">455</span>            // apply edge layout - bend points with layout hints<a name="line.455"></a>
+<span class="sourceLineNo">456</span>            for (Pair&lt;KEdge, Link&gt; entry : _edgeList) {<a name="line.456"></a>
+<span class="sourceLineNo">457</span>                _applyEdgeLayoutBendPointAnnotation(entry.getFirst(),<a name="line.457"></a>
+<span class="sourceLineNo">458</span>                        entry.getSecond(), layoutRequest);<a name="line.458"></a>
+<span class="sourceLineNo">459</span>            }<a name="line.459"></a>
+<span class="sourceLineNo">460</span>        } else if (graphModel instanceof FSMGraphModel) {<a name="line.460"></a>
+<span class="sourceLineNo">461</span><a name="line.461"></a>
+<span class="sourceLineNo">462</span>            // apply edge layout - one single point for specifying a curve<a name="line.462"></a>
+<span class="sourceLineNo">463</span>            for (Pair&lt;KEdge, Link&gt; entry : _edgeList) {<a name="line.463"></a>
+<span class="sourceLineNo">464</span><a name="line.464"></a>
+<span class="sourceLineNo">465</span>                if (parentNode.getData(KLayoutData.class)<a name="line.465"></a>
+<span class="sourceLineNo">466</span>                        .getProperty(Parameters.SPLINES)) {<a name="line.466"></a>
+<span class="sourceLineNo">467</span>                    _applyEdgeLayoutBendPointAnnotation(entry.getFirst(),<a name="line.467"></a>
+<span class="sourceLineNo">468</span>                            entry.getSecond(), layoutRequest);<a name="line.468"></a>
+<span class="sourceLineNo">469</span>                } else {<a name="line.469"></a>
+<span class="sourceLineNo">470</span>                    _applyEdgeLayoutCurve(entry.getFirst(), entry.getSecond(),<a name="line.470"></a>
+<span class="sourceLineNo">471</span>                            layoutRequest);<a name="line.471"></a>
+<span class="sourceLineNo">472</span>                }<a name="line.472"></a>
+<span class="sourceLineNo">473</span>            }<a name="line.473"></a>
+<span class="sourceLineNo">474</span>        }<a name="line.474"></a>
+<span class="sourceLineNo">475</span>    }<a name="line.475"></a>
+<span class="sourceLineNo">476</span><a name="line.476"></a>
+<span class="sourceLineNo">477</span>    /**<a name="line.477"></a>
+<span class="sourceLineNo">478</span>     * Apply the layout of an KEdge to its corresponding Diva Link. This is done<a name="line.478"></a>
+<span class="sourceLineNo">479</span>     * by adding a LayoutHint attribute to the corresponding Relation. Only<a name="line.479"></a>
+<span class="sourceLineNo">480</span>     * Relations are persistent objects in the abstract Ptolemy syntax and<a name="line.480"></a>
+<span class="sourceLineNo">481</span>     * therefore add the bend points for a link in its Relation. Hence, there<a name="line.481"></a>
+<span class="sourceLineNo">482</span>     * may be multiple link bend points stored in one Relation. The LayoutHint<a name="line.482"></a>
+<span class="sourceLineNo">483</span>     * attribute can carry the bend points for multiple Links and identifies the<a name="line.483"></a>
+<span class="sourceLineNo">484</span>     * link by the head and tail of the link.<a name="line.484"></a>
+<span class="sourceLineNo">485</span>     *<a name="line.485"></a>
+<span class="sourceLineNo">486</span>     * @param kedge The KIELER edge that holds the precomputed layout<a name="line.486"></a>
+<span class="sourceLineNo">487</span>     *            information, i.e. bend point positions<a name="line.487"></a>
+<span class="sourceLineNo">488</span>     * @exception IllegalActionException Exception will be thrown if replacing<a name="line.488"></a>
+<span class="sourceLineNo">489</span>     *                of original relation is not possible, i.e. if unlink() or<a name="line.489"></a>
+<span class="sourceLineNo">490</span>     *                link() methods fail.<a name="line.490"></a>
+<span class="sourceLineNo">491</span>     */<a name="line.491"></a>
+<span class="sourceLineNo">492</span>    private void _applyEdgeLayoutBendPointAnnotation(KEdge kedge, Link link,<a name="line.492"></a>
+<span class="sourceLineNo">493</span>            ApplyLayoutRequest layoutRequest) throws IllegalActionException {<a name="line.493"></a>
+<span class="sourceLineNo">494</span>        List&lt;KPoint&gt; bendPoints = kedge.getData(KEdgeLayout.class)<a name="line.494"></a>
+<span class="sourceLineNo">495</span>                .getBendPoints();<a name="line.495"></a>
+<span class="sourceLineNo">496</span><a name="line.496"></a>
+<span class="sourceLineNo">497</span>        // Translate bend points into an array of doubles for the layout hint attribute.<a name="line.497"></a>
+<span class="sourceLineNo">498</span>        double[] layoutHintBendPoints = new double[bendPoints.size() * 2];<a name="line.498"></a>
+<span class="sourceLineNo">499</span>        int index = 0;<a name="line.499"></a>
+<span class="sourceLineNo">500</span>        KNode parentNode = KielerGraphUtil._getParent(kedge);<a name="line.500"></a>
+<span class="sourceLineNo">501</span>        if (parentNode == null) {<a name="line.501"></a>
+<span class="sourceLineNo">502</span>            throw new IllegalStateException(<a name="line.502"></a>
+<span class="sourceLineNo">503</span>                    "Internal layout error. Every edge in the layout graph must have a parent.");<a name="line.503"></a>
+<span class="sourceLineNo">504</span>        }<a name="line.504"></a>
+<span class="sourceLineNo">505</span>        for (KPoint relativeKPoint : bendPoints) {<a name="line.505"></a>
+<span class="sourceLineNo">506</span>            KVector kpoint = relativeKPoint.createVector();<a name="line.506"></a>
+<span class="sourceLineNo">507</span>            KimlUtil.toAbsolute(kpoint, parentNode);<a name="line.507"></a>
+<span class="sourceLineNo">508</span><a name="line.508"></a>
+<span class="sourceLineNo">509</span>            // calculate the snap-to-grid coordinates unless we route<a name="line.509"></a>
+<span class="sourceLineNo">510</span>            // edges as splines. With splines the snap to grid feature would<a name="line.510"></a>
+<span class="sourceLineNo">511</span>            // drastically deform the spline routes<a name="line.511"></a>
+<span class="sourceLineNo">512</span>            if (parentNode.getData(KLayoutData.class).getProperty(<a name="line.512"></a>
+<span class="sourceLineNo">513</span>                    LayoutOptions.EDGE_ROUTING) != EdgeRouting.SPLINES) {<a name="line.513"></a>
+<span class="sourceLineNo">514</span><a name="line.514"></a>
+<span class="sourceLineNo">515</span>                double[] snapToGridBendPoint = SnapConstraint<a name="line.515"></a>
+<span class="sourceLineNo">516</span>                        .constrainPoint(kpoint.x, kpoint.y);<a name="line.516"></a>
+<span class="sourceLineNo">517</span>                layoutHintBendPoints[index] = snapToGridBendPoint[0];<a name="line.517"></a>
+<span class="sourceLineNo">518</span>                layoutHintBendPoints[index + 1] = snapToGridBendPoint[1];<a name="line.518"></a>
+<span class="sourceLineNo">519</span>            } else {<a name="line.519"></a>
+<span class="sourceLineNo">520</span><a name="line.520"></a>
+<span class="sourceLineNo">521</span>                layoutHintBendPoints[index] = kpoint.x;<a name="line.521"></a>
+<span class="sourceLineNo">522</span>                layoutHintBendPoints[index + 1] = kpoint.y;<a name="line.522"></a>
+<span class="sourceLineNo">523</span>            }<a name="line.523"></a>
+<span class="sourceLineNo">524</span><a name="line.524"></a>
+<span class="sourceLineNo">525</span>            index += 2;<a name="line.525"></a>
+<span class="sourceLineNo">526</span>        }<a name="line.526"></a>
+<span class="sourceLineNo">527</span><a name="line.527"></a>
+<span class="sourceLineNo">528</span>        // we support exactly one label (if one exists at all)<a name="line.528"></a>
+<span class="sourceLineNo">529</span>        Point2D.Double labelLocation = null;<a name="line.529"></a>
+<span class="sourceLineNo">530</span>        for (KLabel label : kedge.getLabels()) {<a name="line.530"></a>
+<span class="sourceLineNo">531</span>            labelLocation = new Point2D.Double();<a name="line.531"></a>
+<span class="sourceLineNo">532</span>            KVector pos = label.getData(KShapeLayout.class).createVector();<a name="line.532"></a>
+<span class="sourceLineNo">533</span>            KimlUtil.toAbsolute(pos, parentNode);<a name="line.533"></a>
+<span class="sourceLineNo">534</span>            labelLocation.x = pos.x;<a name="line.534"></a>
+<span class="sourceLineNo">535</span>            labelLocation.y = pos.y;<a name="line.535"></a>
+<span class="sourceLineNo">536</span>            break;<a name="line.536"></a>
+<span class="sourceLineNo">537</span>        }<a name="line.537"></a>
+<span class="sourceLineNo">538</span><a name="line.538"></a>
+<span class="sourceLineNo">539</span>        Relation relation = link.getRelation();<a name="line.539"></a>
+<span class="sourceLineNo">540</span>        NamedObj head = (NamedObj) link.getHead();<a name="line.540"></a>
+<span class="sourceLineNo">541</span>        NamedObj tail = (NamedObj) link.getTail();<a name="line.541"></a>
+<span class="sourceLineNo">542</span>        // Determine correct direction of the edge.<a name="line.542"></a>
+<span class="sourceLineNo">543</span>        if (head != _divaEdgeSource.get(link)) {<a name="line.543"></a>
+<span class="sourceLineNo">544</span>            layoutRequest.addConnection(relation, tail, head,<a name="line.544"></a>
+<span class="sourceLineNo">545</span>                    layoutHintBendPoints, labelLocation);<a name="line.545"></a>
+<span class="sourceLineNo">546</span>        } else {<a name="line.546"></a>
+<span class="sourceLineNo">547</span>            layoutRequest.addConnection(relation, head, tail,<a name="line.547"></a>
+<span class="sourceLineNo">548</span>                    layoutHintBendPoints, labelLocation);<a name="line.548"></a>
+<span class="sourceLineNo">549</span>        }<a name="line.549"></a>
+<span class="sourceLineNo">550</span><a name="line.550"></a>
+<span class="sourceLineNo">551</span>    }<a name="line.551"></a>
+<span class="sourceLineNo">552</span><a name="line.552"></a>
+<span class="sourceLineNo">553</span>    private void _applyEdgeLayoutCurve(KEdge kedge, Link link,<a name="line.553"></a>
+<span class="sourceLineNo">554</span>            ApplyLayoutRequest layoutRequest) {<a name="line.554"></a>
+<span class="sourceLineNo">555</span>        Relation relation = link.getRelation();<a name="line.555"></a>
+<span class="sourceLineNo">556</span>        // Don't process any self-loops, since that would cause headaches.<a name="line.556"></a>
+<span class="sourceLineNo">557</span>        if (relation instanceof Transition<a name="line.557"></a>
+<span class="sourceLineNo">558</span>                &amp;&amp; link.getHead() != link.getTail()) {<a name="line.558"></a>
+<span class="sourceLineNo">559</span>            KEdgeLayout edgeLayout = kedge.getData(KEdgeLayout.class);<a name="line.559"></a>
+<span class="sourceLineNo">560</span>            List&lt;KPoint&gt; bendPoints = edgeLayout.getBendPoints();<a name="line.560"></a>
+<span class="sourceLineNo">561</span><a name="line.561"></a>
+<span class="sourceLineNo">562</span>            KNode source = kedge.getSource();<a name="line.562"></a>
+<span class="sourceLineNo">563</span>            if (source == null) {<a name="line.563"></a>
+<span class="sourceLineNo">564</span>                throw new IllegalStateException("Internal layout error. "<a name="line.564"></a>
+<span class="sourceLineNo">565</span>                        + "Every edge must have a source node.");<a name="line.565"></a>
+<span class="sourceLineNo">566</span>            }<a name="line.566"></a>
+<span class="sourceLineNo">567</span>            KShapeLayout sourceLayout = source.getData(KShapeLayout.class);<a name="line.567"></a>
+<span class="sourceLineNo">568</span>            double sourcex = sourceLayout.getXpos()<a name="line.568"></a>
+<span class="sourceLineNo">569</span>                    + sourceLayout.getWidth() / 2;<a name="line.569"></a>
+<span class="sourceLineNo">570</span>            double sourcey = sourceLayout.getYpos()<a name="line.570"></a>
+<span class="sourceLineNo">571</span>                    + sourceLayout.getHeight() / 2;<a name="line.571"></a>
+<span class="sourceLineNo">572</span>            KNode target = kedge.getTarget();<a name="line.572"></a>
+<span class="sourceLineNo">573</span>            if (target == null) {<a name="line.573"></a>
+<span class="sourceLineNo">574</span>                throw new IllegalStateException("Internal layout error. "<a name="line.574"></a>
+<span class="sourceLineNo">575</span>                        + "Every edge must have a source node.");<a name="line.575"></a>
+<span class="sourceLineNo">576</span>            }<a name="line.576"></a>
+<span class="sourceLineNo">577</span>            KShapeLayout targetLayout = target.getData(KShapeLayout.class);<a name="line.577"></a>
+<span class="sourceLineNo">578</span>            double targetx = targetLayout.getXpos()<a name="line.578"></a>
+<span class="sourceLineNo">579</span>                    + targetLayout.getWidth() / 2;<a name="line.579"></a>
+<span class="sourceLineNo">580</span>            double targety = targetLayout.getYpos()<a name="line.580"></a>
+<span class="sourceLineNo">581</span>                    + targetLayout.getHeight() / 2;<a name="line.581"></a>
+<span class="sourceLineNo">582</span><a name="line.582"></a>
+<span class="sourceLineNo">583</span>            // Determine a reference point for drawing the curve.<a name="line.583"></a>
+<span class="sourceLineNo">584</span>            double exitAngle = 0;<a name="line.584"></a>
+<span class="sourceLineNo">585</span>            double refx = 0, refy = 0;<a name="line.585"></a>
+<span class="sourceLineNo">586</span><a name="line.586"></a>
+<span class="sourceLineNo">587</span>            // 1) if the edge has a label, we use the label's center<a name="line.587"></a>
+<span class="sourceLineNo">588</span>            //    as reference<a name="line.588"></a>
+<span class="sourceLineNo">589</span>            // 2) if there are no bend points, use the the center of<a name="line.589"></a>
+<span class="sourceLineNo">590</span>            //    a straight line between source and target<a name="line.590"></a>
+<span class="sourceLineNo">591</span>            // 3) if there are bend points, we use the center<a name="line.591"></a>
+<span class="sourceLineNo">592</span>            //    between the two "middle" bend points<a name="line.592"></a>
+<span class="sourceLineNo">593</span>            if (!kedge.getLabels().isEmpty()) {<a name="line.593"></a>
+<span class="sourceLineNo">594</span>                KLabel label = kedge.getLabels().get(0);<a name="line.594"></a>
+<span class="sourceLineNo">595</span>                KShapeLayout labelLayout = label.getData(KShapeLayout.class);<a name="line.595"></a>
+<span class="sourceLineNo">596</span>                KVector center = labelLayout.createVector().add(<a name="line.596"></a>
+<span class="sourceLineNo">597</span>                        labelLayout.getWidth() / 2f,<a name="line.597"></a>
+<span class="sourceLineNo">598</span>                        labelLayout.getHeight() / 2f);<a name="line.598"></a>
+<span class="sourceLineNo">599</span>                refx = center.x;<a name="line.599"></a>
+<span class="sourceLineNo">600</span>                refy = center.y;<a name="line.600"></a>
+<span class="sourceLineNo">601</span>            } else if (bendPoints.isEmpty()) {<a name="line.601"></a>
+<span class="sourceLineNo">602</span>                refx = (edgeLayout.getSourcePoint().getX()<a name="line.602"></a>
+<span class="sourceLineNo">603</span>                        + edgeLayout.getTargetPoint().getX()) / 2;<a name="line.603"></a>
+<span class="sourceLineNo">604</span>                refy = (edgeLayout.getSourcePoint().getY()<a name="line.604"></a>
+<span class="sourceLineNo">605</span>                        + edgeLayout.getTargetPoint().getY()) / 2;<a name="line.605"></a>
+<span class="sourceLineNo">606</span>            } else {<a name="line.606"></a>
+<span class="sourceLineNo">607</span>                int count = bendPoints.size();<a name="line.607"></a>
+<span class="sourceLineNo">608</span>                KPoint point1 = bendPoints.get(count / 2 - 1);<a name="line.608"></a>
+<span class="sourceLineNo">609</span>                KPoint point2 = bendPoints.get(count / 2);<a name="line.609"></a>
+<span class="sourceLineNo">610</span>                refx = (point1.getX() + point2.getX()) / 2f;<a name="line.610"></a>
+<span class="sourceLineNo">611</span>                refy = (point1.getY() + point2.getY()) / 2f;<a name="line.611"></a>
+<span class="sourceLineNo">612</span>            }<a name="line.612"></a>
+<span class="sourceLineNo">613</span><a name="line.613"></a>
+<span class="sourceLineNo">614</span>            // Take the angular difference between the reference point and<a name="line.614"></a>
+<span class="sourceLineNo">615</span>            // the target point as seen from the source.<a name="line.615"></a>
+<span class="sourceLineNo">616</span>            double targetth = Math.atan2(targety - sourcey, targetx - sourcex);<a name="line.616"></a>
+<span class="sourceLineNo">617</span>            double meanth = Math.atan2(refy - sourcey, refx - sourcex);<a name="line.617"></a>
+<span class="sourceLineNo">618</span>            exitAngle = meanth - targetth;<a name="line.618"></a>
+<span class="sourceLineNo">619</span><a name="line.619"></a>
+<span class="sourceLineNo">620</span>            // Fit the angle into the bounds of [-pi, pi]<a name="line.620"></a>
+<span class="sourceLineNo">621</span>            if (exitAngle &gt; Math.PI) {<a name="line.621"></a>
+<span class="sourceLineNo">622</span>                exitAngle -= 2 * Math.PI;<a name="line.622"></a>
+<span class="sourceLineNo">623</span>            } else if (exitAngle &lt; -Math.PI) {<a name="line.623"></a>
+<span class="sourceLineNo">624</span>                exitAngle += 2 * Math.PI;<a name="line.624"></a>
+<span class="sourceLineNo">625</span>            }<a name="line.625"></a>
+<span class="sourceLineNo">626</span><a name="line.626"></a>
+<span class="sourceLineNo">627</span>            layoutRequest.addCurve((Transition) relation, exitAngle);<a name="line.627"></a>
+<span class="sourceLineNo">628</span>        }<a name="line.628"></a>
+<span class="sourceLineNo">629</span>    }<a name="line.629"></a>
+<span class="sourceLineNo">630</span><a name="line.630"></a>
+<span class="sourceLineNo">631</span>    /**<a name="line.631"></a>
+<span class="sourceLineNo">632</span>     * Creates a graph for the KIELER API from a Ptolemy model. Will traverse<a name="line.632"></a>
+<span class="sourceLineNo">633</span>     * the low level GraphModel given by the composite and record all found<a name="line.633"></a>
+<span class="sourceLineNo">634</span>     * elements in the mapping fields of this object that keep a mapping between<a name="line.634"></a>
+<span class="sourceLineNo">635</span>     * Ptolemy/Diva objects and KIELER objects. New KIELER objects (KEdge,<a name="line.635"></a>
+<span class="sourceLineNo">636</span>     * KNode, KPort) are created for their respective Ptolemy counterparts and<a name="line.636"></a>
+<span class="sourceLineNo">637</span>     * initialized with the initial sizes and positions and are put in a<a name="line.637"></a>
+<span class="sourceLineNo">638</span>     * composite KNode (the graph KIELER will perform the layout on later). To<a name="line.638"></a>
+<span class="sourceLineNo">639</span>     * obtain the right mappings, multiple abstraction levels of Ptolemy are<a name="line.639"></a>
+<span class="sourceLineNo">640</span>     * considered here: Diva, as this was the intended original way to do<a name="line.640"></a>
+<span class="sourceLineNo">641</span>     * automatic layout (e.g. by GlobalAbstractLayout) and Ptolemy, since Diva<a name="line.641"></a>
+<span class="sourceLineNo">642</span>     * lacks certain concepts that are relevant for a proper layout, such<a name="line.642"></a>
+<span class="sourceLineNo">643</span>     * as exact port locations for considering port constraints in the<a name="line.643"></a>
+<span class="sourceLineNo">644</span>     * model, which are supported by KIELER.<a name="line.644"></a>
+<span class="sourceLineNo">645</span>     *<a name="line.645"></a>
+<span class="sourceLineNo">646</span>     * @param composite The GraphModel composite object to retrieve the model<a name="line.646"></a>
+<span class="sourceLineNo">647</span>     *            information from<a name="line.647"></a>
+<span class="sourceLineNo">648</span>     * @param parentNode KIELER subgraph to receive all connected<a name="line.648"></a>
+<span class="sourceLineNo">649</span>     *            model elements<a name="line.649"></a>
+<span class="sourceLineNo">650</span>     */<a name="line.650"></a>
+<span class="sourceLineNo">651</span>    private void _createGraph(Object composite, KNode parentNode) {<a name="line.651"></a>
+<span class="sourceLineNo">652</span>        _kieler2ptolemyDivaNodes = HashBiMap.create();<a name="line.652"></a>
+<span class="sourceLineNo">653</span>        _ptolemy2KielerPorts = LinkedListMultimap.create();<a name="line.653"></a>
+<span class="sourceLineNo">654</span>        _divaEdgeSource = Maps.newHashMap();<a name="line.654"></a>
+<span class="sourceLineNo">655</span>        _divaEdgeTarget = Maps.newHashMap();<a name="line.655"></a>
+<span class="sourceLineNo">656</span>        _divaLabel = Maps.newHashMap();<a name="line.656"></a>
+<span class="sourceLineNo">657</span>        _edgeList = Lists.newLinkedList();<a name="line.657"></a>
+<span class="sourceLineNo">658</span>        KShapeLayout parentLayout = parentNode.getData(KShapeLayout.class);<a name="line.658"></a>
+<span class="sourceLineNo">659</span><a name="line.659"></a>
+<span class="sourceLineNo">660</span>        // Determine whether to include unconnected nodes.<a name="line.660"></a>
+<span class="sourceLineNo">661</span>        boolean doBoxLayout = parentLayout.getProperty(Parameters.DECORATIONS);<a name="line.661"></a>
+<span class="sourceLineNo">662</span><a name="line.662"></a>
+<span class="sourceLineNo">663</span>        // On-the-fly find upper left corner for bounding box of parent node.<a name="line.663"></a>
+<span class="sourceLineNo">664</span>        float globalX = Float.MAX_VALUE, globalY = Float.MAX_VALUE;<a name="line.664"></a>
+<span class="sourceLineNo">665</span><a name="line.665"></a>
+<span class="sourceLineNo">666</span>        // Traverse the ptolemy graph.<a name="line.666"></a>
+<span class="sourceLineNo">667</span>        ExternalPortModel externalPortModel = null;<a name="line.667"></a>
+<span class="sourceLineNo">668</span>        if (_graphModel instanceof ActorGraphModel) {<a name="line.668"></a>
+<span class="sourceLineNo">669</span>            externalPortModel = ((ActorGraphModel) _graphModel)<a name="line.669"></a>
+<span class="sourceLineNo">670</span>                    .getExternalPortModel();<a name="line.670"></a>
+<span class="sourceLineNo">671</span>        }<a name="line.671"></a>
+<span class="sourceLineNo">672</span>        List&lt;Link&gt; unprocessedEdges = new LinkedList&lt;Link&gt;();<a name="line.672"></a>
+<span class="sourceLineNo">673</span>        List&lt;NamedObj&gt; unprocessedRelatives = new LinkedList&lt;NamedObj&gt;();<a name="line.673"></a>
+<span class="sourceLineNo">674</span><a name="line.674"></a>
+<span class="sourceLineNo">675</span>        // Process nodes.<a name="line.675"></a>
+<span class="sourceLineNo">676</span>        for (Iterator iterator = _graphModel.nodes(composite); iterator<a name="line.676"></a>
+<span class="sourceLineNo">677</span>                .hasNext();) {<a name="line.677"></a>
+<span class="sourceLineNo">678</span>            Object node = iterator.next();<a name="line.678"></a>
+<span class="sourceLineNo">679</span>            if (!(node instanceof Locatable)) {<a name="line.679"></a>
+<span class="sourceLineNo">680</span>                continue;<a name="line.680"></a>
+<span class="sourceLineNo">681</span>            }<a name="line.681"></a>
+<span class="sourceLineNo">682</span>            Iterator portIter = null;<a name="line.682"></a>
+<span class="sourceLineNo">683</span><a name="line.683"></a>
+<span class="sourceLineNo">684</span>            // Here we get the corresponding Ptolemy object.<a name="line.684"></a>
+<span class="sourceLineNo">685</span>            // This breaks with Ptolemy/Diva abstraction; for now we need<a name="line.685"></a>
+<span class="sourceLineNo">686</span>            // the ptolemy actor to get the ports and port positions<a name="line.686"></a>
+<span class="sourceLineNo">687</span>            // and to distinguish actors and relation vertices.<a name="line.687"></a>
+<span class="sourceLineNo">688</span>            NamedObj semanticNode = (NamedObj) _graphModel<a name="line.688"></a>
+<span class="sourceLineNo">689</span>                    .getSemanticObject(node);<a name="line.689"></a>
+<span class="sourceLineNo">690</span><a name="line.690"></a>
+<span class="sourceLineNo">691</span>            if (doBoxLayout || PtolemyModelUtil._isConnected(semanticNode)) {<a name="line.691"></a>
+<span class="sourceLineNo">692</span>                // Temporary variable for the new KNode corresponding to one of<a name="line.692"></a>
+<span class="sourceLineNo">693</span>                // the following cases depending on what the semantic object is.<a name="line.693"></a>
+<span class="sourceLineNo">694</span>                KNode knode = null;<a name="line.694"></a>
+<span class="sourceLineNo">695</span><a name="line.695"></a>
+<span class="sourceLineNo">696</span>                // Handle actors, text, and directors.<a name="line.696"></a>
+<span class="sourceLineNo">697</span>                if (semanticNode instanceof Actor<a name="line.697"></a>
+<span class="sourceLineNo">698</span>                        || semanticNode instanceof Attribute) {<a name="line.698"></a>
+<span class="sourceLineNo">699</span><a name="line.699"></a>
+<span class="sourceLineNo">700</span>                    // Create a KIELER node for a ptolemy node.<a name="line.700"></a>
+<span class="sourceLineNo">701</span>                    knode = _createKNode(node, semanticNode);<a name="line.701"></a>
+<span class="sourceLineNo">702</span><a name="line.702"></a>
+<span class="sourceLineNo">703</span>                    // Handle the ports of this node.<a name="line.703"></a>
+<span class="sourceLineNo">704</span>                    if (semanticNode instanceof Actor<a name="line.704"></a>
+<span class="sourceLineNo">705</span>                            &amp;&amp; semanticNode instanceof Entity) {<a name="line.705"></a>
+<span class="sourceLineNo">706</span>                        Actor actor = (Actor) semanticNode;<a name="line.706"></a>
+<span class="sourceLineNo">707</span>                        List&lt;Port&gt; inputs = actor.inputPortList();<a name="line.707"></a>
+<span class="sourceLineNo">708</span>                        List&lt;Port&gt; outputs = actor.outputPortList();<a name="line.708"></a>
+<span class="sourceLineNo">709</span><a name="line.709"></a>
+<span class="sourceLineNo">710</span>                        // create ports<a name="line.710"></a>
+<span class="sourceLineNo">711</span>                        _createKPorts(knode, inputs);<a name="line.711"></a>
+<span class="sourceLineNo">712</span>                        _createKPorts(knode, outputs);<a name="line.712"></a>
+<span class="sourceLineNo">713</span>                        portIter = _graphModel.nodes(node);<a name="line.713"></a>
+<span class="sourceLineNo">714</span>                    } else if (semanticNode instanceof RelativeLocatable) {<a name="line.714"></a>
+<span class="sourceLineNo">715</span>                        unprocessedRelatives.add(semanticNode);<a name="line.715"></a>
+<span class="sourceLineNo">716</span>                    }<a name="line.716"></a>
+<span class="sourceLineNo">717</span>                }<a name="line.717"></a>
+<span class="sourceLineNo">718</span><a name="line.718"></a>
+<span class="sourceLineNo">719</span>                // Handle relation vertices.<a name="line.719"></a>
+<span class="sourceLineNo">720</span>                else if (semanticNode instanceof Relation) {<a name="line.720"></a>
+<span class="sourceLineNo">721</span>                    // Regard a relation vertex as a KIELER KNode.<a name="line.721"></a>
+<span class="sourceLineNo">722</span>                    knode = _createKNodeForVertex((Vertex) node);<a name="line.722"></a>
+<span class="sourceLineNo">723</span>                    portIter = Iterators.singletonIterator(node);<a name="line.723"></a>
+<span class="sourceLineNo">724</span>                }<a name="line.724"></a>
+<span class="sourceLineNo">725</span><a name="line.725"></a>
+<span class="sourceLineNo">726</span>                // Handle internal ports.<a name="line.726"></a>
+<span class="sourceLineNo">727</span>                else if (semanticNode instanceof ComponentPort) {<a name="line.727"></a>
+<span class="sourceLineNo">728</span>                    knode = _createKNodeForPort(node,<a name="line.728"></a>
+<span class="sourceLineNo">729</span>                            (ComponentPort) semanticNode);<a name="line.729"></a>
+<span class="sourceLineNo">730</span>                    portIter = Iterators.singletonIterator(node);<a name="line.730"></a>
+<span class="sourceLineNo">731</span>                }<a name="line.731"></a>
+<span class="sourceLineNo">732</span><a name="line.732"></a>
+<span class="sourceLineNo">733</span>                // Handle modal model states.<a name="line.733"></a>
+<span class="sourceLineNo">734</span>                else if (semanticNode instanceof State) {<a name="line.734"></a>
+<span class="sourceLineNo">735</span>                    knode = _createKNodeForState(node, (State) semanticNode);<a name="line.735"></a>
+<span class="sourceLineNo">736</span>                    portIter = Iterators.singletonIterator(node);<a name="line.736"></a>
+<span class="sourceLineNo">737</span>                }<a name="line.737"></a>
+<span class="sourceLineNo">738</span><a name="line.738"></a>
+<span class="sourceLineNo">739</span>                // Now do some common bookkeeping for all kinds of nodes.<a name="line.739"></a>
+<span class="sourceLineNo">740</span>                if (knode != null) {<a name="line.740"></a>
+<span class="sourceLineNo">741</span>                    // some nodes, such as FSM's ports may already<a name="line.741"></a>
+<span class="sourceLineNo">742</span>                    // be assigned to a node other than the parent node<a name="line.742"></a>
+<span class="sourceLineNo">743</span>                    if (knode.getParent() == null) {<a name="line.743"></a>
+<span class="sourceLineNo">744</span>                        knode.setParent(parentNode);<a name="line.744"></a>
+<span class="sourceLineNo">745</span>                    }<a name="line.745"></a>
+<span class="sourceLineNo">746</span>                    // Get check bounds for global bounding box.<a name="line.746"></a>
+<span class="sourceLineNo">747</span>                    KShapeLayout layout = knode.getData(KShapeLayout.class);<a name="line.747"></a>
+<span class="sourceLineNo">748</span>                    if (layout.getXpos() &lt; globalX) {<a name="line.748"></a>
+<span class="sourceLineNo">749</span>                        globalX = layout.getXpos();<a name="line.749"></a>
+<span class="sourceLineNo">750</span>                    }<a name="line.750"></a>
+<span class="sourceLineNo">751</span>                    if (layout.getYpos() &lt; globalY) {<a name="line.751"></a>
+<span class="sourceLineNo">752</span>                        globalY = layout.getYpos();<a name="line.752"></a>
+<span class="sourceLineNo">753</span>                    }<a name="line.753"></a>
+<span class="sourceLineNo">754</span><a name="line.754"></a>
+<span class="sourceLineNo">755</span>                    // Store node for later applying layout back.<a name="line.755"></a>
+<span class="sourceLineNo">756</span>                    _kieler2ptolemyDivaNodes.put(knode, (Locatable) node);<a name="line.756"></a>
+<span class="sourceLineNo">757</span>                }<a name="line.757"></a>
+<span class="sourceLineNo">758</span>            }<a name="line.758"></a>
+<span class="sourceLineNo">759</span><a name="line.759"></a>
+<span class="sourceLineNo">760</span>            if (portIter != null) {<a name="line.760"></a>
+<span class="sourceLineNo">761</span>                while (portIter.hasNext()) {<a name="line.761"></a>
+<span class="sourceLineNo">762</span>                    Object divaPort = portIter.next();<a name="line.762"></a>
+<span class="sourceLineNo">763</span>                    // Iterate all outgoing edges.<a name="line.763"></a>
+<span class="sourceLineNo">764</span>                    Iterator edgeIterator;<a name="line.764"></a>
+<span class="sourceLineNo">765</span>                    if (semanticNode instanceof Port<a name="line.765"></a>
+<span class="sourceLineNo">766</span>                            &amp;&amp; externalPortModel != null) { // internal ports<a name="line.766"></a>
+<span class="sourceLineNo">767</span>                        edgeIterator = externalPortModel.outEdges(divaPort);<a name="line.767"></a>
+<span class="sourceLineNo">768</span>                    } else {<a name="line.768"></a>
+<span class="sourceLineNo">769</span>                        edgeIterator = _graphModel.outEdges(divaPort);<a name="line.769"></a>
+<span class="sourceLineNo">770</span>                    }<a name="line.770"></a>
+<span class="sourceLineNo">771</span>                    while (edgeIterator.hasNext()) {<a name="line.771"></a>
+<span class="sourceLineNo">772</span>                        Object next = edgeIterator.next();<a name="line.772"></a>
+<span class="sourceLineNo">773</span>                        if (next instanceof Link) {<a name="line.773"></a>
+<span class="sourceLineNo">774</span>                            unprocessedEdges.add((Link) next);<a name="line.774"></a>
+<span class="sourceLineNo">775</span>                        }<a name="line.775"></a>
+<span class="sourceLineNo">776</span>                    }<a name="line.776"></a>
+<span class="sourceLineNo">777</span>                }<a name="line.777"></a>
+<span class="sourceLineNo">778</span>            }<a name="line.778"></a>
+<span class="sourceLineNo">779</span>        }<a name="line.779"></a>
+<span class="sourceLineNo">780</span><a name="line.780"></a>
+<span class="sourceLineNo">781</span>        // Create KIELER edges for Diva edges.<a name="line.781"></a>
+<span class="sourceLineNo">782</span>        if (_graphModel instanceof ActorGraphModel) {<a name="line.782"></a>
+<span class="sourceLineNo">783</span>            _storeEndpoints(unprocessedEdges);<a name="line.783"></a>
+<span class="sourceLineNo">784</span>        }<a name="line.784"></a>
+<span class="sourceLineNo">785</span>        for (Link divaEdge : unprocessedEdges) {<a name="line.785"></a>
+<span class="sourceLineNo">786</span>            _createKEdge(divaEdge);<a name="line.786"></a>
+<span class="sourceLineNo">787</span>        }<a name="line.787"></a>
+<span class="sourceLineNo">788</span><a name="line.788"></a>
+<span class="sourceLineNo">789</span>        // Create edges for associations of relative locatables to their reference objects.<a name="line.789"></a>
+<span class="sourceLineNo">790</span>        for (NamedObj relativeObj : unprocessedRelatives) {<a name="line.790"></a>
+<span class="sourceLineNo">791</span>            _createKEdgeForAttribute(relativeObj);<a name="line.791"></a>
+<span class="sourceLineNo">792</span>        }<a name="line.792"></a>
+<span class="sourceLineNo">793</span><a name="line.793"></a>
+<span class="sourceLineNo">794</span>        // Set graph offset.<a name="line.794"></a>
+<span class="sourceLineNo">795</span>        parentLayout.setXpos(globalX);<a name="line.795"></a>
+<span class="sourceLineNo">796</span>        parentLayout.setYpos(globalY);<a name="line.796"></a>
+<span class="sourceLineNo">797</span>    }<a name="line.797"></a>
+<span class="sourceLineNo">798</span><a name="line.798"></a>
+<span class="sourceLineNo">799</span>    /**<a name="line.799"></a>
+<span class="sourceLineNo">800</span>     * Creates a skeleton for placing elements of FSMs.<a name="line.800"></a>
+<span class="sourceLineNo">801</span>     *<a name="line.801"></a>
+<span class="sourceLineNo">802</span>     * An {@link FSMGraphModel} can have input, output, and inputoutput<a name="line.802"></a>
+<span class="sourceLineNo">803</span>     * ports. Since the diagram is a state diagram the ports are<a name="line.803"></a>
+<span class="sourceLineNo">804</span>     * not connected to any other diagram element. To create a<a name="line.804"></a>
+<span class="sourceLineNo">805</span>     * clear visual experience, we place all inputs on the left<a name="line.805"></a>
+<span class="sourceLineNo">806</span>     * side of the actual diagram, all outputs on the right, and all<a name="line.806"></a>
+<span class="sourceLineNo">807</span>     * inputoutputs above the diagram.<a name="line.807"></a>
+<span class="sourceLineNo">808</span>     *<a name="line.808"></a>
+<span class="sourceLineNo">809</span>     * Inputs and outputs are stacked from top to bottom. Inputoutputs<a name="line.809"></a>
+<span class="sourceLineNo">810</span>     * are placed left to right. The user can change the order<a name="line.810"></a>
+<span class="sourceLineNo">811</span>     * of ports to move related ports close to each other.<a name="line.811"></a>
+<span class="sourceLineNo">812</span>     *<a name="line.812"></a>
+<span class="sourceLineNo">813</span>     * @param root<a name="line.813"></a>
+<span class="sourceLineNo">814</span>     *          the root node of the layout graph<a name="line.814"></a>
+<span class="sourceLineNo">815</span>     * @return<a name="line.815"></a>
+<span class="sourceLineNo">816</span>     *          a node which should contain the actual diagram's elements<a name="line.816"></a>
+<span class="sourceLineNo">817</span>     */<a name="line.817"></a>
+<span class="sourceLineNo">818</span>    private KNode _createFsmSkeleton(KNode root) {<a name="line.818"></a>
+<span class="sourceLineNo">819</span><a name="line.819"></a>
+<span class="sourceLineNo">820</span>        _fsmInputOutput = KimlUtil.createInitializedNode();<a name="line.820"></a>
+<span class="sourceLineNo">821</span>        // hopefully no diagram gets this large<a name="line.821"></a>
+<span class="sourceLineNo">822</span>        _fsmInputOutput.getData(KShapeLayout.class).setPos(0, 100000);<a name="line.822"></a>
+<span class="sourceLineNo">823</span>        _fsmInputOutput.getData(KLayoutData.class)<a name="line.823"></a>
+<span class="sourceLineNo">824</span>                .setProperty(LayoutOptions.SEPARATE_CC, false);<a name="line.824"></a>
+<span class="sourceLineNo">825</span>        _fsmInputOutput.getData(KLayoutData.class).setProperty(<a name="line.825"></a>
+<span class="sourceLineNo">826</span>                Properties.CROSS_MIN, CrossingMinimizationStrategy.INTERACTIVE);<a name="line.826"></a>
+<span class="sourceLineNo">827</span>        _fsmInputOutput.getData(KLayoutData.class)<a name="line.827"></a>
+<span class="sourceLineNo">828</span>                .setProperty(LayoutOptions.DIRECTION, Direction.DOWN);<a name="line.828"></a>
+<span class="sourceLineNo">829</span><a name="line.829"></a>
+<span class="sourceLineNo">830</span>        _fsmInput = KimlUtil.createInitializedNode();<a name="line.830"></a>
+<span class="sourceLineNo">831</span>        _fsmInput.getData(KLayoutData.class)<a name="line.831"></a>
+<span class="sourceLineNo">832</span>                .setProperty(LayoutOptions.SEPARATE_CC, false);<a name="line.832"></a>
+<span class="sourceLineNo">833</span>        _fsmInput.getData(KLayoutData.class).setProperty(Properties.CROSS_MIN,<a name="line.833"></a>
+<span class="sourceLineNo">834</span>                CrossingMinimizationStrategy.INTERACTIVE);<a name="line.834"></a>
+<span class="sourceLineNo">835</span><a name="line.835"></a>
+<span class="sourceLineNo">836</span>        _fsmOutput = KimlUtil.createInitializedNode();<a name="line.836"></a>
+<span class="sourceLineNo">837</span>        _fsmOutput.getData(KLayoutData.class)<a name="line.837"></a>
+<span class="sourceLineNo">838</span>                .setProperty(LayoutOptions.SEPARATE_CC, false);<a name="line.838"></a>
+<span class="sourceLineNo">839</span>        _fsmOutput.getData(KLayoutData.class).setProperty(Properties.CROSS_MIN,<a name="line.839"></a>
+<span class="sourceLineNo">840</span>                CrossingMinimizationStrategy.INTERACTIVE);<a name="line.840"></a>
+<span class="sourceLineNo">841</span><a name="line.841"></a>
+<span class="sourceLineNo">842</span>        KNode newRoot = KimlUtil.createInitializedNode();<a name="line.842"></a>
+<span class="sourceLineNo">843</span>        newRoot.getData(KShapeLayout.class).setPos(0, 0);<a name="line.843"></a>
+<span class="sourceLineNo">844</span><a name="line.844"></a>
+<span class="sourceLineNo">845</span>        // add the skeleton to the root node<a name="line.845"></a>
+<span class="sourceLineNo">846</span>        root.getChildren().add(_fsmInputOutput);<a name="line.846"></a>
+<span class="sourceLineNo">847</span>        root.getChildren().add(_fsmInput);<a name="line.847"></a>
+<span class="sourceLineNo">848</span>        root.getChildren().add(_fsmOutput);<a name="line.848"></a>
+<span class="sourceLineNo">849</span>        root.getChildren().add(newRoot);<a name="line.849"></a>
+<span class="sourceLineNo">850</span><a name="line.850"></a>
+<span class="sourceLineNo">851</span>        // add edges to guarantee proper placement<a name="line.851"></a>
+<span class="sourceLineNo">852</span>        KEdge dummyEdge = KimlUtil.createInitializedEdge();<a name="line.852"></a>
+<span class="sourceLineNo">853</span>        dummyEdge.setSource(_fsmInput);<a name="line.853"></a>
+<span class="sourceLineNo">854</span>        dummyEdge.setTarget(newRoot);<a name="line.854"></a>
+<span class="sourceLineNo">855</span>        dummyEdge = KimlUtil.createInitializedEdge();<a name="line.855"></a>
+<span class="sourceLineNo">856</span>        dummyEdge.setSource(_fsmInput);<a name="line.856"></a>
+<span class="sourceLineNo">857</span>        dummyEdge.setTarget(_fsmInputOutput);<a name="line.857"></a>
+<span class="sourceLineNo">858</span>        dummyEdge = KimlUtil.createInitializedEdge();<a name="line.858"></a>
+<span class="sourceLineNo">859</span>        dummyEdge.setSource(newRoot);<a name="line.859"></a>
+<span class="sourceLineNo">860</span>        dummyEdge.setTarget(_fsmOutput);<a name="line.860"></a>
+<span class="sourceLineNo">861</span>        // this edge is necessary to center the input outputs<a name="line.861"></a>
+<span class="sourceLineNo">862</span>        dummyEdge = KimlUtil.createInitializedEdge();<a name="line.862"></a>
+<span class="sourceLineNo">863</span>        dummyEdge.setSource(_fsmInputOutput);<a name="line.863"></a>
+<span class="sourceLineNo">864</span>        dummyEdge.setTarget(_fsmOutput);<a name="line.864"></a>
+<span class="sourceLineNo">865</span><a name="line.865"></a>
+<span class="sourceLineNo">866</span>        KLayoutData rootLayout = root.getData(KLayoutData.class);<a name="line.866"></a>
+<span class="sourceLineNo">867</span>        // assure that the inputoutput port container is placed above the actual diagram<a name="line.867"></a>
+<span class="sourceLineNo">868</span>        rootLayout.setProperty(Properties.CROSS_MIN,<a name="line.868"></a>
+<span class="sourceLineNo">869</span>                CrossingMinimizationStrategy.INTERACTIVE);<a name="line.869"></a>
+<span class="sourceLineNo">870</span>        // balanced positioning<a name="line.870"></a>
+<span class="sourceLineNo">871</span>        rootLayout.setProperty(Properties.NODE_PLACER,<a name="line.871"></a>
+<span class="sourceLineNo">872</span>                NodePlacementStrategy.SIMPLE);<a name="line.872"></a>
+<span class="sourceLineNo">873</span><a name="line.873"></a>
+<span class="sourceLineNo">874</span>        return newRoot;<a name="line.874"></a>
+<span class="sourceLineNo">875</span>    }<a name="line.875"></a>
+<span class="sourceLineNo">876</span><a name="line.876"></a>
+<span class="sourceLineNo">877</span>    /**<a name="line.877"></a>
+<span class="sourceLineNo">878</span>     * Create a KIELER edge for a Ptolemy Diva edge object. The KEdge will be<a name="line.878"></a>
+<span class="sourceLineNo">879</span>     * setup between either two ports or relation vertices or mixed. Hence the<a name="line.879"></a>
+<span class="sourceLineNo">880</span>     * KEdge corresponds more likely to a Ptolemy link than a relation. Diva edges<a name="line.880"></a>
+<span class="sourceLineNo">881</span>     * have no direction related to the flow of data in Ptolemy. However, KIELER<a name="line.881"></a>
+<span class="sourceLineNo">882</span>     * uses a directed graph to perform layout and so a meaningful direction<a name="line.882"></a>
+<span class="sourceLineNo">883</span>     * should be set in the KEdge. This direction will be approximated by doing<a name="line.883"></a>
+<span class="sourceLineNo">884</span>     * a tree search beginning on both endpoints of the Diva edge. Whenever<a name="line.884"></a>
+<span class="sourceLineNo">885</span>     * either of the endpoints is connected to a source port, this will be the<a name="line.885"></a>
+<span class="sourceLineNo">886</span>     * source of the KEdge and determine its direction.<a name="line.886"></a>
+<span class="sourceLineNo">887</span>     *<a name="line.887"></a>
+<span class="sourceLineNo">888</span>     * The newly created edge is stored with the corresponding Diva edge in the<a name="line.888"></a>
+<span class="sourceLineNo">889</span>     * global maps _ptolemyDiva2KielerEdges, _kieler2PtolemyDivaEdges, such that<a name="line.889"></a>
+<span class="sourceLineNo">890</span>     * the {@link #_applyLayout(KNode)} method will be able to reapply the<a name="line.890"></a>
+<span class="sourceLineNo">891</span>     * layout.<a name="line.891"></a>
+<span class="sourceLineNo">892</span>     *<a name="line.892"></a>
+<span class="sourceLineNo">893</span>     * @param divaEdge The Ptolemy diva edge object for which to create a new KEdge.<a name="line.893"></a>
+<span class="sourceLineNo">894</span>     */<a name="line.894"></a>
+<span class="sourceLineNo">895</span>    private void _createKEdge(Link divaEdge) {<a name="line.895"></a>
+<span class="sourceLineNo">896</span>        KEdge kedge = KimlUtil.createInitializedEdge();<a name="line.896"></a>
+<span class="sourceLineNo">897</span><a name="line.897"></a>
+<span class="sourceLineNo">898</span>        Object source = _divaEdgeSource.get(divaEdge);<a name="line.898"></a>
+<span class="sourceLineNo">899</span>        if (source == null) {<a name="line.899"></a>
+<span class="sourceLineNo">900</span>            source = divaEdge.getTail();<a name="line.900"></a>
+<span class="sourceLineNo">901</span>        }<a name="line.901"></a>
+<span class="sourceLineNo">902</span>        Object target = _divaEdgeTarget.get(divaEdge);<a name="line.902"></a>
+<span class="sourceLineNo">903</span>        if (target == null) {<a name="line.903"></a>
+<span class="sourceLineNo">904</span>            target = divaEdge.getHead();<a name="line.904"></a>
+<span class="sourceLineNo">905</span>        }<a name="line.905"></a>
+<span class="sourceLineNo">906</span><a name="line.906"></a>
+<span class="sourceLineNo">907</span>        KPort kSourcePort = _getPort(source, divaEdge.getRelation());<a name="line.907"></a>
+<span class="sourceLineNo">908</span>        if (kSourcePort != null) {<a name="line.908"></a>
+<span class="sourceLineNo">909</span>            kedge.setSourcePort(kSourcePort);<a name="line.909"></a>
+<span class="sourceLineNo">910</span>            kSourcePort.getEdges().add(kedge);<a name="line.910"></a>
+<span class="sourceLineNo">911</span>            kedge.setSource(kSourcePort.getNode());<a name="line.911"></a>
+<span class="sourceLineNo">912</span>        } else {<a name="line.912"></a>
+<span class="sourceLineNo">913</span>            // Edge is not connected to a port.<a name="line.913"></a>
+<span class="sourceLineNo">914</span>            kedge.setSource(_kieler2ptolemyDivaNodes.inverse().get(source));<a name="line.914"></a>
+<span class="sourceLineNo">915</span>        }<a name="line.915"></a>
+<span class="sourceLineNo">916</span>        KPort kTargetPort = _getPort(target, divaEdge.getRelation());<a name="line.916"></a>
+<span class="sourceLineNo">917</span>        if (kTargetPort != null) {<a name="line.917"></a>
+<span class="sourceLineNo">918</span>            kedge.setTargetPort(kTargetPort);<a name="line.918"></a>
+<span class="sourceLineNo">919</span>            kTargetPort.getEdges().add(kedge);<a name="line.919"></a>
+<span class="sourceLineNo">920</span>            kedge.setTarget(kTargetPort.getNode());<a name="line.920"></a>
+<span class="sourceLineNo">921</span>        } else {<a name="line.921"></a>
+<span class="sourceLineNo">922</span>            // Edge is not connected to a port.<a name="line.922"></a>
+<span class="sourceLineNo">923</span>            kedge.setTarget(_kieler2ptolemyDivaNodes.inverse().get(target));<a name="line.923"></a>
+<span class="sourceLineNo">924</span>        }<a name="line.924"></a>
+<span class="sourceLineNo">925</span><a name="line.925"></a>
+<span class="sourceLineNo">926</span>        // Set source and target point so they are not (0, 0).<a name="line.926"></a>
+<span class="sourceLineNo">927</span>        KEdgeLayout edgeLayout = kedge.getData(KEdgeLayout.class);<a name="line.927"></a>
+<span class="sourceLineNo">928</span>        if (source instanceof Locatable) {<a name="line.928"></a>
+<span class="sourceLineNo">929</span>            double[] pos = ((Locatable) source).getLocation();<a name="line.929"></a>
+<span class="sourceLineNo">930</span>            edgeLayout.getSourcePoint().setX((float) pos[0]);<a name="line.930"></a>
+<span class="sourceLineNo">931</span>            edgeLayout.getSourcePoint().setY((float) pos[1]);<a name="line.931"></a>
+<span class="sourceLineNo">932</span>        }<a name="line.932"></a>
+<span class="sourceLineNo">933</span>        if (target instanceof Locatable) {<a name="line.933"></a>
+<span class="sourceLineNo">934</span>            double[] pos = ((Locatable) target).getLocation();<a name="line.934"></a>
+<span class="sourceLineNo">935</span>            edgeLayout.getTargetPoint().setX((float) pos[0]);<a name="line.935"></a>
+<span class="sourceLineNo">936</span>            edgeLayout.getTargetPoint().setY((float) pos[1]);<a name="line.936"></a>
+<span class="sourceLineNo">937</span>        }<a name="line.937"></a>
+<span class="sourceLineNo">938</span><a name="line.938"></a>
+<span class="sourceLineNo">939</span>        // Add the edge to the list.<a name="line.939"></a>
+<span class="sourceLineNo">940</span>        _edgeList.add(new Pair&lt;KEdge, Link&gt;(kedge, divaEdge));<a name="line.940"></a>
+<span class="sourceLineNo">941</span><a name="line.941"></a>
+<span class="sourceLineNo">942</span>        // Create a label for the edge.<a name="line.942"></a>
+<span class="sourceLineNo">943</span>        Object figure = getLayoutTarget().getVisualObject(divaEdge);<a name="line.943"></a>
+<span class="sourceLineNo">944</span>        if (figure instanceof AbstractConnector) {<a name="line.944"></a>
+<span class="sourceLineNo">945</span>            LabelFigure labelFigure = ((AbstractConnector) figure)<a name="line.945"></a>
+<span class="sourceLineNo">946</span>                    .getLabelFigure();<a name="line.946"></a>
+<span class="sourceLineNo">947</span>            if (labelFigure != null) {<a name="line.947"></a>
+<span class="sourceLineNo">948</span>                KLabel label = KimlUtil.createInitializedLabel(kedge);<a name="line.948"></a>
+<span class="sourceLineNo">949</span>                label.setText(labelFigure.getString());<a name="line.949"></a>
+<span class="sourceLineNo">950</span>                KShapeLayout labelLayout = label.getData(KShapeLayout.class);<a name="line.950"></a>
+<span class="sourceLineNo">951</span>                labelLayout.setProperty(LayoutOptions.EDGE_LABEL_PLACEMENT,<a name="line.951"></a>
+<span class="sourceLineNo">952</span>                        EdgeLabelPlacement.CENTER);<a name="line.952"></a>
+<span class="sourceLineNo">953</span>                Rectangle2D bounds = labelFigure.getBounds();<a name="line.953"></a>
+<span class="sourceLineNo">954</span>                labelLayout.setWidth((float) bounds.getWidth());<a name="line.954"></a>
+<span class="sourceLineNo">955</span>                labelLayout.setHeight((float) bounds.getHeight());<a name="line.955"></a>
+<span class="sourceLineNo">956</span>                labelLayout.setXpos((edgeLayout.getSourcePoint().getX()<a name="line.956"></a>
+<span class="sourceLineNo">957</span>                        + edgeLayout.getTargetPoint().getX()) / 2);<a name="line.957"></a>
+<span class="sourceLineNo">958</span>                labelLayout.setYpos((edgeLayout.getSourcePoint().getY()<a name="line.958"></a>
+<span class="sourceLineNo">959</span>                        + edgeLayout.getTargetPoint().getY()) / 2);<a name="line.959"></a>
+<span class="sourceLineNo">960</span>                kedge.getLabels().add(label);<a name="line.960"></a>
+<span class="sourceLineNo">961</span><a name="line.961"></a>
+<span class="sourceLineNo">962</span>                // remember it<a name="line.962"></a>
+<span class="sourceLineNo">963</span>                _divaLabel.put(label, labelFigure);<a name="line.963"></a>
+<span class="sourceLineNo">964</span>            }<a name="line.964"></a>
+<span class="sourceLineNo">965</span>        }<a name="line.965"></a>
+<span class="sourceLineNo">966</span>    }<a name="line.966"></a>
+<span class="sourceLineNo">967</span><a name="line.967"></a>
+<span class="sourceLineNo">968</span>    /**<a name="line.968"></a>
+<span class="sourceLineNo">969</span>     * Create a dummy edge for an attribute that is relative locatable. The edge<a name="line.969"></a>
+<span class="sourceLineNo">970</span>     * will only be used to indicate the association between the attribute and<a name="line.970"></a>
+<span class="sourceLineNo">971</span>     * its reference object.<a name="line.971"></a>
+<span class="sourceLineNo">972</span>     *<a name="line.972"></a>
+<span class="sourceLineNo">973</span>     * @param attribute the attribute for which to create a dummy edge<a name="line.973"></a>
+<span class="sourceLineNo">974</span>     */<a name="line.974"></a>
+<span class="sourceLineNo">975</span>    private void _createKEdgeForAttribute(NamedObj attribute) {<a name="line.975"></a>
+<span class="sourceLineNo">976</span>        Locatable source = KielerLayoutUtil.getLocation(attribute);<a name="line.976"></a>
+<span class="sourceLineNo">977</span>        if (source instanceof RelativeLocation) {<a name="line.977"></a>
+<span class="sourceLineNo">978</span>            NamedObj referenceObj = PtolemyModelUtil<a name="line.978"></a>
+<span class="sourceLineNo">979</span>                    ._getReferencedObj((RelativeLocation) source);<a name="line.979"></a>
+<span class="sourceLineNo">980</span>            if (referenceObj != null) {<a name="line.980"></a>
+<span class="sourceLineNo">981</span>                Locatable target = KielerLayoutUtil.getLocation(referenceObj);<a name="line.981"></a>
+<span class="sourceLineNo">982</span>                KNode sourceNode = _kieler2ptolemyDivaNodes.inverse()<a name="line.982"></a>
+<span class="sourceLineNo">983</span>                        .get(source);<a name="line.983"></a>
+<span class="sourceLineNo">984</span>                KNode targetNode = _kieler2ptolemyDivaNodes.inverse()<a name="line.984"></a>
+<span class="sourceLineNo">985</span>                        .get(target);<a name="line.985"></a>
+<span class="sourceLineNo">986</span>                if (sourceNode != null &amp;&amp; targetNode != null) {<a name="line.986"></a>
+<span class="sourceLineNo">987</span>                    // Create a dummy edge to connect the comment box to its reference.<a name="line.987"></a>
+<span class="sourceLineNo">988</span>                    KEdge newEdge = KimlUtil.createInitializedEdge();<a name="line.988"></a>
+<span class="sourceLineNo">989</span>                    newEdge.setSource(sourceNode);<a name="line.989"></a>
+<span class="sourceLineNo">990</span>                    newEdge.setTarget(targetNode);<a name="line.990"></a>
+<span class="sourceLineNo">991</span><a name="line.991"></a>
+<span class="sourceLineNo">992</span>                    KEdgeLayout edgeLayout = newEdge.getData(KEdgeLayout.class);<a name="line.992"></a>
+<span class="sourceLineNo">993</span>                    double[] sourcePos = source.getLocation();<a name="line.993"></a>
+<span class="sourceLineNo">994</span>                    edgeLayout.getSourcePoint().setX((float) sourcePos[0]);<a name="line.994"></a>
+<span class="sourceLineNo">995</span>                    edgeLayout.getSourcePoint().setY((float) sourcePos[1]);<a name="line.995"></a>
+<span class="sourceLineNo">996</span>                    double[] targetPos = target.getLocation();<a name="line.996"></a>
+<span class="sourceLineNo">997</span>                    edgeLayout.getTargetPoint().setX((float) targetPos[0]);<a name="line.997"></a>
+<span class="sourceLineNo">998</span>                    edgeLayout.getTargetPoint().setY((float) targetPos[1]);<a name="line.998"></a>
+<span class="sourceLineNo">999</span>                }<a name="line.999"></a>
+<span class="sourceLineNo">1000</span>            }<a name="line.1000"></a>
+<span class="sourceLineNo">1001</span>        }<a name="line.1001"></a>
+<span class="sourceLineNo">1002</span>    }<a name="line.1002"></a>
+<span class="sourceLineNo">1003</span><a name="line.1003"></a>
+<span class="sourceLineNo">1004</span>    /**<a name="line.1004"></a>
+<span class="sourceLineNo">1005</span>     * Create a new KIELER KNode corresponding to a Ptolemy diva node and its<a name="line.1005"></a>
+<span class="sourceLineNo">1006</span>     * Ptolemy semantic object (e.g. an Actor).<a name="line.1006"></a>
+<span class="sourceLineNo">1007</span>     *<a name="line.1007"></a>
+<span class="sourceLineNo">1008</span>     * The newly created node is stored with the corresponding diva and ptolemy<a name="line.1008"></a>
+<span class="sourceLineNo">1009</span>     * nodes in the global maps _ptolemy2KielerNodes, _kieler2ptolemyDivaNodes,<a name="line.1009"></a>
+<span class="sourceLineNo">1010</span>     * _kieler2ptolemyEntityNodes, such that the {@link #_applyLayout(KNode)}<a name="line.1010"></a>
+<span class="sourceLineNo">1011</span>     * method will be able to reapply the layout.<a name="line.1011"></a>
+<span class="sourceLineNo">1012</span>     *<a name="line.1012"></a>
+<span class="sourceLineNo">1013</span>     * @param node The Diva node object.<a name="line.1013"></a>
+<span class="sourceLineNo">1014</span>     * @param semanticNode The corresponding Ptolemy semantic object, e.g. an<a name="line.1014"></a>
+<span class="sourceLineNo">1015</span>     *            Actor or TextAttribute<a name="line.1015"></a>
+<span class="sourceLineNo">1016</span>     * @return The initialized KIELER KNode<a name="line.1016"></a>
+<span class="sourceLineNo">1017</span>     */<a name="line.1017"></a>
+<span class="sourceLineNo">1018</span>    private KNode _createKNode(Object node, NamedObj semanticNode) {<a name="line.1018"></a>
+<span class="sourceLineNo">1019</span>        Rectangle2D bounds;<a name="line.1019"></a>
+<span class="sourceLineNo">1020</span>        if (semanticNode instanceof RelativeLocatable) {<a name="line.1020"></a>
+<span class="sourceLineNo">1021</span>            // RelativeLocatables may have a dashed line to show which actor<a name="line.1021"></a>
+<span class="sourceLineNo">1022</span>            // they are attached to. This line must not be part of the size<a name="line.1022"></a>
+<span class="sourceLineNo">1023</span>            // calculation, so we calculate the size of the object manually<a name="line.1023"></a>
+<span class="sourceLineNo">1024</span>            // without taking the line into account<a name="line.1024"></a>
+<span class="sourceLineNo">1025</span>            Figure figure = (Figure) getLayoutTarget().getVisualObject(node);<a name="line.1025"></a>
+<span class="sourceLineNo">1026</span><a name="line.1026"></a>
+<span class="sourceLineNo">1027</span>            // The figure should be a composite figure, but let's be sure<a name="line.1027"></a>
+<span class="sourceLineNo">1028</span>            if (figure instanceof CompositeFigure) {<a name="line.1028"></a>
+<span class="sourceLineNo">1029</span>                CompositeFigure compFigure = (CompositeFigure) figure;<a name="line.1029"></a>
+<span class="sourceLineNo">1030</span><a name="line.1030"></a>
+<span class="sourceLineNo">1031</span>                bounds = new Rectangle2D.Double();<a name="line.1031"></a>
+<span class="sourceLineNo">1032</span>                bounds.add(compFigure.getBackgroundFigure().getBounds());<a name="line.1032"></a>
+<span class="sourceLineNo">1033</span><a name="line.1033"></a>
+<span class="sourceLineNo">1034</span>                // Iterate over the composite figure's component, adding the<a name="line.1034"></a>
+<span class="sourceLineNo">1035</span>                // bounds of each to arrive at the final bounds without dashed<a name="line.1035"></a>
+<span class="sourceLineNo">1036</span>                // line (RelativeLinkFigure)<a name="line.1036"></a>
+<span class="sourceLineNo">1037</span>                Iterator parts = compFigure.figures();<a name="line.1037"></a>
+<span class="sourceLineNo">1038</span>                while (parts.hasNext()) {<a name="line.1038"></a>
+<span class="sourceLineNo">1039</span>                    Figure part = (Figure) parts.next();<a name="line.1039"></a>
+<span class="sourceLineNo">1040</span><a name="line.1040"></a>
+<span class="sourceLineNo">1041</span>                    if (!(part instanceof RelativeLinkFigure)) {<a name="line.1041"></a>
+<span class="sourceLineNo">1042</span>                        bounds.add(part.getBounds());<a name="line.1042"></a>
+<span class="sourceLineNo">1043</span>                    }<a name="line.1043"></a>
+<span class="sourceLineNo">1044</span>                }<a name="line.1044"></a>
+<span class="sourceLineNo">1045</span>            } else {<a name="line.1045"></a>
+<span class="sourceLineNo">1046</span>                // It's not a composite figure, so use figure's bounds<a name="line.1046"></a>
+<span class="sourceLineNo">1047</span>                bounds = getLayoutTarget().getBounds(node);<a name="line.1047"></a>
+<span class="sourceLineNo">1048</span>            }<a name="line.1048"></a>
+<span class="sourceLineNo">1049</span>        } else {<a name="line.1049"></a>
+<span class="sourceLineNo">1050</span>            bounds = getLayoutTarget().getBounds(node);<a name="line.1050"></a>
+<span class="sourceLineNo">1051</span>        }<a name="line.1051"></a>
+<span class="sourceLineNo">1052</span><a name="line.1052"></a>
+<span class="sourceLineNo">1053</span>        // Create new node in KIELER graph and apply the initial size and position<a name="line.1053"></a>
+<span class="sourceLineNo">1054</span>        KNode knode = KimlUtil.createInitializedNode();<a name="line.1054"></a>
+<span class="sourceLineNo">1055</span>        KShapeLayout nodeLayout = knode.getData(KShapeLayout.class);<a name="line.1055"></a>
+<span class="sourceLineNo">1056</span>        nodeLayout.setWidth((float) bounds.getWidth());<a name="line.1056"></a>
+<span class="sourceLineNo">1057</span>        nodeLayout.setHeight((float) bounds.getHeight());<a name="line.1057"></a>
+<span class="sourceLineNo">1058</span>        nodeLayout.setXpos((float) bounds.getMinX());<a name="line.1058"></a>
+<span class="sourceLineNo">1059</span>        nodeLayout.setYpos((float) bounds.getMinY());<a name="line.1059"></a>
+<span class="sourceLineNo">1060</span>        nodeLayout.setProperty(LayoutOptions.SIZE_CONSTRAINT,<a name="line.1060"></a>
+<span class="sourceLineNo">1061</span>                SizeConstraint.fixed());<a name="line.1061"></a>
+<span class="sourceLineNo">1062</span>        if (semanticNode instanceof Attribute) {<a name="line.1062"></a>
+<span class="sourceLineNo">1063</span>            nodeLayout.setProperty(LayoutOptions.COMMENT_BOX, true);<a name="line.1063"></a>
+<span class="sourceLineNo">1064</span>        } else {<a name="line.1064"></a>
+<span class="sourceLineNo">1065</span>            nodeLayout.setProperty(LayoutOptions.PORT_CONSTRAINTS,<a name="line.1065"></a>
+<span class="sourceLineNo">1066</span>                    PortConstraints.FIXED_POS);<a name="line.1066"></a>
+<span class="sourceLineNo">1067</span>        }<a name="line.1067"></a>
+<span class="sourceLineNo">1068</span><a name="line.1068"></a>
+<span class="sourceLineNo">1069</span>        // set the node label<a name="line.1069"></a>
+<span class="sourceLineNo">1070</span>        KLabel label = KimlUtil.createInitializedLabel(knode);<a name="line.1070"></a>
+<span class="sourceLineNo">1071</span>        label.setText(semanticNode.getDisplayName());<a name="line.1071"></a>
+<span class="sourceLineNo">1072</span>        KShapeLayout labelLayout = label.getData(KShapeLayout.class);<a name="line.1072"></a>
+<span class="sourceLineNo">1073</span>        labelLayout.setWidth((float) bounds.getWidth() - 2);<a name="line.1073"></a>
+<span class="sourceLineNo">1074</span>        labelLayout.setHeight(10);<a name="line.1074"></a>
+<span class="sourceLineNo">1075</span>        labelLayout.setXpos(1);<a name="line.1075"></a>
+<span class="sourceLineNo">1076</span>        labelLayout.setYpos(1);<a name="line.1076"></a>
+<span class="sourceLineNo">1077</span>        knode.getLabels().add(label);<a name="line.1077"></a>
+<span class="sourceLineNo">1078</span><a name="line.1078"></a>
+<span class="sourceLineNo">1079</span>        // Draw the director always as first element.<a name="line.1079"></a>
+<span class="sourceLineNo">1080</span>        if (semanticNode instanceof Director) {<a name="line.1080"></a>
+<span class="sourceLineNo">1081</span>            nodeLayout.setProperty(LayoutOptions.PRIORITY, 1);<a name="line.1081"></a>
+<span class="sourceLineNo">1082</span>        }<a name="line.1082"></a>
+<span class="sourceLineNo">1083</span><a name="line.1083"></a>
+<span class="sourceLineNo">1084</span>        return knode;<a name="line.1084"></a>
+<span class="sourceLineNo">1085</span>    }<a name="line.1085"></a>
+<span class="sourceLineNo">1086</span><a name="line.1086"></a>
+<span class="sourceLineNo">1087</span>    /**<a name="line.1087"></a>
+<span class="sourceLineNo">1088</span>     * Create a KIELER KNode for a Ptolemy inner port. That is the graphical<a name="line.1088"></a>
+<span class="sourceLineNo">1089</span>     * representation for a port of a CompositeActor if you see the contents of<a name="line.1089"></a>
+<span class="sourceLineNo">1090</span>     * this CompositeActor. It is represented by a node where the connection may<a name="line.1090"></a>
+<span class="sourceLineNo">1091</span>     * touch the node corresponding to its type (input, output, both) on the<a name="line.1091"></a>
+<span class="sourceLineNo">1092</span>     * right, left or top.<a name="line.1092"></a>
+<span class="sourceLineNo">1093</span>     *<a name="line.1093"></a>
+<span class="sourceLineNo">1094</span>     * For now this results a crude approximation of the node, because the<a name="line.1094"></a>
+<span class="sourceLineNo">1095</span>     * figure of the original Ptolemy port cannot be obtained by the layout<a name="line.1095"></a>
+<span class="sourceLineNo">1096</span>     * target. Hence we cannot ask the port for its original bounds.<a name="line.1096"></a>
+<span class="sourceLineNo">1097</span>     *<a name="line.1097"></a>
+<span class="sourceLineNo">1098</span>     * @param divaLocation Diva Representation of an inner port<a name="line.1098"></a>
+<span class="sourceLineNo">1099</span>     * @param port The Ptolemy inner port.<a name="line.1099"></a>
+<span class="sourceLineNo">1100</span>     * @return A new KIELER node corresponding to the Ptolemy inner port.<a name="line.1100"></a>
+<span class="sourceLineNo">1101</span>     */<a name="line.1101"></a>
+<span class="sourceLineNo">1102</span>    private KNode _createKNodeForPort(Object divaLocation, ComponentPort port) {<a name="line.1102"></a>
+<span class="sourceLineNo">1103</span>        KNode knode = KimlUtil.createInitializedNode();<a name="line.1103"></a>
+<span class="sourceLineNo">1104</span>        KShapeLayout layout = knode.getData(KShapeLayout.class);<a name="line.1104"></a>
+<span class="sourceLineNo">1105</span>        layout.setProperty(LayoutOptions.PORT_CONSTRAINTS,<a name="line.1105"></a>
+<span class="sourceLineNo">1106</span>                PortConstraints.FIXED_POS);<a name="line.1106"></a>
+<span class="sourceLineNo">1107</span><a name="line.1107"></a>
+<span class="sourceLineNo">1108</span>        // Add ports of state diagrams to designated containers to pool them<a name="line.1108"></a>
+<span class="sourceLineNo">1109</span>        if (_graphModel instanceof FSMGraphModel<a name="line.1109"></a>
+<span class="sourceLineNo">1110</span>                &amp;&amp; port instanceof TypedIOPort) {<a name="line.1110"></a>
+<span class="sourceLineNo">1111</span>            boolean isInput = ((TypedIOPort) port).isInput();<a name="line.1111"></a>
+<span class="sourceLineNo">1112</span>            boolean isOutput = ((TypedIOPort) port).isOutput();<a name="line.1112"></a>
+<span class="sourceLineNo">1113</span>            knode.getData(KLayoutData.class)<a name="line.1113"></a>
+<span class="sourceLineNo">1114</span>                    .setProperty(LayoutOptions.ALIGNMENT, Alignment.LEFT);<a name="line.1114"></a>
+<span class="sourceLineNo">1115</span>            if (isInput &amp;&amp; !isOutput) {<a name="line.1115"></a>
+<span class="sourceLineNo">1116</span>                knode.setParent(_fsmInput);<a name="line.1116"></a>
+<span class="sourceLineNo">1117</span>            } else if (isOutput &amp;&amp; !isInput) {<a name="line.1117"></a>
+<span class="sourceLineNo">1118</span>                knode.setParent(_fsmOutput);<a name="line.1118"></a>
+<span class="sourceLineNo">1119</span>            } else {<a name="line.1119"></a>
+<span class="sourceLineNo">1120</span>                knode.setParent(_fsmInputOutput);<a name="line.1120"></a>
+<span class="sourceLineNo">1121</span>                knode.getData(KLayoutData.class)<a name="line.1121"></a>
+<span class="sourceLineNo">1122</span>                        .setProperty(LayoutOptions.ALIGNMENT, Alignment.BOTTOM);<a name="line.1122"></a>
+<span class="sourceLineNo">1123</span>            }<a name="line.1123"></a>
+<span class="sourceLineNo">1124</span>        }<a name="line.1124"></a>
+<span class="sourceLineNo">1125</span><a name="line.1125"></a>
+<span class="sourceLineNo">1126</span>        Rectangle2D figureBounds = getLayoutTarget().getBounds(divaLocation);<a name="line.1126"></a>
+<span class="sourceLineNo">1127</span>        Rectangle2D shapeBounds = figureBounds;<a name="line.1127"></a>
+<span class="sourceLineNo">1128</span>        // Try to find more specific bounds of the shape that do not include the name label.<a name="line.1128"></a>
+<span class="sourceLineNo">1129</span>        Object obj = getLayoutTarget().getVisualObject(divaLocation);<a name="line.1129"></a>
+<span class="sourceLineNo">1130</span>        if (obj instanceof PortTerminal) {<a name="line.1130"></a>
+<span class="sourceLineNo">1131</span>            PortTerminal portVisual = (PortTerminal) obj;<a name="line.1131"></a>
+<span class="sourceLineNo">1132</span>            shapeBounds = portVisual.getShape().getBounds();<a name="line.1132"></a>
+<span class="sourceLineNo">1133</span>        }<a name="line.1133"></a>
+<span class="sourceLineNo">1134</span>        // Set alignment offset in order to set right height.<a name="line.1134"></a>
+<span class="sourceLineNo">1135</span>        layout.setHeight(<a name="line.1135"></a>
+<span class="sourceLineNo">1136</span>                (float) figureBounds.getHeight() + INNER_PORT_HEIGHT_OFFSET);<a name="line.1136"></a>
+<span class="sourceLineNo">1137</span>        layout.setWidth((float) figureBounds.getWidth());<a name="line.1137"></a>
+<span class="sourceLineNo">1138</span>        layout.setProperty(LayoutOptions.SIZE_CONSTRAINT,<a name="line.1138"></a>
+<span class="sourceLineNo">1139</span>                SizeConstraint.fixed());<a name="line.1139"></a>
+<span class="sourceLineNo">1140</span>        layout.setXpos((float) figureBounds.getMinX());<a name="line.1140"></a>
+<span class="sourceLineNo">1141</span>        layout.setYpos((float) figureBounds.getMinY());<a name="line.1141"></a>
+<span class="sourceLineNo">1142</span><a name="line.1142"></a>
+<span class="sourceLineNo">1143</span>        // Create KIELER ports to specify anchor points for the layouter.<a name="line.1143"></a>
+<span class="sourceLineNo">1144</span>        // These constants are black magic, gotten by trial and error.<a name="line.1144"></a>
+<span class="sourceLineNo">1145</span>        KVector portBase = new KVector(MULTIPORT_INNER_OFFSET);<a name="line.1145"></a>
+<span class="sourceLineNo">1146</span>        portBase.y += figureBounds.getHeight() - shapeBounds.getHeight();<a name="line.1146"></a>
+<span class="sourceLineNo">1147</span>        int direction = PtolemyModelUtil._getExternalPortDirection(port);<a name="line.1147"></a>
+<span class="sourceLineNo">1148</span>        switch (direction) {<a name="line.1148"></a>
+<span class="sourceLineNo">1149</span>        case SwingConstants.NORTH:<a name="line.1149"></a>
+<span class="sourceLineNo">1150</span>            portBase.x += shapeBounds.getWidth() / 2;<a name="line.1150"></a>
+<span class="sourceLineNo">1151</span>            break;<a name="line.1151"></a>
+<span class="sourceLineNo">1152</span>        case SwingConstants.SOUTH:<a name="line.1152"></a>
+<span class="sourceLineNo">1153</span>            portBase.x += shapeBounds.getWidth() / 2;<a name="line.1153"></a>
+<span class="sourceLineNo">1154</span>            portBase.y += shapeBounds.getHeight();<a name="line.1154"></a>
+<span class="sourceLineNo">1155</span>            break;<a name="line.1155"></a>
+<span class="sourceLineNo">1156</span>        case SwingConstants.EAST:<a name="line.1156"></a>
+<span class="sourceLineNo">1157</span>            portBase.x += shapeBounds.getWidth();<a name="line.1157"></a>
+<span class="sourceLineNo">1158</span>            portBase.y += shapeBounds.getHeight() / 2;<a name="line.1158"></a>
+<span class="sourceLineNo">1159</span>            break;<a name="line.1159"></a>
+<span class="sourceLineNo">1160</span>        default:<a name="line.1160"></a>
+<span class="sourceLineNo">1161</span>            portBase.y += shapeBounds.getHeight() / 2;<a name="line.1161"></a>
+<span class="sourceLineNo">1162</span>        }<a name="line.1162"></a>
+<span class="sourceLineNo">1163</span><a name="line.1163"></a>
+<span class="sourceLineNo">1164</span>        // Create a port for each incoming relation and set an order.<a name="line.1164"></a>
+<span class="sourceLineNo">1165</span>        List relations = port.insideRelationList();<a name="line.1165"></a>
+<span class="sourceLineNo">1166</span>        int maxIndex = relations.size() - 1;<a name="line.1166"></a>
+<span class="sourceLineNo">1167</span>        for (int index = 0; index &lt; relations.size(); index++) {<a name="line.1167"></a>
+<span class="sourceLineNo">1168</span>            KPort kPort = KimlUtil.createInitializedPort();<a name="line.1168"></a>
+<span class="sourceLineNo">1169</span>            KShapeLayout portLayout = kPort.getData(KShapeLayout.class);<a name="line.1169"></a>
+<span class="sourceLineNo">1170</span>            portLayout.setHeight(DEFAULT_PORT_SIZE);<a name="line.1170"></a>
+<span class="sourceLineNo">1171</span>            portLayout.setWidth(DEFAULT_PORT_SIZE);<a name="line.1171"></a>
+<span class="sourceLineNo">1172</span>            KVector offset = _getMultiportOffsets(port, portLayout, index,<a name="line.1172"></a>
+<span class="sourceLineNo">1173</span>                    maxIndex, false);<a name="line.1173"></a>
+<span class="sourceLineNo">1174</span>            portLayout.setXpos((float) (portBase.x + offset.x));<a name="line.1174"></a>
+<span class="sourceLineNo">1175</span>            portLayout.setYpos((float) (portBase.y + offset.y)<a name="line.1175"></a>
+<span class="sourceLineNo">1176</span>                    - portLayout.getHeight() / 2);<a name="line.1176"></a>
+<span class="sourceLineNo">1177</span>            kPort.setNode(knode);<a name="line.1177"></a>
+<span class="sourceLineNo">1178</span>            _ptolemy2KielerPorts.put(port, kPort);<a name="line.1178"></a>
+<span class="sourceLineNo">1179</span>        }<a name="line.1179"></a>
+<span class="sourceLineNo">1180</span>        return knode;<a name="line.1180"></a>
+<span class="sourceLineNo">1181</span>    }<a name="line.1181"></a>
+<span class="sourceLineNo">1182</span><a name="line.1182"></a>
+<span class="sourceLineNo">1183</span>    /**<a name="line.1183"></a>
+<span class="sourceLineNo">1184</span>     * Create a KIELER node for a Ptolemy Vertex. Vertices of Ptolemy can be<a name="line.1184"></a>
+<span class="sourceLineNo">1185</span>     * handles as usual KNodes in KIELER (an alternative would be to handle them<a name="line.1185"></a>
+<span class="sourceLineNo">1186</span>     * as connection bend points).<a name="line.1186"></a>
+<span class="sourceLineNo">1187</span>     *<a name="line.1187"></a>
+<span class="sourceLineNo">1188</span>     * @param vertex The Ptolemy vertex for which to create a KNode<a name="line.1188"></a>
+<span class="sourceLineNo">1189</span>     * @return An initialized KNode<a name="line.1189"></a>
+<span class="sourceLineNo">1190</span>     */<a name="line.1190"></a>
+<span class="sourceLineNo">1191</span>    private KNode _createKNodeForVertex(Vertex vertex) {<a name="line.1191"></a>
+<span class="sourceLineNo">1192</span>        Rectangle2D bounds = getLayoutTarget().getBounds(vertex);<a name="line.1192"></a>
+<span class="sourceLineNo">1193</span>        KNode knode = KimlUtil.createInitializedNode();<a name="line.1193"></a>
+<span class="sourceLineNo">1194</span>        KShapeLayout nodeLayout = knode.getData(KShapeLayout.class);<a name="line.1194"></a>
+<span class="sourceLineNo">1195</span>        nodeLayout.setHeight((float) bounds.getHeight());<a name="line.1195"></a>
+<span class="sourceLineNo">1196</span>        nodeLayout.setWidth((float) bounds.getWidth());<a name="line.1196"></a>
+<span class="sourceLineNo">1197</span>        nodeLayout.setXpos((float) bounds.getMinX());<a name="line.1197"></a>
+<span class="sourceLineNo">1198</span>        nodeLayout.setYpos((float) bounds.getMinY());<a name="line.1198"></a>
+<span class="sourceLineNo">1199</span>        nodeLayout.setProperty(LayoutOptions.SIZE_CONSTRAINT,<a name="line.1199"></a>
+<span class="sourceLineNo">1200</span>                SizeConstraint.fixed());<a name="line.1200"></a>
+<span class="sourceLineNo">1201</span>        nodeLayout.setProperty(LayoutOptions.HYPERNODE, true);<a name="line.1201"></a>
+<span class="sourceLineNo">1202</span>        return knode;<a name="line.1202"></a>
+<span class="sourceLineNo">1203</span>    }<a name="line.1203"></a>
+<span class="sourceLineNo">1204</span><a name="line.1204"></a>
+<span class="sourceLineNo">1205</span>    /**<a name="line.1205"></a>
+<span class="sourceLineNo">1206</span>     * Create a KIELER node for a Ptolemy State.<a name="line.1206"></a>
+<span class="sourceLineNo">1207</span>     *<a name="line.1207"></a>
+<span class="sourceLineNo">1208</span>     * @param node The Diva node object<a name="line.1208"></a>
+<span class="sourceLineNo">1209</span>     * @param state The Ptolemy state for which to create a KNode<a name="line.1209"></a>
+<span class="sourceLineNo">1210</span>     * @return An initialized KNode<a name="line.1210"></a>
+<span class="sourceLineNo">1211</span>     */<a name="line.1211"></a>
+<span class="sourceLineNo">1212</span>    private KNode _createKNodeForState(Object node, State state) {<a name="line.1212"></a>
+<span class="sourceLineNo">1213</span>        Rectangle2D bounds = getLayoutTarget().getBounds(node);<a name="line.1213"></a>
+<span class="sourceLineNo">1214</span>        KNode knode = KimlUtil.createInitializedNode();<a name="line.1214"></a>
+<span class="sourceLineNo">1215</span>        KShapeLayout nodeLayout = knode.getData(KShapeLayout.class);<a name="line.1215"></a>
+<span class="sourceLineNo">1216</span>        nodeLayout.setHeight((float) bounds.getHeight());<a name="line.1216"></a>
+<span class="sourceLineNo">1217</span>        nodeLayout.setWidth((float) bounds.getWidth());<a name="line.1217"></a>
+<span class="sourceLineNo">1218</span>        nodeLayout.setXpos((float) bounds.getMinX());<a name="line.1218"></a>
+<span class="sourceLineNo">1219</span>        nodeLayout.setYpos((float) bounds.getMinY());<a name="line.1219"></a>
+<span class="sourceLineNo">1220</span>        nodeLayout.setProperty(LayoutOptions.SIZE_CONSTRAINT,<a name="line.1220"></a>
+<span class="sourceLineNo">1221</span>                SizeConstraint.fixed());<a name="line.1221"></a>
+<span class="sourceLineNo">1222</span>        nodeLayout.setProperty(LayoutOptions.PORT_CONSTRAINTS,<a name="line.1222"></a>
+<span class="sourceLineNo">1223</span>                PortConstraints.FREE);<a name="line.1223"></a>
+<span class="sourceLineNo">1224</span><a name="line.1224"></a>
+<span class="sourceLineNo">1225</span>        if (PtolemyModelUtil._isInitialState(state)<a name="line.1225"></a>
+<span class="sourceLineNo">1226</span>                &amp;&amp; !PtolemyModelUtil._isFinalState(state)) {<a name="line.1226"></a>
+<span class="sourceLineNo">1227</span>            nodeLayout.setProperty(Properties.LAYER_CONSTRAINT,<a name="line.1227"></a>
+<span class="sourceLineNo">1228</span>                    LayerConstraint.FIRST);<a name="line.1228"></a>
+<span class="sourceLineNo">1229</span>        }<a name="line.1229"></a>
+<span class="sourceLineNo">1230</span><a name="line.1230"></a>
+<span class="sourceLineNo">1231</span>        if (!PtolemyModelUtil._isInitialState(state)<a name="line.1231"></a>
+<span class="sourceLineNo">1232</span>                &amp;&amp; PtolemyModelUtil._isFinalState(state)) {<a name="line.1232"></a>
+<span class="sourceLineNo">1233</span>            nodeLayout.setProperty(Properties.LAYER_CONSTRAINT,<a name="line.1233"></a>
+<span class="sourceLineNo">1234</span>                    LayerConstraint.LAST);<a name="line.1234"></a>
+<span class="sourceLineNo">1235</span>        }<a name="line.1235"></a>
+<span class="sourceLineNo">1236</span><a name="line.1236"></a>
+<span class="sourceLineNo">1237</span>        KLabel label = KimlUtil.createInitializedLabel(knode);<a name="line.1237"></a>
+<span class="sourceLineNo">1238</span>        label.setText(state.getDisplayName());<a name="line.1238"></a>
+<span class="sourceLineNo">1239</span>        KShapeLayout labelLayout = label.getData(KShapeLayout.class);<a name="line.1239"></a>
+<span class="sourceLineNo">1240</span>        labelLayout.setWidth(nodeLayout.getWidth() - 2);<a name="line.1240"></a>
+<span class="sourceLineNo">1241</span>        labelLayout.setHeight(nodeLayout.getHeight() - 2);<a name="line.1241"></a>
+<span class="sourceLineNo">1242</span>        labelLayout.setXpos(1);<a name="line.1242"></a>
+<span class="sourceLineNo">1243</span>        labelLayout.setYpos(1);<a name="line.1243"></a>
+<span class="sourceLineNo">1244</span>        knode.getLabels().add(label);<a name="line.1244"></a>
+<span class="sourceLineNo">1245</span>        return knode;<a name="line.1245"></a>
+<span class="sourceLineNo">1246</span>    }<a name="line.1246"></a>
+<span class="sourceLineNo">1247</span><a name="line.1247"></a>
+<span class="sourceLineNo">1248</span>    /**<a name="line.1248"></a>
+<span class="sourceLineNo">1249</span>     * Create a KIELER KPort corresponding to a Ptolemy Port. Set the size and<a name="line.1249"></a>
+<span class="sourceLineNo">1250</span>     * position (relative to parent) and the direction of the port in the KPort<a name="line.1250"></a>
+<span class="sourceLineNo">1251</span>     * layout information. Since KIELER does not explicitly support multiports as<a name="line.1251"></a>
+<span class="sourceLineNo">1252</span>     * Ptolemy, this is emulated by creating multiple distinct ports with a<a name="line.1252"></a>
+<span class="sourceLineNo">1253</span>     * little offset each. Create only one node. For multiports call this method<a name="line.1253"></a>
+<span class="sourceLineNo">1254</span>     * multiple times with changed parameters.<a name="line.1254"></a>
+<span class="sourceLineNo">1255</span>     *<a name="line.1255"></a>
+<span class="sourceLineNo">1256</span>     * The newly created port is stored with the corresponding ptolemy port in<a name="line.1256"></a>
+<span class="sourceLineNo">1257</span>     * the global maps _kieler2PtolemyPorts, _ptolemy2KielerPorts, such that the<a name="line.1257"></a>
+<span class="sourceLineNo">1258</span>     * {@link #_applyLayout(KNode)} method will be able to reapply the layout.<a name="line.1258"></a>
+<span class="sourceLineNo">1259</span>     *<a name="line.1259"></a>
+<span class="sourceLineNo">1260</span>     * @param knode The parent KNode of the new port<a name="line.1260"></a>
+<span class="sourceLineNo">1261</span>     * @param port The corresponding Ptolemy port (might be a multiport)<a name="line.1261"></a>
+<span class="sourceLineNo">1262</span>     * @param index Index of the KPort corresponding to a multiport<a name="line.1262"></a>
+<span class="sourceLineNo">1263</span>     * @param maxIndex Width of the multiport, i.e. the number of connected<a name="line.1263"></a>
+<span class="sourceLineNo">1264</span>     *            edges to that port.<a name="line.1264"></a>
+<span class="sourceLineNo">1265</span>     * @param size Custom size (same for width and height) for a port that will<a name="line.1265"></a>
+<span class="sourceLineNo">1266</span>     *            be used instead of the real Ptolemy port size. If this value<a name="line.1266"></a>
+<span class="sourceLineNo">1267</span>     *            is negative, the original Ptolemy sizes are used.<a name="line.1267"></a>
+<span class="sourceLineNo">1268</span>     */<a name="line.1268"></a>
+<span class="sourceLineNo">1269</span>    private void _createKPort(KNode knode, Port port, int index, int maxIndex,<a name="line.1269"></a>
+<span class="sourceLineNo">1270</span>            float size) {<a name="line.1270"></a>
+<span class="sourceLineNo">1271</span>        // Create a new KIELER port and initialize its layout.<a name="line.1271"></a>
+<span class="sourceLineNo">1272</span>        KPort kport = KimlUtil.createInitializedPort();<a name="line.1272"></a>
+<span class="sourceLineNo">1273</span>        knode.getPorts().add(kport);<a name="line.1273"></a>
+<span class="sourceLineNo">1274</span>        KShapeLayout kportlayout = kport.getData(KShapeLayout.class);<a name="line.1274"></a>
+<span class="sourceLineNo">1275</span>        kportlayout.setHeight(DEFAULT_PORT_SIZE);<a name="line.1275"></a>
+<span class="sourceLineNo">1276</span>        kportlayout.setWidth(DEFAULT_PORT_SIZE);<a name="line.1276"></a>
+<span class="sourceLineNo">1277</span><a name="line.1277"></a>
+<span class="sourceLineNo">1278</span>        // Set port side and calculate actual offset.<a name="line.1278"></a>
+<span class="sourceLineNo">1279</span>        KVector offset = _getMultiportOffsets(port, kportlayout, index,<a name="line.1279"></a>
+<span class="sourceLineNo">1280</span>                maxIndex, true);<a name="line.1280"></a>
+<span class="sourceLineNo">1281</span><a name="line.1281"></a>
+<span class="sourceLineNo">1282</span>        // Try to set actual layout (size and position)<a name="line.1282"></a>
+<span class="sourceLineNo">1283</span>        Object portObject = getLayoutTarget().getVisualObject(port);<a name="line.1283"></a>
+<span class="sourceLineNo">1284</span>        if (portObject instanceof PortTerminal) {<a name="line.1284"></a>
+<span class="sourceLineNo">1285</span>            // Get visual Diva figure of port.<a name="line.1285"></a>
+<span class="sourceLineNo">1286</span>            PortTerminal portFigure = (PortTerminal) portObject;<a name="line.1286"></a>
+<span class="sourceLineNo">1287</span>            // Get bounds of the port figure (= relative to center of actor<a name="line.1287"></a>
+<span class="sourceLineNo">1288</span>            // symbol here given by referenceLocation).<a name="line.1288"></a>
+<span class="sourceLineNo">1289</span>            Rectangle2D portBounds = portFigure.getBounds();<a name="line.1289"></a>
+<span class="sourceLineNo">1290</span>            // Get the parent Diva figure which is the whole composite consisting of<a name="line.1290"></a>
+<span class="sourceLineNo">1291</span>            // the actor icon and its name, which might be arbitrary large.<a name="line.1291"></a>
+<span class="sourceLineNo">1292</span>            CanvasComponent parent = portFigure.getParent();<a name="line.1292"></a>
+<span class="sourceLineNo">1293</span>            if (parent instanceof CompositeFigure) {<a name="line.1293"></a>
+<span class="sourceLineNo">1294</span>                CompositeFigure parentFigure = (CompositeFigure) parent;<a name="line.1294"></a>
+<span class="sourceLineNo">1295</span><a name="line.1295"></a>
+<span class="sourceLineNo">1296</span>                AffineTransform parentTransform = parentFigure<a name="line.1296"></a>
+<span class="sourceLineNo">1297</span>                        .getTransformContext().getTransform();<a name="line.1297"></a>
+<span class="sourceLineNo">1298</span>                Point2D.Double portLocation = new Point2D.Double(<a name="line.1298"></a>
+<span class="sourceLineNo">1299</span>                        portBounds.getMinX(), portBounds.getMinY());<a name="line.1299"></a>
+<span class="sourceLineNo">1300</span>                Point2D.Double transformedLocation = new Point2D.Double();<a name="line.1300"></a>
+<span class="sourceLineNo">1301</span>                parentTransform.transform(portLocation, transformedLocation);<a name="line.1301"></a>
+<span class="sourceLineNo">1302</span>                // Calculate coordinates relative to the KIELER nodes top left from absolutes.<a name="line.1302"></a>
+<span class="sourceLineNo">1303</span>                double width = portBounds.getWidth();<a name="line.1303"></a>
+<span class="sourceLineNo">1304</span>                double height = portBounds.getHeight();<a name="line.1304"></a>
+<span class="sourceLineNo">1305</span>                double x = transformedLocation.getX()<a name="line.1305"></a>
+<span class="sourceLineNo">1306</span>                        - parentFigure.getBounds().getMinX() + offset.x;<a name="line.1306"></a>
+<span class="sourceLineNo">1307</span>                double y = transformedLocation.getY()<a name="line.1307"></a>
+<span class="sourceLineNo">1308</span>                        - parentFigure.getBounds().getMinY() + offset.y;<a name="line.1308"></a>
+<span class="sourceLineNo">1309</span>                kportlayout.setXpos((float) x);<a name="line.1309"></a>
+<span class="sourceLineNo">1310</span>                kportlayout.setYpos((float) y);<a name="line.1310"></a>
+<span class="sourceLineNo">1311</span>                // No valid size given -&gt; use diagram port size<a name="line.1311"></a>
+<span class="sourceLineNo">1312</span>                if (size &lt; 0) {<a name="line.1312"></a>
+<span class="sourceLineNo">1313</span>                    kportlayout.setWidth((float) width);<a name="line.1313"></a>
+<span class="sourceLineNo">1314</span>                    kportlayout.setHeight((float) height);<a name="line.1314"></a>
+<span class="sourceLineNo">1315</span>                } else {<a name="line.1315"></a>
+<span class="sourceLineNo">1316</span>                    // If we want to use some custom port size, the new coordinates<a name="line.1316"></a>
+<span class="sourceLineNo">1317</span>                    // need to be adapted to the new size.<a name="line.1317"></a>
+<span class="sourceLineNo">1318</span>                    Rectangle2D newPortBounds = new Rectangle2D.Double();<a name="line.1318"></a>
+<span class="sourceLineNo">1319</span>                    newPortBounds.setRect(x, y, width, height);<a name="line.1319"></a>
+<span class="sourceLineNo">1320</span>                    Rectangle2D shrunkPortBounds = new Rectangle2D.Double();<a name="line.1320"></a>
+<span class="sourceLineNo">1321</span>                    shrunkPortBounds.setRect(x, y, size, size);<a name="line.1321"></a>
+<span class="sourceLineNo">1322</span>                    int direction = IOPortController.getDirection(<a name="line.1322"></a>
+<span class="sourceLineNo">1323</span>                            IOPortController.getCardinality(port));<a name="line.1323"></a>
+<span class="sourceLineNo">1324</span>                    Point2D shrunkenLocation = KielerGraphUtil<a name="line.1324"></a>
+<span class="sourceLineNo">1325</span>                            ._shrinkCoordinates(newPortBounds, shrunkPortBounds,<a name="line.1325"></a>
+<span class="sourceLineNo">1326</span>                                    direction, MULTIPORT_BOTTOM);<a name="line.1326"></a>
+<span class="sourceLineNo">1327</span>                    kportlayout.setXpos((float) shrunkenLocation.getX());<a name="line.1327"></a>
+<span class="sourceLineNo">1328</span>                    kportlayout.setYpos((float) shrunkenLocation.getY());<a name="line.1328"></a>
+<span class="sourceLineNo">1329</span>                    kportlayout.setWidth(size);<a name="line.1329"></a>
+<span class="sourceLineNo">1330</span>                    kportlayout.setHeight(size);<a name="line.1330"></a>
+<span class="sourceLineNo">1331</span>                }<a name="line.1331"></a>
+<span class="sourceLineNo">1332</span>            }<a name="line.1332"></a>
+<span class="sourceLineNo">1333</span>        }<a name="line.1333"></a>
+<span class="sourceLineNo">1334</span>        // Put ports in global maps for later use.<a name="line.1334"></a>
+<span class="sourceLineNo">1335</span>        _ptolemy2KielerPorts.put(port, kport);<a name="line.1335"></a>
+<span class="sourceLineNo">1336</span>    }<a name="line.1336"></a>
+<span class="sourceLineNo">1337</span><a name="line.1337"></a>
+<span class="sourceLineNo">1338</span>    /**<a name="line.1338"></a>
+<span class="sourceLineNo">1339</span>     * Create KIELER ports (KPort) for a KIELER node (KNode) given a list of<a name="line.1339"></a>
+<span class="sourceLineNo">1340</span>     * Ptolemy Port objects and a port type (incoming, outgoing). The new KPorts<a name="line.1340"></a>
+<span class="sourceLineNo">1341</span>     * are initialized in terms of size and position from the Ptolemy<a name="line.1341"></a>
+<span class="sourceLineNo">1342</span>     * counterparts and attached to the corresponding KNode and registered in<a name="line.1342"></a>
+<span class="sourceLineNo">1343</span>     * the mapping fields of this object.<a name="line.1343"></a>
+<span class="sourceLineNo">1344</span>     *<a name="line.1344"></a>
+<span class="sourceLineNo">1345</span>     * For Ptolemy multiports with multiple connections, multiple KIELER KPorts<a name="line.1345"></a>
+<span class="sourceLineNo">1346</span>     * are created with slightly offset location. Hence the layouter can also<a name="line.1346"></a>
+<span class="sourceLineNo">1347</span>     * consider the location for connection crossing minimization. Hence<a name="line.1347"></a>
+<span class="sourceLineNo">1348</span>     * one Ptolemy port may correspond to multiple KIELER KPorts.<a name="line.1348"></a>
+<span class="sourceLineNo">1349</span>     *<a name="line.1349"></a>
+<span class="sourceLineNo">1350</span>     * @param knode The KNode to create KIELER ports for.<a name="line.1350"></a>
+<span class="sourceLineNo">1351</span>     * @param ports The Ptolemy ports counterparts for which to create KIELER<a name="line.1351"></a>
+<span class="sourceLineNo">1352</span>     *            ports.<a name="line.1352"></a>
+<span class="sourceLineNo">1353</span>     */<a name="line.1353"></a>
+<span class="sourceLineNo">1354</span>    private void _createKPorts(KNode knode, List&lt;Port&gt; ports) {<a name="line.1354"></a>
+<span class="sourceLineNo">1355</span>        for (Port port : ports) {<a name="line.1355"></a>
+<span class="sourceLineNo">1356</span>            // Handle multiports for inputs.<a name="line.1356"></a>
+<span class="sourceLineNo">1357</span>            if (port.linkedRelationList().size() &gt; 1) {<a name="line.1357"></a>
+<span class="sourceLineNo">1358</span>                // Create a port for each incoming relation and set an order.<a name="line.1358"></a>
+<span class="sourceLineNo">1359</span>                List relations = port.linkedRelationList();<a name="line.1359"></a>
+<span class="sourceLineNo">1360</span>                int maxIndex = relations.size() - 1;<a name="line.1360"></a>
+<span class="sourceLineNo">1361</span>                for (int index = 0; index &lt; relations.size(); index++) {<a name="line.1361"></a>
+<span class="sourceLineNo">1362</span>                    _createKPort(knode, port, index, maxIndex,<a name="line.1362"></a>
+<span class="sourceLineNo">1363</span>                            DEFAULT_PORT_SIZE);<a name="line.1363"></a>
+<span class="sourceLineNo">1364</span>                }<a name="line.1364"></a>
+<span class="sourceLineNo">1365</span>            } else {<a name="line.1365"></a>
+<span class="sourceLineNo">1366</span>                // If not a multiport, just create one port.<a name="line.1366"></a>
+<span class="sourceLineNo">1367</span>                _createKPort(knode, port, 0, 0, -1);<a name="line.1367"></a>
+<span class="sourceLineNo">1368</span>            }<a name="line.1368"></a>
+<span class="sourceLineNo">1369</span>        }<a name="line.1369"></a>
+<span class="sourceLineNo">1370</span>    }<a name="line.1370"></a>
+<span class="sourceLineNo">1371</span><a name="line.1371"></a>
+<span class="sourceLineNo">1372</span>    /**<a name="line.1372"></a>
+<span class="sourceLineNo">1373</span>     * Get a KIELER KPort for a corresponding Ptolemy object, i.e. a Port or a<a name="line.1373"></a>
+<span class="sourceLineNo">1374</span>     * relation Vertex. If the input is a Vertex, it is determined which of the<a name="line.1374"></a>
+<span class="sourceLineNo">1375</span>     * two KPorts of the corresponding KNode is returned (since in KIELER a Vertex<a name="line.1375"></a>
+<span class="sourceLineNo">1376</span>     * is represented by one node with one input and one output port).<a name="line.1376"></a>
+<span class="sourceLineNo">1377</span>     *<a name="line.1377"></a>
+<span class="sourceLineNo">1378</span>     * If the input object is a Ptolemy Port, the KPort counterpart is searched<a name="line.1378"></a>
+<span class="sourceLineNo">1379</span>     * in the global maps. If additionally the Port is a multiport with multiple<a name="line.1379"></a>
+<span class="sourceLineNo">1380</span>     * connection, the given relation is used to determine which KPort<a name="line.1380"></a>
+<span class="sourceLineNo">1381</span>     * corresponds to the Port/Relation combination. In KIELER multiports are<a name="line.1381"></a>
+<span class="sourceLineNo">1382</span>     * represented by multiple KPorts with slightly offset locations.<a name="line.1382"></a>
+<span class="sourceLineNo">1383</span>     *<a name="line.1383"></a>
+<span class="sourceLineNo">1384</span>     * @param ptolemyObject The corresponding Ptolemy object, either a Vertex or<a name="line.1384"></a>
+<span class="sourceLineNo">1385</span>     *            a Port<a name="line.1385"></a>
+<span class="sourceLineNo">1386</span>     * @param relation The relation that is connected to the Ptolemy multiport<a name="line.1386"></a>
+<span class="sourceLineNo">1387</span>     * @return The found port, or null if no port was found.<a name="line.1387"></a>
+<span class="sourceLineNo">1388</span>     */<a name="line.1388"></a>
+<span class="sourceLineNo">1389</span>    private KPort _getPort(Object ptolemyObject, Relation relation) {<a name="line.1389"></a>
+<span class="sourceLineNo">1390</span>        if (ptolemyObject instanceof Vertex) {<a name="line.1390"></a>
+<span class="sourceLineNo">1391</span>            KNode knode = _kieler2ptolemyDivaNodes.inverse().get(ptolemyObject);<a name="line.1391"></a>
+<span class="sourceLineNo">1392</span>            for (KPort port : knode.getPorts()) {<a name="line.1392"></a>
+<span class="sourceLineNo">1393</span>                return port;<a name="line.1393"></a>
+<span class="sourceLineNo">1394</span>            }<a name="line.1394"></a>
+<span class="sourceLineNo">1395</span>        }<a name="line.1395"></a>
+<span class="sourceLineNo">1396</span>        List&lt;Relation&gt; relations = null;<a name="line.1396"></a>
+<span class="sourceLineNo">1397</span>        if (ptolemyObject instanceof Location) {<a name="line.1397"></a>
+<span class="sourceLineNo">1398</span>            // Handle an inner port represented by a Location.<a name="line.1398"></a>
+<span class="sourceLineNo">1399</span>            // The real port object is its container.<a name="line.1399"></a>
+<span class="sourceLineNo">1400</span>            ptolemyObject = ((Location) ptolemyObject).getContainer();<a name="line.1400"></a>
+<span class="sourceLineNo">1401</span>            if (ptolemyObject instanceof ComponentPort) {<a name="line.1401"></a>
+<span class="sourceLineNo">1402</span>                relations = ((ComponentPort) ptolemyObject)<a name="line.1402"></a>
+<span class="sourceLineNo">1403</span>                        .insideRelationList();<a name="line.1403"></a>
+<span class="sourceLineNo">1404</span>            }<a name="line.1404"></a>
+<span class="sourceLineNo">1405</span>        }<a name="line.1405"></a>
+<span class="sourceLineNo">1406</span>        if (ptolemyObject instanceof Port &amp;&amp; relation != null) {<a name="line.1406"></a>
+<span class="sourceLineNo">1407</span>            // Special case for multiports: For a particular relation, get its<a name="line.1407"></a>
+<span class="sourceLineNo">1408</span>            // index in the relation list of the port. Then get the KIELER port with<a name="line.1408"></a>
+<span class="sourceLineNo">1409</span>            // the same index (as we mapped one Ptolemy multiport to a list of multiple<a name="line.1409"></a>
+<span class="sourceLineNo">1410</span>            // KIELER ports). For a simple port, just give the first corresponding port.<a name="line.1410"></a>
+<span class="sourceLineNo">1411</span>            if (relations == null) {<a name="line.1411"></a>
+<span class="sourceLineNo">1412</span>                // In this case: outer port<a name="line.1412"></a>
+<span class="sourceLineNo">1413</span>                relations = ((Port) ptolemyObject).linkedRelationList();<a name="line.1413"></a>
+<span class="sourceLineNo">1414</span>            }<a name="line.1414"></a>
+<span class="sourceLineNo">1415</span>            int index = relations.indexOf(relation);<a name="line.1415"></a>
+<span class="sourceLineNo">1416</span>            List&lt;KPort&gt; kports = _ptolemy2KielerPorts.get((Port) ptolemyObject);<a name="line.1416"></a>
+<span class="sourceLineNo">1417</span>            if (index &gt;= 0 &amp;&amp; index &lt; kports.size()) {<a name="line.1417"></a>
+<span class="sourceLineNo">1418</span>                return kports.get(index);<a name="line.1418"></a>
+<span class="sourceLineNo">1419</span>            }<a name="line.1419"></a>
+<span class="sourceLineNo">1420</span>            return kports.get(0);<a name="line.1420"></a>
+<span class="sourceLineNo">1421</span>        }<a name="line.1421"></a>
+<span class="sourceLineNo">1422</span>        return null;<a name="line.1422"></a>
+<span class="sourceLineNo">1423</span>    }<a name="line.1423"></a>
+<span class="sourceLineNo">1424</span><a name="line.1424"></a>
+<span class="sourceLineNo">1425</span>    /**<a name="line.1425"></a>
+<span class="sourceLineNo">1426</span>     * Transform a location from a KIELER node from KIELER coordinate system to<a name="line.1426"></a>
+<span class="sourceLineNo">1427</span>     * ptolemy coordinate system. That is KIELER gives locations to be the upper<a name="line.1427"></a>
+<span class="sourceLineNo">1428</span>     * left corner of an item and Ptolemy as the center point of the item.<a name="line.1428"></a>
+<span class="sourceLineNo">1429</span>     *<a name="line.1429"></a>
+<span class="sourceLineNo">1430</span>     * If the original location is not within the bounds of the referenceNode at<a name="line.1430"></a>
+<span class="sourceLineNo">1431</span>     * all, the location updated differently. This is an important distinction between<a name="line.1431"></a>
+<span class="sourceLineNo">1432</span>     * nodes and vertices.<a name="line.1432"></a>
+<span class="sourceLineNo">1433</span>     *<a name="line.1433"></a>
+<span class="sourceLineNo">1434</span>     * @param pos Position of KIELER graphical node. This object will be altered to<a name="line.1434"></a>
+<span class="sourceLineNo">1435</span>     *            fit the new location.<a name="line.1435"></a>
+<span class="sourceLineNo">1436</span>     * @param divaNode the graphical representation in Diva<a name="line.1436"></a>
+<span class="sourceLineNo">1437</span>     * @param locatable the location object of the node<a name="line.1437"></a>
+<span class="sourceLineNo">1438</span>     */<a name="line.1438"></a>
+<span class="sourceLineNo">1439</span>    private void _kNode2Ptolemy(KVector pos, Object divaNode,<a name="line.1439"></a>
+<span class="sourceLineNo">1440</span>            Locatable locatable) {<a name="line.1440"></a>
+<span class="sourceLineNo">1441</span>        Point2D location = KielerLayoutUtil.getLocationPoint(locatable);<a name="line.1441"></a>
+<span class="sourceLineNo">1442</span>        if (divaNode != null) {<a name="line.1442"></a>
+<span class="sourceLineNo">1443</span>            Rectangle2D divaBounds;<a name="line.1443"></a>
+<span class="sourceLineNo">1444</span>            if (locatable instanceof RelativeLocation) {<a name="line.1444"></a>
+<span class="sourceLineNo">1445</span>                // Consider only the background figure of a composite figure<a name="line.1445"></a>
+<span class="sourceLineNo">1446</span>                // if the node is relative locatable, otherwise the link would also<a name="line.1446"></a>
+<span class="sourceLineNo">1447</span>                // be included in the bounds.<a name="line.1447"></a>
+<span class="sourceLineNo">1448</span>                Figure figure = (Figure) getLayoutTarget()<a name="line.1448"></a>
+<span class="sourceLineNo">1449</span>                        .getVisualObject(divaNode);<a name="line.1449"></a>
+<span class="sourceLineNo">1450</span>                divaBounds = figure.getShape().getBounds2D();<a name="line.1450"></a>
+<span class="sourceLineNo">1451</span>            } else {<a name="line.1451"></a>
+<span class="sourceLineNo">1452</span>                divaBounds = getLayoutTarget().getBounds(divaNode);<a name="line.1452"></a>
+<span class="sourceLineNo">1453</span>            }<a name="line.1453"></a>
+<span class="sourceLineNo">1454</span>            double offsetX = 0, offsetY = 0;<a name="line.1454"></a>
+<span class="sourceLineNo">1455</span><a name="line.1455"></a>
+<span class="sourceLineNo">1456</span>            // Check whether the location could be determined.<a name="line.1456"></a>
+<span class="sourceLineNo">1457</span>            // If not, we might have something that has no location attribute,<a name="line.1457"></a>
+<span class="sourceLineNo">1458</span>            // such as a relation vertex, where we use the center as offset.<a name="line.1458"></a>
+<span class="sourceLineNo">1459</span>            if (location != null) {<a name="line.1459"></a>
+<span class="sourceLineNo">1460</span>                offsetX = location.getX() - divaBounds.getMinX();<a name="line.1460"></a>
+<span class="sourceLineNo">1461</span>                offsetY = location.getY() - divaBounds.getMinY();<a name="line.1461"></a>
+<span class="sourceLineNo">1462</span>            } else {<a name="line.1462"></a>
+<span class="sourceLineNo">1463</span>                offsetX = divaBounds.getWidth() / 2;<a name="line.1463"></a>
+<span class="sourceLineNo">1464</span>                offsetY = divaBounds.getHeight() / 2;<a name="line.1464"></a>
+<span class="sourceLineNo">1465</span>            }<a name="line.1465"></a>
+<span class="sourceLineNo">1466</span><a name="line.1466"></a>
+<span class="sourceLineNo">1467</span>            pos.x += offsetX;<a name="line.1467"></a>
+<span class="sourceLineNo">1468</span>            pos.y += offsetY;<a name="line.1468"></a>
+<span class="sourceLineNo">1469</span>        }<a name="line.1469"></a>
+<span class="sourceLineNo">1470</span>    }<a name="line.1470"></a>
+<span class="sourceLineNo">1471</span><a name="line.1471"></a>
+<span class="sourceLineNo">1472</span>    /**<a name="line.1472"></a>
+<span class="sourceLineNo">1473</span>     * Report a message to the top window status handler if it is available.<a name="line.1473"></a>
+<span class="sourceLineNo">1474</span>     *<a name="line.1474"></a>
+<span class="sourceLineNo">1475</span>     * @param message The message to be reported.<a name="line.1475"></a>
+<span class="sourceLineNo">1476</span>     */<a name="line.1476"></a>
+<span class="sourceLineNo">1477</span>    private void _report(String message) {<a name="line.1477"></a>
+<span class="sourceLineNo">1478</span>        if (_top != null) {<a name="line.1478"></a>
+<span class="sourceLineNo">1479</span>            _top.report(message);<a name="line.1479"></a>
+<span class="sourceLineNo">1480</span>        }<a name="line.1480"></a>
+<span class="sourceLineNo">1481</span>    }<a name="line.1481"></a>
+<span class="sourceLineNo">1482</span><a name="line.1482"></a>
+<span class="sourceLineNo">1483</span>    /**<a name="line.1483"></a>
+<span class="sourceLineNo">1484</span>     * Determine the direction of dataflow of all edges and store it in the<a name="line.1484"></a>
+<span class="sourceLineNo">1485</span>     * local maps. Iterate all edges and try to deduce the type of each edge's<a name="line.1485"></a>
+<span class="sourceLineNo">1486</span>     * endpoints, i.e. whether it is an source or target. Do this in multiple<a name="line.1486"></a>
+<span class="sourceLineNo">1487</span>     * iterations by first getting clear information from input and output ports<a name="line.1487"></a>
+<span class="sourceLineNo">1488</span>     * and then propagate this information to the adjacent edges.<a name="line.1488"></a>
+<span class="sourceLineNo">1489</span>     *<a name="line.1489"></a>
+<span class="sourceLineNo">1490</span>     * @param unprocessedEdges The list of edges that need processing.<a name="line.1490"></a>
+<span class="sourceLineNo">1491</span>     */<a name="line.1491"></a>
+<span class="sourceLineNo">1492</span>    private void _storeEndpoints(List&lt;Link&gt; unprocessedEdges) {<a name="line.1492"></a>
+<span class="sourceLineNo">1493</span>        ActorGraphModel aGraph = (ActorGraphModel) getLayoutTarget()<a name="line.1493"></a>
+<span class="sourceLineNo">1494</span>                .getGraphModel();<a name="line.1494"></a>
+<span class="sourceLineNo">1495</span>        boolean allDirectionsSet = false;<a name="line.1495"></a>
+<span class="sourceLineNo">1496</span>        boolean progress = false;<a name="line.1496"></a>
+<span class="sourceLineNo">1497</span>        while (!allDirectionsSet) {<a name="line.1497"></a>
+<span class="sourceLineNo">1498</span>            allDirectionsSet = true;<a name="line.1498"></a>
+<span class="sourceLineNo">1499</span>            progress = false;<a name="line.1499"></a>
+<span class="sourceLineNo">1500</span>            for (Iterator&lt;Link&gt; edgeIter = unprocessedEdges.iterator(); edgeIter<a name="line.1500"></a>
+<span class="sourceLineNo">1501</span>                    .hasNext();) {<a name="line.1501"></a>
+<span class="sourceLineNo">1502</span>                Link edge = edgeIter.next();<a name="line.1502"></a>
+<span class="sourceLineNo">1503</span>                EdgeModel edgeModel = aGraph.getEdgeModel(edge);<a name="line.1503"></a>
+<span class="sourceLineNo">1504</span><a name="line.1504"></a>
+<span class="sourceLineNo">1505</span>                Object simpleEndpoint1 = edgeModel.getHead(edge);<a name="line.1505"></a>
+<span class="sourceLineNo">1506</span>                Object simpleEndpoint2 = edgeModel.getTail(edge);<a name="line.1506"></a>
+<span class="sourceLineNo">1507</span>                Object endpoint1 = aGraph.getSemanticObject(simpleEndpoint1);<a name="line.1507"></a>
+<span class="sourceLineNo">1508</span>                Object endpoint2 = aGraph.getSemanticObject(simpleEndpoint2);<a name="line.1508"></a>
+<span class="sourceLineNo">1509</span><a name="line.1509"></a>
+<span class="sourceLineNo">1510</span>                // See if we have successfully looked at this edge before.<a name="line.1510"></a>
+<span class="sourceLineNo">1511</span>                if (_divaEdgeTarget.containsKey(edge)<a name="line.1511"></a>
+<span class="sourceLineNo">1512</span>                        &amp;&amp; _divaEdgeSource.containsKey(edge)) {<a name="line.1512"></a>
+<span class="sourceLineNo">1513</span>                    continue;<a name="line.1513"></a>
+<span class="sourceLineNo">1514</span>                }<a name="line.1514"></a>
+<span class="sourceLineNo">1515</span><a name="line.1515"></a>
+<span class="sourceLineNo">1516</span>                // Check whether endpoints are source or target ports.<a name="line.1516"></a>
+<span class="sourceLineNo">1517</span>                if (endpoint1 instanceof Port) {<a name="line.1517"></a>
+<span class="sourceLineNo">1518</span>                    boolean isInput1 = PtolemyModelUtil<a name="line.1518"></a>
+<span class="sourceLineNo">1519</span>                            ._isInput((Port) endpoint1);<a name="line.1519"></a>
+<span class="sourceLineNo">1520</span>                    // Check if we look at inner or outer ports.<a name="line.1520"></a>
+<span class="sourceLineNo">1521</span>                    if (simpleEndpoint1 instanceof Location) {<a name="line.1521"></a>
+<span class="sourceLineNo">1522</span>                        // Inner input port is regarded as output.<a name="line.1522"></a>
+<span class="sourceLineNo">1523</span>                        isInput1 = !isInput1;<a name="line.1523"></a>
+<span class="sourceLineNo">1524</span>                    }<a name="line.1524"></a>
+<span class="sourceLineNo">1525</span>                    // Set endpoints.<a name="line.1525"></a>
+<span class="sourceLineNo">1526</span>                    if (isInput1) {<a name="line.1526"></a>
+<span class="sourceLineNo">1527</span>                        _divaEdgeTarget.put(edge, simpleEndpoint1);<a name="line.1527"></a>
+<span class="sourceLineNo">1528</span>                        _divaEdgeSource.put(edge, simpleEndpoint2);<a name="line.1528"></a>
+<span class="sourceLineNo">1529</span>                        progress = true;<a name="line.1529"></a>
+<span class="sourceLineNo">1530</span>                    } else {<a name="line.1530"></a>
+<span class="sourceLineNo">1531</span>                        _divaEdgeTarget.put(edge, simpleEndpoint2);<a name="line.1531"></a>
+<span class="sourceLineNo">1532</span>                        _divaEdgeSource.put(edge, simpleEndpoint1);<a name="line.1532"></a>
+<span class="sourceLineNo">1533</span>                        progress = true;<a name="line.1533"></a>
+<span class="sourceLineNo">1534</span>                    }<a name="line.1534"></a>
+<span class="sourceLineNo">1535</span><a name="line.1535"></a>
+<span class="sourceLineNo">1536</span>                } else if (endpoint2 instanceof Port) {<a name="line.1536"></a>
+<span class="sourceLineNo">1537</span>                    boolean isInput2 = PtolemyModelUtil<a name="line.1537"></a>
+<span class="sourceLineNo">1538</span>                            ._isInput((Port) endpoint2);<a name="line.1538"></a>
+<span class="sourceLineNo">1539</span>                    // Check if we look at inner or outer ports.<a name="line.1539"></a>
+<span class="sourceLineNo">1540</span>                    if (simpleEndpoint2 instanceof Location) {<a name="line.1540"></a>
+<span class="sourceLineNo">1541</span>                        // Inner input port is regarded as output.<a name="line.1541"></a>
+<span class="sourceLineNo">1542</span>                        isInput2 = !isInput2;<a name="line.1542"></a>
+<span class="sourceLineNo">1543</span>                    }<a name="line.1543"></a>
+<span class="sourceLineNo">1544</span>                    // Set endpoints.<a name="line.1544"></a>
+<span class="sourceLineNo">1545</span>                    if (isInput2) {<a name="line.1545"></a>
+<span class="sourceLineNo">1546</span>                        _divaEdgeTarget.put(edge, simpleEndpoint2);<a name="line.1546"></a>
+<span class="sourceLineNo">1547</span>                        _divaEdgeSource.put(edge, simpleEndpoint1);<a name="line.1547"></a>
+<span class="sourceLineNo">1548</span>                        progress = true;<a name="line.1548"></a>
+<span class="sourceLineNo">1549</span>                    } else {<a name="line.1549"></a>
+<span class="sourceLineNo">1550</span>                        _divaEdgeTarget.put(edge, simpleEndpoint1);<a name="line.1550"></a>
+<span class="sourceLineNo">1551</span>                        _divaEdgeSource.put(edge, simpleEndpoint2);<a name="line.1551"></a>
+<span class="sourceLineNo">1552</span>                        progress = true;<a name="line.1552"></a>
+<span class="sourceLineNo">1553</span>                    }<a name="line.1553"></a>
+<span class="sourceLineNo">1554</span><a name="line.1554"></a>
+<span class="sourceLineNo">1555</span>                } else<a name="line.1555"></a>
+<span class="sourceLineNo">1556</span>                // See if one of the endpoints is source or target of other edges.<a name="line.1556"></a>
+<span class="sourceLineNo">1557</span>                if (_divaEdgeTarget.containsValue(simpleEndpoint1)) {<a name="line.1557"></a>
+<span class="sourceLineNo">1558</span>                    _divaEdgeTarget.put(edge, simpleEndpoint2);<a name="line.1558"></a>
+<span class="sourceLineNo">1559</span>                    _divaEdgeSource.put(edge, simpleEndpoint1);<a name="line.1559"></a>
+<span class="sourceLineNo">1560</span>                    progress = true;<a name="line.1560"></a>
+<span class="sourceLineNo">1561</span>                } else if (_divaEdgeTarget.containsValue(simpleEndpoint2)) {<a name="line.1561"></a>
+<span class="sourceLineNo">1562</span>                    _divaEdgeTarget.put(edge, simpleEndpoint1);<a name="line.1562"></a>
+<span class="sourceLineNo">1563</span>                    _divaEdgeSource.put(edge, simpleEndpoint2);<a name="line.1563"></a>
+<span class="sourceLineNo">1564</span>                    progress = true;<a name="line.1564"></a>
+<span class="sourceLineNo">1565</span>                } else if (_divaEdgeSource.containsValue(simpleEndpoint1)) {<a name="line.1565"></a>
+<span class="sourceLineNo">1566</span>                    _divaEdgeTarget.put(edge, simpleEndpoint1);<a name="line.1566"></a>
+<span class="sourceLineNo">1567</span>                    _divaEdgeSource.put(edge, simpleEndpoint2);<a name="line.1567"></a>
+<span class="sourceLineNo">1568</span>                    progress = true;<a name="line.1568"></a>
+<span class="sourceLineNo">1569</span>                } else if (_divaEdgeSource.containsValue(simpleEndpoint2)) {<a name="line.1569"></a>
+<span class="sourceLineNo">1570</span>                    _divaEdgeTarget.put(edge, simpleEndpoint2);<a name="line.1570"></a>
+<span class="sourceLineNo">1571</span>                    _divaEdgeSource.put(edge, simpleEndpoint1);<a name="line.1571"></a>
+<span class="sourceLineNo">1572</span>                    progress = true;<a name="line.1572"></a>
+<span class="sourceLineNo">1573</span>                } else {<a name="line.1573"></a>
+<span class="sourceLineNo">1574</span>                    // Now we can't deduce any information about this edge.<a name="line.1574"></a>
+<span class="sourceLineNo">1575</span>                    allDirectionsSet = false;<a name="line.1575"></a>
+<span class="sourceLineNo">1576</span>                }<a name="line.1576"></a>
+<span class="sourceLineNo">1577</span><a name="line.1577"></a>
+<span class="sourceLineNo">1578</span>                // Guarantee progress by just setting the direction if it cannot be deduced.<a name="line.1578"></a>
+<span class="sourceLineNo">1579</span>                if (!edgeIter.hasNext() &amp;&amp; !progress) {<a name="line.1579"></a>
+<span class="sourceLineNo">1580</span>                    _divaEdgeTarget.put(edge, simpleEndpoint1);<a name="line.1580"></a>
+<span class="sourceLineNo">1581</span>                    _divaEdgeSource.put(edge, simpleEndpoint2);<a name="line.1581"></a>
+<span class="sourceLineNo">1582</span>                }<a name="line.1582"></a>
+<span class="sourceLineNo">1583</span>            }<a name="line.1583"></a>
+<span class="sourceLineNo">1584</span>        }<a name="line.1584"></a>
+<span class="sourceLineNo">1585</span>    }<a name="line.1585"></a>
+<span class="sourceLineNo">1586</span><a name="line.1586"></a>
+<span class="sourceLineNo">1587</span>    /**<a name="line.1587"></a>
+<span class="sourceLineNo">1588</span>     * For a given Ptolemy port, its channel index in a multiport, and the<a name="line.1588"></a>
+<span class="sourceLineNo">1589</span>     * maximum index in that multiport, calculate its offset in X and Y<a name="line.1589"></a>
+<span class="sourceLineNo">1590</span>     * coordinates. For example, the first channel on the east side has offset 0<a name="line.1590"></a>
+<span class="sourceLineNo">1591</span>     * and the next channel is moved below the first one and so on. On the north<a name="line.1591"></a>
+<span class="sourceLineNo">1592</span>     * side, the last channel has offset 0 and the first channel is at the most<a name="line.1592"></a>
+<span class="sourceLineNo">1593</span>     * left side.<a name="line.1593"></a>
+<span class="sourceLineNo">1594</span>     *<a name="line.1594"></a>
+<span class="sourceLineNo">1595</span>     * @param port the Ptolemy port<a name="line.1595"></a>
+<span class="sourceLineNo">1596</span>     * @param kportlayout the corresponding KPort KShapeLayout<a name="line.1596"></a>
+<span class="sourceLineNo">1597</span>     * @param index index of the channel<a name="line.1597"></a>
+<span class="sourceLineNo">1598</span>     * @param maxIndex maximum available channel<a name="line.1598"></a>
+<span class="sourceLineNo">1599</span>     * @param outer True if the direction of the ports is obtained by calling<a name="line.1599"></a>
+<span class="sourceLineNo">1600</span>     * IOPortController.getDirection().  Otherwise, the direction is obtained<a name="line.1600"></a>
+<span class="sourceLineNo">1601</span>     * by calling PtolemyModelUtil._getExternalPortDirection().<a name="line.1601"></a>
+<span class="sourceLineNo">1602</span>     * @return offset vector<a name="line.1602"></a>
+<span class="sourceLineNo">1603</span>     */<a name="line.1603"></a>
+<span class="sourceLineNo">1604</span>    protected static KVector _getMultiportOffsets(Port port,<a name="line.1604"></a>
+<span class="sourceLineNo">1605</span>            KShapeLayout kportlayout, int index, int maxIndex, boolean outer) {<a name="line.1605"></a>
+<span class="sourceLineNo">1606</span>        KVector offset = new KVector();<a name="line.1606"></a>
+<span class="sourceLineNo">1607</span>        int direction = 0;<a name="line.1607"></a>
+<span class="sourceLineNo">1608</span>        if (outer) {<a name="line.1608"></a>
+<span class="sourceLineNo">1609</span>            direction = IOPortController<a name="line.1609"></a>
+<span class="sourceLineNo">1610</span>                    .getDirection(IOPortController.getCardinality(port));<a name="line.1610"></a>
+<span class="sourceLineNo">1611</span>        } else {<a name="line.1611"></a>
+<span class="sourceLineNo">1612</span>            direction = PtolemyModelUtil._getExternalPortDirection(port);<a name="line.1612"></a>
+<span class="sourceLineNo">1613</span>        }<a name="line.1613"></a>
+<span class="sourceLineNo">1614</span>        switch (direction) {<a name="line.1614"></a>
+<span class="sourceLineNo">1615</span>        case SwingConstants.NORTH:<a name="line.1615"></a>
+<span class="sourceLineNo">1616</span>            kportlayout.setProperty(LayoutOptions.PORT_SIDE, PortSide.NORTH);<a name="line.1616"></a>
+<span class="sourceLineNo">1617</span>            // Ports are extended to left with leftmost port index 0.<a name="line.1617"></a>
+<span class="sourceLineNo">1618</span>            offset.x = -((maxIndex - index) * MULTIPORT_OFFSET);<a name="line.1618"></a>
+<span class="sourceLineNo">1619</span>            break;<a name="line.1619"></a>
+<span class="sourceLineNo">1620</span>        case SwingConstants.EAST:<a name="line.1620"></a>
+<span class="sourceLineNo">1621</span>            kportlayout.setProperty(LayoutOptions.PORT_SIDE, PortSide.EAST);<a name="line.1621"></a>
+<span class="sourceLineNo">1622</span>            // Ports are extended to bottom with top port index 0.<a name="line.1622"></a>
+<span class="sourceLineNo">1623</span>            offset.y = index * MULTIPORT_OFFSET;<a name="line.1623"></a>
+<span class="sourceLineNo">1624</span>            break;<a name="line.1624"></a>
+<span class="sourceLineNo">1625</span>        case SwingConstants.SOUTH:<a name="line.1625"></a>
+<span class="sourceLineNo">1626</span>            kportlayout.setProperty(LayoutOptions.PORT_SIDE, PortSide.SOUTH);<a name="line.1626"></a>
+<span class="sourceLineNo">1627</span>            offset.x = index * MULTIPORT_OFFSET;<a name="line.1627"></a>
+<span class="sourceLineNo">1628</span>            break;<a name="line.1628"></a>
+<span class="sourceLineNo">1629</span>        default:<a name="line.1629"></a>
+<span class="sourceLineNo">1630</span>            kportlayout.setProperty(LayoutOptions.PORT_SIDE, PortSide.WEST);<a name="line.1630"></a>
+<span class="sourceLineNo">1631</span>            // Ports are extended to top beginning with top port index 0.<a name="line.1631"></a>
+<span class="sourceLineNo">1632</span>            offset.y = -((maxIndex - index) * MULTIPORT_OFFSET);<a name="line.1632"></a>
+<span class="sourceLineNo">1633</span>            break;<a name="line.1633"></a>
+<span class="sourceLineNo">1634</span>        }<a name="line.1634"></a>
+<span class="sourceLineNo">1635</span>        return offset;<a name="line.1635"></a>
+<span class="sourceLineNo">1636</span>    }<a name="line.1636"></a>
+<span class="sourceLineNo">1637</span><a name="line.1637"></a>
+<span class="sourceLineNo">1638</span>    ///////////////////////////////////////////////////////////////////<a name="line.1638"></a>
+<span class="sourceLineNo">1639</span>    ////                         private variables                 ////<a name="line.1639"></a>
+<span class="sourceLineNo">1640</span><a name="line.1640"></a>
+<span class="sourceLineNo">1641</span>    /**<a name="line.1641"></a>
+<span class="sourceLineNo">1642</span>     * Offset between KIELER KPorts corresponding to a Ptolemy multiport. I.e.<a name="line.1642"></a>
+<span class="sourceLineNo">1643</span>     * the distance between multiple single KPorts.<a name="line.1643"></a>
+<span class="sourceLineNo">1644</span>     */<a name="line.1644"></a>
+<span class="sourceLineNo">1645</span>    private static final float MULTIPORT_OFFSET = 5.0f;<a name="line.1645"></a>
+<span class="sourceLineNo">1646</span><a name="line.1646"></a>
+<span class="sourceLineNo">1647</span>    /**<a name="line.1647"></a>
+<span class="sourceLineNo">1648</span>     * Debug flag that will trigger output of additional information during<a name="line.1648"></a>
+<span class="sourceLineNo">1649</span>     * layout run. With the flag set to true especially the KIELER graph<a name="line.1649"></a>
+<span class="sourceLineNo">1650</span>     * structure will be written to a file on hard disk in order to review the<a name="line.1650"></a>
+<span class="sourceLineNo">1651</span>     * graph later on.<a name="line.1651"></a>
+<span class="sourceLineNo">1652</span>     */<a name="line.1652"></a>
+<span class="sourceLineNo">1653</span>    private static final boolean DEBUG = false;<a name="line.1653"></a>
+<span class="sourceLineNo">1654</span><a name="line.1654"></a>
+<span class="sourceLineNo">1655</span>    /**<a name="line.1655"></a>
+<span class="sourceLineNo">1656</span>     * Default size of a port that will be used in KIELER layout if no explicit<a name="line.1656"></a>
+<span class="sourceLineNo">1657</span>     * size (e.g. copied from Ptolemy port) is given.<a name="line.1657"></a>
+<span class="sourceLineNo">1658</span>     */<a name="line.1658"></a>
+<span class="sourceLineNo">1659</span>    private static final float DEFAULT_PORT_SIZE = 5.0f;<a name="line.1659"></a>
+<span class="sourceLineNo">1660</span><a name="line.1660"></a>
+<span class="sourceLineNo">1661</span>    /**<a name="line.1661"></a>
+<span class="sourceLineNo">1662</span>     * The offset height used by KIELER for inner ports to correct connection anchor.<a name="line.1662"></a>
+<span class="sourceLineNo">1663</span>     */<a name="line.1663"></a>
+<span class="sourceLineNo">1664</span>    private static final float INNER_PORT_HEIGHT_OFFSET = 11.0f;<a name="line.1664"></a>
+<span class="sourceLineNo">1665</span><a name="line.1665"></a>
+<span class="sourceLineNo">1666</span>    /**<a name="line.1666"></a>
+<span class="sourceLineNo">1667</span>     * Offset at the x and y-coordinate of the shape of a Multiport to its figure.<a name="line.1667"></a>
+<span class="sourceLineNo">1668</span>     */<a name="line.1668"></a>
+<span class="sourceLineNo">1669</span>    private static final KVector MULTIPORT_INNER_OFFSET = new KVector(3f, -3f);<a name="line.1669"></a>
+<span class="sourceLineNo">1670</span><a name="line.1670"></a>
+<span class="sourceLineNo">1671</span>    /**<a name="line.1671"></a>
+<span class="sourceLineNo">1672</span>     * Offset between bottom of Multiport to the first KIELER KPort<a name="line.1672"></a>
+<span class="sourceLineNo">1673</span>     */<a name="line.1673"></a>
+<span class="sourceLineNo">1674</span>    private static final float MULTIPORT_BOTTOM = 4.5f;<a name="line.1674"></a>
+<span class="sourceLineNo">1675</span><a name="line.1675"></a>
+<span class="sourceLineNo">1676</span>    /**<a name="line.1676"></a>
+<span class="sourceLineNo">1677</span>     * A pool of layout provider instances, which are used to perform the actual<a name="line.1677"></a>
+<span class="sourceLineNo">1678</span>     * layout. The pool is accessed statically, so that its instances can be reused<a name="line.1678"></a>
+<span class="sourceLineNo">1679</span>     * in subsequent layout runs.<a name="line.1679"></a>
+<span class="sourceLineNo">1680</span>     */<a name="line.1680"></a>
+<span class="sourceLineNo">1681</span>    private static InstancePool&lt;AbstractLayoutProvider&gt; _layoutProviderPool;<a name="line.1681"></a>
+<span class="sourceLineNo">1682</span><a name="line.1682"></a>
+<span class="sourceLineNo">1683</span>    /**<a name="line.1683"></a>
+<span class="sourceLineNo">1684</span>     * The top level Ptolemy composite entity that contains the diagram that is<a name="line.1684"></a>
+<span class="sourceLineNo">1685</span>     * to be laid out.<a name="line.1685"></a>
+<span class="sourceLineNo">1686</span>     */<a name="line.1686"></a>
+<span class="sourceLineNo">1687</span>    private CompositeEntity _compositeEntity;<a name="line.1687"></a>
+<span class="sourceLineNo">1688</span><a name="line.1688"></a>
+<span class="sourceLineNo">1689</span>    /**<a name="line.1689"></a>
+<span class="sourceLineNo">1690</span>     * Storage of actual sources of diva edges corresponding to data flow.<a name="line.1690"></a>
+<span class="sourceLineNo">1691</span>     */<a name="line.1691"></a>
+<span class="sourceLineNo">1692</span>    private Map&lt;Link, Object&gt; _divaEdgeSource;<a name="line.1692"></a>
+<span class="sourceLineNo">1693</span><a name="line.1693"></a>
+<span class="sourceLineNo">1694</span>    /**<a name="line.1694"></a>
+<span class="sourceLineNo">1695</span>     * Storage of actual targets of diva edges corresponding to data flow.<a name="line.1695"></a>
+<span class="sourceLineNo">1696</span>     */<a name="line.1696"></a>
+<span class="sourceLineNo">1697</span>    private Map&lt;Link, Object&gt; _divaEdgeTarget;<a name="line.1697"></a>
+<span class="sourceLineNo">1698</span><a name="line.1698"></a>
+<span class="sourceLineNo">1699</span>    /**<a name="line.1699"></a>
+<span class="sourceLineNo">1700</span>     * Mapping of KIELER labels to corresponding diva labels.<a name="line.1700"></a>
+<span class="sourceLineNo">1701</span>     */<a name="line.1701"></a>
+<span class="sourceLineNo">1702</span>    private Map&lt;KLabel, LabelFigure&gt; _divaLabel;<a name="line.1702"></a>
+<span class="sourceLineNo">1703</span><a name="line.1703"></a>
+<span class="sourceLineNo">1704</span>    /**<a name="line.1704"></a>
+<span class="sourceLineNo">1705</span>     * List of KIELER edges and corresponding Diva links.<a name="line.1705"></a>
+<span class="sourceLineNo">1706</span>     */<a name="line.1706"></a>
+<span class="sourceLineNo">1707</span>    private List&lt;Pair&lt;KEdge, Link&gt;&gt; _edgeList;<a name="line.1707"></a>
+<span class="sourceLineNo">1708</span><a name="line.1708"></a>
+<span class="sourceLineNo">1709</span>    /**<a name="line.1709"></a>
+<span class="sourceLineNo">1710</span>     * Map KIELER nodes to Diva Nodes and back.<a name="line.1710"></a>
+<span class="sourceLineNo">1711</span>     */<a name="line.1711"></a>
+<span class="sourceLineNo">1712</span>    private BiMap&lt;KNode, Locatable&gt; _kieler2ptolemyDivaNodes;<a name="line.1712"></a>
+<span class="sourceLineNo">1713</span><a name="line.1713"></a>
+<span class="sourceLineNo">1714</span>    /**<a name="line.1714"></a>
+<span class="sourceLineNo">1715</span>     * Map Ptolemy ports to KIELER ports. A Ptolemy multiport could correspond<a name="line.1715"></a>
+<span class="sourceLineNo">1716</span>     * to multiple KIELER ports. Hence it's a mapping to a List of KPorts.<a name="line.1716"></a>
+<span class="sourceLineNo">1717</span>     */<a name="line.1717"></a>
+<span class="sourceLineNo">1718</span>    private ListMultimap&lt;Port, KPort&gt; _ptolemy2KielerPorts;<a name="line.1718"></a>
+<span class="sourceLineNo">1719</span><a name="line.1719"></a>
+<span class="sourceLineNo">1720</span>    /**<a name="line.1720"></a>
+<span class="sourceLineNo">1721</span>     * Pointer to Top in order to report the current status.<a name="line.1721"></a>
+<span class="sourceLineNo">1722</span>     */<a name="line.1722"></a>
+<span class="sourceLineNo">1723</span>    private Top _top;<a name="line.1723"></a>
+<span class="sourceLineNo">1724</span><a name="line.1724"></a>
+<span class="sourceLineNo">1725</span>    /** The graph model that is about to be laid out. */<a name="line.1725"></a>
+<span class="sourceLineNo">1726</span>    private GraphModel _graphModel;<a name="line.1726"></a>
+<span class="sourceLineNo">1727</span><a name="line.1727"></a>
+<span class="sourceLineNo">1728</span>    /**<a name="line.1728"></a>
+<span class="sourceLineNo">1729</span>     * When layouting FSMs, we use the following nodes to separate<a name="line.1729"></a>
+<span class="sourceLineNo">1730</span>     * ports from the actual model.<a name="line.1730"></a>
+<span class="sourceLineNo">1731</span>     */<a name="line.1731"></a>
+<span class="sourceLineNo">1732</span>    private KNode _fsmInput;<a name="line.1732"></a>
+<span class="sourceLineNo">1733</span>    private KNode _fsmOutput;<a name="line.1733"></a>
+<span class="sourceLineNo">1734</span>    private KNode _fsmInputOutput;<a name="line.1734"></a>
+<span class="sourceLineNo">1735</span><a name="line.1735"></a>
+<span class="sourceLineNo">1736</span>}<a name="line.1736"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

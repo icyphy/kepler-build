@@ -1,0 +1,1560 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../../../../stylesheet.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>/*<a name="line.1"></a>
+<span class="sourceLineNo">002</span> * Copyright (c) 2003-2010 The Regents of the University of California.<a name="line.2"></a>
+<span class="sourceLineNo">003</span> * All rights reserved.<a name="line.3"></a>
+<span class="sourceLineNo">004</span> *<a name="line.4"></a>
+<span class="sourceLineNo">005</span> * '$Author: crawl $'<a name="line.5"></a>
+<span class="sourceLineNo">006</span> * '$Date: 2015-08-24 15:48:48 -0700 (Mon, 24 Aug 2015) $' <a name="line.6"></a>
+<span class="sourceLineNo">007</span> * '$Revision: 33634 $'<a name="line.7"></a>
+<span class="sourceLineNo">008</span> * <a name="line.8"></a>
+<span class="sourceLineNo">009</span> * Permission is hereby granted, without written agreement and without<a name="line.9"></a>
+<span class="sourceLineNo">010</span> * license or royalty fees, to use, copy, modify, and distribute this<a name="line.10"></a>
+<span class="sourceLineNo">011</span> * software and its documentation for any purpose, provided that the above<a name="line.11"></a>
+<span class="sourceLineNo">012</span> * copyright notice and the following two paragraphs appear in all copies<a name="line.12"></a>
+<span class="sourceLineNo">013</span> * of this software.<a name="line.13"></a>
+<span class="sourceLineNo">014</span> *<a name="line.14"></a>
+<span class="sourceLineNo">015</span> * IN NO EVENT SHALL THE UNIVERSITY OF CALIFORNIA BE LIABLE TO ANY PARTY<a name="line.15"></a>
+<span class="sourceLineNo">016</span> * FOR DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES<a name="line.16"></a>
+<span class="sourceLineNo">017</span> * ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION, EVEN IF<a name="line.17"></a>
+<span class="sourceLineNo">018</span> * THE UNIVERSITY OF CALIFORNIA HAS BEEN ADVISED OF THE POSSIBILITY OF<a name="line.18"></a>
+<span class="sourceLineNo">019</span> * SUCH DAMAGE.<a name="line.19"></a>
+<span class="sourceLineNo">020</span> *<a name="line.20"></a>
+<span class="sourceLineNo">021</span> * THE UNIVERSITY OF CALIFORNIA SPECIFICALLY DISCLAIMS ANY WARRANTIES,<a name="line.21"></a>
+<span class="sourceLineNo">022</span> * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF<a name="line.22"></a>
+<span class="sourceLineNo">023</span> * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE<a name="line.23"></a>
+<span class="sourceLineNo">024</span> * PROVIDED HEREUNDER IS ON AN "AS IS" BASIS, AND THE UNIVERSITY OF<a name="line.24"></a>
+<span class="sourceLineNo">025</span> * CALIFORNIA HAS NO OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT, UPDATES,<a name="line.25"></a>
+<span class="sourceLineNo">026</span> * ENHANCEMENTS, OR MODIFICATIONS.<a name="line.26"></a>
+<span class="sourceLineNo">027</span> *<a name="line.27"></a>
+<span class="sourceLineNo">028</span> */<a name="line.28"></a>
+<span class="sourceLineNo">029</span><a name="line.29"></a>
+<span class="sourceLineNo">030</span>package org.ecoinformatics.seek.datasource.darwincore;<a name="line.30"></a>
+<span class="sourceLineNo">031</span><a name="line.31"></a>
+<span class="sourceLineNo">032</span>import java.io.StringReader;<a name="line.32"></a>
+<span class="sourceLineNo">033</span>import java.sql.ResultSet;<a name="line.33"></a>
+<span class="sourceLineNo">034</span>import java.sql.ResultSetMetaData;<a name="line.34"></a>
+<span class="sourceLineNo">035</span>import java.sql.SQLException;<a name="line.35"></a>
+<span class="sourceLineNo">036</span>import java.util.Enumeration;<a name="line.36"></a>
+<span class="sourceLineNo">037</span>import java.util.HashMap;<a name="line.37"></a>
+<span class="sourceLineNo">038</span>import java.util.Hashtable;<a name="line.38"></a>
+<span class="sourceLineNo">039</span>import java.util.Iterator;<a name="line.39"></a>
+<span class="sourceLineNo">040</span>import java.util.List;<a name="line.40"></a>
+<span class="sourceLineNo">041</span>import java.util.Map;<a name="line.41"></a>
+<span class="sourceLineNo">042</span>import java.util.Set;<a name="line.42"></a>
+<span class="sourceLineNo">043</span>import java.util.Vector;<a name="line.43"></a>
+<span class="sourceLineNo">044</span><a name="line.44"></a>
+<span class="sourceLineNo">045</span>import org.apache.commons.logging.Log;<a name="line.45"></a>
+<span class="sourceLineNo">046</span>import org.apache.commons.logging.LogFactory;<a name="line.46"></a>
+<span class="sourceLineNo">047</span>import org.ecoinformatics.ecogrid.queryservice.query.QueryType;<a name="line.47"></a>
+<span class="sourceLineNo">048</span>import org.ecoinformatics.ecogrid.queryservice.resultset.ResultsetType;<a name="line.48"></a>
+<span class="sourceLineNo">049</span>import org.ecoinformatics.ecogrid.queryservice.resultset.ResultsetTypeRecord;<a name="line.49"></a>
+<span class="sourceLineNo">050</span>import org.ecoinformatics.ecogrid.queryservice.resultset.ResultsetTypeRecordReturnField;<a name="line.50"></a>
+<span class="sourceLineNo">051</span>import org.ecoinformatics.ecogrid.queryservice.resultset.ResultsetTypeResultsetMetadataRecordStructure;<a name="line.51"></a>
+<span class="sourceLineNo">052</span>import org.ecoinformatics.ecogrid.queryservice.resultset.ResultsetTypeResultsetMetadataRecordStructureReturnField;<a name="line.52"></a>
+<span class="sourceLineNo">053</span>import org.ecoinformatics.ecogrid.queryservice.util.EcogridQueryParser;<a name="line.53"></a>
+<span class="sourceLineNo">054</span>import org.ecoinformatics.seek.dataquery.DBTableNameResolver;<a name="line.54"></a>
+<span class="sourceLineNo">055</span>import org.ecoinformatics.seek.dataquery.DBTablesGenerator;<a name="line.55"></a>
+<span class="sourceLineNo">056</span>import org.ecoinformatics.seek.dataquery.HsqlDataQueryAction;<a name="line.56"></a>
+<span class="sourceLineNo">057</span>import org.ecoinformatics.seek.datasource.DataSourceIcon;<a name="line.57"></a>
+<span class="sourceLineNo">058</span>import org.ecoinformatics.seek.datasource.EcogridDataCacheItem;<a name="line.58"></a>
+<span class="sourceLineNo">059</span>import org.ecoinformatics.seek.datasource.EcogridQueryDataCacheItem;<a name="line.59"></a>
+<span class="sourceLineNo">060</span>import org.ecoinformatics.seek.datasource.eml.eml2.Eml200DataSource;<a name="line.60"></a>
+<span class="sourceLineNo">061</span>import org.ecoinformatics.seek.ecogrid.quicksearch.ResultTreeRoot;<a name="line.61"></a>
+<span class="sourceLineNo">062</span>import org.ecoinformatics.seek.querybuilder.DBQueryDef;<a name="line.62"></a>
+<span class="sourceLineNo">063</span>import org.ecoinformatics.seek.querybuilder.DBQueryDefParserEmitter;<a name="line.63"></a>
+<span class="sourceLineNo">064</span>import org.ecoinformatics.seek.querybuilder.DBSchemaParserEmitter;<a name="line.64"></a>
+<span class="sourceLineNo">065</span>import org.kepler.objectmanager.ActorMetadata;<a name="line.65"></a>
+<span class="sourceLineNo">066</span>import org.kepler.objectmanager.cache.ActorCacheObject;<a name="line.66"></a>
+<span class="sourceLineNo">067</span>import org.kepler.objectmanager.cache.CacheManager;<a name="line.67"></a>
+<span class="sourceLineNo">068</span>import org.kepler.objectmanager.cache.DataCacheListener;<a name="line.68"></a>
+<span class="sourceLineNo">069</span>import org.kepler.objectmanager.cache.DataCacheManager;<a name="line.69"></a>
+<span class="sourceLineNo">070</span>import org.kepler.objectmanager.cache.DataCacheObject;<a name="line.70"></a>
+<span class="sourceLineNo">071</span>import org.kepler.objectmanager.data.DataType;<a name="line.71"></a>
+<span class="sourceLineNo">072</span>import org.kepler.objectmanager.data.db.DSSchemaDef;<a name="line.72"></a>
+<span class="sourceLineNo">073</span>import org.kepler.objectmanager.data.db.DSSchemaIFace;<a name="line.73"></a>
+<span class="sourceLineNo">074</span>import org.kepler.objectmanager.data.db.DSTableDef;<a name="line.74"></a>
+<span class="sourceLineNo">075</span>import org.kepler.objectmanager.data.db.DSTableFieldIFace;<a name="line.75"></a>
+<span class="sourceLineNo">076</span>import org.kepler.objectmanager.data.db.DSTableIFace;<a name="line.76"></a>
+<span class="sourceLineNo">077</span>import org.kepler.objectmanager.data.db.Entity;<a name="line.77"></a>
+<span class="sourceLineNo">078</span>import org.kepler.objectmanager.data.db.QBTableauFactory;<a name="line.78"></a>
+<span class="sourceLineNo">079</span><a name="line.79"></a>
+<span class="sourceLineNo">080</span>import EDU.oswego.cs.dl.util.concurrent.Latch;<a name="line.80"></a>
+<span class="sourceLineNo">081</span>import ptolemy.actor.TypedIOPort;<a name="line.81"></a>
+<span class="sourceLineNo">082</span>import ptolemy.actor.gui.style.TextStyle;<a name="line.82"></a>
+<span class="sourceLineNo">083</span>import ptolemy.actor.lib.Source;<a name="line.83"></a>
+<span class="sourceLineNo">084</span>import ptolemy.data.DoubleToken;<a name="line.84"></a>
+<span class="sourceLineNo">085</span>import ptolemy.data.IntToken;<a name="line.85"></a>
+<span class="sourceLineNo">086</span>import ptolemy.data.LongToken;<a name="line.86"></a>
+<span class="sourceLineNo">087</span>import ptolemy.data.StringToken;<a name="line.87"></a>
+<span class="sourceLineNo">088</span>import ptolemy.data.Token;<a name="line.88"></a>
+<span class="sourceLineNo">089</span>import ptolemy.data.expr.StringParameter;<a name="line.89"></a>
+<span class="sourceLineNo">090</span>import ptolemy.data.type.BaseType;<a name="line.90"></a>
+<span class="sourceLineNo">091</span>import ptolemy.data.type.Type;<a name="line.91"></a>
+<span class="sourceLineNo">092</span>import ptolemy.kernel.CompositeEntity;<a name="line.92"></a>
+<span class="sourceLineNo">093</span>import ptolemy.kernel.util.ChangeRequest;<a name="line.93"></a>
+<span class="sourceLineNo">094</span>import ptolemy.kernel.util.IllegalActionException;<a name="line.94"></a>
+<span class="sourceLineNo">095</span>import ptolemy.kernel.util.NameDuplicationException;<a name="line.95"></a>
+<span class="sourceLineNo">096</span>import ptolemy.kernel.util.Settable;<a name="line.96"></a>
+<span class="sourceLineNo">097</span>import ptolemy.kernel.util.StringAttribute;<a name="line.97"></a>
+<span class="sourceLineNo">098</span>import ptolemy.vergil.basic.KeplerDocumentationAttribute;<a name="line.98"></a>
+<span class="sourceLineNo">099</span><a name="line.99"></a>
+<span class="sourceLineNo">100</span>/**<a name="line.100"></a>
+<span class="sourceLineNo">101</span> * A ResultRecord that is in EML 2.0.0 format.<a name="line.101"></a>
+<span class="sourceLineNo">102</span> */<a name="line.102"></a>
+<span class="sourceLineNo">103</span>public class DarwinCoreDataSource extends Source implements DataCacheListener {<a name="line.103"></a>
+<span class="sourceLineNo">104</span>        static final String DATATYPES[] = { DataType.INT, DataType.FLOAT,<a name="line.104"></a>
+<span class="sourceLineNo">105</span>                        DataType.DOUBLE, DataType.LONG, DataType.STR };<a name="line.105"></a>
+<span class="sourceLineNo">106</span>        static final BaseType BASETYPES[] = { BaseType.INT, BaseType.DOUBLE,<a name="line.106"></a>
+<span class="sourceLineNo">107</span>                        BaseType.DOUBLE, BaseType.LONG, BaseType.STRING };<a name="line.107"></a>
+<span class="sourceLineNo">108</span>        static private Hashtable mTypeHash = new Hashtable();<a name="line.108"></a>
+<span class="sourceLineNo">109</span>        static private Hashtable mType2IntHash = new Hashtable();<a name="line.109"></a>
+<span class="sourceLineNo">110</span><a name="line.110"></a>
+<span class="sourceLineNo">111</span>        static final Hashtable asTablePorts = new Hashtable();<a name="line.111"></a>
+<span class="sourceLineNo">112</span>        static final Hashtable asRowPorts = new Hashtable();<a name="line.112"></a>
+<span class="sourceLineNo">113</span><a name="line.113"></a>
+<span class="sourceLineNo">114</span>        private static DSSchemaIFace _darwinCoreSchema = null;<a name="line.114"></a>
+<span class="sourceLineNo">115</span><a name="line.115"></a>
+<span class="sourceLineNo">116</span>        // Constants used for more efficient execution.<a name="line.116"></a>
+<span class="sourceLineNo">117</span>        private static final int _ASTABLE = 1;<a name="line.117"></a>
+<span class="sourceLineNo">118</span>        private static final int _ASROW = 2;<a name="line.118"></a>
+<span class="sourceLineNo">119</span>        private static final int _ASFIELD = 3;<a name="line.119"></a>
+<span class="sourceLineNo">120</span><a name="line.120"></a>
+<span class="sourceLineNo">121</span>        protected static final String DATATABLE = "DataTable";<a name="line.121"></a>
+<span class="sourceLineNo">122</span>        protected static final String DELIMITER = "Delimiter";<a name="line.122"></a>
+<span class="sourceLineNo">123</span>        protected static final String NUMCOLUMNS = "numColumns";<a name="line.123"></a>
+<span class="sourceLineNo">124</span>        protected static final String DATAROW = "DataRow";<a name="line.124"></a>
+<span class="sourceLineNo">125</span>        protected static final String ROWDELIM = "\r\n";<a name="line.125"></a>
+<span class="sourceLineNo">126</span>        protected static final String COLDELIM = "\t";<a name="line.126"></a>
+<span class="sourceLineNo">127</span><a name="line.127"></a>
+<span class="sourceLineNo">128</span>        protected static final String ENDPOINT_ATTR = "endPoint";<a name="line.128"></a>
+<span class="sourceLineNo">129</span>        protected static final String SEARCHDATA_ATTR = "searchData";<a name="line.129"></a>
+<span class="sourceLineNo">130</span>        protected static final String OUTPUTTYPE_ATTR = "outputType";<a name="line.130"></a>
+<span class="sourceLineNo">131</span><a name="line.131"></a>
+<span class="sourceLineNo">132</span>        private static Log log;<a name="line.132"></a>
+<span class="sourceLineNo">133</span>        private static boolean isDebugging;<a name="line.133"></a>
+<span class="sourceLineNo">134</span><a name="line.134"></a>
+<span class="sourceLineNo">135</span>        // for looking up the default documentation from the actor lib<a name="line.135"></a>
+<span class="sourceLineNo">136</span>        private static KeplerDocumentationAttribute defaultDocumentation = null;<a name="line.136"></a>
+<span class="sourceLineNo">137</span><a name="line.137"></a>
+<span class="sourceLineNo">138</span>        static {<a name="line.138"></a>
+<span class="sourceLineNo">139</span>                log = LogFactory<a name="line.139"></a>
+<span class="sourceLineNo">140</span>                                .getLog("org.ecoinformatics.seek.datasource.darwincore.DarwinCoreDataSource");<a name="line.140"></a>
+<span class="sourceLineNo">141</span>                isDebugging = log.isDebugEnabled();<a name="line.141"></a>
+<span class="sourceLineNo">142</span><a name="line.142"></a>
+<span class="sourceLineNo">143</span>                asTablePorts.put(DATATABLE, BaseType.STRING);<a name="line.143"></a>
+<span class="sourceLineNo">144</span>                asTablePorts.put(DELIMITER, BaseType.STRING);<a name="line.144"></a>
+<span class="sourceLineNo">145</span>                asTablePorts.put(NUMCOLUMNS, BaseType.INT);<a name="line.145"></a>
+<span class="sourceLineNo">146</span><a name="line.146"></a>
+<span class="sourceLineNo">147</span>                asRowPorts.put(DATAROW, BaseType.STRING);<a name="line.147"></a>
+<span class="sourceLineNo">148</span>                asRowPorts.put(DELIMITER, BaseType.STRING);<a name="line.148"></a>
+<span class="sourceLineNo">149</span>                asRowPorts.put(NUMCOLUMNS, BaseType.INT);<a name="line.149"></a>
+<span class="sourceLineNo">150</span><a name="line.150"></a>
+<span class="sourceLineNo">151</span>        }<a name="line.151"></a>
+<span class="sourceLineNo">152</span><a name="line.152"></a>
+<span class="sourceLineNo">153</span>        // /////////////////////////////////////////////////////////////////<a name="line.153"></a>
+<span class="sourceLineNo">154</span>        // // private variables ////<a name="line.154"></a>
+<span class="sourceLineNo">155</span><a name="line.155"></a>
+<span class="sourceLineNo">156</span>        public QBTableauFactory _qbTableauFactory = null;<a name="line.156"></a>
+<span class="sourceLineNo">157</span><a name="line.157"></a>
+<span class="sourceLineNo">158</span>        /**<a name="line.158"></a>
+<span class="sourceLineNo">159</span>         * Output indicator parameter.<a name="line.159"></a>
+<span class="sourceLineNo">160</span>         */<a name="line.160"></a>
+<span class="sourceLineNo">161</span>        private int _outputType = _ASFIELD;<a name="line.161"></a>
+<span class="sourceLineNo">162</span>        private Entity _tableEntity = null;<a name="line.162"></a>
+<span class="sourceLineNo">163</span>        private int _recordCount = 0;<a name="line.163"></a>
+<span class="sourceLineNo">164</span><a name="line.164"></a>
+<span class="sourceLineNo">165</span>        private Vector _columns = null;<a name="line.165"></a>
+<span class="sourceLineNo">166</span>        private Vector _colTypes = new Vector();<a name="line.166"></a>
+<span class="sourceLineNo">167</span><a name="line.167"></a>
+<span class="sourceLineNo">168</span>        private DBQueryDef _queryDef = null;<a name="line.168"></a>
+<span class="sourceLineNo">169</span>        private DSSchemaIFace _schemaDef = null;<a name="line.169"></a>
+<span class="sourceLineNo">170</span>        private DSSchemaIFace _resultsetSchemaDef = null;<a name="line.170"></a>
+<span class="sourceLineNo">171</span><a name="line.171"></a>
+<span class="sourceLineNo">172</span>        private boolean _ignoreSchemaChange = false;<a name="line.172"></a>
+<span class="sourceLineNo">173</span>        private boolean _ignoreSearchChange = true;<a name="line.173"></a>
+<span class="sourceLineNo">174</span>        private boolean _ignoreSqlChange = false;<a name="line.174"></a>
+<span class="sourceLineNo">175</span><a name="line.175"></a>
+<span class="sourceLineNo">176</span>        private DBTablesGenerator _tableGenerator = null;<a name="line.176"></a>
+<span class="sourceLineNo">177</span><a name="line.177"></a>
+<span class="sourceLineNo">178</span>        /**<a name="line.178"></a>
+<span class="sourceLineNo">179</span>         * _cacheDataItem is the DataCacheObject which contains the raw resultset<a name="line.179"></a>
+<span class="sourceLineNo">180</span>         * returned from the query.<a name="line.180"></a>
+<span class="sourceLineNo">181</span>         */<a name="line.181"></a>
+<span class="sourceLineNo">182</span>        private EcogridQueryDataCacheItem _cachedDataItem = null;<a name="line.182"></a>
+<span class="sourceLineNo">183</span><a name="line.183"></a>
+<span class="sourceLineNo">184</span>        /**<a name="line.184"></a>
+<span class="sourceLineNo">185</span>         * _downloadCompleted is a Latch object (from oswego) which is used to<a name="line.185"></a>
+<span class="sourceLineNo">186</span>         * synchronize the start of the workflow. The Latch is released when the<a name="line.186"></a>
+<span class="sourceLineNo">187</span>         * _cacheDataItem has been completed. It is also used to notify a thread<a name="line.187"></a>
+<span class="sourceLineNo">188</span>         * blocked in initialized() when the stop method is executed.<a name="line.188"></a>
+<span class="sourceLineNo">189</span>         */<a name="line.189"></a>
+<span class="sourceLineNo">190</span>        private Latch _downloadCompleted = new Latch();<a name="line.190"></a>
+<span class="sourceLineNo">191</span><a name="line.191"></a>
+<span class="sourceLineNo">192</span>        /**<a name="line.192"></a>
+<span class="sourceLineNo">193</span>         * _tableDataCache is the DataCacheObject which contains the TEXT Table<a name="line.193"></a>
+<span class="sourceLineNo">194</span>         * data.<a name="line.194"></a>
+<span class="sourceLineNo">195</span>         */<a name="line.195"></a>
+<span class="sourceLineNo">196</span>        private EcogridDataCacheItem _tableDataCache = null;<a name="line.196"></a>
+<span class="sourceLineNo">197</span><a name="line.197"></a>
+<span class="sourceLineNo">198</span>        private Vector[] _dataVectors = null;<a name="line.198"></a>
+<span class="sourceLineNo">199</span><a name="line.199"></a>
+<span class="sourceLineNo">200</span>        private DataSourceIcon _icon;<a name="line.200"></a>
+<span class="sourceLineNo">201</span><a name="line.201"></a>
+<span class="sourceLineNo">202</span>        // /////////////////////////////////////////////////////////////////<a name="line.202"></a>
+<span class="sourceLineNo">203</span>        // // ports and parameters ////<a name="line.203"></a>
+<span class="sourceLineNo">204</span>        public TypedIOPort speciesName = new TypedIOPort(this, "speciesName", true,<a name="line.204"></a>
+<span class="sourceLineNo">205</span>                        false);<a name="line.205"></a>
+<span class="sourceLineNo">206</span><a name="line.206"></a>
+<span class="sourceLineNo">207</span>        /**<a name="line.207"></a>
+<span class="sourceLineNo">208</span>         * The SQL command to operate in data file<a name="line.208"></a>
+<span class="sourceLineNo">209</span>         */<a name="line.209"></a>
+<span class="sourceLineNo">210</span>        public StringAttribute _sqlAttr = null;<a name="line.210"></a>
+<span class="sourceLineNo">211</span>        /**<a name="line.211"></a>
+<span class="sourceLineNo">212</span>         * Schema defination of data file<a name="line.212"></a>
+<span class="sourceLineNo">213</span>         */<a name="line.213"></a>
+<span class="sourceLineNo">214</span>        public StringAttribute _schemaAttr = null;<a name="line.214"></a>
+<span class="sourceLineNo">215</span>        /**<a name="line.215"></a>
+<span class="sourceLineNo">216</span>         * The type of output for data entity. It includes: As Field: This is<a name="line.216"></a>
+<span class="sourceLineNo">217</span>         * default value. The output port will be the fields in eml package and<a name="line.217"></a>
+<span class="sourceLineNo">218</span>         * output port type will be decided by metadata. User also can use SQL<a name="line.218"></a>
+<span class="sourceLineNo">219</span>         * command to select data column. As Table: The selected entity will be send<a name="line.219"></a>
+<span class="sourceLineNo">220</span>         * out as a string which contains whole entity data. It has tree output<a name="line.220"></a>
+<span class="sourceLineNo">221</span>         * ports: DataTable - data itself, Delimiter - delimiter to seperate fields<a name="line.221"></a>
+<span class="sourceLineNo">222</span>         * and NumColumns - the number of fields in the table. As Row: In this<a name="line.222"></a>
+<span class="sourceLineNo">223</span>         * output type, one row of selected column data will be sent out as string.<a name="line.223"></a>
+<span class="sourceLineNo">224</span>         * It has tree output ports: DataRow - data itself, Delimiter - delimiter to<a name="line.224"></a>
+<span class="sourceLineNo">225</span>         * seperate fields and NumColumns - the number of fields in the table.<a name="line.225"></a>
+<span class="sourceLineNo">226</span>         */<a name="line.226"></a>
+<span class="sourceLineNo">227</span>        public StringParameter _outputTypeAttr = null;<a name="line.227"></a>
+<span class="sourceLineNo">228</span>        /**<a name="line.228"></a>
+<span class="sourceLineNo">229</span>         * The ecogrid query services url<a name="line.229"></a>
+<span class="sourceLineNo">230</span>         */<a name="line.230"></a>
+<span class="sourceLineNo">231</span>        public StringAttribute _endPoint = null;<a name="line.231"></a>
+<span class="sourceLineNo">232</span>        /**<a name="line.232"></a>
+<span class="sourceLineNo">233</span>         * The value which were used for search<a name="line.233"></a>
+<span class="sourceLineNo">234</span>         */<a name="line.234"></a>
+<span class="sourceLineNo">235</span>        // public StringAttribute _searchData = null;<a name="line.235"></a>
+<span class="sourceLineNo">236</span>        public StringParameter _searchData = null;<a name="line.236"></a>
+<span class="sourceLineNo">237</span><a name="line.237"></a>
+<span class="sourceLineNo">238</span>        /**<a name="line.238"></a>
+<span class="sourceLineNo">239</span>         * Construct an actor with the given container and name.<a name="line.239"></a>
+<span class="sourceLineNo">240</span>         * <a name="line.240"></a>
+<span class="sourceLineNo">241</span>         * @param container<a name="line.241"></a>
+<span class="sourceLineNo">242</span>         *            The container.<a name="line.242"></a>
+<span class="sourceLineNo">243</span>         * @param name<a name="line.243"></a>
+<span class="sourceLineNo">244</span>         *            The name of this actor.<a name="line.244"></a>
+<span class="sourceLineNo">245</span>         * @exception IllegalActionException<a name="line.245"></a>
+<span class="sourceLineNo">246</span>         *                If the actor cannot be contained by the proposed<a name="line.246"></a>
+<span class="sourceLineNo">247</span>         *                container.<a name="line.247"></a>
+<span class="sourceLineNo">248</span>         * @exception NameDuplicationException<a name="line.248"></a>
+<span class="sourceLineNo">249</span>         *                If the container already has an actor with this name.<a name="line.249"></a>
+<span class="sourceLineNo">250</span>         * @since<a name="line.250"></a>
+<span class="sourceLineNo">251</span>         */<a name="line.251"></a>
+<span class="sourceLineNo">252</span>        public DarwinCoreDataSource(CompositeEntity container, String name)<a name="line.252"></a>
+<span class="sourceLineNo">253</span>                        throws NameDuplicationException, IllegalActionException {<a name="line.253"></a>
+<span class="sourceLineNo">254</span>                super(container, name);<a name="line.254"></a>
+<span class="sourceLineNo">255</span>                _icon = new DataSourceIcon(this);<a name="line.255"></a>
+<span class="sourceLineNo">256</span><a name="line.256"></a>
+<span class="sourceLineNo">257</span>                // _attachText("_iconDescription", getReadyIcon());<a name="line.257"></a>
+<span class="sourceLineNo">258</span><a name="line.258"></a>
+<span class="sourceLineNo">259</span>                _searchData = new StringParameter(this, SEARCHDATA_ATTR);<a name="line.259"></a>
+<span class="sourceLineNo">260</span>                _endPoint = new StringAttribute(this, ENDPOINT_ATTR);<a name="line.260"></a>
+<span class="sourceLineNo">261</span><a name="line.261"></a>
+<span class="sourceLineNo">262</span>                _outputTypeAttr = new StringParameter(this, "outputType");<a name="line.262"></a>
+<span class="sourceLineNo">263</span>                _outputTypeAttr.setExpression("As Table");<a name="line.263"></a>
+<span class="sourceLineNo">264</span>                _outputTypeAttr.addChoice("As Field");<a name="line.264"></a>
+<span class="sourceLineNo">265</span>                _outputTypeAttr.addChoice("As Table");<a name="line.265"></a>
+<span class="sourceLineNo">266</span>                _outputTypeAttr.addChoice("As Row");<a name="line.266"></a>
+<span class="sourceLineNo">267</span>                _outputType = _ASTABLE;<a name="line.267"></a>
+<span class="sourceLineNo">268</span><a name="line.268"></a>
+<span class="sourceLineNo">269</span>                _schemaAttr = new StringAttribute(this, "schemaDef");<a name="line.269"></a>
+<span class="sourceLineNo">270</span>                TextStyle schemaDefTS = new TextStyle(_schemaAttr, "schemaDef");<a name="line.270"></a>
+<span class="sourceLineNo">271</span>                _schemaAttr.setVisibility(Eml200DataSource.DEFAULTFORSCHEMA);<a name="line.271"></a>
+<span class="sourceLineNo">272</span><a name="line.272"></a>
+<span class="sourceLineNo">273</span>                _sqlAttr = new StringAttribute(this, "sqlDef");<a name="line.273"></a>
+<span class="sourceLineNo">274</span>                TextStyle sqlDefTS = new TextStyle(_sqlAttr, "sqlDef");<a name="line.274"></a>
+<span class="sourceLineNo">275</span>                _sqlAttr.setVisibility(Eml200DataSource.DEFAULTFORSQL);<a name="line.275"></a>
+<span class="sourceLineNo">276</span><a name="line.276"></a>
+<span class="sourceLineNo">277</span>                _searchData.setPersistent(true);<a name="line.277"></a>
+<span class="sourceLineNo">278</span>                _endPoint.setPersistent(true);<a name="line.278"></a>
+<span class="sourceLineNo">279</span>                _outputTypeAttr.setPersistent(true);<a name="line.279"></a>
+<span class="sourceLineNo">280</span>                _schemaAttr.setPersistent(true);<a name="line.280"></a>
+<span class="sourceLineNo">281</span>                _sqlAttr.setPersistent(true);<a name="line.281"></a>
+<span class="sourceLineNo">282</span><a name="line.282"></a>
+<span class="sourceLineNo">283</span>                // create tableau for editting the SQL String<a name="line.283"></a>
+<span class="sourceLineNo">284</span>                _qbTableauFactory = new QBTableauFactory(this, "_tableauFactory");<a name="line.284"></a>
+<span class="sourceLineNo">285</span><a name="line.285"></a>
+<span class="sourceLineNo">286</span>                if (mTypeHash.size() == 0) {<a name="line.286"></a>
+<span class="sourceLineNo">287</span>                        for (int i = 0; i &lt; DATATYPES.length; i++) {<a name="line.287"></a>
+<span class="sourceLineNo">288</span>                                mTypeHash.put(DATATYPES[i], BASETYPES[i]);<a name="line.288"></a>
+<span class="sourceLineNo">289</span>                                mType2IntHash.put(DATATYPES[i], new Integer(i));<a name="line.289"></a>
+<span class="sourceLineNo">290</span>                        }<a name="line.290"></a>
+<span class="sourceLineNo">291</span>                }<a name="line.291"></a>
+<span class="sourceLineNo">292</span><a name="line.292"></a>
+<span class="sourceLineNo">293</span>                // Get the Schema for All DarwinCoreDataSources<a name="line.293"></a>
+<span class="sourceLineNo">294</span>                if (_darwinCoreSchema == null) {<a name="line.294"></a>
+<span class="sourceLineNo">295</span>                        _darwinCoreSchema = DarwinCoreSchema.getInstance().getSchema();<a name="line.295"></a>
+<span class="sourceLineNo">296</span>                }<a name="line.296"></a>
+<span class="sourceLineNo">297</span><a name="line.297"></a>
+<span class="sourceLineNo">298</span>        }<a name="line.298"></a>
+<span class="sourceLineNo">299</span><a name="line.299"></a>
+<span class="sourceLineNo">300</span>        /**<a name="line.300"></a>
+<span class="sourceLineNo">301</span>         * Generic StringAttribute Setter<a name="line.301"></a>
+<span class="sourceLineNo">302</span>         * <a name="line.302"></a>
+<span class="sourceLineNo">303</span>         * @param aStrAttr<a name="line.303"></a>
+<span class="sourceLineNo">304</span>         *            the StringAttribute object being set<a name="line.304"></a>
+<span class="sourceLineNo">305</span>         * @param aVal<a name="line.305"></a>
+<span class="sourceLineNo">306</span>         *            the value being set<a name="line.306"></a>
+<span class="sourceLineNo">307</span>         * @param aName<a name="line.307"></a>
+<span class="sourceLineNo">308</span>         *            name of attr being set<a name="line.308"></a>
+<span class="sourceLineNo">309</span>         */<a name="line.309"></a>
+<span class="sourceLineNo">310</span>        protected void setStrAttr(StringAttribute aStrAttr, String aVal,<a name="line.310"></a>
+<span class="sourceLineNo">311</span>                        String aName) {<a name="line.311"></a>
+<span class="sourceLineNo">312</span>                try {<a name="line.312"></a>
+<span class="sourceLineNo">313</span>                        aStrAttr.setExpression(aVal);<a name="line.313"></a>
+<span class="sourceLineNo">314</span>                } catch (IllegalActionException iae) {<a name="line.314"></a>
+<span class="sourceLineNo">315</span>                        System.err.println("Could not set " + aName + " with value[" + aVal<a name="line.315"></a>
+<span class="sourceLineNo">316</span>                                        + "]");<a name="line.316"></a>
+<span class="sourceLineNo">317</span>                }<a name="line.317"></a>
+<span class="sourceLineNo">318</span>        }<a name="line.318"></a>
+<span class="sourceLineNo">319</span><a name="line.319"></a>
+<span class="sourceLineNo">320</span>        /**<a name="line.320"></a>
+<span class="sourceLineNo">321</span>         * Generic StringAttribute Getter<a name="line.321"></a>
+<span class="sourceLineNo">322</span>         * <a name="line.322"></a>
+<span class="sourceLineNo">323</span>         * @param aStrAttr<a name="line.323"></a>
+<span class="sourceLineNo">324</span>         *            the StringAttribute object being gotten<a name="line.324"></a>
+<span class="sourceLineNo">325</span>         * @param aName<a name="line.325"></a>
+<span class="sourceLineNo">326</span>         *            name of attr being gotten<a name="line.326"></a>
+<span class="sourceLineNo">327</span>         * <a name="line.327"></a>
+<span class="sourceLineNo">328</span>         * @return value of attr<a name="line.328"></a>
+<span class="sourceLineNo">329</span>         */<a name="line.329"></a>
+<span class="sourceLineNo">330</span>        private String getStrAttr(StringAttribute aStrAttr, String aName) {<a name="line.330"></a>
+<span class="sourceLineNo">331</span>                String value = null;<a name="line.331"></a>
+<span class="sourceLineNo">332</span>                try {<a name="line.332"></a>
+<span class="sourceLineNo">333</span>                        value = aStrAttr.getExpression();<a name="line.333"></a>
+<span class="sourceLineNo">334</span>                } catch (Exception e) {<a name="line.334"></a>
+<span class="sourceLineNo">335</span>                        System.err.println("Error getting " + aName + " attribute.");<a name="line.335"></a>
+<span class="sourceLineNo">336</span>                }<a name="line.336"></a>
+<span class="sourceLineNo">337</span>                return value;<a name="line.337"></a>
+<span class="sourceLineNo">338</span>        }<a name="line.338"></a>
+<span class="sourceLineNo">339</span><a name="line.339"></a>
+<span class="sourceLineNo">340</span>        /**<a name="line.340"></a>
+<span class="sourceLineNo">341</span>         * Set the endpoint of this record. The endpoint indicates where the service<a name="line.341"></a>
+<span class="sourceLineNo">342</span>         * generating the record can be accessed.<a name="line.342"></a>
+<span class="sourceLineNo">343</span>         * <a name="line.343"></a>
+<span class="sourceLineNo">344</span>         * @param aVal<a name="line.344"></a>
+<span class="sourceLineNo">345</span>         *            the URL of the service that contains the record<a name="line.345"></a>
+<span class="sourceLineNo">346</span>         */<a name="line.346"></a>
+<span class="sourceLineNo">347</span>        public void setEndpoint(String aVal) {<a name="line.347"></a>
+<span class="sourceLineNo">348</span>                setStrAttr(_endPoint, aVal, ENDPOINT_ATTR);<a name="line.348"></a>
+<span class="sourceLineNo">349</span>        }<a name="line.349"></a>
+<span class="sourceLineNo">350</span><a name="line.350"></a>
+<span class="sourceLineNo">351</span>        /**<a name="line.351"></a>
+<span class="sourceLineNo">352</span>         * Get the endpoint of this record. The endpoint indicates where the service<a name="line.352"></a>
+<span class="sourceLineNo">353</span>         * generating the record can be accessed.<a name="line.353"></a>
+<span class="sourceLineNo">354</span>         * <a name="line.354"></a>
+<span class="sourceLineNo">355</span>         * @return endpoint the URL of the service that contains the record<a name="line.355"></a>
+<span class="sourceLineNo">356</span>         */<a name="line.356"></a>
+<span class="sourceLineNo">357</span>        public String getEndpoint() {<a name="line.357"></a>
+<span class="sourceLineNo">358</span><a name="line.358"></a>
+<span class="sourceLineNo">359</span>                return getStrAttr(_endPoint, ENDPOINT_ATTR);<a name="line.359"></a>
+<span class="sourceLineNo">360</span>        }<a name="line.360"></a>
+<span class="sourceLineNo">361</span><a name="line.361"></a>
+<span class="sourceLineNo">362</span>        /**<a name="line.362"></a>
+<span class="sourceLineNo">363</span>         * Set the searchData of this record.<a name="line.363"></a>
+<span class="sourceLineNo">364</span>         * <a name="line.364"></a>
+<span class="sourceLineNo">365</span>         * @param aVal<a name="line.365"></a>
+<span class="sourceLineNo">366</span>         *            the URL of the service that contains the record<a name="line.366"></a>
+<span class="sourceLineNo">367</span>         */<a name="line.367"></a>
+<span class="sourceLineNo">368</span>        public void setSearchData(String aVal) {<a name="line.368"></a>
+<span class="sourceLineNo">369</span>                _searchData.setExpression(aVal);<a name="line.369"></a>
+<span class="sourceLineNo">370</span>        }<a name="line.370"></a>
+<span class="sourceLineNo">371</span><a name="line.371"></a>
+<span class="sourceLineNo">372</span>        /**<a name="line.372"></a>
+<span class="sourceLineNo">373</span>         * Get the searchData of this record.<a name="line.373"></a>
+<span class="sourceLineNo">374</span>         * <a name="line.374"></a>
+<span class="sourceLineNo">375</span>         * @return endpoint the URL of the service that contains the record<a name="line.375"></a>
+<span class="sourceLineNo">376</span>         */<a name="line.376"></a>
+<span class="sourceLineNo">377</span>        public String getSearchData() {<a name="line.377"></a>
+<span class="sourceLineNo">378</span>                String value = null;<a name="line.378"></a>
+<span class="sourceLineNo">379</span>                try {<a name="line.379"></a>
+<span class="sourceLineNo">380</span>                        value = _searchData.stringValue();<a name="line.380"></a>
+<span class="sourceLineNo">381</span>                } catch (Exception e) {<a name="line.381"></a>
+<span class="sourceLineNo">382</span>                        System.err.println("Error getting searchData attribute.");<a name="line.382"></a>
+<span class="sourceLineNo">383</span>                }<a name="line.383"></a>
+<span class="sourceLineNo">384</span>                return value;<a name="line.384"></a>
+<span class="sourceLineNo">385</span>        }<a name="line.385"></a>
+<span class="sourceLineNo">386</span><a name="line.386"></a>
+<span class="sourceLineNo">387</span>        /**<a name="line.387"></a>
+<span class="sourceLineNo">388</span>         * Initialize the actor prior to running in the workflow. This reads the<a name="line.388"></a>
+<span class="sourceLineNo">389</span>         * metadata and configures the ports.<a name="line.389"></a>
+<span class="sourceLineNo">390</span>         * <a name="line.390"></a>
+<span class="sourceLineNo">391</span>         * @throws IllegalActionException<a name="line.391"></a>
+<span class="sourceLineNo">392</span>         */<a name="line.392"></a>
+<span class="sourceLineNo">393</span>        public void initialize() throws IllegalActionException {<a name="line.393"></a>
+<span class="sourceLineNo">394</span>                super.initialize();<a name="line.394"></a>
+<span class="sourceLineNo">395</span>                _recordCount = 0;<a name="line.395"></a>
+<span class="sourceLineNo">396</span>        }<a name="line.396"></a>
+<span class="sourceLineNo">397</span><a name="line.397"></a>
+<span class="sourceLineNo">398</span>        private void initial_setup() throws IllegalActionException {<a name="line.398"></a>
+<span class="sourceLineNo">399</span>                try {<a name="line.399"></a>
+<span class="sourceLineNo">400</span>                        _downloadCompleted.acquire();<a name="line.400"></a>
+<span class="sourceLineNo">401</span>                        log.debug("Is stop requested? " + getDirector().isStopRequested());<a name="line.401"></a>
+<span class="sourceLineNo">402</span>                } catch (InterruptedException e) {<a name="line.402"></a>
+<span class="sourceLineNo">403</span>                        log.debug("Is stop requested? " + getDirector().isStopRequested());<a name="line.403"></a>
+<span class="sourceLineNo">404</span>                        if (getDirector().isStopRequested()) {<a name="line.404"></a>
+<span class="sourceLineNo">405</span>                                throw new IllegalActionException("Execution interrupted");<a name="line.405"></a>
+<span class="sourceLineNo">406</span>                        }<a name="line.406"></a>
+<span class="sourceLineNo">407</span>                }<a name="line.407"></a>
+<span class="sourceLineNo">408</span>                String sqlStr = "";<a name="line.408"></a>
+<span class="sourceLineNo">409</span><a name="line.409"></a>
+<span class="sourceLineNo">410</span>                String sqlXMLStr = ((Settable) _sqlAttr).getExpression();<a name="line.410"></a>
+<span class="sourceLineNo">411</span>                if (sqlXMLStr == null || sqlXMLStr.length() == 0) {<a name="line.411"></a>
+<span class="sourceLineNo">412</span>                        sqlStr = "SELECT * FROM "<a name="line.412"></a>
+<span class="sourceLineNo">413</span>                                        + (_tableEntity.getMappedName() != null ? _tableEntity<a name="line.413"></a>
+<span class="sourceLineNo">414</span>                                                        .getMappedName() : _tableEntity.getName());<a name="line.414"></a>
+<span class="sourceLineNo">415</span><a name="line.415"></a>
+<span class="sourceLineNo">416</span>                } else {<a name="line.416"></a>
+<span class="sourceLineNo">417</span>                        Hashtable mappedNameHash = new Hashtable();<a name="line.417"></a>
+<span class="sourceLineNo">418</span>                        if (_tableEntity.getMappedName() != null) {<a name="line.418"></a>
+<span class="sourceLineNo">419</span>                                mappedNameHash.put(_tableEntity.getName(), _tableEntity<a name="line.419"></a>
+<span class="sourceLineNo">420</span>                                                .getMappedName());<a name="line.420"></a>
+<span class="sourceLineNo">421</span>                        }<a name="line.421"></a>
+<span class="sourceLineNo">422</span>                        DBQueryDef queryDef = DBQueryDefParserEmitter.parseQueryDef(<a name="line.422"></a>
+<span class="sourceLineNo">423</span>                                        _schemaDef, sqlXMLStr, mappedNameHash);<a name="line.423"></a>
+<span class="sourceLineNo">424</span>                        _columns = queryDef.getSelects();<a name="line.424"></a>
+<span class="sourceLineNo">425</span>                        sqlStr = DBQueryDefParserEmitter.createSQL(_schemaDef, queryDef);<a name="line.425"></a>
+<span class="sourceLineNo">426</span>                }<a name="line.426"></a>
+<span class="sourceLineNo">427</span><a name="line.427"></a>
+<span class="sourceLineNo">428</span>                // excuted query<a name="line.428"></a>
+<span class="sourceLineNo">429</span>                if (sqlStr != null &amp;&amp; !sqlStr.trim().equals("")) {<a name="line.429"></a>
+<span class="sourceLineNo">430</span>                        // if table gnerated successfully, we will run query<a name="line.430"></a>
+<span class="sourceLineNo">431</span>                        if (_tableGenerator != null &amp;&amp; _tableGenerator.getSuccessStatus()) {<a name="line.431"></a>
+<span class="sourceLineNo">432</span>                                try {<a name="line.432"></a>
+<span class="sourceLineNo">433</span>                                        _icon.setBusy();<a name="line.433"></a>
+<span class="sourceLineNo">434</span>                                        HsqlDataQueryAction queryAction = new HsqlDataQueryAction();<a name="line.434"></a>
+<span class="sourceLineNo">435</span>                                        queryAction.setSQL(sqlStr);<a name="line.435"></a>
+<span class="sourceLineNo">436</span>                                        queryAction.actionPerformed(null);<a name="line.436"></a>
+<span class="sourceLineNo">437</span>                                        ResultSet result = queryAction.getResultSet();<a name="line.437"></a>
+<span class="sourceLineNo">438</span>                                        _dataVectors = transformResultSet(result);<a name="line.438"></a>
+<span class="sourceLineNo">439</span>                                        _icon.setReady();<a name="line.439"></a>
+<span class="sourceLineNo">440</span>                                } catch (Exception e) {<a name="line.440"></a>
+<span class="sourceLineNo">441</span>                                        log.debug("Error to run query is ", e);<a name="line.441"></a>
+<span class="sourceLineNo">442</span>                                        throw new IllegalActionException(e.getMessage());<a name="line.442"></a>
+<span class="sourceLineNo">443</span>                                }<a name="line.443"></a>
+<span class="sourceLineNo">444</span><a name="line.444"></a>
+<span class="sourceLineNo">445</span>                        }<a name="line.445"></a>
+<span class="sourceLineNo">446</span>                }<a name="line.446"></a>
+<span class="sourceLineNo">447</span>        }<a name="line.447"></a>
+<span class="sourceLineNo">448</span><a name="line.448"></a>
+<span class="sourceLineNo">449</span>        /*<a name="line.449"></a>
+<span class="sourceLineNo">450</span>         * Method to transform resultset to a vector array data. A vector is a row<a name="line.450"></a>
+<span class="sourceLineNo">451</span>         * and data type is string.<a name="line.451"></a>
+<span class="sourceLineNo">452</span>         */<a name="line.452"></a>
+<span class="sourceLineNo">453</span>        private Vector[] transformResultSet(ResultSet aResultset)<a name="line.453"></a>
+<span class="sourceLineNo">454</span>                        throws SQLException {<a name="line.454"></a>
+<span class="sourceLineNo">455</span>                if (aResultset == null) {<a name="line.455"></a>
+<span class="sourceLineNo">456</span>                        System.err.println("Resultset is NULL in transformResultSet.");<a name="line.456"></a>
+<span class="sourceLineNo">457</span>                        return null;<a name="line.457"></a>
+<span class="sourceLineNo">458</span>                }<a name="line.458"></a>
+<span class="sourceLineNo">459</span>                ResultSetMetaData metadata = aResultset.getMetaData();<a name="line.459"></a>
+<span class="sourceLineNo">460</span>                if (metadata == null) {<a name="line.460"></a>
+<span class="sourceLineNo">461</span>                        System.err.println("Metadata is NULL for resultset.");<a name="line.461"></a>
+<span class="sourceLineNo">462</span>                        return null;<a name="line.462"></a>
+<span class="sourceLineNo">463</span>                }<a name="line.463"></a>
+<span class="sourceLineNo">464</span>                int columnSize = metadata.getColumnCount();<a name="line.464"></a>
+<span class="sourceLineNo">465</span><a name="line.465"></a>
+<span class="sourceLineNo">466</span>                Vector data = new Vector();<a name="line.466"></a>
+<span class="sourceLineNo">467</span>                while (aResultset.next()) {<a name="line.467"></a>
+<span class="sourceLineNo">468</span>                        Vector rowData = new Vector();<a name="line.468"></a>
+<span class="sourceLineNo">469</span>                        for (int i = 0; i &lt; columnSize; i++) {<a name="line.469"></a>
+<span class="sourceLineNo">470</span>                                String str = aResultset.getString(i + 1);<a name="line.470"></a>
+<span class="sourceLineNo">471</span>                                rowData.add(str);<a name="line.471"></a>
+<span class="sourceLineNo">472</span>                        }<a name="line.472"></a>
+<span class="sourceLineNo">473</span>                        data.add(rowData);<a name="line.473"></a>
+<span class="sourceLineNo">474</span>                }<a name="line.474"></a>
+<span class="sourceLineNo">475</span>                Vector[] dataArray = null;<a name="line.475"></a>
+<span class="sourceLineNo">476</span>                dataArray = transformVectorToArray(data);<a name="line.476"></a>
+<span class="sourceLineNo">477</span>                return dataArray;<a name="line.477"></a>
+<span class="sourceLineNo">478</span>        }<a name="line.478"></a>
+<span class="sourceLineNo">479</span><a name="line.479"></a>
+<span class="sourceLineNo">480</span>        /**<a name="line.480"></a>
+<span class="sourceLineNo">481</span>         * <a name="line.481"></a>
+<span class="sourceLineNo">482</span>         * @param vector<a name="line.482"></a>
+<span class="sourceLineNo">483</span>         *       */<a name="line.483"></a>
+<span class="sourceLineNo">484</span>        private Vector[] transformVectorToArray(Vector vector) {<a name="line.484"></a>
+<span class="sourceLineNo">485</span>                if (vector == null) {<a name="line.485"></a>
+<span class="sourceLineNo">486</span>                        return null;<a name="line.486"></a>
+<span class="sourceLineNo">487</span>                }<a name="line.487"></a>
+<span class="sourceLineNo">488</span>                int size = vector.size();<a name="line.488"></a>
+<span class="sourceLineNo">489</span>                Vector[] array = new Vector[size];<a name="line.489"></a>
+<span class="sourceLineNo">490</span>                for (int i = 0; i &lt; size; i++) {<a name="line.490"></a>
+<span class="sourceLineNo">491</span>                        array[i] = (Vector) vector.elementAt(i);<a name="line.491"></a>
+<span class="sourceLineNo">492</span>                }<a name="line.492"></a>
+<span class="sourceLineNo">493</span>                return array;<a name="line.493"></a>
+<span class="sourceLineNo">494</span>        }<a name="line.494"></a>
+<span class="sourceLineNo">495</span><a name="line.495"></a>
+<span class="sourceLineNo">496</span>        /**<a name="line.496"></a>
+<span class="sourceLineNo">497</span>         * Checks for a valid string for a numerical type, empty is NOT valid if not<a name="line.497"></a>
+<span class="sourceLineNo">498</span>         * valid then return the MAX_VALUE for the number<a name="line.498"></a>
+<span class="sourceLineNo">499</span>         * <a name="line.499"></a>
+<span class="sourceLineNo">500</span>         * @param aValue<a name="line.500"></a>
+<span class="sourceLineNo">501</span>         *            the value to be checked<a name="line.501"></a>
+<span class="sourceLineNo">502</span>         * @param aType<a name="line.502"></a>
+<span class="sourceLineNo">503</span>         *            the type of number it is<a name="line.503"></a>
+<span class="sourceLineNo">504</span>         * @return the new value<a name="line.504"></a>
+<span class="sourceLineNo">505</span>         */<a name="line.505"></a>
+<span class="sourceLineNo">506</span>        private String getValidStringValueForType(String aValue, String aType) {<a name="line.506"></a>
+<span class="sourceLineNo">507</span>                String valueStr = aValue;<a name="line.507"></a>
+<span class="sourceLineNo">508</span>                Integer iVal = (Integer) mType2IntHash.get(aType);<a name="line.508"></a>
+<span class="sourceLineNo">509</span>                switch (iVal.intValue()) {<a name="line.509"></a>
+<span class="sourceLineNo">510</span>                case 0:<a name="line.510"></a>
+<span class="sourceLineNo">511</span>                        try {<a name="line.511"></a>
+<span class="sourceLineNo">512</span>                                Integer.parseInt(aValue);<a name="line.512"></a>
+<span class="sourceLineNo">513</span>                        } catch (Exception e) {<a name="line.513"></a>
+<span class="sourceLineNo">514</span>                                valueStr = Integer.toString(Integer.MAX_VALUE);<a name="line.514"></a>
+<span class="sourceLineNo">515</span>                        }<a name="line.515"></a>
+<span class="sourceLineNo">516</span>                        break;<a name="line.516"></a>
+<span class="sourceLineNo">517</span><a name="line.517"></a>
+<span class="sourceLineNo">518</span>                case 1:<a name="line.518"></a>
+<span class="sourceLineNo">519</span>                        try {<a name="line.519"></a>
+<span class="sourceLineNo">520</span>                                Float.parseFloat(aValue);<a name="line.520"></a>
+<span class="sourceLineNo">521</span>                        } catch (Exception e) {<a name="line.521"></a>
+<span class="sourceLineNo">522</span>                                valueStr = Float.toString(Float.MAX_VALUE);<a name="line.522"></a>
+<span class="sourceLineNo">523</span>                        }<a name="line.523"></a>
+<span class="sourceLineNo">524</span>                        break;<a name="line.524"></a>
+<span class="sourceLineNo">525</span><a name="line.525"></a>
+<span class="sourceLineNo">526</span>                case 2:<a name="line.526"></a>
+<span class="sourceLineNo">527</span>                        try {<a name="line.527"></a>
+<span class="sourceLineNo">528</span>                                Double.parseDouble(aValue);<a name="line.528"></a>
+<span class="sourceLineNo">529</span>                        } catch (Exception e) {<a name="line.529"></a>
+<span class="sourceLineNo">530</span>                                valueStr = Double.toString(Double.MAX_VALUE);<a name="line.530"></a>
+<span class="sourceLineNo">531</span>                        }<a name="line.531"></a>
+<span class="sourceLineNo">532</span>                        break;<a name="line.532"></a>
+<span class="sourceLineNo">533</span><a name="line.533"></a>
+<span class="sourceLineNo">534</span>                case 3:<a name="line.534"></a>
+<span class="sourceLineNo">535</span>                        try {<a name="line.535"></a>
+<span class="sourceLineNo">536</span>                                Long.parseLong(aValue);<a name="line.536"></a>
+<span class="sourceLineNo">537</span>                        } catch (Exception e) {<a name="line.537"></a>
+<span class="sourceLineNo">538</span>                                valueStr = Long.toString(Long.MAX_VALUE);<a name="line.538"></a>
+<span class="sourceLineNo">539</span>                        }<a name="line.539"></a>
+<span class="sourceLineNo">540</span>                        break;<a name="line.540"></a>
+<span class="sourceLineNo">541</span><a name="line.541"></a>
+<span class="sourceLineNo">542</span>                case 4:<a name="line.542"></a>
+<span class="sourceLineNo">543</span>                        // no-op<a name="line.543"></a>
+<span class="sourceLineNo">544</span>                        break;<a name="line.544"></a>
+<span class="sourceLineNo">545</span>                }<a name="line.545"></a>
+<span class="sourceLineNo">546</span>                return valueStr;<a name="line.546"></a>
+<span class="sourceLineNo">547</span>        }<a name="line.547"></a>
+<span class="sourceLineNo">548</span><a name="line.548"></a>
+<span class="sourceLineNo">549</span>        /**<a name="line.549"></a>
+<span class="sourceLineNo">550</span>         * Append a header row describing the columns<a name="line.550"></a>
+<span class="sourceLineNo">551</span>         * <a name="line.551"></a>
+<span class="sourceLineNo">552</span>         * @param aStrBuf<a name="line.552"></a>
+<span class="sourceLineNo">553</span>         * @param aColumns<a name="line.553"></a>
+<span class="sourceLineNo">554</span>         * @param aDelim<a name="line.554"></a>
+<span class="sourceLineNo">555</span>         */<a name="line.555"></a>
+<span class="sourceLineNo">556</span>        private void appendHeaderRow(StringBuffer aStrBuf, Vector aColumns,<a name="line.556"></a>
+<span class="sourceLineNo">557</span>                        String aColDelim, String aRowDelim) {<a name="line.557"></a>
+<span class="sourceLineNo">558</span>                if (aStrBuf != null &amp;&amp; aColumns != null) {<a name="line.558"></a>
+<span class="sourceLineNo">559</span>                        StringBuffer headerRow = new StringBuffer();<a name="line.559"></a>
+<span class="sourceLineNo">560</span>                        Enumeration colEnum = aColumns.elements();<a name="line.560"></a>
+<span class="sourceLineNo">561</span>                        while (colEnum.hasMoreElements()) {<a name="line.561"></a>
+<span class="sourceLineNo">562</span>                                DSTableFieldIFace colDef = (DSTableFieldIFace) colEnum<a name="line.562"></a>
+<span class="sourceLineNo">563</span>                                                .nextElement();<a name="line.563"></a>
+<span class="sourceLineNo">564</span>                                if (headerRow.length() &gt; 0) {<a name="line.564"></a>
+<span class="sourceLineNo">565</span>                                        headerRow.append(aColDelim);<a name="line.565"></a>
+<span class="sourceLineNo">566</span>                                }<a name="line.566"></a>
+<span class="sourceLineNo">567</span>                                headerRow.append(colDef.getName());<a name="line.567"></a>
+<span class="sourceLineNo">568</span>                        }<a name="line.568"></a>
+<span class="sourceLineNo">569</span>                        aStrBuf.append(headerRow);<a name="line.569"></a>
+<span class="sourceLineNo">570</span>                        aStrBuf.append(aRowDelim);<a name="line.570"></a>
+<span class="sourceLineNo">571</span>                }<a name="line.571"></a>
+<span class="sourceLineNo">572</span>        }<a name="line.572"></a>
+<span class="sourceLineNo">573</span><a name="line.573"></a>
+<span class="sourceLineNo">574</span>        /**<a name="line.574"></a>
+<span class="sourceLineNo">575</span>         * Creates a string table from the resultset records<a name="line.575"></a>
+<span class="sourceLineNo">576</span>         * <a name="line.576"></a>
+<span class="sourceLineNo">577</span>         * @param aRS<a name="line.577"></a>
+<span class="sourceLineNo">578</span>         *       */<a name="line.578"></a>
+<span class="sourceLineNo">579</span>        private String createTableFromResultset(String delim,<a name="line.579"></a>
+<span class="sourceLineNo">580</span>                        ResultsetTypeRecord[] records) {<a name="line.580"></a>
+<span class="sourceLineNo">581</span>                StringBuffer tableStr = new StringBuffer();<a name="line.581"></a>
+<span class="sourceLineNo">582</span>                StringBuffer rowOfData = new StringBuffer();<a name="line.582"></a>
+<span class="sourceLineNo">583</span>                DSTableIFace tableSchema = (DSTableIFace) _resultsetSchemaDef<a name="line.583"></a>
+<span class="sourceLineNo">584</span>                                .getTables().elementAt(0);<a name="line.584"></a>
+<span class="sourceLineNo">585</span>                Vector columns = tableSchema.getFields();<a name="line.585"></a>
+<span class="sourceLineNo">586</span><a name="line.586"></a>
+<span class="sourceLineNo">587</span>                appendHeaderRow(tableStr, columns, delim, ROWDELIM);<a name="line.587"></a>
+<span class="sourceLineNo">588</span><a name="line.588"></a>
+<span class="sourceLineNo">589</span>                for (int i = 0; i &lt; records.length; i++) {<a name="line.589"></a>
+<span class="sourceLineNo">590</span>                        rowOfData.setLength(0);<a name="line.590"></a>
+<span class="sourceLineNo">591</span><a name="line.591"></a>
+<span class="sourceLineNo">592</span>                        //<a name="line.592"></a>
+<span class="sourceLineNo">593</span>                        // Note: this code assumes all the columns are returned for every<a name="line.593"></a>
+<span class="sourceLineNo">594</span>                        // record.<a name="line.594"></a>
+<span class="sourceLineNo">595</span>                        // It also assumes they are in the same order as in the metadata.<a name="line.595"></a>
+<span class="sourceLineNo">596</span>                        Enumeration colEnum = columns.elements();<a name="line.596"></a>
+<span class="sourceLineNo">597</span>                        int colInx = 0;<a name="line.597"></a>
+<span class="sourceLineNo">598</span>                        while (colEnum.hasMoreElements()) {<a name="line.598"></a>
+<span class="sourceLineNo">599</span>                                DSTableFieldIFace colDef = (DSTableFieldIFace) colEnum<a name="line.599"></a>
+<span class="sourceLineNo">600</span>                                                .nextElement();<a name="line.600"></a>
+<span class="sourceLineNo">601</span>                                ResultsetTypeRecordReturnField field = records[i]<a name="line.601"></a>
+<span class="sourceLineNo">602</span>                                                .getReturnField(colInx);<a name="line.602"></a>
+<span class="sourceLineNo">603</span>                                String eleStr = field.get_value();<a name="line.603"></a>
+<span class="sourceLineNo">604</span>                                if (colInx &gt; 0) {<a name="line.604"></a>
+<span class="sourceLineNo">605</span>                                        rowOfData.append(delim);<a name="line.605"></a>
+<span class="sourceLineNo">606</span>                                }<a name="line.606"></a>
+<span class="sourceLineNo">607</span>                                rowOfData.append(getValidStringValueForType(eleStr, colDef<a name="line.607"></a>
+<span class="sourceLineNo">608</span>                                                .getDataType()));<a name="line.608"></a>
+<span class="sourceLineNo">609</span>                                colInx++;<a name="line.609"></a>
+<span class="sourceLineNo">610</span>                        }<a name="line.610"></a>
+<span class="sourceLineNo">611</span>                        tableStr.append(rowOfData);<a name="line.611"></a>
+<span class="sourceLineNo">612</span>                        tableStr.append(ROWDELIM);<a name="line.612"></a>
+<span class="sourceLineNo">613</span>                }<a name="line.613"></a>
+<span class="sourceLineNo">614</span>                return tableStr.toString();<a name="line.614"></a>
+<span class="sourceLineNo">615</span>        }<a name="line.615"></a>
+<span class="sourceLineNo">616</span><a name="line.616"></a>
+<span class="sourceLineNo">617</span>        /**<a name="line.617"></a>
+<span class="sourceLineNo">618</span>         * Creates a string table from the resultset records<a name="line.618"></a>
+<span class="sourceLineNo">619</span>         * <a name="line.619"></a>
+<span class="sourceLineNo">620</span>         * @param aRS<a name="line.620"></a>
+<span class="sourceLineNo">621</span>         *       */<a name="line.621"></a>
+<span class="sourceLineNo">622</span>        private String createTableFromSQLResults(boolean aIncludeHeader,<a name="line.622"></a>
+<span class="sourceLineNo">623</span>                        String aDelim) {<a name="line.623"></a>
+<span class="sourceLineNo">624</span>                StringBuffer tableStr = new StringBuffer();<a name="line.624"></a>
+<span class="sourceLineNo">625</span>                StringBuffer rowOfData = new StringBuffer();<a name="line.625"></a>
+<span class="sourceLineNo">626</span>                String colDelim = "\t";<a name="line.626"></a>
+<span class="sourceLineNo">627</span><a name="line.627"></a>
+<span class="sourceLineNo">628</span>                if (aIncludeHeader) {<a name="line.628"></a>
+<span class="sourceLineNo">629</span>                        appendHeaderRow(tableStr, _columns, colDelim, ROWDELIM);<a name="line.629"></a>
+<span class="sourceLineNo">630</span>                }<a name="line.630"></a>
+<span class="sourceLineNo">631</span><a name="line.631"></a>
+<span class="sourceLineNo">632</span>                for (int i = 0; i &lt; _dataVectors.length; i++) {<a name="line.632"></a>
+<span class="sourceLineNo">633</span>                        rowOfData.setLength(0);<a name="line.633"></a>
+<span class="sourceLineNo">634</span><a name="line.634"></a>
+<span class="sourceLineNo">635</span>                        Enumeration colEnum = _columns.elements();<a name="line.635"></a>
+<span class="sourceLineNo">636</span>                        Enumeration dataEnum = _dataVectors[i].elements();<a name="line.636"></a>
+<span class="sourceLineNo">637</span>                        int colInx = 0;<a name="line.637"></a>
+<span class="sourceLineNo">638</span>                        while (colEnum.hasMoreElements()) {<a name="line.638"></a>
+<span class="sourceLineNo">639</span>                                DSTableFieldIFace colDef = (DSTableFieldIFace) colEnum<a name="line.639"></a>
+<span class="sourceLineNo">640</span>                                                .nextElement();<a name="line.640"></a>
+<span class="sourceLineNo">641</span>                                String eleStr = (String) dataEnum.nextElement();<a name="line.641"></a>
+<span class="sourceLineNo">642</span>                                if (colInx &gt; 0) {<a name="line.642"></a>
+<span class="sourceLineNo">643</span>                                        rowOfData.append(colDelim);<a name="line.643"></a>
+<span class="sourceLineNo">644</span>                                }<a name="line.644"></a>
+<span class="sourceLineNo">645</span><a name="line.645"></a>
+<span class="sourceLineNo">646</span>                                rowOfData.append(getValidStringValueForType(eleStr, colDef<a name="line.646"></a>
+<span class="sourceLineNo">647</span>                                                .getDataType()));<a name="line.647"></a>
+<span class="sourceLineNo">648</span>                                colInx++;<a name="line.648"></a>
+<span class="sourceLineNo">649</span>                        }<a name="line.649"></a>
+<span class="sourceLineNo">650</span>                        tableStr.append(rowOfData);<a name="line.650"></a>
+<span class="sourceLineNo">651</span>                        tableStr.append(ROWDELIM);<a name="line.651"></a>
+<span class="sourceLineNo">652</span>                }<a name="line.652"></a>
+<span class="sourceLineNo">653</span>                return tableStr.toString();<a name="line.653"></a>
+<span class="sourceLineNo">654</span>        }<a name="line.654"></a>
+<span class="sourceLineNo">655</span><a name="line.655"></a>
+<span class="sourceLineNo">656</span>        public boolean prefire() throws IllegalActionException {<a name="line.656"></a>
+<span class="sourceLineNo">657</span>                boolean check = true;<a name="line.657"></a>
+<span class="sourceLineNo">658</span>                if (_dataVectors != null) {<a name="line.658"></a>
+<span class="sourceLineNo">659</span>                        check = (_recordCount &lt; _dataVectors.length);<a name="line.659"></a>
+<span class="sourceLineNo">660</span>                        // if (!check) _recordCount = 0;<a name="line.660"></a>
+<span class="sourceLineNo">661</span>                        // System.out.println("in prefire "+"_recordCount = "+_recordCount+" check = "+check);<a name="line.661"></a>
+<span class="sourceLineNo">662</span>                        // System.out.println("in prefire "+"_dataVectors.length = "+_dataVectors.length);<a name="line.662"></a>
+<span class="sourceLineNo">663</span>                }<a name="line.663"></a>
+<span class="sourceLineNo">664</span>                return check;<a name="line.664"></a>
+<span class="sourceLineNo">665</span>        }<a name="line.665"></a>
+<span class="sourceLineNo">666</span><a name="line.666"></a>
+<span class="sourceLineNo">667</span>        /**<a name="line.667"></a>
+<span class="sourceLineNo">668</span>         * Send an entire tableas a single token over the port on each fire event.<a name="line.668"></a>
+<span class="sourceLineNo">669</span>         * <a name="line.669"></a>
+<span class="sourceLineNo">670</span>         * @exception IllegalActionException<a name="line.670"></a>
+<span class="sourceLineNo">671</span>         *                If there is no director.<a name="line.671"></a>
+<span class="sourceLineNo">672</span>         */<a name="line.672"></a>
+<span class="sourceLineNo">673</span>        private void fireAsTable() throws IllegalActionException {<a name="line.673"></a>
+<span class="sourceLineNo">674</span>                if (_tableEntity == null) {<a name="line.674"></a>
+<span class="sourceLineNo">675</span>                        System.err.println("_tableEntity is null in fireAsTable");<a name="line.675"></a>
+<span class="sourceLineNo">676</span>                        return;<a name="line.676"></a>
+<span class="sourceLineNo">677</span>                }<a name="line.677"></a>
+<span class="sourceLineNo">678</span><a name="line.678"></a>
+<span class="sourceLineNo">679</span>                TypedIOPort pp = (TypedIOPort) this.getPort(DATATABLE);<a name="line.679"></a>
+<span class="sourceLineNo">680</span>                pp.send(0, new StringToken(createTableFromSQLResults(false, "\t")));<a name="line.680"></a>
+<span class="sourceLineNo">681</span><a name="line.681"></a>
+<span class="sourceLineNo">682</span>                pp = (TypedIOPort) this.getPort(DELIMITER);<a name="line.682"></a>
+<span class="sourceLineNo">683</span>                String delim = _tableEntity.getDelimiter();<a name="line.683"></a>
+<span class="sourceLineNo">684</span>                pp.send(0, new StringToken(delim));<a name="line.684"></a>
+<span class="sourceLineNo">685</span><a name="line.685"></a>
+<span class="sourceLineNo">686</span>                pp = (TypedIOPort) this.getPort(NUMCOLUMNS);<a name="line.686"></a>
+<span class="sourceLineNo">687</span>                pp.send(0, new IntToken(_tableEntity.getAttributes().length));<a name="line.687"></a>
+<span class="sourceLineNo">688</span><a name="line.688"></a>
+<span class="sourceLineNo">689</span>        }<a name="line.689"></a>
+<span class="sourceLineNo">690</span><a name="line.690"></a>
+<span class="sourceLineNo">691</span>        /**<a name="line.691"></a>
+<span class="sourceLineNo">692</span>         * Send a row as a single token over the port on each fire event.<a name="line.692"></a>
+<span class="sourceLineNo">693</span>         * <a name="line.693"></a>
+<span class="sourceLineNo">694</span>         * @exception IllegalActionException<a name="line.694"></a>
+<span class="sourceLineNo">695</span>         *                If there is no director.<a name="line.695"></a>
+<span class="sourceLineNo">696</span>         */<a name="line.696"></a>
+<span class="sourceLineNo">697</span>        private void fireAsRow() throws IllegalActionException {<a name="line.697"></a>
+<span class="sourceLineNo">698</span>                if (_tableEntity == null) {<a name="line.698"></a>
+<span class="sourceLineNo">699</span>                        System.err.println("_tableEntity is null in fireAsRow");<a name="line.699"></a>
+<span class="sourceLineNo">700</span>                        return;<a name="line.700"></a>
+<span class="sourceLineNo">701</span>                }<a name="line.701"></a>
+<span class="sourceLineNo">702</span><a name="line.702"></a>
+<span class="sourceLineNo">703</span>                StringBuffer rowOfData = new StringBuffer();<a name="line.703"></a>
+<span class="sourceLineNo">704</span>                String delim = _tableEntity.getDelimiter();<a name="line.704"></a>
+<span class="sourceLineNo">705</span><a name="line.705"></a>
+<span class="sourceLineNo">706</span>                TypedIOPort port = (TypedIOPort) this.getPort(DATAROW);<a name="line.706"></a>
+<span class="sourceLineNo">707</span>                if (port != null &amp;&amp; _dataVectors != null) {<a name="line.707"></a>
+<span class="sourceLineNo">708</span>                        Enumeration dataEnum = _dataVectors[_recordCount].elements();<a name="line.708"></a>
+<span class="sourceLineNo">709</span>                        int fieldCnt = 0;<a name="line.709"></a>
+<span class="sourceLineNo">710</span>                        while (dataEnum.hasMoreElements()) {<a name="line.710"></a>
+<span class="sourceLineNo">711</span>                                String eleStr = (String) dataEnum.nextElement();<a name="line.711"></a>
+<span class="sourceLineNo">712</span><a name="line.712"></a>
+<span class="sourceLineNo">713</span>                                if (fieldCnt &gt; 0) {<a name="line.713"></a>
+<span class="sourceLineNo">714</span>                                        rowOfData.append(delim);<a name="line.714"></a>
+<span class="sourceLineNo">715</span>                                }<a name="line.715"></a>
+<span class="sourceLineNo">716</span>                                rowOfData.append(eleStr);<a name="line.716"></a>
+<span class="sourceLineNo">717</span>                                fieldCnt++;<a name="line.717"></a>
+<span class="sourceLineNo">718</span>                        }<a name="line.718"></a>
+<span class="sourceLineNo">719</span><a name="line.719"></a>
+<span class="sourceLineNo">720</span>                        port.send(0, new StringToken(rowOfData.toString()));<a name="line.720"></a>
+<span class="sourceLineNo">721</span><a name="line.721"></a>
+<span class="sourceLineNo">722</span>                        port = (TypedIOPort) this.getPort(DELIMITER);<a name="line.722"></a>
+<span class="sourceLineNo">723</span>                        port.send(0, new StringToken(delim));<a name="line.723"></a>
+<span class="sourceLineNo">724</span><a name="line.724"></a>
+<span class="sourceLineNo">725</span>                        port = (TypedIOPort) this.getPort(NUMCOLUMNS);<a name="line.725"></a>
+<span class="sourceLineNo">726</span>                        port.send(0, new IntToken(fieldCnt));<a name="line.726"></a>
+<span class="sourceLineNo">727</span><a name="line.727"></a>
+<span class="sourceLineNo">728</span>                        _recordCount++;<a name="line.728"></a>
+<span class="sourceLineNo">729</span>                } else {<a name="line.729"></a>
+<span class="sourceLineNo">730</span>                        System.err.println("Port is null.");<a name="line.730"></a>
+<span class="sourceLineNo">731</span>                }<a name="line.731"></a>
+<span class="sourceLineNo">732</span><a name="line.732"></a>
+<span class="sourceLineNo">733</span>        }<a name="line.733"></a>
+<span class="sourceLineNo">734</span><a name="line.734"></a>
+<span class="sourceLineNo">735</span>        /**<a name="line.735"></a>
+<span class="sourceLineNo">736</span>         * Send a record's tokens over the ports on each fire event.<a name="line.736"></a>
+<span class="sourceLineNo">737</span>         * <a name="line.737"></a>
+<span class="sourceLineNo">738</span>         * @exception IllegalActionException<a name="line.738"></a>
+<span class="sourceLineNo">739</span>         *                If there is no director.<a name="line.739"></a>
+<span class="sourceLineNo">740</span>         */<a name="line.740"></a>
+<span class="sourceLineNo">741</span>        private void fireAsField() throws IllegalActionException {<a name="line.741"></a>
+<span class="sourceLineNo">742</span>                if (_columns == null) {<a name="line.742"></a>
+<span class="sourceLineNo">743</span>                        System.err.println("_columns is null in fireAsField");<a name="line.743"></a>
+<span class="sourceLineNo">744</span>                        return;<a name="line.744"></a>
+<span class="sourceLineNo">745</span>                }<a name="line.745"></a>
+<span class="sourceLineNo">746</span><a name="line.746"></a>
+<span class="sourceLineNo">747</span>                if (_colTypes == null) {<a name="line.747"></a>
+<span class="sourceLineNo">748</span>                        System.err.println("_colTypes is null in fireAsField");<a name="line.748"></a>
+<span class="sourceLineNo">749</span>                        return;<a name="line.749"></a>
+<span class="sourceLineNo">750</span>                }<a name="line.750"></a>
+<span class="sourceLineNo">751</span>                // System.out.println("the columns is "+_columns);<a name="line.751"></a>
+<span class="sourceLineNo">752</span>                // System.out.println("the columns type is "+_colTypes);<a name="line.752"></a>
+<span class="sourceLineNo">753</span>                // System.out.println("the data is "+_dataVectors[_recordCount]);<a name="line.753"></a>
+<span class="sourceLineNo">754</span>                // dbg.print("Processing record: " + i, 2);<a name="line.754"></a>
+<span class="sourceLineNo">755</span>                Enumeration colEnum = _columns.elements();<a name="line.755"></a>
+<span class="sourceLineNo">756</span>                Enumeration dataEnum = _dataVectors[_recordCount].elements();<a name="line.756"></a>
+<span class="sourceLineNo">757</span>                Enumeration typeEnum = _colTypes.elements();<a name="line.757"></a>
+<span class="sourceLineNo">758</span>                while (colEnum.hasMoreElements() &amp;&amp; dataEnum.hasMoreElements()<a name="line.758"></a>
+<span class="sourceLineNo">759</span>                                &amp;&amp; typeEnum.hasMoreElements()) {<a name="line.759"></a>
+<span class="sourceLineNo">760</span>                        DSTableFieldIFace colDef = (DSTableFieldIFace) colEnum<a name="line.760"></a>
+<span class="sourceLineNo">761</span>                                        .nextElement();<a name="line.761"></a>
+<span class="sourceLineNo">762</span>                        // System.out.println("the colDef "+colDef.getName());<a name="line.762"></a>
+<span class="sourceLineNo">763</span>                        String eleStr = (String) dataEnum.nextElement();<a name="line.763"></a>
+<span class="sourceLineNo">764</span>                        // System.out.println("the eleStr is "+eleStr);<a name="line.764"></a>
+<span class="sourceLineNo">765</span>                        Type type = (Type) typeEnum.nextElement();<a name="line.765"></a>
+<span class="sourceLineNo">766</span>                        // System.out.println("the type is "+type.toString());<a name="line.766"></a>
+<span class="sourceLineNo">767</span>                        TypedIOPort port = (TypedIOPort) this.getPort(colDef.getName()<a name="line.767"></a>
+<span class="sourceLineNo">768</span>                                        .trim());<a name="line.768"></a>
+<span class="sourceLineNo">769</span><a name="line.769"></a>
+<span class="sourceLineNo">770</span>                        if (port != null) {<a name="line.770"></a>
+<span class="sourceLineNo">771</span>                                Token val = null;<a name="line.771"></a>
+<span class="sourceLineNo">772</span>                                // System.out.println("the port is not null and will send it out");<a name="line.772"></a>
+<span class="sourceLineNo">773</span>                                // find the data type for each att<a name="line.773"></a>
+<span class="sourceLineNo">774</span>                                if (type == BaseType.INT) {<a name="line.774"></a>
+<span class="sourceLineNo">775</span>                                        try {<a name="line.775"></a>
+<span class="sourceLineNo">776</span>                                                if (eleStr != null) {<a name="line.776"></a>
+<span class="sourceLineNo">777</span>                                                        val = new IntToken(new Integer(eleStr).intValue());<a name="line.777"></a>
+<span class="sourceLineNo">778</span>                                                } else {<a name="line.778"></a>
+<span class="sourceLineNo">779</span>                                                        // System.out.println("in nil");<a name="line.779"></a>
+<span class="sourceLineNo">780</span>                                                        val = IntToken.NIL;<a name="line.780"></a>
+<span class="sourceLineNo">781</span>                                                }<a name="line.781"></a>
+<span class="sourceLineNo">782</span>                                        } catch (Exception e) {<a name="line.782"></a>
+<span class="sourceLineNo">783</span>                                                val = new IntToken(Integer.MAX_VALUE);<a name="line.783"></a>
+<span class="sourceLineNo">784</span>                                        }<a name="line.784"></a>
+<span class="sourceLineNo">785</span>                                } else if (type == BaseType.DOUBLE) {<a name="line.785"></a>
+<span class="sourceLineNo">786</span>                                        try {<a name="line.786"></a>
+<span class="sourceLineNo">787</span>                                                if (eleStr != null) {<a name="line.787"></a>
+<span class="sourceLineNo">788</span>                                                        val = new DoubleToken(new Double(eleStr)<a name="line.788"></a>
+<span class="sourceLineNo">789</span>                                                                        .doubleValue());<a name="line.789"></a>
+<span class="sourceLineNo">790</span>                                                } else {<a name="line.790"></a>
+<span class="sourceLineNo">791</span>                                                        // System.out.println("in nil");<a name="line.791"></a>
+<span class="sourceLineNo">792</span>                                                        val = DoubleToken.NIL;<a name="line.792"></a>
+<span class="sourceLineNo">793</span>                                                }<a name="line.793"></a>
+<span class="sourceLineNo">794</span>                                        } catch (Exception e) {<a name="line.794"></a>
+<span class="sourceLineNo">795</span>                                                val = new DoubleToken(Double.MAX_VALUE);<a name="line.795"></a>
+<span class="sourceLineNo">796</span>                                        }<a name="line.796"></a>
+<span class="sourceLineNo">797</span><a name="line.797"></a>
+<span class="sourceLineNo">798</span>                                } else if (type == BaseType.LONG) {<a name="line.798"></a>
+<span class="sourceLineNo">799</span>                                        try {<a name="line.799"></a>
+<span class="sourceLineNo">800</span>                                                if (eleStr != null) {<a name="line.800"></a>
+<span class="sourceLineNo">801</span>                                                        val = new LongToken(new Long(eleStr).longValue());<a name="line.801"></a>
+<span class="sourceLineNo">802</span>                                                } else {<a name="line.802"></a>
+<span class="sourceLineNo">803</span>                                                        // System.out.println("in nil");<a name="line.803"></a>
+<span class="sourceLineNo">804</span>                                                        val = LongToken.NIL;<a name="line.804"></a>
+<span class="sourceLineNo">805</span>                                                }<a name="line.805"></a>
+<span class="sourceLineNo">806</span>                                        } catch (Exception e) {<a name="line.806"></a>
+<span class="sourceLineNo">807</span>                                                val = new DoubleToken(Long.MAX_VALUE);<a name="line.807"></a>
+<span class="sourceLineNo">808</span>                                        }<a name="line.808"></a>
+<span class="sourceLineNo">809</span><a name="line.809"></a>
+<span class="sourceLineNo">810</span>                                } else if (type == BaseType.STRING) {<a name="line.810"></a>
+<span class="sourceLineNo">811</span>                                        if (eleStr != null) {<a name="line.811"></a>
+<span class="sourceLineNo">812</span>                                                val = new StringToken(eleStr);<a name="line.812"></a>
+<span class="sourceLineNo">813</span>                                        } else {<a name="line.813"></a>
+<span class="sourceLineNo">814</span>                                                // System.out.println("in nil");<a name="line.814"></a>
+<span class="sourceLineNo">815</span>                                                val = StringToken.NIL;<a name="line.815"></a>
+<span class="sourceLineNo">816</span>                                        }<a name="line.816"></a>
+<span class="sourceLineNo">817</span><a name="line.817"></a>
+<span class="sourceLineNo">818</span>                                } else {<a name="line.818"></a>
+<span class="sourceLineNo">819</span>                                        val = new StringToken("");<a name="line.819"></a>
+<span class="sourceLineNo">820</span>                                }<a name="line.820"></a>
+<span class="sourceLineNo">821</span>                                // send the data on the port<a name="line.821"></a>
+<span class="sourceLineNo">822</span>                                port.send(0, val);<a name="line.822"></a>
+<span class="sourceLineNo">823</span>                        }<a name="line.823"></a>
+<span class="sourceLineNo">824</span>                }<a name="line.824"></a>
+<span class="sourceLineNo">825</span>                _recordCount++;<a name="line.825"></a>
+<span class="sourceLineNo">826</span>        }<a name="line.826"></a>
+<span class="sourceLineNo">827</span><a name="line.827"></a>
+<span class="sourceLineNo">828</span>        /**<a name="line.828"></a>
+<span class="sourceLineNo">829</span>         * Send a record's tokens over the ports on each fire event.<a name="line.829"></a>
+<span class="sourceLineNo">830</span>         * <a name="line.830"></a>
+<span class="sourceLineNo">831</span>         * @exception IllegalActionException<a name="line.831"></a>
+<span class="sourceLineNo">832</span>         *                If there is no director.<a name="line.832"></a>
+<span class="sourceLineNo">833</span>         */<a name="line.833"></a>
+<span class="sourceLineNo">834</span>        public void fire() throws IllegalActionException {<a name="line.834"></a>
+<span class="sourceLineNo">835</span><a name="line.835"></a>
+<span class="sourceLineNo">836</span>                super.fire();<a name="line.836"></a>
+<span class="sourceLineNo">837</span><a name="line.837"></a>
+<span class="sourceLineNo">838</span>                if (speciesName.getWidth() &gt; 0) {<a name="line.838"></a>
+<span class="sourceLineNo">839</span>                        if (speciesName.hasToken(0)) {<a name="line.839"></a>
+<span class="sourceLineNo">840</span>                                String speciesNameStr = ((StringToken) (speciesName.get(0)))<a name="line.840"></a>
+<span class="sourceLineNo">841</span>                                                .stringValue();<a name="line.841"></a>
+<span class="sourceLineNo">842</span>                                _ignoreSearchChange = false;<a name="line.842"></a>
+<span class="sourceLineNo">843</span>                                _searchData.setExpression(speciesNameStr);<a name="line.843"></a>
+<span class="sourceLineNo">844</span>                                // _searchData is a stringParameter; need to 'getToken' to<a name="line.844"></a>
+<span class="sourceLineNo">845</span>                                // forcer<a name="line.845"></a>
+<span class="sourceLineNo">846</span>                                // evaluation of expression and trigger attribute change<a name="line.846"></a>
+<span class="sourceLineNo">847</span>                                _searchData.getToken();<a name="line.847"></a>
+<span class="sourceLineNo">848</span>                                // attributeChanged(_searchData);<a name="line.848"></a>
+<span class="sourceLineNo">849</span>                                _ignoreSearchChange = true;<a name="line.849"></a>
+<span class="sourceLineNo">850</span>                        }<a name="line.850"></a>
+<span class="sourceLineNo">851</span>                } else {<a name="line.851"></a>
+<span class="sourceLineNo">852</span>                        // need to call attributechanged to get data frome ecogrid if not in<a name="line.852"></a>
+<span class="sourceLineNo">853</span>                        // the<a name="line.853"></a>
+<span class="sourceLineNo">854</span>                        // cache and to trigger the latch from a callback from 'complete'<a name="line.854"></a>
+<span class="sourceLineNo">855</span>                        _ignoreSearchChange = false;<a name="line.855"></a>
+<span class="sourceLineNo">856</span>                        attributeChanged(_searchData);<a name="line.856"></a>
+<span class="sourceLineNo">857</span>                        _ignoreSearchChange = false;<a name="line.857"></a>
+<span class="sourceLineNo">858</span>                }<a name="line.858"></a>
+<span class="sourceLineNo">859</span>                initial_setup();<a name="line.859"></a>
+<span class="sourceLineNo">860</span>                _downloadCompleted = new Latch();<a name="line.860"></a>
+<span class="sourceLineNo">861</span>                if (_dataVectors == null) {<a name="line.861"></a>
+<span class="sourceLineNo">862</span>                        System.err<a name="line.862"></a>
+<span class="sourceLineNo">863</span>                                        .println("_dataVectors is null in createTableFromSQLResults");<a name="line.863"></a>
+<span class="sourceLineNo">864</span>                        return;<a name="line.864"></a>
+<span class="sourceLineNo">865</span>                }<a name="line.865"></a>
+<span class="sourceLineNo">866</span><a name="line.866"></a>
+<span class="sourceLineNo">867</span>                if (_recordCount &gt;= _dataVectors.length) {<a name="line.867"></a>
+<span class="sourceLineNo">868</span>                        System.err.println("_recordCount [" + _recordCount<a name="line.868"></a>
+<span class="sourceLineNo">869</span>                                        + "] is greater than _dataVectors.length "<a name="line.869"></a>
+<span class="sourceLineNo">870</span>                                        + _dataVectors.length);<a name="line.870"></a>
+<span class="sourceLineNo">871</span>                        return;<a name="line.871"></a>
+<span class="sourceLineNo">872</span>                }<a name="line.872"></a>
+<span class="sourceLineNo">873</span>                switch (_outputType) {<a name="line.873"></a>
+<span class="sourceLineNo">874</span>                case _ASTABLE:<a name="line.874"></a>
+<span class="sourceLineNo">875</span>                        fireAsTable();<a name="line.875"></a>
+<span class="sourceLineNo">876</span>                        break;<a name="line.876"></a>
+<span class="sourceLineNo">877</span><a name="line.877"></a>
+<span class="sourceLineNo">878</span>                case _ASROW:<a name="line.878"></a>
+<span class="sourceLineNo">879</span>                        fireAsRow();<a name="line.879"></a>
+<span class="sourceLineNo">880</span>                        break;<a name="line.880"></a>
+<span class="sourceLineNo">881</span><a name="line.881"></a>
+<span class="sourceLineNo">882</span>                case _ASFIELD:<a name="line.882"></a>
+<span class="sourceLineNo">883</span>                        fireAsField();<a name="line.883"></a>
+<span class="sourceLineNo">884</span>                        break;<a name="line.884"></a>
+<span class="sourceLineNo">885</span><a name="line.885"></a>
+<span class="sourceLineNo">886</span>                default:<a name="line.886"></a>
+<span class="sourceLineNo">887</span>                        throw new IllegalActionException(this, "Unrecognized outputType: "<a name="line.887"></a>
+<span class="sourceLineNo">888</span>                                        + _outputType);<a name="line.888"></a>
+<span class="sourceLineNo">889</span><a name="line.889"></a>
+<span class="sourceLineNo">890</span>                }<a name="line.890"></a>
+<span class="sourceLineNo">891</span>        }<a name="line.891"></a>
+<span class="sourceLineNo">892</span><a name="line.892"></a>
+<span class="sourceLineNo">893</span>        /**<a name="line.893"></a>
+<span class="sourceLineNo">894</span>         * Remove all ports by setting their container to null. As a side effect,<a name="line.894"></a>
+<span class="sourceLineNo">895</span>         * the ports will be unlinked from all relations. This method is<a name="line.895"></a>
+<span class="sourceLineNo">896</span>         * write-synchronized on the workspace, and increments its version number.<a name="line.896"></a>
+<span class="sourceLineNo">897</span>         */<a name="line.897"></a>
+<span class="sourceLineNo">898</span>        private void removeAllOutputPortsExcept(Set l)<a name="line.898"></a>
+<span class="sourceLineNo">899</span>                        throws IllegalActionException {<a name="line.899"></a>
+<span class="sourceLineNo">900</span>                Vector portNames = getExistingPortNames();<a name="line.900"></a>
+<span class="sourceLineNo">901</span>                for (Enumeration e = portNames.elements(); e.hasMoreElements();) {<a name="line.901"></a>
+<span class="sourceLineNo">902</span>                        String currPortName = (String) e.nextElement();<a name="line.902"></a>
+<span class="sourceLineNo">903</span>                        TypedIOPort port = (TypedIOPort) this.getPort(currPortName);<a name="line.903"></a>
+<span class="sourceLineNo">904</span>                        if (port != null &amp;&amp; !port.isInput() &amp;&amp; !l.contains(currPortName)) {<a name="line.904"></a>
+<span class="sourceLineNo">905</span>                                try {<a name="line.905"></a>
+<span class="sourceLineNo">906</span>                                        log.debug("Removing port named: " + port.getName());<a name="line.906"></a>
+<span class="sourceLineNo">907</span>                                        port.setContainer(null);<a name="line.907"></a>
+<span class="sourceLineNo">908</span>                                } catch (Exception ex) {<a name="line.908"></a>
+<span class="sourceLineNo">909</span>                                        throw new IllegalActionException(this,<a name="line.909"></a>
+<span class="sourceLineNo">910</span>                                                        "Error removing port: " + currPortName);<a name="line.910"></a>
+<span class="sourceLineNo">911</span>                                }<a name="line.911"></a>
+<span class="sourceLineNo">912</span><a name="line.912"></a>
+<span class="sourceLineNo">913</span>                        }<a name="line.913"></a>
+<span class="sourceLineNo">914</span>                }<a name="line.914"></a>
+<span class="sourceLineNo">915</span><a name="line.915"></a>
+<span class="sourceLineNo">916</span>        }<a name="line.916"></a>
+<span class="sourceLineNo">917</span><a name="line.917"></a>
+<span class="sourceLineNo">918</span>        private void createOutputPorts(Map m) throws IllegalActionException {<a name="line.918"></a>
+<span class="sourceLineNo">919</span><a name="line.919"></a>
+<span class="sourceLineNo">920</span>                Iterator i = m.entrySet().iterator();<a name="line.920"></a>
+<span class="sourceLineNo">921</span>                while (i.hasNext()) {<a name="line.921"></a>
+<span class="sourceLineNo">922</span>                        Map.Entry e = (Map.Entry) i.next();<a name="line.922"></a>
+<span class="sourceLineNo">923</span>                        String portname = (String) e.getKey();<a name="line.923"></a>
+<span class="sourceLineNo">924</span>                        BaseType b = (BaseType) e.getValue();<a name="line.924"></a>
+<span class="sourceLineNo">925</span>                        try {<a name="line.925"></a>
+<span class="sourceLineNo">926</span>                                portConfigurer(portname, b);<a name="line.926"></a>
+<span class="sourceLineNo">927</span>                        } catch (NameDuplicationException ex) {<a name="line.927"></a>
+<span class="sourceLineNo">928</span>                                log.error("Unexpected Port Name duplication for port name: "<a name="line.928"></a>
+<span class="sourceLineNo">929</span>                                                + portname, ex);<a name="line.929"></a>
+<span class="sourceLineNo">930</span>                                throw new IllegalActionException(this, ex, "Port name "<a name="line.930"></a>
+<span class="sourceLineNo">931</span>                                                + portname + " duplicated");<a name="line.931"></a>
+<span class="sourceLineNo">932</span>                        }<a name="line.932"></a>
+<span class="sourceLineNo">933</span>                }<a name="line.933"></a>
+<span class="sourceLineNo">934</span><a name="line.934"></a>
+<span class="sourceLineNo">935</span>        }<a name="line.935"></a>
+<span class="sourceLineNo">936</span><a name="line.936"></a>
+<span class="sourceLineNo">937</span>        /**<a name="line.937"></a>
+<span class="sourceLineNo">938</span>         * It reconfigures all the Ports to represent passing data back a row at a<a name="line.938"></a>
+<span class="sourceLineNo">939</span>         * time<a name="line.939"></a>
+<span class="sourceLineNo">940</span>         * <a name="line.940"></a>
+<span class="sourceLineNo">941</span>         * @throws ptolemy.kernel.util.IllegalActionException<a name="line.941"></a>
+<span class="sourceLineNo">942</span>         */<a name="line.942"></a>
+<span class="sourceLineNo">943</span>        private void reconfigurePortsAsTable() throws IllegalActionException {<a name="line.943"></a>
+<span class="sourceLineNo">944</span>                log.debug("ReconfigurePortsAsTable");<a name="line.944"></a>
+<span class="sourceLineNo">945</span>                removeAllOutputPortsExcept(asTablePorts.keySet());<a name="line.945"></a>
+<span class="sourceLineNo">946</span>                createOutputPorts(asTablePorts);<a name="line.946"></a>
+<span class="sourceLineNo">947</span>        }<a name="line.947"></a>
+<span class="sourceLineNo">948</span><a name="line.948"></a>
+<span class="sourceLineNo">949</span>        /**<a name="line.949"></a>
+<span class="sourceLineNo">950</span>         * Helper method that checks to see if a port is there before creating one<a name="line.950"></a>
+<span class="sourceLineNo">951</span>         * <a name="line.951"></a>
+<span class="sourceLineNo">952</span>         * @param aName<a name="line.952"></a>
+<span class="sourceLineNo">953</span>         * @param aType<a name="line.953"></a>
+<span class="sourceLineNo">954</span>         * @throws ptolemy.kernel.util.NameDuplicationException<a name="line.954"></a>
+<span class="sourceLineNo">955</span>         * @throws ptolemy.kernel.util.IllegalActionException<a name="line.955"></a>
+<span class="sourceLineNo">956</span>         */<a name="line.956"></a>
+<span class="sourceLineNo">957</span>        private void portConfigurer(String aName, Type aType)<a name="line.957"></a>
+<span class="sourceLineNo">958</span>                        throws NameDuplicationException, IllegalActionException {<a name="line.958"></a>
+<span class="sourceLineNo">959</span>                TypedIOPort pp = (TypedIOPort) this.getPort(aName);<a name="line.959"></a>
+<span class="sourceLineNo">960</span>                if (pp == null) {<a name="line.960"></a>
+<span class="sourceLineNo">961</span>                        log.debug("Adding port named: " + aName);<a name="line.961"></a>
+<span class="sourceLineNo">962</span>                        pp = new TypedIOPort(this, aName, false, true);<a name="line.962"></a>
+<span class="sourceLineNo">963</span>                        pp.setTypeEquals(aType);<a name="line.963"></a>
+<span class="sourceLineNo">964</span>                } else {<a name="line.964"></a>
+<span class="sourceLineNo">965</span>                        log.debug("Adding port named (set type): " + pp.getName());<a name="line.965"></a>
+<span class="sourceLineNo">966</span>                        pp.setTypeEquals(aType);<a name="line.966"></a>
+<span class="sourceLineNo">967</span>                }<a name="line.967"></a>
+<span class="sourceLineNo">968</span>        }<a name="line.968"></a>
+<span class="sourceLineNo">969</span><a name="line.969"></a>
+<span class="sourceLineNo">970</span>        /**<a name="line.970"></a>
+<span class="sourceLineNo">971</span>         * It reconfigures all the Ports to represent passing data back a row at a<a name="line.971"></a>
+<span class="sourceLineNo">972</span>         * time<a name="line.972"></a>
+<span class="sourceLineNo">973</span>         * <a name="line.973"></a>
+<span class="sourceLineNo">974</span>         * @throws ptolemy.kernel.util.IllegalActionException<a name="line.974"></a>
+<span class="sourceLineNo">975</span>         */<a name="line.975"></a>
+<span class="sourceLineNo">976</span>        private void reconfigurePortsAsRow() throws IllegalActionException {<a name="line.976"></a>
+<span class="sourceLineNo">977</span>                removeAllOutputPortsExcept(asRowPorts.keySet());<a name="line.977"></a>
+<span class="sourceLineNo">978</span>                createOutputPorts(asRowPorts);<a name="line.978"></a>
+<span class="sourceLineNo">979</span>        }<a name="line.979"></a>
+<span class="sourceLineNo">980</span><a name="line.980"></a>
+<span class="sourceLineNo">981</span>        /**<a name="line.981"></a>
+<span class="sourceLineNo">982</span>         * It reconfigures all the Ports from the new "columns" list Meaning it<a name="line.982"></a>
+<span class="sourceLineNo">983</span>         * removes port not in the list and adds new port that are in the list but<a name="line.983"></a>
+<span class="sourceLineNo">984</span>         * not yet there<a name="line.984"></a>
+<span class="sourceLineNo">985</span>         * <a name="line.985"></a>
+<span class="sourceLineNo">986</span>         * @throws ptolemy.kernel.util.IllegalActionException<a name="line.986"></a>
+<span class="sourceLineNo">987</span>         */<a name="line.987"></a>
+<span class="sourceLineNo">988</span>        private void reconfigurePortsAsField() throws IllegalActionException {<a name="line.988"></a>
+<span class="sourceLineNo">989</span>                if (_columns != null) {<a name="line.989"></a>
+<span class="sourceLineNo">990</span>                        // throw new<a name="line.990"></a>
+<span class="sourceLineNo">991</span>                        // IllegalActionException(this,"Unable to Configure output ports as Field until the download is complete");<a name="line.991"></a>
+<span class="sourceLineNo">992</span><a name="line.992"></a>
+<span class="sourceLineNo">993</span>                        // Get List of new column names<a name="line.993"></a>
+<span class="sourceLineNo">994</span>                        _colTypes.clear();<a name="line.994"></a>
+<span class="sourceLineNo">995</span><a name="line.995"></a>
+<span class="sourceLineNo">996</span>                        HashMap newColPorts = new HashMap();<a name="line.996"></a>
+<span class="sourceLineNo">997</span>                        for (Enumeration e = _columns.elements(); e.hasMoreElements();) {<a name="line.997"></a>
+<span class="sourceLineNo">998</span>                                DSTableFieldIFace col = (DSTableFieldIFace) e.nextElement();<a name="line.998"></a>
+<span class="sourceLineNo">999</span>                                String colName = col.getName();<a name="line.999"></a>
+<span class="sourceLineNo">1000</span>                                Type colType = getBaseType(col.getDataType());<a name="line.1000"></a>
+<span class="sourceLineNo">1001</span>                                _colTypes.add(colType);<a name="line.1001"></a>
+<span class="sourceLineNo">1002</span>                                newColPorts.put(colName, colType);<a name="line.1002"></a>
+<span class="sourceLineNo">1003</span>                        }<a name="line.1003"></a>
+<span class="sourceLineNo">1004</span><a name="line.1004"></a>
+<span class="sourceLineNo">1005</span>                        removeAllOutputPortsExcept(newColPorts.keySet());<a name="line.1005"></a>
+<span class="sourceLineNo">1006</span>                        createOutputPorts(newColPorts);<a name="line.1006"></a>
+<span class="sourceLineNo">1007</span>                }<a name="line.1007"></a>
+<span class="sourceLineNo">1008</span><a name="line.1008"></a>
+<span class="sourceLineNo">1009</span>        }<a name="line.1009"></a>
+<span class="sourceLineNo">1010</span><a name="line.1010"></a>
+<span class="sourceLineNo">1011</span>        /**<a name="line.1011"></a>
+<span class="sourceLineNo">1012</span>         * <a name="line.1012"></a>
+<span class="sourceLineNo">1013</span>         * @param aNewColumns<a name="line.1013"></a>
+<span class="sourceLineNo">1014</span>         * @param aColTypes<a name="line.1014"></a>
+<span class="sourceLineNo">1015</span>         * @throws ptolemy.kernel.util.IllegalActionException<a name="line.1015"></a>
+<span class="sourceLineNo">1016</span>         */<a name="line.1016"></a>
+<span class="sourceLineNo">1017</span>        private void reconfigurePorts(String why) {<a name="line.1017"></a>
+<span class="sourceLineNo">1018</span>                log.debug("Creating reconfigure ports change request " + why);<a name="line.1018"></a>
+<span class="sourceLineNo">1019</span>                this.requestChange(new ChangeRequest(this, why) {<a name="line.1019"></a>
+<span class="sourceLineNo">1020</span>                        public void _execute() throws Exception {<a name="line.1020"></a>
+<span class="sourceLineNo">1021</span>                                log.debug("Executing reconfigure ports change request "<a name="line.1021"></a>
+<span class="sourceLineNo">1022</span>                                                + this.getDescription());<a name="line.1022"></a>
+<span class="sourceLineNo">1023</span>                                log.debug("Current _outputType = " + _outputType);<a name="line.1023"></a>
+<span class="sourceLineNo">1024</span>                                switch (_outputType) {<a name="line.1024"></a>
+<span class="sourceLineNo">1025</span>                                case _ASTABLE:<a name="line.1025"></a>
+<span class="sourceLineNo">1026</span>                                        reconfigurePortsAsTable();<a name="line.1026"></a>
+<span class="sourceLineNo">1027</span>                                        break;<a name="line.1027"></a>
+<span class="sourceLineNo">1028</span><a name="line.1028"></a>
+<span class="sourceLineNo">1029</span>                                case _ASROW:<a name="line.1029"></a>
+<span class="sourceLineNo">1030</span>                                        reconfigurePortsAsRow();<a name="line.1030"></a>
+<span class="sourceLineNo">1031</span>                                        break;<a name="line.1031"></a>
+<span class="sourceLineNo">1032</span><a name="line.1032"></a>
+<span class="sourceLineNo">1033</span>                                case _ASFIELD:<a name="line.1033"></a>
+<span class="sourceLineNo">1034</span>                                        reconfigurePortsAsField();<a name="line.1034"></a>
+<span class="sourceLineNo">1035</span>                                        break;<a name="line.1035"></a>
+<span class="sourceLineNo">1036</span><a name="line.1036"></a>
+<span class="sourceLineNo">1037</span>                                default:<a name="line.1037"></a>
+<span class="sourceLineNo">1038</span>                                        throw new IllegalActionException(DarwinCoreDataSource.this,<a name="line.1038"></a>
+<span class="sourceLineNo">1039</span>                                                        "Unrecognized outputType: " + _outputType);<a name="line.1039"></a>
+<span class="sourceLineNo">1040</span><a name="line.1040"></a>
+<span class="sourceLineNo">1041</span>                                }<a name="line.1041"></a>
+<span class="sourceLineNo">1042</span><a name="line.1042"></a>
+<span class="sourceLineNo">1043</span>                        }<a name="line.1043"></a>
+<span class="sourceLineNo">1044</span>                });<a name="line.1044"></a>
+<span class="sourceLineNo">1045</span>        }<a name="line.1045"></a>
+<span class="sourceLineNo">1046</span><a name="line.1046"></a>
+<span class="sourceLineNo">1047</span>        /**<a name="line.1047"></a>
+<span class="sourceLineNo">1048</span>         * Callback for changes in attribute values.<a name="line.1048"></a>
+<span class="sourceLineNo">1049</span>         */<a name="line.1049"></a>
+<span class="sourceLineNo">1050</span>        public void attributeChanged(ptolemy.kernel.util.Attribute attribute)<a name="line.1050"></a>
+<span class="sourceLineNo">1051</span>                        throws IllegalActionException {<a name="line.1051"></a>
+<span class="sourceLineNo">1052</span>                // System.out.println("Changed: "+attribute.getName()+"  "+((Settable)attribute).getExpression());<a name="line.1052"></a>
+<span class="sourceLineNo">1053</span>                if (attribute == _sqlAttr &amp;&amp; !_ignoreSqlChange) {<a name="line.1053"></a>
+<span class="sourceLineNo">1054</span>                        String sqlDef = ((Settable) attribute).getDefaultExpression();<a name="line.1054"></a>
+<span class="sourceLineNo">1055</span>                        sqlDef = ((Settable) attribute).getExpression();<a name="line.1055"></a>
+<span class="sourceLineNo">1056</span>                        if (sqlDef.length() &gt; 0) {<a name="line.1056"></a>
+<span class="sourceLineNo">1057</span>                                _queryDef = DBQueryDefParserEmitter.parseQueryDef(_schemaDef,<a name="line.1057"></a>
+<span class="sourceLineNo">1058</span>                                                sqlDef);<a name="line.1058"></a>
+<span class="sourceLineNo">1059</span>                                _columns = _queryDef.getSelects();<a name="line.1059"></a>
+<span class="sourceLineNo">1060</span>                                log<a name="line.1060"></a>
+<span class="sourceLineNo">1061</span>                                                .debug("Calling reconfigurePorts because of sqlAttr change.");<a name="line.1061"></a>
+<span class="sourceLineNo">1062</span>                                reconfigurePorts("sqlAttr change");<a name="line.1062"></a>
+<span class="sourceLineNo">1063</span>                        }<a name="line.1063"></a>
+<span class="sourceLineNo">1064</span><a name="line.1064"></a>
+<span class="sourceLineNo">1065</span>                } else if (attribute == _schemaAttr &amp;&amp; !_ignoreSchemaChange) // NOTE: We<a name="line.1065"></a>
+<span class="sourceLineNo">1066</span>                                                                                                                                                // may<a name="line.1066"></a>
+<span class="sourceLineNo">1067</span>                                                                                                                                                // skip<a name="line.1067"></a>
+<span class="sourceLineNo">1068</span>                                                                                                                                                // setting<a name="line.1068"></a>
+<span class="sourceLineNo">1069</span>                                                                                                                                                // it<a name="line.1069"></a>
+<span class="sourceLineNo">1070</span>                                                                                                                                                // here<a name="line.1070"></a>
+<span class="sourceLineNo">1071</span>                                                                                                                                                // because<a name="line.1071"></a>
+<span class="sourceLineNo">1072</span>                                                                                                                                                // _ignoreSchemaChange<a name="line.1072"></a>
+<span class="sourceLineNo">1073</span>                                                                                                                                                // may<a name="line.1073"></a>
+<span class="sourceLineNo">1074</span>                                                                                                                                                // be<a name="line.1074"></a>
+<span class="sourceLineNo">1075</span>                                                                                                                                                // true<a name="line.1075"></a>
+<span class="sourceLineNo">1076</span>                {<a name="line.1076"></a>
+<span class="sourceLineNo">1077</span>                        String schemaDef = ((Settable) _schemaAttr).getExpression();<a name="line.1077"></a>
+<span class="sourceLineNo">1078</span><a name="line.1078"></a>
+<span class="sourceLineNo">1079</span>                        // MOML may have a blank definition<a name="line.1079"></a>
+<span class="sourceLineNo">1080</span>                        if (schemaDef.length() &gt; 0) {<a name="line.1080"></a>
+<span class="sourceLineNo">1081</span>                                if (isDebugging) {<a name="line.1081"></a>
+<span class="sourceLineNo">1082</span>                                        log.debug("schemaDef = " + schemaDef);<a name="line.1082"></a>
+<span class="sourceLineNo">1083</span>                                }<a name="line.1083"></a>
+<span class="sourceLineNo">1084</span><a name="line.1084"></a>
+<span class="sourceLineNo">1085</span>                                _schemaDef = DBSchemaParserEmitter.parseSchemaDef(schemaDef);<a name="line.1085"></a>
+<span class="sourceLineNo">1086</span>                        }<a name="line.1086"></a>
+<span class="sourceLineNo">1087</span><a name="line.1087"></a>
+<span class="sourceLineNo">1088</span>                } else if (attribute == _outputTypeAttr) {<a name="line.1088"></a>
+<span class="sourceLineNo">1089</span>                        String strOutputType = _outputTypeAttr.stringValue();<a name="line.1089"></a>
+<span class="sourceLineNo">1090</span>                        log.debug("Attribute Changed: " + strOutputType);<a name="line.1090"></a>
+<span class="sourceLineNo">1091</span>                        if (strOutputType.equals("As Table") &amp;&amp; _outputType != _ASTABLE) {<a name="line.1091"></a>
+<span class="sourceLineNo">1092</span>                                _outputType = _ASTABLE;<a name="line.1092"></a>
+<span class="sourceLineNo">1093</span>                        } else if (strOutputType.equals("As Row") &amp;&amp; _outputType != _ASROW) {<a name="line.1093"></a>
+<span class="sourceLineNo">1094</span>                                _outputType = _ASROW;<a name="line.1094"></a>
+<span class="sourceLineNo">1095</span>                        } else if (strOutputType.equals("As Field")<a name="line.1095"></a>
+<span class="sourceLineNo">1096</span>                                        &amp;&amp; _outputType != _ASFIELD) {<a name="line.1096"></a>
+<span class="sourceLineNo">1097</span>                                _outputType = _ASFIELD;<a name="line.1097"></a>
+<span class="sourceLineNo">1098</span>                        } else {<a name="line.1098"></a>
+<span class="sourceLineNo">1099</span>                                // throw new IllegalActionException(this,<a name="line.1099"></a>
+<span class="sourceLineNo">1100</span>                                // "Unrecognized outputType: " + strOutputType);<a name="line.1100"></a>
+<span class="sourceLineNo">1101</span>                        }<a name="line.1101"></a>
+<span class="sourceLineNo">1102</span>                        log<a name="line.1102"></a>
+<span class="sourceLineNo">1103</span>                                        .debug("Calling reconfigurePorts because of outputTypeAttr change.");<a name="line.1103"></a>
+<span class="sourceLineNo">1104</span>                        reconfigurePorts("outputTypeAttr");<a name="line.1104"></a>
+<span class="sourceLineNo">1105</span><a name="line.1105"></a>
+<span class="sourceLineNo">1106</span>                } else if ((attribute.getName().equals(ENDPOINT_ATTR) || attribute<a name="line.1106"></a>
+<span class="sourceLineNo">1107</span>                                .getName().equals(SEARCHDATA_ATTR))<a name="line.1107"></a>
+<span class="sourceLineNo">1108</span>                                &amp;&amp; // !_ignoreSearchChange &amp;&amp;<a name="line.1108"></a>
+<span class="sourceLineNo">1109</span>                                // removed the ignoreSearchFlag so that actor will initialize<a name="line.1109"></a>
+<span class="sourceLineNo">1110</span>                                // when 1st dragged<a name="line.1110"></a>
+<span class="sourceLineNo">1111</span>                                // to the work area. Without this, the SQL database cannot be<a name="line.1111"></a>
+<span class="sourceLineNo">1112</span>                                // viewed to set<a name="line.1112"></a>
+<span class="sourceLineNo">1113</span>                                // values. - Dan Higgins Jan 2008<a name="line.1113"></a>
+<span class="sourceLineNo">1114</span>                                hasConnectionValues()<a name="line.1114"></a>
+<span class="sourceLineNo">1115</span>                                &amp;&amp; !(attribute.getContainer().getContainer() instanceof ResultTreeRoot)) {<a name="line.1115"></a>
+<span class="sourceLineNo">1116</span>                        _icon.setBusy();<a name="line.1116"></a>
+<span class="sourceLineNo">1117</span>                        _ignoreSearchChange = true;<a name="line.1117"></a>
+<span class="sourceLineNo">1118</span>                        String endPointStr = getEndpoint();<a name="line.1118"></a>
+<span class="sourceLineNo">1119</span>                        String searchStr = getSearchData();<a name="line.1119"></a>
+<span class="sourceLineNo">1120</span>                        if ((searchStr == null) || (searchStr.length() &lt; 1))<a name="line.1120"></a>
+<span class="sourceLineNo">1121</span>                                return;<a name="line.1121"></a>
+<span class="sourceLineNo">1122</span><a name="line.1122"></a>
+<span class="sourceLineNo">1123</span>                        // System.out.println("endPointStr: "+endPointStr);<a name="line.1123"></a>
+<span class="sourceLineNo">1124</span>                        // System.out.println("searchStr:   "+searchStr);<a name="line.1124"></a>
+<span class="sourceLineNo">1125</span><a name="line.1125"></a>
+<span class="sourceLineNo">1126</span>                        StringBuffer queryBuf = new StringBuffer();<a name="line.1126"></a>
+<span class="sourceLineNo">1127</span>                        queryBuf.append("&lt;?xml version=\"1.0\" encoding=\"UTF-8\"?&gt;");<a name="line.1127"></a>
+<span class="sourceLineNo">1128</span>                        queryBuf<a name="line.1128"></a>
+<span class="sourceLineNo">1129</span>                                        .append("&lt;egq:query queryId=\"query-digir.1.1\" system=\"http://knb.ecoinformatics.org\" ");<a name="line.1129"></a>
+<span class="sourceLineNo">1130</span>                        queryBuf<a name="line.1130"></a>
+<span class="sourceLineNo">1131</span>                                        .append("  xmlns:egq=\"http://ecoinformatics.org/query-1.0.1\" ");<a name="line.1131"></a>
+<span class="sourceLineNo">1132</span>                        queryBuf<a name="line.1132"></a>
+<span class="sourceLineNo">1133</span>                                        .append("  xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" ");<a name="line.1133"></a>
+<span class="sourceLineNo">1134</span>                        queryBuf<a name="line.1134"></a>
+<span class="sourceLineNo">1135</span>                                        .append("  xsi:schemaLocation=\"http://ecoinformatics.org/query-1.0.1 ../../src/xsd/query.xsd\"&gt;");<a name="line.1135"></a>
+<span class="sourceLineNo">1136</span>                        queryBuf<a name="line.1136"></a>
+<span class="sourceLineNo">1137</span>                                        .append("  &lt;namespace prefix=\"darwin\"&gt;http://digir.net/schema/conceptual/darwin/2003/1.0&lt;/namespace&gt;");<a name="line.1137"></a>
+<span class="sourceLineNo">1138</span>                        queryBuf.append("  &lt;title&gt;" + searchStr + " Query&lt;/title&gt;");<a name="line.1138"></a>
+<span class="sourceLineNo">1139</span><a name="line.1139"></a>
+<span class="sourceLineNo">1140</span>                        boolean useAllField = false;<a name="line.1140"></a>
+<span class="sourceLineNo">1141</span>                        if (useAllField) {<a name="line.1141"></a>
+<span class="sourceLineNo">1142</span>                                DSTableIFace table = (DSTableIFace) _darwinCoreSchema<a name="line.1142"></a>
+<span class="sourceLineNo">1143</span>                                                .getTables().elementAt(0); // there is only one table<a name="line.1143"></a>
+<span class="sourceLineNo">1144</span>                                for (Enumeration e = table.getFields().elements(); e<a name="line.1144"></a>
+<span class="sourceLineNo">1145</span>                                                .hasMoreElements();) {<a name="line.1145"></a>
+<span class="sourceLineNo">1146</span>                                        DSTableFieldIFace field = (DSTableFieldIFace) e<a name="line.1146"></a>
+<span class="sourceLineNo">1147</span>                                                        .nextElement();<a name="line.1147"></a>
+<span class="sourceLineNo">1148</span>                                        queryBuf.append("  &lt;returnField&gt;/" + field.getName()<a name="line.1148"></a>
+<span class="sourceLineNo">1149</span>                                                        + "&lt;/returnField&gt;");<a name="line.1149"></a>
+<span class="sourceLineNo">1150</span>                                }<a name="line.1150"></a>
+<span class="sourceLineNo">1151</span>                        } else {<a name="line.1151"></a>
+<span class="sourceLineNo">1152</span>                                queryBuf.append("  &lt;returnField&gt;/Species&lt;/returnField&gt;");<a name="line.1152"></a>
+<span class="sourceLineNo">1153</span>                                queryBuf.append("  &lt;returnField&gt;/ScientificName&lt;/returnField&gt;");<a name="line.1153"></a>
+<span class="sourceLineNo">1154</span>                                queryBuf.append("  &lt;returnField&gt;/Collector&lt;/returnField&gt;");<a name="line.1154"></a>
+<span class="sourceLineNo">1155</span>                                queryBuf.append("  &lt;returnField&gt;/YearCollected&lt;/returnField&gt;");<a name="line.1155"></a>
+<span class="sourceLineNo">1156</span>                                queryBuf<a name="line.1156"></a>
+<span class="sourceLineNo">1157</span>                                                .append("  &lt;returnField&gt;/InstitutionCode&lt;/returnField&gt;");<a name="line.1157"></a>
+<span class="sourceLineNo">1158</span>                                queryBuf.append("  &lt;returnField&gt;/CollectionCode&lt;/returnField&gt;");<a name="line.1158"></a>
+<span class="sourceLineNo">1159</span>                                queryBuf.append("  &lt;returnField&gt;/CatalogNumber&lt;/returnField&gt;");<a name="line.1159"></a>
+<span class="sourceLineNo">1160</span>                                queryBuf<a name="line.1160"></a>
+<span class="sourceLineNo">1161</span>                                                .append("  &lt;returnField&gt;/CatalogNumberText&lt;/returnField&gt;");<a name="line.1161"></a>
+<span class="sourceLineNo">1162</span>                                queryBuf<a name="line.1162"></a>
+<span class="sourceLineNo">1163</span>                                                .append("  &lt;returnField&gt;/DecimalLatitude&lt;/returnField&gt;");<a name="line.1163"></a>
+<span class="sourceLineNo">1164</span>                                queryBuf<a name="line.1164"></a>
+<span class="sourceLineNo">1165</span>                                                .append("  &lt;returnField&gt;/DecimalLongitude&lt;/returnField&gt;");<a name="line.1165"></a>
+<span class="sourceLineNo">1166</span>                        }<a name="line.1166"></a>
+<span class="sourceLineNo">1167</span>                        queryBuf<a name="line.1167"></a>
+<span class="sourceLineNo">1168</span>                                        .append("  &lt;condition operator=\"LIKE\" concept=\"ScientificName\"&gt;"<a name="line.1168"></a>
+<span class="sourceLineNo">1169</span>                                                        + searchStr + "&lt;/condition&gt;");<a name="line.1169"></a>
+<span class="sourceLineNo">1170</span>                        queryBuf.append("&lt;/egq:query&gt;");<a name="line.1170"></a>
+<span class="sourceLineNo">1171</span><a name="line.1171"></a>
+<span class="sourceLineNo">1172</span>                        try {<a name="line.1172"></a>
+<span class="sourceLineNo">1173</span>                                QueryType query = null;<a name="line.1173"></a>
+<span class="sourceLineNo">1174</span><a name="line.1174"></a>
+<span class="sourceLineNo">1175</span>                                StringReader strReader = new StringReader(queryBuf.toString());<a name="line.1175"></a>
+<span class="sourceLineNo">1176</span>                                EcogridQueryParser parser = new EcogridQueryParser(strReader);<a name="line.1176"></a>
+<span class="sourceLineNo">1177</span>                                parser.parseXML();<a name="line.1177"></a>
+<span class="sourceLineNo">1178</span>                                query = parser.getEcogridQuery();<a name="line.1178"></a>
+<span class="sourceLineNo">1179</span><a name="line.1179"></a>
+<span class="sourceLineNo">1180</span>                                _icon.setBusy();<a name="line.1180"></a>
+<span class="sourceLineNo">1181</span>                                String resName = "DigirQuery: " + searchStr;<a name="line.1181"></a>
+<span class="sourceLineNo">1182</span>                                _cachedDataItem = (EcogridQueryDataCacheItem) DataCacheManager<a name="line.1182"></a>
+<span class="sourceLineNo">1183</span>                                                .getCacheItem(this, resName, endPointStr,<a name="line.1183"></a>
+<span class="sourceLineNo">1184</span>                                                                EcogridQueryDataCacheItem.class.getName());<a name="line.1184"></a>
+<span class="sourceLineNo">1185</span>                                if (_cachedDataItem.isEmpty()) {<a name="line.1185"></a>
+<span class="sourceLineNo">1186</span>                                        _cachedDataItem.setQuery(query);<a name="line.1186"></a>
+<span class="sourceLineNo">1187</span>                                        _cachedDataItem.start();<a name="line.1187"></a>
+<span class="sourceLineNo">1188</span>                                }<a name="line.1188"></a>
+<span class="sourceLineNo">1189</span>                                // need to update the _sqlAttr expression to include the new<a name="line.1189"></a>
+<span class="sourceLineNo">1190</span>                                // table name<a name="line.1190"></a>
+<span class="sourceLineNo">1191</span>                                // use a regex ('replaceAll') - DFH March 2007<a name="line.1191"></a>
+<span class="sourceLineNo">1192</span>                                String temp = _sqlAttr.getExpression();<a name="line.1192"></a>
+<span class="sourceLineNo">1193</span>                                temp = temp.replaceAll("DigirTable: .*?\"", "DigirTable: "<a name="line.1193"></a>
+<span class="sourceLineNo">1194</span>                                                + getSearchData() + "\"");<a name="line.1194"></a>
+<span class="sourceLineNo">1195</span>                                _ignoreSqlChange = true;<a name="line.1195"></a>
+<span class="sourceLineNo">1196</span>                                _sqlAttr.setExpression(temp);<a name="line.1196"></a>
+<span class="sourceLineNo">1197</span>                                _ignoreSqlChange = false;<a name="line.1197"></a>
+<span class="sourceLineNo">1198</span>                        } catch (Exception e) {<a name="line.1198"></a>
+<span class="sourceLineNo">1199</span>                                System.err.println(e);<a name="line.1199"></a>
+<span class="sourceLineNo">1200</span>                                e.printStackTrace();<a name="line.1200"></a>
+<span class="sourceLineNo">1201</span>                        }<a name="line.1201"></a>
+<span class="sourceLineNo">1202</span>                }<a name="line.1202"></a>
+<span class="sourceLineNo">1203</span>        }<a name="line.1203"></a>
+<span class="sourceLineNo">1204</span><a name="line.1204"></a>
+<span class="sourceLineNo">1205</span>        /**<a name="line.1205"></a>
+<span class="sourceLineNo">1206</span>         * returns the names of the current ports<a name="line.1206"></a>
+<span class="sourceLineNo">1207</span>         */<a name="line.1207"></a>
+<span class="sourceLineNo">1208</span>        private Vector getExistingPortNames() {<a name="line.1208"></a>
+<span class="sourceLineNo">1209</span>                List l = this.portList();<a name="line.1209"></a>
+<span class="sourceLineNo">1210</span>                Vector v = new Vector();<a name="line.1210"></a>
+<span class="sourceLineNo">1211</span>                for (int i = 0; i &lt; l.size(); i++) {<a name="line.1211"></a>
+<span class="sourceLineNo">1212</span>                        TypedIOPort p = (TypedIOPort) l.get(i);<a name="line.1212"></a>
+<span class="sourceLineNo">1213</span>                        v.add(p.getName().trim());<a name="line.1213"></a>
+<span class="sourceLineNo">1214</span>                }<a name="line.1214"></a>
+<span class="sourceLineNo">1215</span>                return v;<a name="line.1215"></a>
+<span class="sourceLineNo">1216</span>        }<a name="line.1216"></a>
+<span class="sourceLineNo">1217</span><a name="line.1217"></a>
+<span class="sourceLineNo">1218</span>        /**<a name="line.1218"></a>
+<span class="sourceLineNo">1219</span>         * Returns a Ptolemly type for a given Kepler DataSource Type<a name="line.1219"></a>
+<span class="sourceLineNo">1220</span>         * <a name="line.1220"></a>
+<span class="sourceLineNo">1221</span>         * @param aType<a name="line.1221"></a>
+<span class="sourceLineNo">1222</span>         *            DataSource type<a name="line.1222"></a>
+<span class="sourceLineNo">1223</span>         * @return Ptolemy type<a name="line.1223"></a>
+<span class="sourceLineNo">1224</span>         */<a name="line.1224"></a>
+<span class="sourceLineNo">1225</span>        private static BaseType getBaseType(String aType) {<a name="line.1225"></a>
+<span class="sourceLineNo">1226</span>                BaseType type = (BaseType) mTypeHash.get(aType);<a name="line.1226"></a>
+<span class="sourceLineNo">1227</span>                if (type == null) {<a name="line.1227"></a>
+<span class="sourceLineNo">1228</span>                        return BaseType.UNKNOWN;<a name="line.1228"></a>
+<span class="sourceLineNo">1229</span>                }<a name="line.1229"></a>
+<span class="sourceLineNo">1230</span>                return type;<a name="line.1230"></a>
+<span class="sourceLineNo">1231</span>        }<a name="line.1231"></a>
+<span class="sourceLineNo">1232</span><a name="line.1232"></a>
+<span class="sourceLineNo">1233</span>        private void generateTable(ResultsetTypeRecord[] records) {<a name="line.1233"></a>
+<span class="sourceLineNo">1234</span>                _icon.setBusy();<a name="line.1234"></a>
+<span class="sourceLineNo">1235</span>                try {<a name="line.1235"></a>
+<span class="sourceLineNo">1236</span><a name="line.1236"></a>
+<span class="sourceLineNo">1237</span>                        // Create a name for this text table which is unique.<a name="line.1237"></a>
+<span class="sourceLineNo">1238</span>                        String resName = "DigirTable: " + getSearchData();<a name="line.1238"></a>
+<span class="sourceLineNo">1239</span><a name="line.1239"></a>
+<span class="sourceLineNo">1240</span>                        // Ok, now create the table as a "string" table where each row is<a name="line.1240"></a>
+<span class="sourceLineNo">1241</span>                        // ROWDELIM<a name="line.1241"></a>
+<span class="sourceLineNo">1242</span>                        // and load it into the cache.<a name="line.1242"></a>
+<span class="sourceLineNo">1243</span>                        _tableDataCache = (EcogridDataCacheItem) DataCacheManager<a name="line.1243"></a>
+<span class="sourceLineNo">1244</span>                                        .getCacheItem(null, resName, DATATABLE,<a name="line.1244"></a>
+<span class="sourceLineNo">1245</span>                                                        EcogridDataCacheItem.class.getName());<a name="line.1245"></a>
+<span class="sourceLineNo">1246</span><a name="line.1246"></a>
+<span class="sourceLineNo">1247</span>                        // now create the table entity<a name="line.1247"></a>
+<span class="sourceLineNo">1248</span>                        _tableEntity = new Entity(_tableDataCache.getLSID().toString(),<a name="line.1248"></a>
+<span class="sourceLineNo">1249</span>                                        resName, "", new Boolean(true), Entity.COLUMNMAJOR,<a name="line.1249"></a>
+<span class="sourceLineNo">1250</span>                                        records.length);<a name="line.1250"></a>
+<span class="sourceLineNo">1251</span>                        _tableEntity.setNumHeaderLines(1);<a name="line.1251"></a>
+<span class="sourceLineNo">1252</span>                        _tableEntity.setDelimiter(COLDELIM);<a name="line.1252"></a>
+<span class="sourceLineNo">1253</span>                        _tableEntity.setRecordDelimiter(ROWDELIM);<a name="line.1253"></a>
+<span class="sourceLineNo">1254</span><a name="line.1254"></a>
+<span class="sourceLineNo">1255</span>                        DBTableNameResolver nameResolver = new DBTableNameResolver();<a name="line.1255"></a>
+<span class="sourceLineNo">1256</span>                        try {<a name="line.1256"></a>
+<span class="sourceLineNo">1257</span>                                _tableEntity = nameResolver.resolveTableName(_tableEntity);<a name="line.1257"></a>
+<span class="sourceLineNo">1258</span>                        } catch (Exception e) {<a name="line.1258"></a>
+<span class="sourceLineNo">1259</span>                        }<a name="line.1259"></a>
+<span class="sourceLineNo">1260</span>                        String tableName = _tableEntity.getMappedName() + "";<a name="line.1260"></a>
+<span class="sourceLineNo">1261</span><a name="line.1261"></a>
+<span class="sourceLineNo">1262</span>                        String tableStr = createTableFromResultset(COLDELIM, records);<a name="line.1262"></a>
+<span class="sourceLineNo">1263</span>                        // System.err.println("*** Table[\n"+tableStr+"\n]");<a name="line.1263"></a>
+<span class="sourceLineNo">1264</span>                        _tableDataCache.setData(tableStr.getBytes());<a name="line.1264"></a>
+<span class="sourceLineNo">1265</span><a name="line.1265"></a>
+<span class="sourceLineNo">1266</span>                        DSTableIFace tableSchema = (DSTableIFace) _resultsetSchemaDef<a name="line.1266"></a>
+<span class="sourceLineNo">1267</span>                                        .getTables().elementAt(0);<a name="line.1267"></a>
+<span class="sourceLineNo">1268</span>                        Vector columns = tableSchema.getFields();<a name="line.1268"></a>
+<span class="sourceLineNo">1269</span>                        Enumeration colEnum = columns.elements();<a name="line.1269"></a>
+<span class="sourceLineNo">1270</span>                        while (colEnum.hasMoreElements()) {<a name="line.1270"></a>
+<span class="sourceLineNo">1271</span>                                DSTableFieldIFace colDef = (DSTableFieldIFace) colEnum<a name="line.1271"></a>
+<span class="sourceLineNo">1272</span>                                                .nextElement();<a name="line.1272"></a>
+<span class="sourceLineNo">1273</span>                                org.kepler.objectmanager.data.db.Attribute attr = new org.kepler.objectmanager.data.db.Attribute(<a name="line.1273"></a>
+<span class="sourceLineNo">1274</span>                                                colDef.getName(), colDef.getName(), colDef<a name="line.1274"></a>
+<span class="sourceLineNo">1275</span>                                                                .getDataType());<a name="line.1275"></a>
+<span class="sourceLineNo">1276</span>                                _tableEntity.add(attr);<a name="line.1276"></a>
+<span class="sourceLineNo">1277</span>                        }<a name="line.1277"></a>
+<span class="sourceLineNo">1278</span><a name="line.1278"></a>
+<span class="sourceLineNo">1279</span>                        _tableGenerator = new DBTablesGenerator(_tableEntity,<a name="line.1279"></a>
+<span class="sourceLineNo">1280</span>                                        _tableDataCache.getBaseFileName());<a name="line.1280"></a>
+<span class="sourceLineNo">1281</span>                        _tableGenerator.run(); // don't do thread<a name="line.1281"></a>
+<span class="sourceLineNo">1282</span><a name="line.1282"></a>
+<span class="sourceLineNo">1283</span>                        DSSchemaDef schema = new DSSchemaDef();<a name="line.1283"></a>
+<span class="sourceLineNo">1284</span>                        schema.addTable(_tableEntity);<a name="line.1284"></a>
+<span class="sourceLineNo">1285</span>                        _schemaDef = schema;<a name="line.1285"></a>
+<span class="sourceLineNo">1286</span>                        // right here it is really hard to know if the table has already<a name="line.1286"></a>
+<span class="sourceLineNo">1287</span>                        // been generated<a name="line.1287"></a>
+<span class="sourceLineNo">1288</span>                        // and whether we need to set the schema for the first time or not<a name="line.1288"></a>
+<span class="sourceLineNo">1289</span>                        // So if it is empty, then set it, if not then ignore it<a name="line.1289"></a>
+<span class="sourceLineNo">1290</span>                        // if (_schemaAttr.getExpression().length() == 0)<a name="line.1290"></a>
+<span class="sourceLineNo">1291</span>                        {<a name="line.1291"></a>
+<span class="sourceLineNo">1292</span>                                String schemaDefXML = DBSchemaParserEmitter.emitXML(_schemaDef);<a name="line.1292"></a>
+<span class="sourceLineNo">1293</span>                                _ignoreSchemaChange = true;<a name="line.1293"></a>
+<span class="sourceLineNo">1294</span>                                _schemaAttr.setExpression(schemaDefXML);<a name="line.1294"></a>
+<span class="sourceLineNo">1295</span>                                _ignoreSchemaChange = false;<a name="line.1295"></a>
+<span class="sourceLineNo">1296</span>                        }<a name="line.1296"></a>
+<span class="sourceLineNo">1297</span><a name="line.1297"></a>
+<span class="sourceLineNo">1298</span>                } catch (Exception e) {<a name="line.1298"></a>
+<span class="sourceLineNo">1299</span>                }<a name="line.1299"></a>
+<span class="sourceLineNo">1300</span>                _icon.setReady();<a name="line.1300"></a>
+<span class="sourceLineNo">1301</span>        }<a name="line.1301"></a>
+<span class="sourceLineNo">1302</span><a name="line.1302"></a>
+<span class="sourceLineNo">1303</span>        // ------------------------------------------------------------------------<a name="line.1303"></a>
+<span class="sourceLineNo">1304</span>        // -- DataCacheListener<a name="line.1304"></a>
+<span class="sourceLineNo">1305</span>        // ------------------------------------------------------------------------<a name="line.1305"></a>
+<span class="sourceLineNo">1306</span><a name="line.1306"></a>
+<span class="sourceLineNo">1307</span>        public void complete(DataCacheObject aItem) {<a name="line.1307"></a>
+<span class="sourceLineNo">1308</span>                try {<a name="line.1308"></a>
+<span class="sourceLineNo">1309</span>                        _cachedDataItem = (EcogridQueryDataCacheItem) aItem;<a name="line.1309"></a>
+<span class="sourceLineNo">1310</span>                        if (!_cachedDataItem.isReady()) {<a name="line.1310"></a>
+<span class="sourceLineNo">1311</span>                                _icon.setError();<a name="line.1311"></a>
+<span class="sourceLineNo">1312</span>                                return;<a name="line.1312"></a>
+<span class="sourceLineNo">1313</span>                        }<a name="line.1313"></a>
+<span class="sourceLineNo">1314</span>                        // System.out.println("Inside 'complete' of DarwinCoreDataSource!!!!");<a name="line.1314"></a>
+<span class="sourceLineNo">1315</span>                        ResultsetType _resultsetType = _cachedDataItem.getResultset();<a name="line.1315"></a>
+<span class="sourceLineNo">1316</span>                        if (_resultsetType == null) {<a name="line.1316"></a>
+<span class="sourceLineNo">1317</span>                                _icon.setError();<a name="line.1317"></a>
+<span class="sourceLineNo">1318</span>                                // System.out.println("Resultset was NULL!");<a name="line.1318"></a>
+<span class="sourceLineNo">1319</span>                                return;<a name="line.1319"></a>
+<span class="sourceLineNo">1320</span>                        }<a name="line.1320"></a>
+<span class="sourceLineNo">1321</span><a name="line.1321"></a>
+<span class="sourceLineNo">1322</span>                        //<a name="line.1322"></a>
+<span class="sourceLineNo">1323</span>                        // Using the metadata names construct<a name="line.1323"></a>
+<span class="sourceLineNo">1324</span>                        // the table schema definition<a name="line.1324"></a>
+<span class="sourceLineNo">1325</span>                        //<a name="line.1325"></a>
+<span class="sourceLineNo">1326</span>                        // Note: The columns are defined in the same order as they appear in<a name="line.1326"></a>
+<span class="sourceLineNo">1327</span>                        // the document.<a name="line.1327"></a>
+<span class="sourceLineNo">1328</span>                        // This is not the same order they are sent in the query. However,<a name="line.1328"></a>
+<span class="sourceLineNo">1329</span>                        // this code does leverage the fact that the Ecogrid Digir<a name="line.1329"></a>
+<span class="sourceLineNo">1330</span>                        // implementation<a name="line.1330"></a>
+<span class="sourceLineNo">1331</span>                        // returns all the fields in all records in the same order as they<a name="line.1331"></a>
+<span class="sourceLineNo">1332</span>                        // appear in<a name="line.1332"></a>
+<span class="sourceLineNo">1333</span>                        // the metadata.<a name="line.1333"></a>
+<span class="sourceLineNo">1334</span>                        ResultsetTypeResultsetMetadataRecordStructure rs = _resultsetType<a name="line.1334"></a>
+<span class="sourceLineNo">1335</span>                                        .getResultsetMetadata().getRecordStructure();<a name="line.1335"></a>
+<span class="sourceLineNo">1336</span>                        ResultsetTypeResultsetMetadataRecordStructureReturnField[] fields = rs<a name="line.1336"></a>
+<span class="sourceLineNo">1337</span>                                        .getReturnField();<a name="line.1337"></a>
+<span class="sourceLineNo">1338</span>                        if (fields != null) {<a name="line.1338"></a>
+<span class="sourceLineNo">1339</span>                                DSTableDef table = new DSTableDef("DarwinCore");<a name="line.1339"></a>
+<span class="sourceLineNo">1340</span>                                for (int i = 0; i &lt; fields.length; i++) {<a name="line.1340"></a>
+<span class="sourceLineNo">1341</span>                                        String fieldname = fields[i].getName();<a name="line.1341"></a>
+<span class="sourceLineNo">1342</span>                                        // System.out.println("the field name from return structure "+fieldname);<a name="line.1342"></a>
+<span class="sourceLineNo">1343</span>                                        //<a name="line.1343"></a>
+<span class="sourceLineNo">1344</span>                                        // Test for a leading "/" in the fieldname.<a name="line.1344"></a>
+<span class="sourceLineNo">1345</span>                                        // Strip it if it's there.<a name="line.1345"></a>
+<span class="sourceLineNo">1346</span>                                        // This Fixes the problem that Ecogrid needs to have leading<a name="line.1346"></a>
+<span class="sourceLineNo">1347</span>                                        // '/' right now. But yet this part of the system cannot<a name="line.1347"></a>
+<span class="sourceLineNo">1348</span>                                        // handle them.<a name="line.1348"></a>
+<span class="sourceLineNo">1349</span>                                        if (fieldname.startsWith("/")) {<a name="line.1349"></a>
+<span class="sourceLineNo">1350</span>                                                fieldname = fieldname.substring(1);<a name="line.1350"></a>
+<span class="sourceLineNo">1351</span>                                        }<a name="line.1351"></a>
+<span class="sourceLineNo">1352</span>                                        String fieldtype = DarwinCoreSchema.getInstance()<a name="line.1352"></a>
+<span class="sourceLineNo">1353</span>                                                        .lookupTypeFromName(fieldname);<a name="line.1353"></a>
+<span class="sourceLineNo">1354</span>                                        // System.out.println(fieldname +" -&gt; "+ fieldtype);<a name="line.1354"></a>
+<span class="sourceLineNo">1355</span>                                        table.addField(fieldname, fieldtype, null);<a name="line.1355"></a>
+<span class="sourceLineNo">1356</span>                                }<a name="line.1356"></a>
+<span class="sourceLineNo">1357</span>                                // create a schemaDef that was used by the results<a name="line.1357"></a>
+<span class="sourceLineNo">1358</span>                                DSSchemaDef schema = new DSSchemaDef();<a name="line.1358"></a>
+<span class="sourceLineNo">1359</span>                                schema.addTable(table);<a name="line.1359"></a>
+<span class="sourceLineNo">1360</span>                                _resultsetSchemaDef = schema;<a name="line.1360"></a>
+<span class="sourceLineNo">1361</span>                                // DSTableIFace table =<a name="line.1361"></a>
+<span class="sourceLineNo">1362</span>                                // (DSTableIFace)_darwinCoreSchema.getTables().elementAt(0);<a name="line.1362"></a>
+<span class="sourceLineNo">1363</span>                                String sqlDef = _sqlAttr.getExpression();<a name="line.1363"></a>
+<span class="sourceLineNo">1364</span>                                log.debug("Calling reconfigurePorts in Complete.");<a name="line.1364"></a>
+<span class="sourceLineNo">1365</span>                                if (sqlDef.length() == 0 || _queryDef == null<a name="line.1365"></a>
+<span class="sourceLineNo">1366</span>                                                || _columns == null || _colTypes == null) {<a name="line.1366"></a>
+<span class="sourceLineNo">1367</span>                                        _columns = table.getFields();<a name="line.1367"></a>
+<span class="sourceLineNo">1368</span>                                        // reconfigurePorts("Complete 1");<a name="line.1368"></a>
+<span class="sourceLineNo">1369</span>                                } else {<a name="line.1369"></a>
+<span class="sourceLineNo">1370</span>                                        _columns = _queryDef.getSelects();<a name="line.1370"></a>
+<span class="sourceLineNo">1371</span>                                        // reconfigurePorts("Complete 2");<a name="line.1371"></a>
+<span class="sourceLineNo">1372</span>                                }<a name="line.1372"></a>
+<span class="sourceLineNo">1373</span>                        }<a name="line.1373"></a>
+<span class="sourceLineNo">1374</span><a name="line.1374"></a>
+<span class="sourceLineNo">1375</span>                        ResultsetTypeRecord[] _records = null;<a name="line.1375"></a>
+<span class="sourceLineNo">1376</span>                        _records = _cachedDataItem.getResultset().getRecord();<a name="line.1376"></a>
+<span class="sourceLineNo">1377</span><a name="line.1377"></a>
+<span class="sourceLineNo">1378</span>                        //<a name="line.1378"></a>
+<span class="sourceLineNo">1379</span>                        // Here we need to make populate the _schemaDef attribute in order<a name="line.1379"></a>
+<span class="sourceLineNo">1380</span>                        // to enable the<a name="line.1380"></a>
+<span class="sourceLineNo">1381</span>                        // query builder (Ie, Look Inside or Open Actor).<a name="line.1381"></a>
+<span class="sourceLineNo">1382</span>                        if (_records != null) {<a name="line.1382"></a>
+<span class="sourceLineNo">1383</span>                                generateTable(_records);<a name="line.1383"></a>
+<span class="sourceLineNo">1384</span>                        }<a name="line.1384"></a>
+<span class="sourceLineNo">1385</span><a name="line.1385"></a>
+<span class="sourceLineNo">1386</span>                        _icon.setReady();<a name="line.1386"></a>
+<span class="sourceLineNo">1387</span>                } finally {<a name="line.1387"></a>
+<span class="sourceLineNo">1388</span>                        _downloadCompleted.release();<a name="line.1388"></a>
+<span class="sourceLineNo">1389</span>                }<a name="line.1389"></a>
+<span class="sourceLineNo">1390</span>        }<a name="line.1390"></a>
+<span class="sourceLineNo">1391</span><a name="line.1391"></a>
+<span class="sourceLineNo">1392</span>        /**<a name="line.1392"></a>
+<span class="sourceLineNo">1393</span>         * stop is used by the Director to indicate to the actor that execution is<a name="line.1393"></a>
+<span class="sourceLineNo">1394</span>         * to be stopped. We use this opportunity to notify the execution thread<a name="line.1394"></a>
+<span class="sourceLineNo">1395</span>         * which may be blocked in the initialize() method waiting for the<a name="line.1395"></a>
+<span class="sourceLineNo">1396</span>         * _downlaodCompleted Latch. We don't release the Latch because that will<a name="line.1396"></a>
+<span class="sourceLineNo">1397</span>         * only be done when the download completes.<a name="line.1397"></a>
+<span class="sourceLineNo">1398</span>         */<a name="line.1398"></a>
+<span class="sourceLineNo">1399</span>        public void stop() {<a name="line.1399"></a>
+<span class="sourceLineNo">1400</span>                log.debug("Stopping");<a name="line.1400"></a>
+<span class="sourceLineNo">1401</span>                synchronized (_downloadCompleted) {<a name="line.1401"></a>
+<span class="sourceLineNo">1402</span>                        _downloadCompleted.notifyAll();<a name="line.1402"></a>
+<span class="sourceLineNo">1403</span>                }<a name="line.1403"></a>
+<span class="sourceLineNo">1404</span>                super.stop();<a name="line.1404"></a>
+<span class="sourceLineNo">1405</span>        }<a name="line.1405"></a>
+<span class="sourceLineNo">1406</span><a name="line.1406"></a>
+<span class="sourceLineNo">1407</span>        /**<a name="line.1407"></a>
+<span class="sourceLineNo">1408</span>         * Determine if the recordId and endpoint attributes have valid values for<a name="line.1408"></a>
+<span class="sourceLineNo">1409</span>         * use in retrieving the record for parsing.<a name="line.1409"></a>
+<span class="sourceLineNo">1410</span>         * <a name="line.1410"></a>
+<span class="sourceLineNo">1411</span>         * @return boolean true if both recordid and endpoint are not null and are<a name="line.1411"></a>
+<span class="sourceLineNo">1412</span>         *         not the empty string<a name="line.1412"></a>
+<span class="sourceLineNo">1413</span>         */<a name="line.1413"></a>
+<span class="sourceLineNo">1414</span>        private boolean hasConnectionValues() {<a name="line.1414"></a>
+<span class="sourceLineNo">1415</span>                boolean hasValues = false;<a name="line.1415"></a>
+<span class="sourceLineNo">1416</span>                String SearchData = this.getSearchData();<a name="line.1416"></a>
+<span class="sourceLineNo">1417</span>                String endpoint = this.getEndpoint();<a name="line.1417"></a>
+<span class="sourceLineNo">1418</span><a name="line.1418"></a>
+<span class="sourceLineNo">1419</span>                if (SearchData != null &amp;&amp; !SearchData.equals("") &amp;&amp; endpoint != null<a name="line.1419"></a>
+<span class="sourceLineNo">1420</span>                                &amp;&amp; !endpoint.equals("")) {<a name="line.1420"></a>
+<span class="sourceLineNo">1421</span>                        hasValues = true;<a name="line.1421"></a>
+<span class="sourceLineNo">1422</span>                }<a name="line.1422"></a>
+<span class="sourceLineNo">1423</span>                return hasValues;<a name="line.1423"></a>
+<span class="sourceLineNo">1424</span>        }<a name="line.1424"></a>
+<span class="sourceLineNo">1425</span><a name="line.1425"></a>
+<span class="sourceLineNo">1426</span>        /**<a name="line.1426"></a>
+<span class="sourceLineNo">1427</span>         * This method allows default documentation to be added to the actor<a name="line.1427"></a>
+<span class="sourceLineNo">1428</span>         * specified in the parameter. The KeplerDocumentation is retrieved from the<a name="line.1428"></a>
+<span class="sourceLineNo">1429</span>         * actor that exists in the actor library. The default documentation is only<a name="line.1429"></a>
+<span class="sourceLineNo">1430</span>         * loaded once since it will likely remain quite static. If the given actor<a name="line.1430"></a>
+<span class="sourceLineNo">1431</span>         * instance already contains the KeplerDocumentation attribute, the existing<a name="line.1431"></a>
+<span class="sourceLineNo">1432</span>         * attribute is preserved (nothing is changed).<a name="line.1432"></a>
+<span class="sourceLineNo">1433</span>         * <a name="line.1433"></a>
+<span class="sourceLineNo">1434</span>         * @param emlActor<a name="line.1434"></a>
+<span class="sourceLineNo">1435</span>         *            the instance to which documentation will be added<a name="line.1435"></a>
+<span class="sourceLineNo">1436</span>         */<a name="line.1436"></a>
+<span class="sourceLineNo">1437</span>        public static void generateDocumentationForInstance(<a name="line.1437"></a>
+<span class="sourceLineNo">1438</span>                        DarwinCoreDataSource actor) {<a name="line.1438"></a>
+<span class="sourceLineNo">1439</span>                try {<a name="line.1439"></a>
+<span class="sourceLineNo">1440</span>                        // only look up the documentation only once<a name="line.1440"></a>
+<span class="sourceLineNo">1441</span>                        if (defaultDocumentation == null) {<a name="line.1441"></a>
+<span class="sourceLineNo">1442</span>                                Iterator cacheIter = CacheManager.getInstance()<a name="line.1442"></a>
+<span class="sourceLineNo">1443</span>                                                .getCacheObjectIterator();<a name="line.1443"></a>
+<span class="sourceLineNo">1444</span>                                while (cacheIter.hasNext()) {<a name="line.1444"></a>
+<span class="sourceLineNo">1445</span>                                        Object co = cacheIter.next();<a name="line.1445"></a>
+<span class="sourceLineNo">1446</span>                                        // is this an actor cache object?<a name="line.1446"></a>
+<span class="sourceLineNo">1447</span>                                        if (co instanceof ActorCacheObject) {<a name="line.1447"></a>
+<span class="sourceLineNo">1448</span>                                                ActorCacheObject aco = (ActorCacheObject) co;<a name="line.1448"></a>
+<span class="sourceLineNo">1449</span>                                                // for this class?<a name="line.1449"></a>
+<span class="sourceLineNo">1450</span>                                                if (aco.getClassName().equals(actor.getClassName())) {<a name="line.1450"></a>
+<span class="sourceLineNo">1451</span>                                                        // get the metadata<a name="line.1451"></a>
+<span class="sourceLineNo">1452</span>                                                        ActorMetadata am = aco.getMetadata();<a name="line.1452"></a>
+<span class="sourceLineNo">1453</span>                                                        // get the default documentation from the metadata<a name="line.1453"></a>
+<span class="sourceLineNo">1454</span>                                                        defaultDocumentation = am<a name="line.1454"></a>
+<span class="sourceLineNo">1455</span>                                                                        .getDocumentationAttribute();<a name="line.1455"></a>
+<span class="sourceLineNo">1456</span>                                                        log<a name="line.1456"></a>
+<span class="sourceLineNo">1457</span>                                                                        .debug("looked up default KeplerDocumentation contained in "<a name="line.1457"></a>
+<span class="sourceLineNo">1458</span>                                                                                        + am.getName());<a name="line.1458"></a>
+<span class="sourceLineNo">1459</span>                                                        break;<a name="line.1459"></a>
+<span class="sourceLineNo">1460</span>                                                }<a name="line.1460"></a>
+<span class="sourceLineNo">1461</span>                                        }<a name="line.1461"></a>
+<span class="sourceLineNo">1462</span>                                }<a name="line.1462"></a>
+<span class="sourceLineNo">1463</span>                        }<a name="line.1463"></a>
+<span class="sourceLineNo">1464</span><a name="line.1464"></a>
+<span class="sourceLineNo">1465</span>                        // add the documentation for this actor if it is not there already<a name="line.1465"></a>
+<span class="sourceLineNo">1466</span>                        if (actor.getAttribute("KeplerDocumentation") == null) {<a name="line.1466"></a>
+<span class="sourceLineNo">1467</span>                                // make an instance of the documentation attribute for the input<a name="line.1467"></a>
+<span class="sourceLineNo">1468</span>                                // actor<a name="line.1468"></a>
+<span class="sourceLineNo">1469</span>                                KeplerDocumentationAttribute keplerDocumentation = new KeplerDocumentationAttribute(<a name="line.1469"></a>
+<span class="sourceLineNo">1470</span>                                                actor, "KeplerDocumentation");<a name="line.1470"></a>
+<span class="sourceLineNo">1471</span><a name="line.1471"></a>
+<span class="sourceLineNo">1472</span>                                // copy the default and set it for this one<a name="line.1472"></a>
+<span class="sourceLineNo">1473</span>                                keplerDocumentation<a name="line.1473"></a>
+<span class="sourceLineNo">1474</span>                                                .createInstanceFromExisting(defaultDocumentation);<a name="line.1474"></a>
+<span class="sourceLineNo">1475</span>                                keplerDocumentation.setContainer(actor);<a name="line.1475"></a>
+<span class="sourceLineNo">1476</span>                                log.debug("set the KeplerDocumentation for actor instance: "<a name="line.1476"></a>
+<span class="sourceLineNo">1477</span>                                                + actor.getName());<a name="line.1477"></a>
+<span class="sourceLineNo">1478</span><a name="line.1478"></a>
+<span class="sourceLineNo">1479</span>                        }<a name="line.1479"></a>
+<span class="sourceLineNo">1480</span>                } catch (Exception e) {<a name="line.1480"></a>
+<span class="sourceLineNo">1481</span>                        log<a name="line.1481"></a>
+<span class="sourceLineNo">1482</span>                                        .error("error encountered whilst generating default documentation for actor instance: "<a name="line.1482"></a>
+<span class="sourceLineNo">1483</span>                                                        + e.getMessage());<a name="line.1483"></a>
+<span class="sourceLineNo">1484</span>                        e.printStackTrace();<a name="line.1484"></a>
+<span class="sourceLineNo">1485</span>                }<a name="line.1485"></a>
+<span class="sourceLineNo">1486</span>        }<a name="line.1486"></a>
+<span class="sourceLineNo">1487</span><a name="line.1487"></a>
+<span class="sourceLineNo">1488</span>}<a name="line.1488"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

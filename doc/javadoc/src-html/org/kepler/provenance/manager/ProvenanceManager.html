@@ -1,0 +1,665 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../../../stylesheet.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>/* Command line program and static methods to manage provenance.<a name="line.1"></a>
+<span class="sourceLineNo">002</span> * <a name="line.2"></a>
+<span class="sourceLineNo">003</span> * Copyright (c) 2015 The Regents of the University of California.<a name="line.3"></a>
+<span class="sourceLineNo">004</span> * All rights reserved.<a name="line.4"></a>
+<span class="sourceLineNo">005</span> *<a name="line.5"></a>
+<span class="sourceLineNo">006</span> * '$Author: crawl $'<a name="line.6"></a>
+<span class="sourceLineNo">007</span> * '$Date: 2018-02-01 12:19:23 -0800 (Thu, 01 Feb 2018) $' <a name="line.7"></a>
+<span class="sourceLineNo">008</span> * '$Revision: 34655 $'<a name="line.8"></a>
+<span class="sourceLineNo">009</span> * <a name="line.9"></a>
+<span class="sourceLineNo">010</span> * Permission is hereby granted, without written agreement and without<a name="line.10"></a>
+<span class="sourceLineNo">011</span> * license or royalty fees, to use, copy, modify, and distribute this<a name="line.11"></a>
+<span class="sourceLineNo">012</span> * software and its documentation for any purpose, provided that the above<a name="line.12"></a>
+<span class="sourceLineNo">013</span> * copyright notice and the following two paragraphs appear in all copies<a name="line.13"></a>
+<span class="sourceLineNo">014</span> * of this software.<a name="line.14"></a>
+<span class="sourceLineNo">015</span> *<a name="line.15"></a>
+<span class="sourceLineNo">016</span> * IN NO EVENT SHALL THE UNIVERSITY OF CALIFORNIA BE LIABLE TO ANY PARTY<a name="line.16"></a>
+<span class="sourceLineNo">017</span> * FOR DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES<a name="line.17"></a>
+<span class="sourceLineNo">018</span> * ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION, EVEN IF<a name="line.18"></a>
+<span class="sourceLineNo">019</span> * THE UNIVERSITY OF CALIFORNIA HAS BEEN ADVISED OF THE POSSIBILITY OF<a name="line.19"></a>
+<span class="sourceLineNo">020</span> * SUCH DAMAGE.<a name="line.20"></a>
+<span class="sourceLineNo">021</span> *<a name="line.21"></a>
+<span class="sourceLineNo">022</span> * THE UNIVERSITY OF CALIFORNIA SPECIFICALLY DISCLAIMS ANY WARRANTIES,<a name="line.22"></a>
+<span class="sourceLineNo">023</span> * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF<a name="line.23"></a>
+<span class="sourceLineNo">024</span> * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE<a name="line.24"></a>
+<span class="sourceLineNo">025</span> * PROVIDED HEREUNDER IS ON AN "AS IS" BASIS, AND THE UNIVERSITY OF<a name="line.25"></a>
+<span class="sourceLineNo">026</span> * CALIFORNIA HAS NO OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT, UPDATES,<a name="line.26"></a>
+<span class="sourceLineNo">027</span> * ENHANCEMENTS, OR MODIFICATIONS.<a name="line.27"></a>
+<span class="sourceLineNo">028</span> *<a name="line.28"></a>
+<span class="sourceLineNo">029</span> */<a name="line.29"></a>
+<span class="sourceLineNo">030</span>package org.kepler.provenance.manager;<a name="line.30"></a>
+<span class="sourceLineNo">031</span><a name="line.31"></a>
+<span class="sourceLineNo">032</span>import java.io.File;<a name="line.32"></a>
+<span class="sourceLineNo">033</span>import java.nio.file.Files;<a name="line.33"></a>
+<span class="sourceLineNo">034</span>import java.util.Arrays;<a name="line.34"></a>
+<span class="sourceLineNo">035</span>import java.util.LinkedList;<a name="line.35"></a>
+<span class="sourceLineNo">036</span>import java.util.List;<a name="line.36"></a>
+<span class="sourceLineNo">037</span>import java.util.Map;<a name="line.37"></a>
+<span class="sourceLineNo">038</span><a name="line.38"></a>
+<span class="sourceLineNo">039</span>import org.apache.taverna.robundle.Bundle;<a name="line.39"></a>
+<span class="sourceLineNo">040</span>import org.apache.taverna.robundle.Bundles;<a name="line.40"></a>
+<span class="sourceLineNo">041</span>import org.kepler.Kepler;<a name="line.41"></a>
+<span class="sourceLineNo">042</span>import org.kepler.kar.KAREntry;<a name="line.42"></a>
+<span class="sourceLineNo">043</span>import org.kepler.kar.KARFile;<a name="line.43"></a>
+<span class="sourceLineNo">044</span>import org.kepler.kar.SaveKAR;<a name="line.44"></a>
+<span class="sourceLineNo">045</span>import org.kepler.kar.handlers.ProvKAREntryHandler;<a name="line.45"></a>
+<span class="sourceLineNo">046</span>import org.kepler.loader.util.ParseWorkflow;<a name="line.46"></a>
+<span class="sourceLineNo">047</span>import org.kepler.objectmanager.cache.CacheManager;<a name="line.47"></a>
+<span class="sourceLineNo">048</span>import org.kepler.objectmanager.lsid.KeplerLSID;<a name="line.48"></a>
+<span class="sourceLineNo">049</span>import org.kepler.provenance.ProvenanceRecorder;<a name="line.49"></a>
+<span class="sourceLineNo">050</span>import org.kepler.provenance.QueryException;<a name="line.50"></a>
+<span class="sourceLineNo">051</span>import org.kepler.provenance.Queryable;<a name="line.51"></a>
+<span class="sourceLineNo">052</span>import org.kepler.provenance.Recording;<a name="line.52"></a>
+<span class="sourceLineNo">053</span>import org.kepler.provenance.RecordingException;<a name="line.53"></a>
+<span class="sourceLineNo">054</span>import org.kepler.provenance.prov.ProvUtilities;<a name="line.54"></a>
+<span class="sourceLineNo">055</span>import org.kepler.provenance.sql.SQLRecordingV8;<a name="line.55"></a>
+<span class="sourceLineNo">056</span>import org.kepler.util.WorkflowRun;<a name="line.56"></a>
+<span class="sourceLineNo">057</span>import org.openprovenance.prov.interop.InteropFramework.ProvFormat;<a name="line.57"></a>
+<span class="sourceLineNo">058</span><a name="line.58"></a>
+<span class="sourceLineNo">059</span>import ptolemy.kernel.ComponentEntity;<a name="line.59"></a>
+<span class="sourceLineNo">060</span>import ptolemy.kernel.util.IllegalActionException;<a name="line.60"></a>
+<span class="sourceLineNo">061</span>import ptolemy.kernel.util.NameDuplicationException;<a name="line.61"></a>
+<span class="sourceLineNo">062</span>import ptolemy.kernel.util.NamedObj;<a name="line.62"></a>
+<span class="sourceLineNo">063</span>import ptolemy.moml.MoMLParser;<a name="line.63"></a>
+<span class="sourceLineNo">064</span>import ptolemy.moml.filter.BackwardCompatibility;<a name="line.64"></a>
+<span class="sourceLineNo">065</span>import ptolemy.util.MessageHandler;<a name="line.65"></a>
+<span class="sourceLineNo">066</span><a name="line.66"></a>
+<span class="sourceLineNo">067</span>/** A utility class containing static methods and a command line<a name="line.67"></a>
+<span class="sourceLineNo">068</span> *  interface to manange provenance.<a name="line.68"></a>
+<span class="sourceLineNo">069</span> * <a name="line.69"></a>
+<span class="sourceLineNo">070</span> *  @author Daniel Crawl<a name="line.70"></a>
+<span class="sourceLineNo">071</span> *  @version $Id: ProvenanceManager.java 34655 2018-02-01 20:19:23Z crawl $<a name="line.71"></a>
+<span class="sourceLineNo">072</span> */<a name="line.72"></a>
+<span class="sourceLineNo">073</span>public class ProvenanceManager {<a name="line.73"></a>
+<span class="sourceLineNo">074</span><a name="line.74"></a>
+<span class="sourceLineNo">075</span>    /** Delete a run. */<a name="line.75"></a>
+<span class="sourceLineNo">076</span>    public static void deleteRun(Integer execId) throws Exception {<a name="line.76"></a>
+<span class="sourceLineNo">077</span>        try(Queryable query = _getDefaultQueryable();) {<a name="line.77"></a>
+<span class="sourceLineNo">078</span>            KeplerLSID lsid = query.getExecutionLSIDForExecution(execId);<a name="line.78"></a>
+<span class="sourceLineNo">079</span>            if(lsid == null) {<a name="line.79"></a>
+<span class="sourceLineNo">080</span>                throw new Exception("Execution id " + execId + " not found.");<a name="line.80"></a>
+<span class="sourceLineNo">081</span>            }<a name="line.81"></a>
+<span class="sourceLineNo">082</span>            List&lt;KeplerLSID&gt; lsids = new LinkedList&lt;KeplerLSID&gt;();<a name="line.82"></a>
+<span class="sourceLineNo">083</span>            lsids.add(lsid);<a name="line.83"></a>
+<span class="sourceLineNo">084</span>            deleteRuns(lsids);<a name="line.84"></a>
+<span class="sourceLineNo">085</span>        }<a name="line.85"></a>
+<span class="sourceLineNo">086</span>    }<a name="line.86"></a>
+<span class="sourceLineNo">087</span>    <a name="line.87"></a>
+<span class="sourceLineNo">088</span>    /** Delete runs. */<a name="line.88"></a>
+<span class="sourceLineNo">089</span>    public static void deleteRuns(List&lt;KeplerLSID&gt; execLSIDs) throws Exception {<a name="line.89"></a>
+<span class="sourceLineNo">090</span>        <a name="line.90"></a>
+<span class="sourceLineNo">091</span>        ProvenanceRecorder recorder;<a name="line.91"></a>
+<span class="sourceLineNo">092</span>        Recording recording;<a name="line.92"></a>
+<span class="sourceLineNo">093</span>        try {<a name="line.93"></a>
+<span class="sourceLineNo">094</span>            recorder = new ProvenanceRecorder();<a name="line.94"></a>
+<span class="sourceLineNo">095</span>            recording = recorder.getRecording();<a name="line.95"></a>
+<span class="sourceLineNo">096</span>        } catch (IllegalActionException | NameDuplicationException e) {<a name="line.96"></a>
+<span class="sourceLineNo">097</span>            throw new Exception("Error getting default recording interface.", e);<a name="line.97"></a>
+<span class="sourceLineNo">098</span>        }       <a name="line.98"></a>
+<span class="sourceLineNo">099</span>        <a name="line.99"></a>
+<span class="sourceLineNo">100</span>        // TODO fix for different recording types.<a name="line.100"></a>
+<span class="sourceLineNo">101</span>        if(recording instanceof SQLRecordingV8) {<a name="line.101"></a>
+<span class="sourceLineNo">102</span>            System.out.println("Removing runs: ");<a name="line.102"></a>
+<span class="sourceLineNo">103</span>            for(KeplerLSID lsid: execLSIDs) {<a name="line.103"></a>
+<span class="sourceLineNo">104</span>                    System.out.println(lsid);<a name="line.104"></a>
+<span class="sourceLineNo">105</span>            }<a name="line.105"></a>
+<span class="sourceLineNo">106</span>            ((SQLRecordingV8)recording).deleteExecutions(execLSIDs);<a name="line.106"></a>
+<span class="sourceLineNo">107</span>        } else {<a name="line.107"></a>
+<span class="sourceLineNo">108</span>            System.err.println("Cannot delete from recording type " + recording.getClass());<a name="line.108"></a>
+<span class="sourceLineNo">109</span>        }<a name="line.109"></a>
+<span class="sourceLineNo">110</span>        <a name="line.110"></a>
+<span class="sourceLineNo">111</span>        recorder.disconnect();<a name="line.111"></a>
+<span class="sourceLineNo">112</span>    }<a name="line.112"></a>
+<span class="sourceLineNo">113</span>    <a name="line.113"></a>
+<span class="sourceLineNo">114</span>    /** Export all runs to a KAR file.<a name="line.114"></a>
+<span class="sourceLineNo">115</span>     *  @param outputFileName the name of the KAR file.<a name="line.115"></a>
+<span class="sourceLineNo">116</span>     *  @param delete if true, delete the runs after being exported.<a name="line.116"></a>
+<span class="sourceLineNo">117</span>     */<a name="line.117"></a>
+<span class="sourceLineNo">118</span>    public static void exportProvenance(String outputFileName, boolean delete)<a name="line.118"></a>
+<span class="sourceLineNo">119</span>            throws Exception {        <a name="line.119"></a>
+<span class="sourceLineNo">120</span>        try(Queryable query = _getDefaultQueryable();) {<a name="line.120"></a>
+<span class="sourceLineNo">121</span>            exportProvenance(outputFileName, delete,<a name="line.121"></a>
+<span class="sourceLineNo">122</span>                    query.getExecutionLSIDs());<a name="line.122"></a>
+<span class="sourceLineNo">123</span>        }        <a name="line.123"></a>
+<span class="sourceLineNo">124</span>    }<a name="line.124"></a>
+<span class="sourceLineNo">125</span><a name="line.125"></a>
+<span class="sourceLineNo">126</span>    /** Export a set of provenance runs to a KAR file. <a name="line.126"></a>
+<span class="sourceLineNo">127</span>     *  @param outputFileName the name of the KAR file.<a name="line.127"></a>
+<span class="sourceLineNo">128</span>     *  @param delete if true, delete each run exported.<a name="line.128"></a>
+<span class="sourceLineNo">129</span>     *  @param execId the execution id of the run to export.<a name="line.129"></a>
+<span class="sourceLineNo">130</span>     */<a name="line.130"></a>
+<span class="sourceLineNo">131</span>    public static void exportProvenance(String outputFileName, boolean delete, int execId)<a name="line.131"></a>
+<span class="sourceLineNo">132</span>            throws Exception {<a name="line.132"></a>
+<span class="sourceLineNo">133</span>        try(Queryable query = _getDefaultQueryable();) {<a name="line.133"></a>
+<span class="sourceLineNo">134</span>            KeplerLSID lsid = query.getExecutionLSIDForExecution(execId);<a name="line.134"></a>
+<span class="sourceLineNo">135</span>            if(lsid == null) {<a name="line.135"></a>
+<span class="sourceLineNo">136</span>                throw new Exception("Could not find LSID for run " + execId);<a name="line.136"></a>
+<span class="sourceLineNo">137</span>            }<a name="line.137"></a>
+<span class="sourceLineNo">138</span>            List&lt;KeplerLSID&gt; lsids = new LinkedList&lt;KeplerLSID&gt;();<a name="line.138"></a>
+<span class="sourceLineNo">139</span>            lsids.add(lsid);<a name="line.139"></a>
+<span class="sourceLineNo">140</span>            exportProvenance(outputFileName, delete, lsids);<a name="line.140"></a>
+<span class="sourceLineNo">141</span>        }        <a name="line.141"></a>
+<span class="sourceLineNo">142</span>    }<a name="line.142"></a>
+<span class="sourceLineNo">143</span>    <a name="line.143"></a>
+<span class="sourceLineNo">144</span>    /** Export a set of provenance runs to a KAR file. <a name="line.144"></a>
+<span class="sourceLineNo">145</span>     *  @param outputFileName the name of the KAR file.<a name="line.145"></a>
+<span class="sourceLineNo">146</span>     *  @param delete if true, delete each run exported.<a name="line.146"></a>
+<span class="sourceLineNo">147</span>     *  @param runs the set of KeplerLSID runs to export. <a name="line.147"></a>
+<span class="sourceLineNo">148</span>     */<a name="line.148"></a>
+<span class="sourceLineNo">149</span>    public static void exportProvenance(String outputFileName, boolean delete,<a name="line.149"></a>
+<span class="sourceLineNo">150</span>            List&lt;KeplerLSID&gt; runs) throws Exception {<a name="line.150"></a>
+<span class="sourceLineNo">151</span>        exportProvenance(outputFileName, delete, runs, "json");<a name="line.151"></a>
+<span class="sourceLineNo">152</span>    }<a name="line.152"></a>
+<span class="sourceLineNo">153</span>    <a name="line.153"></a>
+<span class="sourceLineNo">154</span>    /** Export a set of provenance runs to a KAR file. <a name="line.154"></a>
+<span class="sourceLineNo">155</span>     *  @param outputFileName the name of the KAR file.<a name="line.155"></a>
+<span class="sourceLineNo">156</span>     *  @param delete if true, delete each run exported.<a name="line.156"></a>
+<span class="sourceLineNo">157</span>     *  @param runs the set of KeplerLSID runs to export. <a name="line.157"></a>
+<span class="sourceLineNo">158</span>     *  @params format the prov format.<a name="line.158"></a>
+<span class="sourceLineNo">159</span>     */<a name="line.159"></a>
+<span class="sourceLineNo">160</span>    public static void exportProvenance(String outputFileName, boolean delete,<a name="line.160"></a>
+<span class="sourceLineNo">161</span>            List&lt;KeplerLSID&gt; runs, String format) throws Exception {<a name="line.161"></a>
+<span class="sourceLineNo">162</span><a name="line.162"></a>
+<span class="sourceLineNo">163</span>        TransferComponent component = new TransferComponent(format);<a name="line.163"></a>
+<span class="sourceLineNo">164</span>        component.setName("ProvenanceTransfer");<a name="line.164"></a>
+<span class="sourceLineNo">165</span>        component.addExecutions(runs);<a name="line.165"></a>
+<span class="sourceLineNo">166</span><a name="line.166"></a>
+<span class="sourceLineNo">167</span>        SaveKAR saveKar = new SaveKAR();<a name="line.167"></a>
+<span class="sourceLineNo">168</span>        saveKar.setFile(new File(outputFileName));<a name="line.168"></a>
+<span class="sourceLineNo">169</span>        saveKar.addSaveInitiator(component);<a name="line.169"></a>
+<span class="sourceLineNo">170</span>        <a name="line.170"></a>
+<span class="sourceLineNo">171</span>        KeplerLSID karLSID = saveKar.saveToDisk(null, null);<a name="line.171"></a>
+<span class="sourceLineNo">172</span>        // check for success<a name="line.172"></a>
+<span class="sourceLineNo">173</span>        if(karLSID == null) {<a name="line.173"></a>
+<span class="sourceLineNo">174</span>            throw new Exception("Error writing KAR.");<a name="line.174"></a>
+<span class="sourceLineNo">175</span>        }<a name="line.175"></a>
+<span class="sourceLineNo">176</span>        <a name="line.176"></a>
+<span class="sourceLineNo">177</span>        if(delete) {<a name="line.177"></a>
+<span class="sourceLineNo">178</span>            deleteRuns(runs);<a name="line.178"></a>
+<span class="sourceLineNo">179</span>        }<a name="line.179"></a>
+<span class="sourceLineNo">180</span>    }  <a name="line.180"></a>
+<span class="sourceLineNo">181</span><a name="line.181"></a>
+<span class="sourceLineNo">182</span>    /** Export a research object bundle<a name="line.182"></a>
+<span class="sourceLineNo">183</span>     * <a name="line.183"></a>
+<span class="sourceLineNo">184</span>     */<a name="line.184"></a>
+<span class="sourceLineNo">185</span>    public static void exportROBundle(String outputFileName, KeplerLSID runLSID) throws Exception {<a name="line.185"></a>
+<span class="sourceLineNo">186</span>        <a name="line.186"></a>
+<span class="sourceLineNo">187</span>        File roBundleFile = new File(outputFileName);<a name="line.187"></a>
+<span class="sourceLineNo">188</span>        File workflowFile = File.createTempFile("workflow", ".kar");<a name="line.188"></a>
+<span class="sourceLineNo">189</span>        File provenanceFile = File.createTempFile("provenance", ".kar");<a name="line.189"></a>
+<span class="sourceLineNo">190</span>        try {<a name="line.190"></a>
+<span class="sourceLineNo">191</span>            Bundle bundle = Bundles.createBundle(roBundleFile.toPath());<a name="line.191"></a>
+<span class="sourceLineNo">192</span>     <a name="line.192"></a>
+<span class="sourceLineNo">193</span>            // add the workflow<a name="line.193"></a>
+<span class="sourceLineNo">194</span>            exportWorkflow(workflowFile.getAbsolutePath(), runLSID);            <a name="line.194"></a>
+<span class="sourceLineNo">195</span>            Files.copy(workflowFile.toPath(), bundle.getRoot().resolve("workflow.kar"));<a name="line.195"></a>
+<span class="sourceLineNo">196</span>            <a name="line.196"></a>
+<span class="sourceLineNo">197</span>            // add the prov trace<a name="line.197"></a>
+<span class="sourceLineNo">198</span>            exportProvenance(provenanceFile.getAbsolutePath(), false,<a name="line.198"></a>
+<span class="sourceLineNo">199</span>                Arrays.asList(runLSID), "json");            <a name="line.199"></a>
+<span class="sourceLineNo">200</span>            Files.copy(provenanceFile.toPath(), bundle.getRoot().resolve("provenance.kar"));<a name="line.200"></a>
+<span class="sourceLineNo">201</span><a name="line.201"></a>
+<span class="sourceLineNo">202</span>            Bundles.setMimeType(bundle, "application/zip");<a name="line.202"></a>
+<span class="sourceLineNo">203</span><a name="line.203"></a>
+<span class="sourceLineNo">204</span>            bundle.close();<a name="line.204"></a>
+<span class="sourceLineNo">205</span>            <a name="line.205"></a>
+<span class="sourceLineNo">206</span>            <a name="line.206"></a>
+<span class="sourceLineNo">207</span>        } catch(Exception e) {<a name="line.207"></a>
+<span class="sourceLineNo">208</span>            if(roBundleFile.exists() &amp;&amp; !roBundleFile.delete()) {<a name="line.208"></a>
+<span class="sourceLineNo">209</span>                System.err.println("WARNING: could not delete " + roBundleFile.getAbsolutePath());<a name="line.209"></a>
+<span class="sourceLineNo">210</span>            }<a name="line.210"></a>
+<span class="sourceLineNo">211</span>            throw e;<a name="line.211"></a>
+<span class="sourceLineNo">212</span>        } finally {<a name="line.212"></a>
+<span class="sourceLineNo">213</span>            if(!workflowFile.delete()) {<a name="line.213"></a>
+<span class="sourceLineNo">214</span>                System.err.println("WARNING: could not delete " + workflowFile.getAbsolutePath());<a name="line.214"></a>
+<span class="sourceLineNo">215</span>            }<a name="line.215"></a>
+<span class="sourceLineNo">216</span>            if(!provenanceFile.delete()) {<a name="line.216"></a>
+<span class="sourceLineNo">217</span>                System.err.println("WARNING: could not delete " + provenanceFile.getAbsolutePath());   <a name="line.217"></a>
+<span class="sourceLineNo">218</span>            }<a name="line.218"></a>
+<span class="sourceLineNo">219</span>        }<a name="line.219"></a>
+<span class="sourceLineNo">220</span>        <a name="line.220"></a>
+<span class="sourceLineNo">221</span>    }<a name="line.221"></a>
+<span class="sourceLineNo">222</span><a name="line.222"></a>
+<span class="sourceLineNo">223</span>    /** Export a workflow to a file.<a name="line.223"></a>
+<span class="sourceLineNo">224</span>     * @param outputFileName The name of the workflow file.<a name="line.224"></a>
+<span class="sourceLineNo">225</span>     * @param runLSID The run LSID of the workflow to export.<a name="line.225"></a>
+<span class="sourceLineNo">226</span>     * @return The workflow file<a name="line.226"></a>
+<span class="sourceLineNo">227</span>     */<a name="line.227"></a>
+<span class="sourceLineNo">228</span>    public static void exportWorkflow(String outputFileName, KeplerLSID runLSID) throws Exception {<a name="line.228"></a>
+<span class="sourceLineNo">229</span><a name="line.229"></a>
+<span class="sourceLineNo">230</span>        try(Queryable queryable = _getDefaultQueryable()) {<a name="line.230"></a>
+<span class="sourceLineNo">231</span>            <a name="line.231"></a>
+<span class="sourceLineNo">232</span>            String momlStr = queryable.getMoMLForExecution(runLSID);        <a name="line.232"></a>
+<span class="sourceLineNo">233</span>            <a name="line.233"></a>
+<span class="sourceLineNo">234</span>            SaveKAR saveKAR = new SaveKAR();<a name="line.234"></a>
+<span class="sourceLineNo">235</span>            NamedObj model = ParseWorkflow.parseMoML(momlStr);        <a name="line.235"></a>
+<span class="sourceLineNo">236</span>            saveKAR.addSaveInitiator((ComponentEntity&lt;?&gt;)model);        <a name="line.236"></a>
+<span class="sourceLineNo">237</span>            File karFile = new File(outputFileName);<a name="line.237"></a>
+<span class="sourceLineNo">238</span>            saveKAR.setFile(karFile);<a name="line.238"></a>
+<span class="sourceLineNo">239</span>            <a name="line.239"></a>
+<span class="sourceLineNo">240</span>            KeplerLSID karLSID = saveKAR.saveToDisk(null, null);<a name="line.240"></a>
+<span class="sourceLineNo">241</span>            // check if saved successfully<a name="line.241"></a>
+<span class="sourceLineNo">242</span>            if(karLSID == null) {<a name="line.242"></a>
+<span class="sourceLineNo">243</span>                if(karFile.exists() &amp;&amp; !karFile.delete()) {<a name="line.243"></a>
+<span class="sourceLineNo">244</span>                    System.err.println("WARNING: could not delete " +<a name="line.244"></a>
+<span class="sourceLineNo">245</span>                        karFile.getAbsolutePath());<a name="line.245"></a>
+<span class="sourceLineNo">246</span>                }<a name="line.246"></a>
+<span class="sourceLineNo">247</span>                throw new Exception("Could not create KAR.");<a name="line.247"></a>
+<span class="sourceLineNo">248</span>            }            <a name="line.248"></a>
+<span class="sourceLineNo">249</span>        }<a name="line.249"></a>
+<span class="sourceLineNo">250</span>    }<a name="line.250"></a>
+<span class="sourceLineNo">251</span>    <a name="line.251"></a>
+<span class="sourceLineNo">252</span>    /** Import provenance from a KAR file.<a name="line.252"></a>
+<span class="sourceLineNo">253</span>     *  @param inputFileName the name of the KAR file to import from.<a name="line.253"></a>
+<span class="sourceLineNo">254</span>     *  @param force if true, try to import despite missing any module<a name="line.254"></a>
+<span class="sourceLineNo">255</span>     *  dependencies. if false, and there are missing dependencies, throws<a name="line.255"></a>
+<span class="sourceLineNo">256</span>     *  an exception.<a name="line.256"></a>
+<span class="sourceLineNo">257</span>     */<a name="line.257"></a>
+<span class="sourceLineNo">258</span>    public static void importProvenance(String inputFileName, boolean force)<a name="line.258"></a>
+<span class="sourceLineNo">259</span>            throws Exception {<a name="line.259"></a>
+<span class="sourceLineNo">260</span>        <a name="line.260"></a>
+<span class="sourceLineNo">261</span>        File inputFile = new File(inputFileName);<a name="line.261"></a>
+<span class="sourceLineNo">262</span>        if(!inputFile.exists()) {<a name="line.262"></a>
+<span class="sourceLineNo">263</span>            throw new Exception("Import file does not exist: " + inputFileName);<a name="line.263"></a>
+<span class="sourceLineNo">264</span>        }<a name="line.264"></a>
+<span class="sourceLineNo">265</span>        <a name="line.265"></a>
+<span class="sourceLineNo">266</span>        try(KARFile karFile = new KARFile(inputFile);) {<a name="line.266"></a>
+<span class="sourceLineNo">267</span>        <a name="line.267"></a>
+<span class="sourceLineNo">268</span>            if(!force &amp;&amp; !karFile.areAllModuleDependenciesSatisfied()) {<a name="line.268"></a>
+<span class="sourceLineNo">269</span>                // TODO<a name="line.269"></a>
+<span class="sourceLineNo">270</span>                throw new Exception("Module dependencies not satisfied and -force not specified.");<a name="line.270"></a>
+<span class="sourceLineNo">271</span>            }<a name="line.271"></a>
+<span class="sourceLineNo">272</span>                    <a name="line.272"></a>
+<span class="sourceLineNo">273</span>            //karFile.cacheKARContents();<a name="line.273"></a>
+<span class="sourceLineNo">274</span>            <a name="line.274"></a>
+<span class="sourceLineNo">275</span>            ProvKAREntryHandler handler = new ProvKAREntryHandler();<a name="line.275"></a>
+<span class="sourceLineNo">276</span>            for (KAREntry entry : karFile.karEntries()) {<a name="line.276"></a>
+<span class="sourceLineNo">277</span>                if (handler.handlesType(entry.getType())) {<a name="line.277"></a>
+<span class="sourceLineNo">278</span>                    System.out.println("Importing " + entry.getName());<a name="line.278"></a>
+<span class="sourceLineNo">279</span>                    handler.open(karFile, entry, null);<a name="line.279"></a>
+<span class="sourceLineNo">280</span>                }<a name="line.280"></a>
+<span class="sourceLineNo">281</span>            }<a name="line.281"></a>
+<span class="sourceLineNo">282</span>        }<a name="line.282"></a>
+<span class="sourceLineNo">283</span>    }<a name="line.283"></a>
+<span class="sourceLineNo">284</span>    <a name="line.284"></a>
+<span class="sourceLineNo">285</span>    /** List the runs. */<a name="line.285"></a>
+<span class="sourceLineNo">286</span>    public static void listRuns() throws Exception {<a name="line.286"></a>
+<span class="sourceLineNo">287</span><a name="line.287"></a>
+<span class="sourceLineNo">288</span>        // set the ontology index file so we can show tags.<a name="line.288"></a>
+<span class="sourceLineNo">289</span>        Kepler.setOntologyIndexFile();<a name="line.289"></a>
+<span class="sourceLineNo">290</span>        <a name="line.290"></a>
+<span class="sourceLineNo">291</span>        try(Queryable query = _getDefaultQueryable();) {<a name="line.291"></a>
+<span class="sourceLineNo">292</span>            Map&lt;KeplerLSID, WorkflowRun&gt; runs =<a name="line.292"></a>
+<span class="sourceLineNo">293</span>                query.getWorkflowRunsForExecutionLSIDs(query.getExecutionLSIDs());<a name="line.293"></a>
+<span class="sourceLineNo">294</span>            <a name="line.294"></a>
+<span class="sourceLineNo">295</span>            // TODO add:<a name="line.295"></a>
+<span class="sourceLineNo">296</span>            // duration, start/stop time<a name="line.296"></a>
+<span class="sourceLineNo">297</span>            // status: success, error (and error message)            <a name="line.297"></a>
+<span class="sourceLineNo">298</span>            System.out.println("ID, Tag(s), Workflow Name, Execution LSID");        <a name="line.298"></a>
+<span class="sourceLineNo">299</span>            for(WorkflowRun run : runs.values()) {<a name="line.299"></a>
+<span class="sourceLineNo">300</span>                <a name="line.300"></a>
+<span class="sourceLineNo">301</span>                String tags = run.getTagsAsFormattedString();<a name="line.301"></a>
+<span class="sourceLineNo">302</span>                if(tags.trim().isEmpty()) {<a name="line.302"></a>
+<span class="sourceLineNo">303</span>                    tags = "&lt;no tags&gt;";<a name="line.303"></a>
+<span class="sourceLineNo">304</span>                }<a name="line.304"></a>
+<span class="sourceLineNo">305</span>                <a name="line.305"></a>
+<span class="sourceLineNo">306</span>                System.out.println(run.getExecId() + ", " +<a name="line.306"></a>
+<span class="sourceLineNo">307</span>                        tags + ", " +<a name="line.307"></a>
+<span class="sourceLineNo">308</span>                        run.getWorkflowName() + ", " +<a name="line.308"></a>
+<span class="sourceLineNo">309</span>                        run.getExecLSID());<a name="line.309"></a>
+<span class="sourceLineNo">310</span>            }<a name="line.310"></a>
+<span class="sourceLineNo">311</span>        }<a name="line.311"></a>
+<span class="sourceLineNo">312</span>    }<a name="line.312"></a>
+<span class="sourceLineNo">313</span>    <a name="line.313"></a>
+<span class="sourceLineNo">314</span>    /** Program entry point. */<a name="line.314"></a>
+<span class="sourceLineNo">315</span>    public static void main(String[] args) {<a name="line.315"></a>
+<span class="sourceLineNo">316</span><a name="line.316"></a>
+<span class="sourceLineNo">317</span>        try {<a name="line.317"></a>
+<span class="sourceLineNo">318</span>            if(_parseArgs(args)) {<a name="line.318"></a>
+<span class="sourceLineNo">319</span><a name="line.319"></a>
+<span class="sourceLineNo">320</span>                if(_operation == Operation.Export ||<a name="line.320"></a>
+<span class="sourceLineNo">321</span>                    _operation == Operation.Import ||<a name="line.321"></a>
+<span class="sourceLineNo">322</span>                    _operation == Operation.Graph) {<a name="line.322"></a>
+<span class="sourceLineNo">323</span>                    System.setProperty("java.awt.headless", "true");<a name="line.323"></a>
+<span class="sourceLineNo">324</span>                    MoMLParser.setMoMLFilters(BackwardCompatibility.allFilters());<a name="line.324"></a>
+<span class="sourceLineNo">325</span>                    MessageHandler.setMessageHandler(new MessageHandler());<a name="line.325"></a>
+<span class="sourceLineNo">326</span><a name="line.326"></a>
+<span class="sourceLineNo">327</span>                    // set java properties since they may be referenced in workflows<a name="line.327"></a>
+<span class="sourceLineNo">328</span>                    // we will import/export. e.g., module.workflowdir<a name="line.328"></a>
+<span class="sourceLineNo">329</span>                    Kepler.setJavaPropertiesAndCopyModuleDirectories();<a name="line.329"></a>
+<span class="sourceLineNo">330</span>                }<a name="line.330"></a>
+<span class="sourceLineNo">331</span>                <a name="line.331"></a>
+<span class="sourceLineNo">332</span>                switch(_operation) {<a name="line.332"></a>
+<span class="sourceLineNo">333</span>                case List:<a name="line.333"></a>
+<span class="sourceLineNo">334</span>                    listRuns();<a name="line.334"></a>
+<span class="sourceLineNo">335</span>                    break;<a name="line.335"></a>
+<span class="sourceLineNo">336</span>                    <a name="line.336"></a>
+<span class="sourceLineNo">337</span>                case Delete:<a name="line.337"></a>
+<span class="sourceLineNo">338</span>                    deleteRun(_runId);<a name="line.338"></a>
+<span class="sourceLineNo">339</span>                    break;<a name="line.339"></a>
+<span class="sourceLineNo">340</span>                    <a name="line.340"></a>
+<span class="sourceLineNo">341</span>                case Export:<a name="line.341"></a>
+<span class="sourceLineNo">342</span>                case Import:<a name="line.342"></a>
+<span class="sourceLineNo">343</span>                    <a name="line.343"></a>
+<span class="sourceLineNo">344</span>                    // import/export<a name="line.344"></a>
+<span class="sourceLineNo">345</span>                    CacheManager.getInstance().addKAREntryHandler(new ProvKAREntryHandler());<a name="line.345"></a>
+<span class="sourceLineNo">346</span>                <a name="line.346"></a>
+<span class="sourceLineNo">347</span>                    if(_operation == Operation.Import) {<a name="line.347"></a>
+<span class="sourceLineNo">348</span>                        importProvenance(_inputFileName, _forceImport);<a name="line.348"></a>
+<span class="sourceLineNo">349</span>                    } else if(_exportAll) {<a name="line.349"></a>
+<span class="sourceLineNo">350</span>                        exportProvenance(_outputFileName, _deleteAfterExport);<a name="line.350"></a>
+<span class="sourceLineNo">351</span>                    } else {<a name="line.351"></a>
+<span class="sourceLineNo">352</span>                        exportProvenance(_outputFileName, _deleteAfterExport, _runId);<a name="line.352"></a>
+<span class="sourceLineNo">353</span>                    }<a name="line.353"></a>
+<span class="sourceLineNo">354</span>                    break;<a name="line.354"></a>
+<span class="sourceLineNo">355</span>                    <a name="line.355"></a>
+<span class="sourceLineNo">356</span>                case Graph:<a name="line.356"></a>
+<span class="sourceLineNo">357</span>                    ProvUtilities.writeProv(_outputFileName, _type, _runId);<a name="line.357"></a>
+<span class="sourceLineNo">358</span>                    break;<a name="line.358"></a>
+<span class="sourceLineNo">359</span>                }<a name="line.359"></a>
+<span class="sourceLineNo">360</span>            }<a name="line.360"></a>
+<span class="sourceLineNo">361</span>        } catch(Throwable t) {<a name="line.361"></a>
+<span class="sourceLineNo">362</span>            MessageHandler.error("Error managing provenance.", t);<a name="line.362"></a>
+<span class="sourceLineNo">363</span>            System.exit(1);<a name="line.363"></a>
+<span class="sourceLineNo">364</span>        }<a name="line.364"></a>
+<span class="sourceLineNo">365</span>        <a name="line.365"></a>
+<span class="sourceLineNo">366</span>        // TODO shut down the database cleanly so the program will exit<a name="line.366"></a>
+<span class="sourceLineNo">367</span>        // for now call System.exit()<a name="line.367"></a>
+<span class="sourceLineNo">368</span>        System.exit(0);<a name="line.368"></a>
+<span class="sourceLineNo">369</span>    }<a name="line.369"></a>
+<span class="sourceLineNo">370</span><a name="line.370"></a>
+<span class="sourceLineNo">371</span>    ///////////////////////////////////////////////////////////////////<a name="line.371"></a>
+<span class="sourceLineNo">372</span>    ////                         private methods                   ////<a name="line.372"></a>
+<span class="sourceLineNo">373</span><a name="line.373"></a>
+<span class="sourceLineNo">374</span>    /** Get the default queryable. */<a name="line.374"></a>
+<span class="sourceLineNo">375</span>    private static Queryable _getDefaultQueryable() throws Exception {<a name="line.375"></a>
+<span class="sourceLineNo">376</span>        <a name="line.376"></a>
+<span class="sourceLineNo">377</span>        try {<a name="line.377"></a>
+<span class="sourceLineNo">378</span>            return ProvenanceRecorder.getDefaultQueryable(null);<a name="line.378"></a>
+<span class="sourceLineNo">379</span>        } catch (QueryException | RecordingException e) {<a name="line.379"></a>
+<span class="sourceLineNo">380</span>            throw new Exception("Error getting default query interface.", e);<a name="line.380"></a>
+<span class="sourceLineNo">381</span>        }<a name="line.381"></a>
+<span class="sourceLineNo">382</span><a name="line.382"></a>
+<span class="sourceLineNo">383</span>    }<a name="line.383"></a>
+<span class="sourceLineNo">384</span>    <a name="line.384"></a>
+<span class="sourceLineNo">385</span>    /** Parse command line arguments.<a name="line.385"></a>
+<span class="sourceLineNo">386</span>     *  @return True if arguments parsed ok, false if an error<a name="line.386"></a>
+<span class="sourceLineNo">387</span>     *  and execution should stop. <a name="line.387"></a>
+<span class="sourceLineNo">388</span>     */<a name="line.388"></a>
+<span class="sourceLineNo">389</span>    private static boolean _parseArgs(String[] args) {<a name="line.389"></a>
+<span class="sourceLineNo">390</span>        <a name="line.390"></a>
+<span class="sourceLineNo">391</span>        boolean retval = true;<a name="line.391"></a>
+<span class="sourceLineNo">392</span>        <a name="line.392"></a>
+<span class="sourceLineNo">393</span>        String runIdStr = null;<a name="line.393"></a>
+<span class="sourceLineNo">394</span>        <a name="line.394"></a>
+<span class="sourceLineNo">395</span>        int i = 0;<a name="line.395"></a>
+<span class="sourceLineNo">396</span>        for(i = 0; i &lt; args.length; i++) {<a name="line.396"></a>
+<span class="sourceLineNo">397</span>            String arg = args[i];<a name="line.397"></a>
+<span class="sourceLineNo">398</span>            switch(arg) {<a name="line.398"></a>
+<span class="sourceLineNo">399</span>            case "-all":<a name="line.399"></a>
+<span class="sourceLineNo">400</span>                _exportAll = true;<a name="line.400"></a>
+<span class="sourceLineNo">401</span>                break;<a name="line.401"></a>
+<span class="sourceLineNo">402</span>            case "-delete":<a name="line.402"></a>
+<span class="sourceLineNo">403</span>                _deleteAfterExport = true;<a name="line.403"></a>
+<span class="sourceLineNo">404</span>                break;<a name="line.404"></a>
+<span class="sourceLineNo">405</span>            case "-force":<a name="line.405"></a>
+<span class="sourceLineNo">406</span>                _forceImport = true;<a name="line.406"></a>
+<span class="sourceLineNo">407</span>                break;                <a name="line.407"></a>
+<span class="sourceLineNo">408</span>            case "-h":<a name="line.408"></a>
+<span class="sourceLineNo">409</span>            case "-help":<a name="line.409"></a>
+<span class="sourceLineNo">410</span>            case "--help":<a name="line.410"></a>
+<span class="sourceLineNo">411</span>                _usage();<a name="line.411"></a>
+<span class="sourceLineNo">412</span>                return false;<a name="line.412"></a>
+<span class="sourceLineNo">413</span>            case "-i":<a name="line.413"></a>
+<span class="sourceLineNo">414</span>                if(i + 1 == args.length) {<a name="line.414"></a>
+<span class="sourceLineNo">415</span>                    System.err.println("ERROR: must provide input file name with -i.");<a name="line.415"></a>
+<span class="sourceLineNo">416</span>                    return false;<a name="line.416"></a>
+<span class="sourceLineNo">417</span>                }<a name="line.417"></a>
+<span class="sourceLineNo">418</span>                i++;<a name="line.418"></a>
+<span class="sourceLineNo">419</span>                _inputFileName = args[i];<a name="line.419"></a>
+<span class="sourceLineNo">420</span>                _operation = Operation.Import;<a name="line.420"></a>
+<span class="sourceLineNo">421</span>                break;<a name="line.421"></a>
+<span class="sourceLineNo">422</span>            case "-g":<a name="line.422"></a>
+<span class="sourceLineNo">423</span>                if(i + 1 == args.length) {<a name="line.423"></a>
+<span class="sourceLineNo">424</span>                    System.err.println("ERROR: must provide output file name with -g.");<a name="line.424"></a>
+<span class="sourceLineNo">425</span>                    return false;<a name="line.425"></a>
+<span class="sourceLineNo">426</span>                }<a name="line.426"></a>
+<span class="sourceLineNo">427</span>                i++;<a name="line.427"></a>
+<span class="sourceLineNo">428</span>                _outputFileName = args[i];<a name="line.428"></a>
+<span class="sourceLineNo">429</span>                _operation = Operation.Graph;<a name="line.429"></a>
+<span class="sourceLineNo">430</span>                if(_type == null) {<a name="line.430"></a>
+<span class="sourceLineNo">431</span>                    _type = "jpeg";<a name="line.431"></a>
+<span class="sourceLineNo">432</span>                }<a name="line.432"></a>
+<span class="sourceLineNo">433</span>                break;               <a name="line.433"></a>
+<span class="sourceLineNo">434</span>            case "-l":<a name="line.434"></a>
+<span class="sourceLineNo">435</span>                _operation = Operation.List;<a name="line.435"></a>
+<span class="sourceLineNo">436</span>                break;<a name="line.436"></a>
+<span class="sourceLineNo">437</span>            case "-o":<a name="line.437"></a>
+<span class="sourceLineNo">438</span>                if(i + 1 == args.length) {<a name="line.438"></a>
+<span class="sourceLineNo">439</span>                    System.err.println("ERROR: must provide output file name with -o.");<a name="line.439"></a>
+<span class="sourceLineNo">440</span>                    return false;<a name="line.440"></a>
+<span class="sourceLineNo">441</span>                }<a name="line.441"></a>
+<span class="sourceLineNo">442</span>                i++;<a name="line.442"></a>
+<span class="sourceLineNo">443</span>                _outputFileName = args[i];<a name="line.443"></a>
+<span class="sourceLineNo">444</span>                _operation = Operation.Export;<a name="line.444"></a>
+<span class="sourceLineNo">445</span>                break;<a name="line.445"></a>
+<span class="sourceLineNo">446</span>            case "-rm":<a name="line.446"></a>
+<span class="sourceLineNo">447</span>                if(i + 1 == args.length) {<a name="line.447"></a>
+<span class="sourceLineNo">448</span>                    System.err.println("ERROR: must provide number to delete with -rm.");<a name="line.448"></a>
+<span class="sourceLineNo">449</span>                    return false;<a name="line.449"></a>
+<span class="sourceLineNo">450</span>                }<a name="line.450"></a>
+<span class="sourceLineNo">451</span>                i++;<a name="line.451"></a>
+<span class="sourceLineNo">452</span>                runIdStr = args[i];<a name="line.452"></a>
+<span class="sourceLineNo">453</span>                _operation = Operation.Delete;<a name="line.453"></a>
+<span class="sourceLineNo">454</span>                break;<a name="line.454"></a>
+<span class="sourceLineNo">455</span>            case "-run":<a name="line.455"></a>
+<span class="sourceLineNo">456</span>                if(i + 1 == args.length) {<a name="line.456"></a>
+<span class="sourceLineNo">457</span>                    System.err.println("ERROR: must provide number with -run.");<a name="line.457"></a>
+<span class="sourceLineNo">458</span>                    return false;<a name="line.458"></a>
+<span class="sourceLineNo">459</span>                }<a name="line.459"></a>
+<span class="sourceLineNo">460</span>                i++;<a name="line.460"></a>
+<span class="sourceLineNo">461</span>                runIdStr = args[i];<a name="line.461"></a>
+<span class="sourceLineNo">462</span>                break;<a name="line.462"></a>
+<span class="sourceLineNo">463</span>            case "-t":<a name="line.463"></a>
+<span class="sourceLineNo">464</span>                if(i + 1 == args.length) {<a name="line.464"></a>
+<span class="sourceLineNo">465</span>                    System.err.println("ERROR: must provide type with -t.");<a name="line.465"></a>
+<span class="sourceLineNo">466</span>                    return false;<a name="line.466"></a>
+<span class="sourceLineNo">467</span>                }<a name="line.467"></a>
+<span class="sourceLineNo">468</span>                i++;<a name="line.468"></a>
+<span class="sourceLineNo">469</span>                _type = args[i];<a name="line.469"></a>
+<span class="sourceLineNo">470</span>                break;<a name="line.470"></a>
+<span class="sourceLineNo">471</span>            default:<a name="line.471"></a>
+<span class="sourceLineNo">472</span>                System.err.println("Unknown argument: " + arg);<a name="line.472"></a>
+<span class="sourceLineNo">473</span>                retval = false;<a name="line.473"></a>
+<span class="sourceLineNo">474</span>                break;<a name="line.474"></a>
+<span class="sourceLineNo">475</span>            }<a name="line.475"></a>
+<span class="sourceLineNo">476</span>        }<a name="line.476"></a>
+<span class="sourceLineNo">477</span>                <a name="line.477"></a>
+<span class="sourceLineNo">478</span>        // sanity checks<a name="line.478"></a>
+<span class="sourceLineNo">479</span>        <a name="line.479"></a>
+<span class="sourceLineNo">480</span>        if(_operation == null) {<a name="line.480"></a>
+<span class="sourceLineNo">481</span>            System.err.println("Must specify an operation.");<a name="line.481"></a>
+<span class="sourceLineNo">482</span>            retval = false;<a name="line.482"></a>
+<span class="sourceLineNo">483</span>        } else if(_exportAll &amp;&amp; runIdStr != null) {<a name="line.483"></a>
+<span class="sourceLineNo">484</span>            System.err.println("Cannot export all (-all) and specific run (-run n).");<a name="line.484"></a>
+<span class="sourceLineNo">485</span>            retval = false;<a name="line.485"></a>
+<span class="sourceLineNo">486</span>        } else if(_operation == Operation.Export &amp;&amp; !_exportAll &amp;&amp; runIdStr == null) {<a name="line.486"></a>
+<span class="sourceLineNo">487</span>            System.err.println("Must specify either -all or -run n when exporting.");<a name="line.487"></a>
+<span class="sourceLineNo">488</span>            retval = false;<a name="line.488"></a>
+<span class="sourceLineNo">489</span>        } else if(_deleteAfterExport &amp;&amp; _operation != Operation.Export) {<a name="line.489"></a>
+<span class="sourceLineNo">490</span>            System.err.println("Can only use -delete when exporting.");<a name="line.490"></a>
+<span class="sourceLineNo">491</span>            retval = false;<a name="line.491"></a>
+<span class="sourceLineNo">492</span>        } else if(_forceImport &amp;&amp; _operation != Operation.Import) {<a name="line.492"></a>
+<span class="sourceLineNo">493</span>            System.err.println("Can only force when importing.");<a name="line.493"></a>
+<span class="sourceLineNo">494</span>            retval = false;<a name="line.494"></a>
+<span class="sourceLineNo">495</span>        } else if(_operation == Operation.Graph &amp;&amp; runIdStr == null) {<a name="line.495"></a>
+<span class="sourceLineNo">496</span>            System.err.println("Must specify a specific run when graphing.");<a name="line.496"></a>
+<span class="sourceLineNo">497</span>            retval = false;<a name="line.497"></a>
+<span class="sourceLineNo">498</span>        } <a name="line.498"></a>
+<span class="sourceLineNo">499</span>        <a name="line.499"></a>
+<span class="sourceLineNo">500</span>        if(_operation == Operation.Graph) {<a name="line.500"></a>
+<span class="sourceLineNo">501</span>            boolean found = false;<a name="line.501"></a>
+<span class="sourceLineNo">502</span>            for(ProvFormat type : ProvFormat.values()) {<a name="line.502"></a>
+<span class="sourceLineNo">503</span>                if(type.toString().equals(_type.toUpperCase())) {<a name="line.503"></a>
+<span class="sourceLineNo">504</span>                    found = true;<a name="line.504"></a>
+<span class="sourceLineNo">505</span>                    break;<a name="line.505"></a>
+<span class="sourceLineNo">506</span>                }<a name="line.506"></a>
+<span class="sourceLineNo">507</span>            }<a name="line.507"></a>
+<span class="sourceLineNo">508</span>            if(!found) {<a name="line.508"></a>
+<span class="sourceLineNo">509</span>                System.err.println("Valid graph output types are: ");<a name="line.509"></a>
+<span class="sourceLineNo">510</span>                for(ProvFormat type : ProvFormat.values()) {<a name="line.510"></a>
+<span class="sourceLineNo">511</span>                    System.err.print(type.toString().toLowerCase() + " " );<a name="line.511"></a>
+<span class="sourceLineNo">512</span>                }<a name="line.512"></a>
+<span class="sourceLineNo">513</span>                System.err.println();<a name="line.513"></a>
+<span class="sourceLineNo">514</span>                retval = false;<a name="line.514"></a>
+<span class="sourceLineNo">515</span>            }<a name="line.515"></a>
+<span class="sourceLineNo">516</span>        }<a name="line.516"></a>
+<span class="sourceLineNo">517</span>                <a name="line.517"></a>
+<span class="sourceLineNo">518</span>        <a name="line.518"></a>
+<span class="sourceLineNo">519</span>        if(runIdStr != null) {<a name="line.519"></a>
+<span class="sourceLineNo">520</span>            try {<a name="line.520"></a>
+<span class="sourceLineNo">521</span>                _runId = Integer.valueOf(runIdStr);<a name="line.521"></a>
+<span class="sourceLineNo">522</span>            } catch(NumberFormatException e) {<a name="line.522"></a>
+<span class="sourceLineNo">523</span>                System.err.println("ERROR: run " + runIdStr + " is not a number.");<a name="line.523"></a>
+<span class="sourceLineNo">524</span>                retval = false;<a name="line.524"></a>
+<span class="sourceLineNo">525</span>            }<a name="line.525"></a>
+<span class="sourceLineNo">526</span>            if(_runId &lt; 0) {<a name="line.526"></a>
+<span class="sourceLineNo">527</span>                System.err.println("ERROR: run " + _runId + " must be at least 0.");<a name="line.527"></a>
+<span class="sourceLineNo">528</span>                retval = false;<a name="line.528"></a>
+<span class="sourceLineNo">529</span>            }<a name="line.529"></a>
+<span class="sourceLineNo">530</span>        }<a name="line.530"></a>
+<span class="sourceLineNo">531</span>        <a name="line.531"></a>
+<span class="sourceLineNo">532</span>        return retval;<a name="line.532"></a>
+<span class="sourceLineNo">533</span>    }<a name="line.533"></a>
+<span class="sourceLineNo">534</span>    <a name="line.534"></a>
+<span class="sourceLineNo">535</span>    /** Show command line usage. */<a name="line.535"></a>
+<span class="sourceLineNo">536</span>    private static void _usage() {<a name="line.536"></a>
+<span class="sourceLineNo">537</span>        <a name="line.537"></a>
+<span class="sourceLineNo">538</span>        System.out.println("USAGE: prov-manager [-l | -o ... | -i ... | -rm n | -g ...] [...]");<a name="line.538"></a>
+<span class="sourceLineNo">539</span>        System.out.println();<a name="line.539"></a>
+<span class="sourceLineNo">540</span>        System.out.println("-h                          show this help.");<a name="line.540"></a>
+<span class="sourceLineNo">541</span>        System.out.println("-i ...                      import from a kar.");<a name="line.541"></a>
+<span class="sourceLineNo">542</span>        System.out.println("-l                          show provenance runs.");<a name="line.542"></a>
+<span class="sourceLineNo">543</span>        System.out.println("-o ...                      export to a kar.");<a name="line.543"></a>
+<span class="sourceLineNo">544</span>        System.out.println("-rm n                       delete workflow run n.");<a name="line.544"></a>
+<span class="sourceLineNo">545</span>        System.out.println();<a name="line.545"></a>
+<span class="sourceLineNo">546</span>        System.out.println("Export provenance to a KAR file:");<a name="line.546"></a>
+<span class="sourceLineNo">547</span>        System.out.println("prov-manager -o output.kar [-all | -run n] [-delete]");<a name="line.547"></a>
+<span class="sourceLineNo">548</span>        System.out.println("-all                        export all workflows runs.");<a name="line.548"></a>
+<span class="sourceLineNo">549</span>        System.out.println("-run n                      export run n.");<a name="line.549"></a>
+<span class="sourceLineNo">550</span>        System.out.println("-delete                     delete workflow runs in database after export.");<a name="line.550"></a>
+<span class="sourceLineNo">551</span>        System.out.println();<a name="line.551"></a>
+<span class="sourceLineNo">552</span>        System.out.println("Import provenance from a KAR file:");<a name="line.552"></a>
+<span class="sourceLineNo">553</span>        System.out.println("prov-manager -i input.kar [-force]");<a name="line.553"></a>
+<span class="sourceLineNo">554</span>        System.out.println("-force                      attempt to import run(s) despite any missing module dependencies.");<a name="line.554"></a>
+<span class="sourceLineNo">555</span>        System.out.println();<a name="line.555"></a>
+<span class="sourceLineNo">556</span>        System.out.println("Generate a PROV provenance graph:");<a name="line.556"></a>
+<span class="sourceLineNo">557</span>        System.out.println("prov-manager -g output -run n [-t jpg|pdf|...]");<a name="line.557"></a>
+<span class="sourceLineNo">558</span>        System.out.println("-run n                      graph run n.");<a name="line.558"></a>
+<span class="sourceLineNo">559</span>        System.out.println("-t                          graph file type.");<a name="line.559"></a>
+<span class="sourceLineNo">560</span>    }<a name="line.560"></a>
+<span class="sourceLineNo">561</span>    <a name="line.561"></a>
+<span class="sourceLineNo">562</span>    ///////////////////////////////////////////////////////////////////<a name="line.562"></a>
+<span class="sourceLineNo">563</span>    ////                         private fields                    ////<a name="line.563"></a>
+<span class="sourceLineNo">564</span><a name="line.564"></a>
+<span class="sourceLineNo">565</span>    /** If true, delete the runs after exporting. */<a name="line.565"></a>
+<span class="sourceLineNo">566</span>    private static boolean _deleteAfterExport = false;<a name="line.566"></a>
+<span class="sourceLineNo">567</span><a name="line.567"></a>
+<span class="sourceLineNo">568</span>    /** If true, export all the provenance runs. */<a name="line.568"></a>
+<span class="sourceLineNo">569</span>    private static boolean _exportAll = false;<a name="line.569"></a>
+<span class="sourceLineNo">570</span><a name="line.570"></a>
+<span class="sourceLineNo">571</span>    /** If true, try to import the runs despite any missing module<a name="line.571"></a>
+<span class="sourceLineNo">572</span>     *  dependencies.<a name="line.572"></a>
+<span class="sourceLineNo">573</span>     */<a name="line.573"></a>
+<span class="sourceLineNo">574</span>    private static boolean _forceImport = false;<a name="line.574"></a>
+<span class="sourceLineNo">575</span>        <a name="line.575"></a>
+<span class="sourceLineNo">576</span>    /** The input file name. */<a name="line.576"></a>
+<span class="sourceLineNo">577</span>    private static String _inputFileName;<a name="line.577"></a>
+<span class="sourceLineNo">578</span><a name="line.578"></a>
+<span class="sourceLineNo">579</span>    /** The output file name. */<a name="line.579"></a>
+<span class="sourceLineNo">580</span>    private static String _outputFileName;<a name="line.580"></a>
+<span class="sourceLineNo">581</span>       <a name="line.581"></a>
+<span class="sourceLineNo">582</span>    /** The id of the run to delete, export, graph, etc. */<a name="line.582"></a>
+<span class="sourceLineNo">583</span>    private static Integer _runId;<a name="line.583"></a>
+<span class="sourceLineNo">584</span>        <a name="line.584"></a>
+<span class="sourceLineNo">585</span>    /** The types of operations. */<a name="line.585"></a>
+<span class="sourceLineNo">586</span>    private enum Operation { List, Import, Export, Graph, Delete };<a name="line.586"></a>
+<span class="sourceLineNo">587</span>    <a name="line.587"></a>
+<span class="sourceLineNo">588</span>    /** The operation to perform. */<a name="line.588"></a>
+<span class="sourceLineNo">589</span>    private static Operation _operation;<a name="line.589"></a>
+<span class="sourceLineNo">590</span>    <a name="line.590"></a>
+<span class="sourceLineNo">591</span>    /** The graph type. */<a name="line.591"></a>
+<span class="sourceLineNo">592</span>    private static String _type;<a name="line.592"></a>
+<span class="sourceLineNo">593</span>}<a name="line.593"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

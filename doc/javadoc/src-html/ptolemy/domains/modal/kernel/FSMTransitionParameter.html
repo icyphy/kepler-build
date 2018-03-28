@@ -1,0 +1,356 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../../../stylesheet.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>/* A parameter that contains FSM transition attributes.<a name="line.1"></a>
+<span class="sourceLineNo">002</span><a name="line.2"></a>
+<span class="sourceLineNo">003</span>   Copyright (c) 2014-2015 The Regents of the University of California.<a name="line.3"></a>
+<span class="sourceLineNo">004</span>   All rights reserved.<a name="line.4"></a>
+<span class="sourceLineNo">005</span>   Permission is hereby granted, without written agreement and without<a name="line.5"></a>
+<span class="sourceLineNo">006</span>   license or royalty fees, to use, copy, modify, and distribute this<a name="line.6"></a>
+<span class="sourceLineNo">007</span>   software and its documentation for any purpose, provided that the above<a name="line.7"></a>
+<span class="sourceLineNo">008</span>   copyright notice and the following two paragraphs appear in all copies<a name="line.8"></a>
+<span class="sourceLineNo">009</span>   of this software.<a name="line.9"></a>
+<span class="sourceLineNo">010</span><a name="line.10"></a>
+<span class="sourceLineNo">011</span>   IN NO EVENT SHALL THE UNIVERSITY OF CALIFORNIA BE LIABLE TO ANY PARTY<a name="line.11"></a>
+<span class="sourceLineNo">012</span>   FOR DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES<a name="line.12"></a>
+<span class="sourceLineNo">013</span>   ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION, EVEN IF<a name="line.13"></a>
+<span class="sourceLineNo">014</span>   THE UNIVERSITY OF CALIFORNIA HAS BEEN ADVISED OF THE POSSIBILITY OF<a name="line.14"></a>
+<span class="sourceLineNo">015</span>   SUCH DAMAGE.<a name="line.15"></a>
+<span class="sourceLineNo">016</span><a name="line.16"></a>
+<span class="sourceLineNo">017</span>   THE UNIVERSITY OF CALIFORNIA SPECIFICALLY DISCLAIMS ANY WARRANTIES,<a name="line.17"></a>
+<span class="sourceLineNo">018</span>   INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF<a name="line.18"></a>
+<span class="sourceLineNo">019</span>   MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE<a name="line.19"></a>
+<span class="sourceLineNo">020</span>   PROVIDED HEREUNDER IS ON AN "AS IS" BASIS, AND THE UNIVERSITY OF<a name="line.20"></a>
+<span class="sourceLineNo">021</span>   CALIFORNIA HAS NO OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT, UPDATES,<a name="line.21"></a>
+<span class="sourceLineNo">022</span>   ENHANCEMENTS, OR MODIFICATIONS.<a name="line.22"></a>
+<span class="sourceLineNo">023</span>   PT_COPYRIGHT_VERSION_2<a name="line.23"></a>
+<span class="sourceLineNo">024</span>   COPYRIGHTENDKEY<a name="line.24"></a>
+<span class="sourceLineNo">025</span><a name="line.25"></a>
+<span class="sourceLineNo">026</span> */<a name="line.26"></a>
+<span class="sourceLineNo">027</span><a name="line.27"></a>
+<span class="sourceLineNo">028</span>package ptolemy.domains.modal.kernel;<a name="line.28"></a>
+<span class="sourceLineNo">029</span><a name="line.29"></a>
+<span class="sourceLineNo">030</span>import java.util.Collection;<a name="line.30"></a>
+<span class="sourceLineNo">031</span>import java.util.List;<a name="line.31"></a>
+<span class="sourceLineNo">032</span><a name="line.32"></a>
+<span class="sourceLineNo">033</span>import ptolemy.data.BooleanToken;<a name="line.33"></a>
+<span class="sourceLineNo">034</span>import ptolemy.data.StringToken;<a name="line.34"></a>
+<span class="sourceLineNo">035</span>import ptolemy.data.expr.Parameter;<a name="line.35"></a>
+<span class="sourceLineNo">036</span>import ptolemy.data.expr.SingletonParameter;<a name="line.36"></a>
+<span class="sourceLineNo">037</span>import ptolemy.domains.modal.modal.ModalController;<a name="line.37"></a>
+<span class="sourceLineNo">038</span>import ptolemy.kernel.util.AbstractSettableAttribute;<a name="line.38"></a>
+<span class="sourceLineNo">039</span>import ptolemy.kernel.util.IllegalActionException;<a name="line.39"></a>
+<span class="sourceLineNo">040</span>import ptolemy.kernel.util.InternalErrorException;<a name="line.40"></a>
+<span class="sourceLineNo">041</span>import ptolemy.kernel.util.Location;<a name="line.41"></a>
+<span class="sourceLineNo">042</span>import ptolemy.kernel.util.NameDuplicationException;<a name="line.42"></a>
+<span class="sourceLineNo">043</span>import ptolemy.kernel.util.NamedObj;<a name="line.43"></a>
+<span class="sourceLineNo">044</span>import ptolemy.kernel.util.Settable;<a name="line.44"></a>
+<span class="sourceLineNo">045</span>import ptolemy.kernel.util.ValueListener;<a name="line.45"></a>
+<span class="sourceLineNo">046</span>import ptolemy.kernel.util.Workspace;<a name="line.46"></a>
+<span class="sourceLineNo">047</span><a name="line.47"></a>
+<span class="sourceLineNo">048</span>/** A parameter that contains FSM transition attributes. In large FSMs<a name="line.48"></a>
+<span class="sourceLineNo">049</span> *  with long strings in actions, the graphical representation can be<a name="line.49"></a>
+<span class="sourceLineNo">050</span> *  challenging. This parameter can be used represent configuration of<a name="line.50"></a>
+<span class="sourceLineNo">051</span> *  transitions in a parameter that can be moved independent from the<a name="line.51"></a>
+<span class="sourceLineNo">052</span> *  transition in vergil.<a name="line.52"></a>
+<span class="sourceLineNo">053</span> *  @author Patricia Derler<a name="line.53"></a>
+<span class="sourceLineNo">054</span> *  @version $Id$<a name="line.54"></a>
+<span class="sourceLineNo">055</span> *  @since Ptolemy II 10.0<a name="line.55"></a>
+<span class="sourceLineNo">056</span> *<a name="line.56"></a>
+<span class="sourceLineNo">057</span> *  @Pt.ProposedRating Red (derler)<a name="line.57"></a>
+<span class="sourceLineNo">058</span> *  @Pt.AcceptedRating Red (derler)<a name="line.58"></a>
+<span class="sourceLineNo">059</span> */<a name="line.59"></a>
+<span class="sourceLineNo">060</span>public class FSMTransitionParameter extends AbstractSettableAttribute {<a name="line.60"></a>
+<span class="sourceLineNo">061</span><a name="line.61"></a>
+<span class="sourceLineNo">062</span>    /** Construct an attribute with the given name contained by the specified<a name="line.62"></a>
+<span class="sourceLineNo">063</span>     *  entity. The container argument must not be null, or a<a name="line.63"></a>
+<span class="sourceLineNo">064</span>     *  NullPointerException will be thrown.  This attribute will use the<a name="line.64"></a>
+<span class="sourceLineNo">065</span>     *  workspace of the container for synchronization and version counts.<a name="line.65"></a>
+<span class="sourceLineNo">066</span>     *  If the name argument is null, then the name is set to the empty string.<a name="line.66"></a>
+<span class="sourceLineNo">067</span>     *  Increment the version of the workspace.<a name="line.67"></a>
+<span class="sourceLineNo">068</span>     *  @param container The container.<a name="line.68"></a>
+<span class="sourceLineNo">069</span>     *  @param name The name of this attribute.<a name="line.69"></a>
+<span class="sourceLineNo">070</span>     *  @exception IllegalActionException If the attribute is not of an<a name="line.70"></a>
+<span class="sourceLineNo">071</span>     *   acceptable class for the container, or if the name contains a period.<a name="line.71"></a>
+<span class="sourceLineNo">072</span>     *  @exception NameDuplicationException If the name coincides with<a name="line.72"></a>
+<span class="sourceLineNo">073</span>     *   an attribute already in the container.<a name="line.73"></a>
+<span class="sourceLineNo">074</span>     */<a name="line.74"></a>
+<span class="sourceLineNo">075</span>    public FSMTransitionParameter(NamedObj container, String name)<a name="line.75"></a>
+<span class="sourceLineNo">076</span>            throws IllegalActionException, NameDuplicationException {<a name="line.76"></a>
+<span class="sourceLineNo">077</span>        super(container, name);<a name="line.77"></a>
+<span class="sourceLineNo">078</span>        _init();<a name="line.78"></a>
+<span class="sourceLineNo">079</span>    }<a name="line.79"></a>
+<span class="sourceLineNo">080</span><a name="line.80"></a>
+<span class="sourceLineNo">081</span>    /** Add value listener. Nothing to do.<a name="line.81"></a>
+<span class="sourceLineNo">082</span>     *  @param listener Ignored in this base class.<a name="line.82"></a>
+<span class="sourceLineNo">083</span>     *  @see #removeValueListener(ValueListener)<a name="line.83"></a>
+<span class="sourceLineNo">084</span>     */<a name="line.84"></a>
+<span class="sourceLineNo">085</span>    @Override<a name="line.85"></a>
+<span class="sourceLineNo">086</span>    public void addValueListener(ValueListener listener) {<a name="line.86"></a>
+<span class="sourceLineNo">087</span>        // nothing to do.<a name="line.87"></a>
+<span class="sourceLineNo">088</span>    }<a name="line.88"></a>
+<span class="sourceLineNo">089</span><a name="line.89"></a>
+<span class="sourceLineNo">090</span>    /** Clone the transition into the specified workspace. This calls the<a name="line.90"></a>
+<span class="sourceLineNo">091</span>     *  base class and then sets the attribute public members to refer to<a name="line.91"></a>
+<span class="sourceLineNo">092</span>     *  the attributes of the new transition.<a name="line.92"></a>
+<span class="sourceLineNo">093</span>     *  @param workspace The workspace for the new transition.<a name="line.93"></a>
+<span class="sourceLineNo">094</span>     *  @return A new transition.<a name="line.94"></a>
+<span class="sourceLineNo">095</span>     *  @exception CloneNotSupportedException If a derived class contains<a name="line.95"></a>
+<span class="sourceLineNo">096</span>     *   an attribute that cannot be cloned.<a name="line.96"></a>
+<span class="sourceLineNo">097</span>     */<a name="line.97"></a>
+<span class="sourceLineNo">098</span>    @Override<a name="line.98"></a>
+<span class="sourceLineNo">099</span>    public Object clone(Workspace workspace) throws CloneNotSupportedException {<a name="line.99"></a>
+<span class="sourceLineNo">100</span>        FSMTransitionParameter newObject = (FSMTransitionParameter) super.clone(<a name="line.100"></a>
+<span class="sourceLineNo">101</span>                workspace);<a name="line.101"></a>
+<span class="sourceLineNo">102</span>        newObject._transition = null;<a name="line.102"></a>
+<span class="sourceLineNo">103</span>        return newObject;<a name="line.103"></a>
+<span class="sourceLineNo">104</span>    }<a name="line.104"></a>
+<span class="sourceLineNo">105</span><a name="line.105"></a>
+<span class="sourceLineNo">106</span>    /** Return the name of the parameter.<a name="line.106"></a>
+<span class="sourceLineNo">107</span>     *  @return The name.<a name="line.107"></a>
+<span class="sourceLineNo">108</span>     */<a name="line.108"></a>
+<span class="sourceLineNo">109</span>    @Override<a name="line.109"></a>
+<span class="sourceLineNo">110</span>    public String getExpression() {<a name="line.110"></a>
+<span class="sourceLineNo">111</span>        if (_transition != null) {<a name="line.111"></a>
+<span class="sourceLineNo">112</span>            return _transition.getFullLabel();<a name="line.112"></a>
+<span class="sourceLineNo">113</span>        }<a name="line.113"></a>
+<span class="sourceLineNo">114</span>        return "";<a name="line.114"></a>
+<span class="sourceLineNo">115</span>    }<a name="line.115"></a>
+<span class="sourceLineNo">116</span><a name="line.116"></a>
+<span class="sourceLineNo">117</span>    /** Set the transition that corresponds to the parameters.<a name="line.117"></a>
+<span class="sourceLineNo">118</span>     *  @return The transition.<a name="line.118"></a>
+<span class="sourceLineNo">119</span>     *  @see #setTransition(Transition)<a name="line.119"></a>
+<span class="sourceLineNo">120</span>     */<a name="line.120"></a>
+<span class="sourceLineNo">121</span>    public Transition getTransition() {<a name="line.121"></a>
+<span class="sourceLineNo">122</span>        return _transition;<a name="line.122"></a>
+<span class="sourceLineNo">123</span>    }<a name="line.123"></a>
+<span class="sourceLineNo">124</span><a name="line.124"></a>
+<span class="sourceLineNo">125</span>    /** Get visibility. Nothing to do.<a name="line.125"></a>
+<span class="sourceLineNo">126</span>     *  @return Always return NOT_EDITABLE.<a name="line.126"></a>
+<span class="sourceLineNo">127</span>     *  @see #setVisibility(Visibility)<a name="line.127"></a>
+<span class="sourceLineNo">128</span>     */<a name="line.128"></a>
+<span class="sourceLineNo">129</span>    @Override<a name="line.129"></a>
+<span class="sourceLineNo">130</span>    public Visibility getVisibility() {<a name="line.130"></a>
+<span class="sourceLineNo">131</span>        return NOT_EDITABLE;<a name="line.131"></a>
+<span class="sourceLineNo">132</span>    }<a name="line.132"></a>
+<span class="sourceLineNo">133</span><a name="line.133"></a>
+<span class="sourceLineNo">134</span>    /** If hide is true, hide the parameter and display transition parameters next<a name="line.134"></a>
+<span class="sourceLineNo">135</span>     * to the transition.<a name="line.135"></a>
+<span class="sourceLineNo">136</span>     * FIXME this should probably be done in setVisibility.<a name="line.136"></a>
+<span class="sourceLineNo">137</span>     * @param hide True if the parameter should be hidden.<a name="line.137"></a>
+<span class="sourceLineNo">138</span>     * @exception IllegalActionException If thrown while creating<a name="line.138"></a>
+<span class="sourceLineNo">139</span>     * the _hide parameter, while validating the location or while<a name="line.139"></a>
+<span class="sourceLineNo">140</span>     * creating a location.<a name="line.140"></a>
+<span class="sourceLineNo">141</span>     */<a name="line.141"></a>
+<span class="sourceLineNo">142</span>    public void hide(boolean hide) throws IllegalActionException {<a name="line.142"></a>
+<span class="sourceLineNo">143</span>        Parameter _hide = (Parameter) getAttribute("_hide");<a name="line.143"></a>
+<span class="sourceLineNo">144</span>        if (_hide == null) {<a name="line.144"></a>
+<span class="sourceLineNo">145</span>            try {<a name="line.145"></a>
+<span class="sourceLineNo">146</span>                _hide = new Parameter(this, "_hide");<a name="line.146"></a>
+<span class="sourceLineNo">147</span>            } catch (NameDuplicationException e) {<a name="line.147"></a>
+<span class="sourceLineNo">148</span>                // not going to happen<a name="line.148"></a>
+<span class="sourceLineNo">149</span>                e.printStackTrace();<a name="line.149"></a>
+<span class="sourceLineNo">150</span>            }<a name="line.150"></a>
+<span class="sourceLineNo">151</span>        }<a name="line.151"></a>
+<span class="sourceLineNo">152</span>        if (_hide == null) {<a name="line.152"></a>
+<span class="sourceLineNo">153</span>            throw new InternalErrorException(this, null,<a name="line.153"></a>
+<span class="sourceLineNo">154</span>                    "Could not create _hide parameter?");<a name="line.154"></a>
+<span class="sourceLineNo">155</span>        }<a name="line.155"></a>
+<span class="sourceLineNo">156</span>        _hide.setExpression("" + hide);<a name="line.156"></a>
+<span class="sourceLineNo">157</span>        Location location = (Location) getAttribute("_location");<a name="line.157"></a>
+<span class="sourceLineNo">158</span>        if (location != null) {<a name="line.158"></a>
+<span class="sourceLineNo">159</span>            location.validate();<a name="line.159"></a>
+<span class="sourceLineNo">160</span>        } else {<a name="line.160"></a>
+<span class="sourceLineNo">161</span>            // FindBugs: "Redundant nullcheck of value known to be<a name="line.161"></a>
+<span class="sourceLineNo">162</span>            // null" location is known to be null here.<a name="line.162"></a>
+<span class="sourceLineNo">163</span>            if (!hide /*&amp;&amp; (location == null || (location.getLocation()[0] == 0 &amp;&amp; location.getLocation()[1] == 0))*/) {<a name="line.163"></a>
+<span class="sourceLineNo">164</span>                if (_transition != null &amp;&amp; _transition.sourceState() != null) {<a name="line.164"></a>
+<span class="sourceLineNo">165</span>                    Location sourceStateLocation = (Location) _transition<a name="line.165"></a>
+<span class="sourceLineNo">166</span>                            .sourceState().getAttribute("_location");<a name="line.166"></a>
+<span class="sourceLineNo">167</span>                    Location destinationStateLocation = (Location) _transition<a name="line.167"></a>
+<span class="sourceLineNo">168</span>                            .destinationState().getAttribute("_location");<a name="line.168"></a>
+<span class="sourceLineNo">169</span>                    try {<a name="line.169"></a>
+<span class="sourceLineNo">170</span>                        new Location(this, "_location").setLocation(<a name="line.170"></a>
+<span class="sourceLineNo">171</span>                                new double[] { destinationStateLocation<a name="line.171"></a>
+<span class="sourceLineNo">172</span>                                        .getLocation()[0]<a name="line.172"></a>
+<span class="sourceLineNo">173</span>                                        + (sourceStateLocation.getLocation()[0]<a name="line.173"></a>
+<span class="sourceLineNo">174</span>                                                - destinationStateLocation<a name="line.174"></a>
+<span class="sourceLineNo">175</span>                                                        .getLocation()[0])<a name="line.175"></a>
+<span class="sourceLineNo">176</span>                                                / 2,<a name="line.176"></a>
+<span class="sourceLineNo">177</span>                                        destinationStateLocation<a name="line.177"></a>
+<span class="sourceLineNo">178</span>                                                .getLocation()[1]<a name="line.178"></a>
+<span class="sourceLineNo">179</span>                                                + (sourceStateLocation<a name="line.179"></a>
+<span class="sourceLineNo">180</span>                                                        .getLocation()[1]<a name="line.180"></a>
+<span class="sourceLineNo">181</span>                                                        - destinationStateLocation<a name="line.181"></a>
+<span class="sourceLineNo">182</span>                                                                .getLocation()[1])<a name="line.182"></a>
+<span class="sourceLineNo">183</span>                                                        / 2 });<a name="line.183"></a>
+<span class="sourceLineNo">184</span>                    } catch (NameDuplicationException ex) {<a name="line.184"></a>
+<span class="sourceLineNo">185</span>                        throw new IllegalActionException(_transition, ex,<a name="line.185"></a>
+<span class="sourceLineNo">186</span>                                "Could not add _location?");<a name="line.186"></a>
+<span class="sourceLineNo">187</span>                    }<a name="line.187"></a>
+<span class="sourceLineNo">188</span>                }<a name="line.188"></a>
+<span class="sourceLineNo">189</span>            }<a name="line.189"></a>
+<span class="sourceLineNo">190</span>        }<a name="line.190"></a>
+<span class="sourceLineNo">191</span>    }<a name="line.191"></a>
+<span class="sourceLineNo">192</span><a name="line.192"></a>
+<span class="sourceLineNo">193</span>    /** Upon setting the name of this parameter change the corresponding<a name="line.193"></a>
+<span class="sourceLineNo">194</span>     *  attribute in the transition.<a name="line.194"></a>
+<span class="sourceLineNo">195</span>     */<a name="line.195"></a>
+<span class="sourceLineNo">196</span>    @Override<a name="line.196"></a>
+<span class="sourceLineNo">197</span>    public void setName(String name)<a name="line.197"></a>
+<span class="sourceLineNo">198</span>            throws IllegalActionException, NameDuplicationException {<a name="line.198"></a>
+<span class="sourceLineNo">199</span>        super.setName(name);<a name="line.199"></a>
+<span class="sourceLineNo">200</span>        if (_transition != null) {<a name="line.200"></a>
+<span class="sourceLineNo">201</span>            _transition.fsmTransitionParameterName.setExpression(name);<a name="line.201"></a>
+<span class="sourceLineNo">202</span>            _transition.fsmTransitionParameterName.setPersistent(true);<a name="line.202"></a>
+<span class="sourceLineNo">203</span>        }<a name="line.203"></a>
+<span class="sourceLineNo">204</span>    }<a name="line.204"></a>
+<span class="sourceLineNo">205</span><a name="line.205"></a>
+<span class="sourceLineNo">206</span>    /** Remove value listener. Nothing to do.<a name="line.206"></a>
+<span class="sourceLineNo">207</span>     *  @param listener Ignored.<a name="line.207"></a>
+<span class="sourceLineNo">208</span>     *  @see #addValueListener(ValueListener)<a name="line.208"></a>
+<span class="sourceLineNo">209</span>     */<a name="line.209"></a>
+<span class="sourceLineNo">210</span>    @Override<a name="line.210"></a>
+<span class="sourceLineNo">211</span>    public void removeValueListener(ValueListener listener) {<a name="line.211"></a>
+<span class="sourceLineNo">212</span>        // Nothing to do.<a name="line.212"></a>
+<span class="sourceLineNo">213</span>    }<a name="line.213"></a>
+<span class="sourceLineNo">214</span><a name="line.214"></a>
+<span class="sourceLineNo">215</span>    @Override<a name="line.215"></a>
+<span class="sourceLineNo">216</span>    public void setContainer(NamedObj container)<a name="line.216"></a>
+<span class="sourceLineNo">217</span>            throws IllegalActionException, NameDuplicationException {<a name="line.217"></a>
+<span class="sourceLineNo">218</span>        super.setContainer(container);<a name="line.218"></a>
+<span class="sourceLineNo">219</span>        if (container == null &amp;&amp; _transition != null) {<a name="line.219"></a>
+<span class="sourceLineNo">220</span>            _transition.setFsmTransitionParameter(null);<a name="line.220"></a>
+<span class="sourceLineNo">221</span>            _transition.showFSMTransitionParameter<a name="line.221"></a>
+<span class="sourceLineNo">222</span>                    .setToken(new BooleanToken(false));<a name="line.222"></a>
+<span class="sourceLineNo">223</span>        }<a name="line.223"></a>
+<span class="sourceLineNo">224</span>    }<a name="line.224"></a>
+<span class="sourceLineNo">225</span><a name="line.225"></a>
+<span class="sourceLineNo">226</span>    /** Set the transition that corresponds to the parameters.<a name="line.226"></a>
+<span class="sourceLineNo">227</span>     * @param transition The transition.<a name="line.227"></a>
+<span class="sourceLineNo">228</span>     * @exception IllegalActionException Can happen during initialization.<a name="line.228"></a>
+<span class="sourceLineNo">229</span>     * @exception NameDuplicationException Can happen during initialization.<a name="line.229"></a>
+<span class="sourceLineNo">230</span>     * @see #getTransition()<a name="line.230"></a>
+<span class="sourceLineNo">231</span>     */<a name="line.231"></a>
+<span class="sourceLineNo">232</span>    public void setTransition(Transition transition)<a name="line.232"></a>
+<span class="sourceLineNo">233</span>            throws IllegalActionException, NameDuplicationException {<a name="line.233"></a>
+<span class="sourceLineNo">234</span>        _transition = transition;<a name="line.234"></a>
+<span class="sourceLineNo">235</span>        _init();<a name="line.235"></a>
+<span class="sourceLineNo">236</span>    }<a name="line.236"></a>
+<span class="sourceLineNo">237</span><a name="line.237"></a>
+<span class="sourceLineNo">238</span>    /** Set visibility. Nothing to do.<a name="line.238"></a>
+<span class="sourceLineNo">239</span>     *  @param visibility Ignored.<a name="line.239"></a>
+<span class="sourceLineNo">240</span>     *  @see #getVisibility()<a name="line.240"></a>
+<span class="sourceLineNo">241</span>     */<a name="line.241"></a>
+<span class="sourceLineNo">242</span>    @Override<a name="line.242"></a>
+<span class="sourceLineNo">243</span>    public void setVisibility(Visibility visibility) {<a name="line.243"></a>
+<span class="sourceLineNo">244</span>        // Nothing to do, visibility is always not-editable.<a name="line.244"></a>
+<span class="sourceLineNo">245</span>    }<a name="line.245"></a>
+<span class="sourceLineNo">246</span><a name="line.246"></a>
+<span class="sourceLineNo">247</span>    /** Validate. Nothing to do.<a name="line.247"></a>
+<span class="sourceLineNo">248</span>     * @return null<a name="line.248"></a>
+<span class="sourceLineNo">249</span>     * @exception IllegalActionException Not thrown.<a name="line.249"></a>
+<span class="sourceLineNo">250</span>     */<a name="line.250"></a>
+<span class="sourceLineNo">251</span>    @Override<a name="line.251"></a>
+<span class="sourceLineNo">252</span>    public Collection validate() throws IllegalActionException {<a name="line.252"></a>
+<span class="sourceLineNo">253</span>        return null;<a name="line.253"></a>
+<span class="sourceLineNo">254</span>    }<a name="line.254"></a>
+<span class="sourceLineNo">255</span><a name="line.255"></a>
+<span class="sourceLineNo">256</span>    ///////////////////////////////////////////////////////////////////<a name="line.256"></a>
+<span class="sourceLineNo">257</span>    ////                         private methods                   ////<a name="line.257"></a>
+<span class="sourceLineNo">258</span><a name="line.258"></a>
+<span class="sourceLineNo">259</span>    private void _init()<a name="line.259"></a>
+<span class="sourceLineNo">260</span>            throws IllegalActionException, NameDuplicationException {<a name="line.260"></a>
+<span class="sourceLineNo">261</span>        if (getAttribute("_hideName") == null) {<a name="line.261"></a>
+<span class="sourceLineNo">262</span>            SingletonParameter hide = new SingletonParameter(this, "_hideName");<a name="line.262"></a>
+<span class="sourceLineNo">263</span>            hide.setToken(BooleanToken.TRUE);<a name="line.263"></a>
+<span class="sourceLineNo">264</span>            hide.setVisibility(Settable.EXPERT);<a name="line.264"></a>
+<span class="sourceLineNo">265</span>        }<a name="line.265"></a>
+<span class="sourceLineNo">266</span><a name="line.266"></a>
+<span class="sourceLineNo">267</span>        hide(false);<a name="line.267"></a>
+<span class="sourceLineNo">268</span>        setPersistent(true);<a name="line.268"></a>
+<span class="sourceLineNo">269</span><a name="line.269"></a>
+<span class="sourceLineNo">270</span>        List&lt;Transition&gt; transitions = ((ModalController) getContainer())<a name="line.270"></a>
+<span class="sourceLineNo">271</span>                .relationList();<a name="line.271"></a>
+<span class="sourceLineNo">272</span>        for (Transition transition : transitions) {<a name="line.272"></a>
+<span class="sourceLineNo">273</span>            if (((StringToken) transition.fsmTransitionParameterName.getToken())<a name="line.273"></a>
+<span class="sourceLineNo">274</span>                    .stringValue().equals(this.getName())) {<a name="line.274"></a>
+<span class="sourceLineNo">275</span>                _transition = transition;<a name="line.275"></a>
+<span class="sourceLineNo">276</span>                _transition.setFsmTransitionParameter(this);<a name="line.276"></a>
+<span class="sourceLineNo">277</span>                break;<a name="line.277"></a>
+<span class="sourceLineNo">278</span>            }<a name="line.278"></a>
+<span class="sourceLineNo">279</span>        }<a name="line.279"></a>
+<span class="sourceLineNo">280</span>    }<a name="line.280"></a>
+<span class="sourceLineNo">281</span><a name="line.281"></a>
+<span class="sourceLineNo">282</span>    private Transition _transition;<a name="line.282"></a>
+<span class="sourceLineNo">283</span><a name="line.283"></a>
+<span class="sourceLineNo">284</span>}<a name="line.284"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

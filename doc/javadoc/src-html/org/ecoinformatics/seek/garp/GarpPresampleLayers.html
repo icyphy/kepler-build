@@ -1,0 +1,286 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../../../stylesheet.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>/*<a name="line.1"></a>
+<span class="sourceLineNo">002</span> * Copyright (c) 2003-2010 The Regents of the University of California.<a name="line.2"></a>
+<span class="sourceLineNo">003</span> * All rights reserved.<a name="line.3"></a>
+<span class="sourceLineNo">004</span> *<a name="line.4"></a>
+<span class="sourceLineNo">005</span> * '$Author: welker $'<a name="line.5"></a>
+<span class="sourceLineNo">006</span> * '$Date: 2010-05-05 22:21:26 -0700 (Wed, 05 May 2010) $' <a name="line.6"></a>
+<span class="sourceLineNo">007</span> * '$Revision: 24234 $'<a name="line.7"></a>
+<span class="sourceLineNo">008</span> * <a name="line.8"></a>
+<span class="sourceLineNo">009</span> * Permission is hereby granted, without written agreement and without<a name="line.9"></a>
+<span class="sourceLineNo">010</span> * license or royalty fees, to use, copy, modify, and distribute this<a name="line.10"></a>
+<span class="sourceLineNo">011</span> * software and its documentation for any purpose, provided that the above<a name="line.11"></a>
+<span class="sourceLineNo">012</span> * copyright notice and the following two paragraphs appear in all copies<a name="line.12"></a>
+<span class="sourceLineNo">013</span> * of this software.<a name="line.13"></a>
+<span class="sourceLineNo">014</span> *<a name="line.14"></a>
+<span class="sourceLineNo">015</span> * IN NO EVENT SHALL THE UNIVERSITY OF CALIFORNIA BE LIABLE TO ANY PARTY<a name="line.15"></a>
+<span class="sourceLineNo">016</span> * FOR DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES<a name="line.16"></a>
+<span class="sourceLineNo">017</span> * ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION, EVEN IF<a name="line.17"></a>
+<span class="sourceLineNo">018</span> * THE UNIVERSITY OF CALIFORNIA HAS BEEN ADVISED OF THE POSSIBILITY OF<a name="line.18"></a>
+<span class="sourceLineNo">019</span> * SUCH DAMAGE.<a name="line.19"></a>
+<span class="sourceLineNo">020</span> *<a name="line.20"></a>
+<span class="sourceLineNo">021</span> * THE UNIVERSITY OF CALIFORNIA SPECIFICALLY DISCLAIMS ANY WARRANTIES,<a name="line.21"></a>
+<span class="sourceLineNo">022</span> * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF<a name="line.22"></a>
+<span class="sourceLineNo">023</span> * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE<a name="line.23"></a>
+<span class="sourceLineNo">024</span> * PROVIDED HEREUNDER IS ON AN "AS IS" BASIS, AND THE UNIVERSITY OF<a name="line.24"></a>
+<span class="sourceLineNo">025</span> * CALIFORNIA HAS NO OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT, UPDATES,<a name="line.25"></a>
+<span class="sourceLineNo">026</span> * ENHANCEMENTS, OR MODIFICATIONS.<a name="line.26"></a>
+<span class="sourceLineNo">027</span> *<a name="line.27"></a>
+<span class="sourceLineNo">028</span> */<a name="line.28"></a>
+<span class="sourceLineNo">029</span><a name="line.29"></a>
+<span class="sourceLineNo">030</span>package org.ecoinformatics.seek.garp;<a name="line.30"></a>
+<span class="sourceLineNo">031</span><a name="line.31"></a>
+<span class="sourceLineNo">032</span>import ptolemy.actor.TypedAtomicActor;<a name="line.32"></a>
+<span class="sourceLineNo">033</span>import ptolemy.actor.TypedIOPort;<a name="line.33"></a>
+<span class="sourceLineNo">034</span>import ptolemy.data.StringToken;<a name="line.34"></a>
+<span class="sourceLineNo">035</span>import ptolemy.data.expr.FileParameter;<a name="line.35"></a>
+<span class="sourceLineNo">036</span>import ptolemy.data.type.BaseType;<a name="line.36"></a>
+<span class="sourceLineNo">037</span>import ptolemy.kernel.CompositeEntity;<a name="line.37"></a>
+<span class="sourceLineNo">038</span>import ptolemy.kernel.util.IllegalActionException;<a name="line.38"></a>
+<span class="sourceLineNo">039</span>import ptolemy.kernel.util.NameDuplicationException;<a name="line.39"></a>
+<span class="sourceLineNo">040</span><a name="line.40"></a>
+<span class="sourceLineNo">041</span>/**<a name="line.41"></a>
+<span class="sourceLineNo">042</span> * GARP is a computer program for predicting species locations based on various<a name="line.42"></a>
+<span class="sourceLineNo">043</span> * spatial data sets of environment variables and known species locations. GARP<a name="line.43"></a>
+<span class="sourceLineNo">044</span> * is an acronym for Genetic Algorithm for Rule Set Production. GARP was<a name="line.44"></a>
+<span class="sourceLineNo">045</span> * originally ceated by David Stockwell. The version in Kepler is based on<a name="line.45"></a>
+<span class="sourceLineNo">046</span> * 'Desktop GARP', http://www.lifemapper.org/desktopgarp/. The<a name="line.46"></a>
+<span class="sourceLineNo">047</span> * GarpPresampleLayers actor carries out the first step in a GARP calculation to<a name="line.47"></a>
+<span class="sourceLineNo">048</span> * be executes as a Kepler workflow. It samples the environment data and known<a name="line.48"></a>
+<span class="sourceLineNo">049</span> * locations to create a 'CellSet' of information to be used in later steps. As<a name="line.49"></a>
+<span class="sourceLineNo">050</span> * input, it takes several file names. One is a summary of spatial grids<a name="line.50"></a>
+<span class="sourceLineNo">051</span> * containing things like environmental data (e.g. temperature, precipitation,<a name="line.51"></a>
+<span class="sourceLineNo">052</span> * etc.) A number of these spatial grids are summarized in an xml file (named<a name="line.52"></a>
+<span class="sourceLineNo">053</span> * *.dxl). The second major input is locations file that contains a list of<a name="line.53"></a>
+<span class="sourceLineNo">054</span> * known spatial locations where the species of interest has been found. This<a name="line.54"></a>
+<span class="sourceLineNo">055</span> * information is 'presampled' to create a CellSet to be used in subsequent<a name="line.55"></a>
+<span class="sourceLineNo">056</span> * pieces of the GARP calculation. There is also an input that should give the<a name="line.56"></a>
+<span class="sourceLineNo">057</span> * file name to be used to store this CellSet data. The output port provides the<a name="line.57"></a>
+<span class="sourceLineNo">058</span> * file name when the file has been actually written. (The output is thus a<a name="line.58"></a>
+<span class="sourceLineNo">059</span> * 'trigger'.)<a name="line.59"></a>
+<span class="sourceLineNo">060</span> * <a name="line.60"></a>
+<span class="sourceLineNo">061</span> * This is a JNI-based actor. It requires the following: linux: libgarp.so<a name="line.61"></a>
+<span class="sourceLineNo">062</span> * windows: garp.dll, libexpat.dll MacOSX - currently not available for the Mac<a name="line.62"></a>
+<span class="sourceLineNo">063</span> * (3/16/2006)<a name="line.63"></a>
+<span class="sourceLineNo">064</span> * <a name="line.64"></a>
+<span class="sourceLineNo">065</span> * @author Chad Berkeley, Dan Higgins, NCEAS, UC Santa Barbara<a name="line.65"></a>
+<span class="sourceLineNo">066</span> */<a name="line.66"></a>
+<span class="sourceLineNo">067</span>public class GarpPresampleLayers extends TypedAtomicActor {<a name="line.67"></a>
+<span class="sourceLineNo">068</span>        /**<a name="line.68"></a>
+<span class="sourceLineNo">069</span>         * This parameter is the file name of the xml file that summarizes all the<a name="line.69"></a>
+<span class="sourceLineNo">070</span>         * spatial layers to be used in the GARP calculation. The file name is of<a name="line.70"></a>
+<span class="sourceLineNo">071</span>         * the *.dxl format. Examine samples to see the content.<a name="line.71"></a>
+<span class="sourceLineNo">072</span>         */<a name="line.72"></a>
+<span class="sourceLineNo">073</span>        public FileParameter layersetFilenameParameter = new FileParameter(this,<a name="line.73"></a>
+<span class="sourceLineNo">074</span>                        "layersetFilenameParameter");<a name="line.74"></a>
+<span class="sourceLineNo">075</span>        /**<a name="line.75"></a>
+<span class="sourceLineNo">076</span>         * This parameter is the file name of the file that contains the known<a name="line.76"></a>
+<span class="sourceLineNo">077</span>         * locations to be used to determine a ruleset for predicting other<a name="line.77"></a>
+<span class="sourceLineNo">078</span>         * locations from the spatial environment layers. The file is a text file<a name="line.78"></a>
+<span class="sourceLineNo">079</span>         * with one location per line. Each line contains a point location (x,y)<a name="line.79"></a>
+<span class="sourceLineNo">080</span>         * with the numeric values of x and y separated by a 'tab' character.<a name="line.80"></a>
+<span class="sourceLineNo">081</span>         * Typically the (x,y) is (longitude, latitude).<a name="line.81"></a>
+<span class="sourceLineNo">082</span>         */<a name="line.82"></a>
+<span class="sourceLineNo">083</span>        public FileParameter dataPointFileNameParameter = new FileParameter(this,<a name="line.83"></a>
+<span class="sourceLineNo">084</span>                        "dataPointFileNameParameter");<a name="line.84"></a>
+<span class="sourceLineNo">085</span>        /**<a name="line.85"></a>
+<span class="sourceLineNo">086</span>         * This parameter is the file name to be used in saving the cell set<a name="line.86"></a>
+<span class="sourceLineNo">087</span>         * information. This information is a sample to be used by GARP in creating<a name="line.87"></a>
+<span class="sourceLineNo">088</span>         * the rule set for predicting occurrences.<a name="line.88"></a>
+<span class="sourceLineNo">089</span>         */<a name="line.89"></a>
+<span class="sourceLineNo">090</span>        public FileParameter cellSetFileNameParameter = new FileParameter(this,<a name="line.90"></a>
+<span class="sourceLineNo">091</span>                        "cellSetFileNameParameter");<a name="line.91"></a>
+<span class="sourceLineNo">092</span>        // input ports<a name="line.92"></a>
+<span class="sourceLineNo">093</span>        /**<a name="line.93"></a>
+<span class="sourceLineNo">094</span>         * This input port can be used to supply the file name of the xml file that<a name="line.94"></a>
+<span class="sourceLineNo">095</span>         * summarizes all the spatial layers to be used in the GARP calculation. The<a name="line.95"></a>
+<span class="sourceLineNo">096</span>         * file name is of the *.dxl format. Examine samples to see the content.<a name="line.96"></a>
+<span class="sourceLineNo">097</span>         */<a name="line.97"></a>
+<span class="sourceLineNo">098</span>        public TypedIOPort layersetFilename = new TypedIOPort(this,<a name="line.98"></a>
+<span class="sourceLineNo">099</span>                        "layersetFilename", true, false);<a name="line.99"></a>
+<span class="sourceLineNo">100</span><a name="line.100"></a>
+<span class="sourceLineNo">101</span>        /**<a name="line.101"></a>
+<span class="sourceLineNo">102</span>         * This input port can be used to supply the file name of the file that<a name="line.102"></a>
+<span class="sourceLineNo">103</span>         * contains the known locations to be used to determine a ruleset for<a name="line.103"></a>
+<span class="sourceLineNo">104</span>         * predicting other locations from the spatial environment layers. The file<a name="line.104"></a>
+<span class="sourceLineNo">105</span>         * is a text file with one location per line. Each line contains a point<a name="line.105"></a>
+<span class="sourceLineNo">106</span>         * location (x,y) with the numeric values of x and separated by a 'tab'<a name="line.106"></a>
+<span class="sourceLineNo">107</span>         * character. Typically the (x,y) is (longitude, latitude).<a name="line.107"></a>
+<span class="sourceLineNo">108</span>         */<a name="line.108"></a>
+<span class="sourceLineNo">109</span>        public TypedIOPort dataPointFileName = new TypedIOPort(this,<a name="line.109"></a>
+<span class="sourceLineNo">110</span>                        "dataPointFileName", true, false);<a name="line.110"></a>
+<span class="sourceLineNo">111</span><a name="line.111"></a>
+<span class="sourceLineNo">112</span>        /**<a name="line.112"></a>
+<span class="sourceLineNo">113</span>         * input port can be used to supply the file name to be used in saving the<a name="line.113"></a>
+<span class="sourceLineNo">114</span>         * cell set information. This information is a sample to be used by GARP in<a name="line.114"></a>
+<span class="sourceLineNo">115</span>         * creating the rule set for predicting occurrences.<a name="line.115"></a>
+<span class="sourceLineNo">116</span>         */<a name="line.116"></a>
+<span class="sourceLineNo">117</span>        public TypedIOPort cellSetFileName = new TypedIOPort(this,<a name="line.117"></a>
+<span class="sourceLineNo">118</span>                        "cellSetFileName", true, false);<a name="line.118"></a>
+<span class="sourceLineNo">119</span>        // output ports<a name="line.119"></a>
+<span class="sourceLineNo">120</span>        /**<a name="line.120"></a>
+<span class="sourceLineNo">121</span>         * This output port supplies the file name of the cellSetFile. It has the<a name="line.121"></a>
+<span class="sourceLineNo">122</span>         * same name as supplied in the input port, but it is only fired after the<a name="line.122"></a>
+<span class="sourceLineNo">123</span>         * data has been calculated. It is thus used as a 'trigger' for the next<a name="line.123"></a>
+<span class="sourceLineNo">124</span>         * step in the GARP calculation.<a name="line.124"></a>
+<span class="sourceLineNo">125</span>         */<a name="line.125"></a>
+<span class="sourceLineNo">126</span>        public TypedIOPort cellSetFileNameOutput = new TypedIOPort(this,<a name="line.126"></a>
+<span class="sourceLineNo">127</span>                        "cellSetFileNameOutput", false, true);<a name="line.127"></a>
+<span class="sourceLineNo">128</span><a name="line.128"></a>
+<span class="sourceLineNo">129</span>        /**<a name="line.129"></a>
+<span class="sourceLineNo">130</span>         * Garp presample layer actor<a name="line.130"></a>
+<span class="sourceLineNo">131</span>         */<a name="line.131"></a>
+<span class="sourceLineNo">132</span>        public GarpPresampleLayers(CompositeEntity container, String name)<a name="line.132"></a>
+<span class="sourceLineNo">133</span>                        throws NameDuplicationException, IllegalActionException {<a name="line.133"></a>
+<span class="sourceLineNo">134</span>                super(container, name);<a name="line.134"></a>
+<span class="sourceLineNo">135</span>                layersetFilename.setTypeEquals(BaseType.STRING);<a name="line.135"></a>
+<span class="sourceLineNo">136</span>                dataPointFileName.setTypeEquals(BaseType.STRING);<a name="line.136"></a>
+<span class="sourceLineNo">137</span>                cellSetFileName.setTypeEquals(BaseType.STRING);<a name="line.137"></a>
+<span class="sourceLineNo">138</span>                cellSetFileNameOutput.setTypeEquals(BaseType.STRING);<a name="line.138"></a>
+<span class="sourceLineNo">139</span><a name="line.139"></a>
+<span class="sourceLineNo">140</span>                _attachText("_iconDescription", "&lt;svg&gt;\n" + "&lt;rect x=\"0\" y=\"0\" "<a name="line.140"></a>
+<span class="sourceLineNo">141</span>                                + "width=\"66\" height=\"42\" " + "style=\"fill:white\"/&gt;\n"<a name="line.141"></a>
+<span class="sourceLineNo">142</span>                                + "&lt;text x=\"12\" y=\"16\" "<a name="line.142"></a>
+<span class="sourceLineNo">143</span>                                + "style=\"font-size:14; fill:blue; font-family:SansSerif\"&gt;"<a name="line.143"></a>
+<span class="sourceLineNo">144</span>                                + "GARP&lt;/text&gt;\n" + "&lt;text x=\"4\" y=\"34\" "<a name="line.144"></a>
+<span class="sourceLineNo">145</span>                                + "style=\"font-size:12; fill:blue; font-family:SansSerif\"&gt;"<a name="line.145"></a>
+<span class="sourceLineNo">146</span>                                + "Presample&lt;/text&gt;\n" + "&lt;/svg&gt;\n");<a name="line.146"></a>
+<span class="sourceLineNo">147</span><a name="line.147"></a>
+<span class="sourceLineNo">148</span>        }<a name="line.148"></a>
+<span class="sourceLineNo">149</span><a name="line.149"></a>
+<span class="sourceLineNo">150</span>        /**<a name="line.150"></a>
+<span class="sourceLineNo">151</span>   *<a name="line.151"></a>
+<span class="sourceLineNo">152</span>   */<a name="line.152"></a>
+<span class="sourceLineNo">153</span>        public void initialize() throws IllegalActionException {<a name="line.153"></a>
+<span class="sourceLineNo">154</span>        }<a name="line.154"></a>
+<span class="sourceLineNo">155</span><a name="line.155"></a>
+<span class="sourceLineNo">156</span>        /**<a name="line.156"></a>
+<span class="sourceLineNo">157</span>   *<a name="line.157"></a>
+<span class="sourceLineNo">158</span>   */<a name="line.158"></a>
+<span class="sourceLineNo">159</span>        public boolean prefire() throws IllegalActionException {<a name="line.159"></a>
+<span class="sourceLineNo">160</span>                return super.prefire();<a name="line.160"></a>
+<span class="sourceLineNo">161</span>        }<a name="line.161"></a>
+<span class="sourceLineNo">162</span><a name="line.162"></a>
+<span class="sourceLineNo">163</span>        /**<a name="line.163"></a>
+<span class="sourceLineNo">164</span>   *<a name="line.164"></a>
+<span class="sourceLineNo">165</span>   */<a name="line.165"></a>
+<span class="sourceLineNo">166</span>        public void fire() throws IllegalActionException {<a name="line.166"></a>
+<span class="sourceLineNo">167</span>                System.out.println("Firing GarpPresampleLayers");<a name="line.167"></a>
+<span class="sourceLineNo">168</span>                super.fire();<a name="line.168"></a>
+<span class="sourceLineNo">169</span>                String layersetFilenameStr = "";<a name="line.169"></a>
+<span class="sourceLineNo">170</span>                String dataPointFileNameStr = "";<a name="line.170"></a>
+<span class="sourceLineNo">171</span>                String cellSetFileNameStr = "";<a name="line.171"></a>
+<span class="sourceLineNo">172</span>                if (layersetFilename.numberOfSources() &gt; 0) {<a name="line.172"></a>
+<span class="sourceLineNo">173</span>                        if (!layersetFilename.hasToken(0))<a name="line.173"></a>
+<span class="sourceLineNo">174</span>                                return;<a name="line.174"></a>
+<span class="sourceLineNo">175</span>                        StringToken layerSetFileNameToken = (StringToken) layersetFilename<a name="line.175"></a>
+<span class="sourceLineNo">176</span>                                        .get(0);<a name="line.176"></a>
+<span class="sourceLineNo">177</span>                        layersetFilenameStr = layerSetFileNameToken.stringValue();<a name="line.177"></a>
+<span class="sourceLineNo">178</span>                        layersetFilenameParameter.setExpression(layersetFilenameStr);<a name="line.178"></a>
+<span class="sourceLineNo">179</span>                } else {<a name="line.179"></a>
+<span class="sourceLineNo">180</span>                        layersetFilenameStr = layersetFilenameParameter.asFile().getPath();<a name="line.180"></a>
+<span class="sourceLineNo">181</span>                }<a name="line.181"></a>
+<span class="sourceLineNo">182</span><a name="line.182"></a>
+<span class="sourceLineNo">183</span>                if (dataPointFileName.numberOfSources() &gt; 0) {<a name="line.183"></a>
+<span class="sourceLineNo">184</span>                        if (!dataPointFileName.hasToken(0))<a name="line.184"></a>
+<span class="sourceLineNo">185</span>                                return;<a name="line.185"></a>
+<span class="sourceLineNo">186</span>                        StringToken dataPointFileNameToken = (StringToken) dataPointFileName<a name="line.186"></a>
+<span class="sourceLineNo">187</span>                                        .get(0);<a name="line.187"></a>
+<span class="sourceLineNo">188</span>                        dataPointFileNameStr = dataPointFileNameToken.stringValue();<a name="line.188"></a>
+<span class="sourceLineNo">189</span>                        dataPointFileNameParameter.setExpression(dataPointFileNameStr);<a name="line.189"></a>
+<span class="sourceLineNo">190</span>                } else {<a name="line.190"></a>
+<span class="sourceLineNo">191</span>                        dataPointFileNameStr = dataPointFileNameParameter.asFile()<a name="line.191"></a>
+<span class="sourceLineNo">192</span>                                        .getPath();<a name="line.192"></a>
+<span class="sourceLineNo">193</span>                }<a name="line.193"></a>
+<span class="sourceLineNo">194</span><a name="line.194"></a>
+<span class="sourceLineNo">195</span>                if (cellSetFileName.numberOfSources() &gt; 0) {<a name="line.195"></a>
+<span class="sourceLineNo">196</span>                        if (!cellSetFileName.hasToken(0))<a name="line.196"></a>
+<span class="sourceLineNo">197</span>                                return;<a name="line.197"></a>
+<span class="sourceLineNo">198</span>                        StringToken cellSetFileNameToken = (StringToken) cellSetFileName<a name="line.198"></a>
+<span class="sourceLineNo">199</span>                                        .get(0);<a name="line.199"></a>
+<span class="sourceLineNo">200</span>                        cellSetFileNameStr = cellSetFileNameToken.stringValue();<a name="line.200"></a>
+<span class="sourceLineNo">201</span>                        cellSetFileNameParameter.setExpression(cellSetFileNameStr);<a name="line.201"></a>
+<span class="sourceLineNo">202</span>                } else {<a name="line.202"></a>
+<span class="sourceLineNo">203</span>                        cellSetFileNameStr = cellSetFileNameParameter.asFile().getPath();<a name="line.203"></a>
+<span class="sourceLineNo">204</span>                }<a name="line.204"></a>
+<span class="sourceLineNo">205</span><a name="line.205"></a>
+<span class="sourceLineNo">206</span>                System.out.println("Starting GarpPresampleLayers JNI Code");<a name="line.206"></a>
+<span class="sourceLineNo">207</span>                new GarpJniGlue().PresampleLayers(layersetFilenameStr,<a name="line.207"></a>
+<span class="sourceLineNo">208</span>                                dataPointFileNameStr, cellSetFileNameStr);<a name="line.208"></a>
+<span class="sourceLineNo">209</span><a name="line.209"></a>
+<span class="sourceLineNo">210</span>                cellSetFileNameOutput.broadcast(new StringToken(cellSetFileNameStr));<a name="line.210"></a>
+<span class="sourceLineNo">211</span><a name="line.211"></a>
+<span class="sourceLineNo">212</span>                System.out.println("Finished with GarpPresampleLayers JNI Code");<a name="line.212"></a>
+<span class="sourceLineNo">213</span>        }<a name="line.213"></a>
+<span class="sourceLineNo">214</span>}<a name="line.214"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

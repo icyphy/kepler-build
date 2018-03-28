@@ -1,0 +1,277 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../../../../stylesheet.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>/*<a name="line.1"></a>
+<span class="sourceLineNo">002</span> * Copyright (c) 1998-2012 The Regents of the University of California.<a name="line.2"></a>
+<span class="sourceLineNo">003</span> * All rights reserved.<a name="line.3"></a>
+<span class="sourceLineNo">004</span> *<a name="line.4"></a>
+<span class="sourceLineNo">005</span> * '$Author: barseghian $'<a name="line.5"></a>
+<span class="sourceLineNo">006</span> * '$Date: 2012-04-27 13:16:27 -0700 (Fri, 27 Apr 2012) $' <a name="line.6"></a>
+<span class="sourceLineNo">007</span> * '$Revision: 29789 $'<a name="line.7"></a>
+<span class="sourceLineNo">008</span> * <a name="line.8"></a>
+<span class="sourceLineNo">009</span> * Permission is hereby granted, without written agreement and without<a name="line.9"></a>
+<span class="sourceLineNo">010</span> * license or royalty fees, to use, copy, modify, and distribute this<a name="line.10"></a>
+<span class="sourceLineNo">011</span> * software and its documentation for any purpose, provided that the above<a name="line.11"></a>
+<span class="sourceLineNo">012</span> * copyright notice and the following two paragraphs appear in all copies<a name="line.12"></a>
+<span class="sourceLineNo">013</span> * of this software.<a name="line.13"></a>
+<span class="sourceLineNo">014</span> *<a name="line.14"></a>
+<span class="sourceLineNo">015</span> * IN NO EVENT SHALL THE UNIVERSITY OF CALIFORNIA BE LIABLE TO ANY PARTY<a name="line.15"></a>
+<span class="sourceLineNo">016</span> * FOR DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES<a name="line.16"></a>
+<span class="sourceLineNo">017</span> * ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION, EVEN IF<a name="line.17"></a>
+<span class="sourceLineNo">018</span> * THE UNIVERSITY OF CALIFORNIA HAS BEEN ADVISED OF THE POSSIBILITY OF<a name="line.18"></a>
+<span class="sourceLineNo">019</span> * SUCH DAMAGE.<a name="line.19"></a>
+<span class="sourceLineNo">020</span> *<a name="line.20"></a>
+<span class="sourceLineNo">021</span> * THE UNIVERSITY OF CALIFORNIA SPECIFICALLY DISCLAIMS ANY WARRANTIES,<a name="line.21"></a>
+<span class="sourceLineNo">022</span> * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF<a name="line.22"></a>
+<span class="sourceLineNo">023</span> * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE<a name="line.23"></a>
+<span class="sourceLineNo">024</span> * PROVIDED HEREUNDER IS ON AN "AS IS" BASIS, AND THE UNIVERSITY OF<a name="line.24"></a>
+<span class="sourceLineNo">025</span> * CALIFORNIA HAS NO OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT, UPDATES,<a name="line.25"></a>
+<span class="sourceLineNo">026</span> * ENHANCEMENTS, OR MODIFICATIONS.<a name="line.26"></a>
+<span class="sourceLineNo">027</span> *<a name="line.27"></a>
+<span class="sourceLineNo">028</span> */<a name="line.28"></a>
+<span class="sourceLineNo">029</span>package org.kepler.data.datasource.dataone;<a name="line.29"></a>
+<span class="sourceLineNo">030</span><a name="line.30"></a>
+<span class="sourceLineNo">031</span>import java.io.IOException;<a name="line.31"></a>
+<span class="sourceLineNo">032</span>import java.io.InputStream;<a name="line.32"></a>
+<span class="sourceLineNo">033</span><a name="line.33"></a>
+<span class="sourceLineNo">034</span>import org.apache.commons.io.IOUtils;<a name="line.34"></a>
+<span class="sourceLineNo">035</span>import org.apache.log4j.Logger;<a name="line.35"></a>
+<span class="sourceLineNo">036</span>import org.dataone.client.CNode;<a name="line.36"></a>
+<span class="sourceLineNo">037</span>import org.dataone.client.D1Client;<a name="line.37"></a>
+<span class="sourceLineNo">038</span>import org.dataone.client.MNode;<a name="line.38"></a>
+<span class="sourceLineNo">039</span>import org.dataone.service.exceptions.InsufficientResources;<a name="line.39"></a>
+<span class="sourceLineNo">040</span>import org.dataone.service.exceptions.InvalidToken;<a name="line.40"></a>
+<span class="sourceLineNo">041</span>import org.dataone.service.exceptions.NotAuthorized;<a name="line.41"></a>
+<span class="sourceLineNo">042</span>import org.dataone.service.exceptions.NotFound;<a name="line.42"></a>
+<span class="sourceLineNo">043</span>import org.dataone.service.exceptions.NotImplemented;<a name="line.43"></a>
+<span class="sourceLineNo">044</span>import org.dataone.service.exceptions.ServiceFailure;<a name="line.44"></a>
+<span class="sourceLineNo">045</span>import org.dataone.service.types.v1.Identifier;<a name="line.45"></a>
+<span class="sourceLineNo">046</span>import org.dataone.service.types.v1.ObjectFormatIdentifier;<a name="line.46"></a>
+<span class="sourceLineNo">047</span>import org.dataone.service.types.v1.ObjectLocation;<a name="line.47"></a>
+<span class="sourceLineNo">048</span>import org.dataone.service.types.v1.ObjectLocationList;<a name="line.48"></a>
+<span class="sourceLineNo">049</span>import org.dataone.service.types.v1.SystemMetadata;<a name="line.49"></a>
+<span class="sourceLineNo">050</span>import org.ecoinformatics.seek.datasource.DataSourceIcon;<a name="line.50"></a>
+<span class="sourceLineNo">051</span><a name="line.51"></a>
+<span class="sourceLineNo">052</span>import ptolemy.actor.TypedIOPort;<a name="line.52"></a>
+<span class="sourceLineNo">053</span>import ptolemy.actor.lib.LimitedFiringSource;<a name="line.53"></a>
+<span class="sourceLineNo">054</span>import ptolemy.actor.parameters.PortParameter;<a name="line.54"></a>
+<span class="sourceLineNo">055</span>import ptolemy.data.ArrayToken;<a name="line.55"></a>
+<span class="sourceLineNo">056</span>import ptolemy.data.StringToken;<a name="line.56"></a>
+<span class="sourceLineNo">057</span>import ptolemy.data.Token;<a name="line.57"></a>
+<span class="sourceLineNo">058</span>import ptolemy.data.UnsignedByteToken;<a name="line.58"></a>
+<span class="sourceLineNo">059</span>import ptolemy.data.expr.StringParameter;<a name="line.59"></a>
+<span class="sourceLineNo">060</span>import ptolemy.data.type.ArrayType;<a name="line.60"></a>
+<span class="sourceLineNo">061</span>import ptolemy.data.type.BaseType;<a name="line.61"></a>
+<span class="sourceLineNo">062</span>import ptolemy.kernel.CompositeEntity;<a name="line.62"></a>
+<span class="sourceLineNo">063</span>import ptolemy.kernel.util.IllegalActionException;<a name="line.63"></a>
+<span class="sourceLineNo">064</span>import ptolemy.kernel.util.NameDuplicationException;<a name="line.64"></a>
+<span class="sourceLineNo">065</span><a name="line.65"></a>
+<span class="sourceLineNo">066</span>/**<a name="line.66"></a>
+<span class="sourceLineNo">067</span> * @author Derik Barseghian<a name="line.67"></a>
+<span class="sourceLineNo">068</span> * @version $Id: DataOneActor.java 29789 2012-04-27 20:16:27Z barseghian $<a name="line.68"></a>
+<span class="sourceLineNo">069</span> */<a name="line.69"></a>
+<span class="sourceLineNo">070</span>public class DataOneActor extends LimitedFiringSource {<a name="line.70"></a>
+<span class="sourceLineNo">071</span><a name="line.71"></a>
+<span class="sourceLineNo">072</span>        private static final Logger logger = Logger.getLogger(DataOneActor.class);<a name="line.72"></a>
+<span class="sourceLineNo">073</span>        private DataSourceIcon _icon;<a name="line.73"></a>
+<span class="sourceLineNo">074</span>        private StringParameter nodeIdStringParameter;<a name="line.74"></a>
+<span class="sourceLineNo">075</span>        private PortParameter pidPortParam;<a name="line.75"></a>
+<span class="sourceLineNo">076</span><a name="line.76"></a>
+<span class="sourceLineNo">077</span>        /**<a name="line.77"></a>
+<span class="sourceLineNo">078</span>         * Output sensorNameOutputPort<a name="line.78"></a>
+<span class="sourceLineNo">079</span>         * <a name="line.79"></a>
+<span class="sourceLineNo">080</span>         * @UserLevelDocumentation The sensor name after parsing sensorId<a name="line.80"></a>
+<span class="sourceLineNo">081</span>         */<a name="line.81"></a>
+<span class="sourceLineNo">082</span>        public TypedIOPort formatIdOutputPort;<a name="line.82"></a>
+<span class="sourceLineNo">083</span><a name="line.83"></a>
+<span class="sourceLineNo">084</span>        public DataOneActor(CompositeEntity container, String name)<a name="line.84"></a>
+<span class="sourceLineNo">085</span>                        throws NameDuplicationException, IllegalActionException {<a name="line.85"></a>
+<span class="sourceLineNo">086</span>                super(container, name);<a name="line.86"></a>
+<span class="sourceLineNo">087</span><a name="line.87"></a>
+<span class="sourceLineNo">088</span>                _icon = new DataSourceIcon(this);<a name="line.88"></a>
+<span class="sourceLineNo">089</span><a name="line.89"></a>
+<span class="sourceLineNo">090</span>                _attachText("_iconDescription", "&lt;svg&gt;\n" + "&lt;rect x=\"0\" y=\"0\" "<a name="line.90"></a>
+<span class="sourceLineNo">091</span>                                + "width=\"60\" height=\"20\" " + "style=\"fill:white\"/&gt;\n"<a name="line.91"></a>
+<span class="sourceLineNo">092</span>                                + "&lt;/svg&gt;\n");<a name="line.92"></a>
+<span class="sourceLineNo">093</span><a name="line.93"></a>
+<span class="sourceLineNo">094</span>                pidPortParam = new PortParameter(this, "PID");<a name="line.94"></a>
+<span class="sourceLineNo">095</span>                pidPortParam.setStringMode(true);<a name="line.95"></a>
+<span class="sourceLineNo">096</span>                pidPortParam.setTypeEquals(BaseType.STRING);<a name="line.96"></a>
+<span class="sourceLineNo">097</span>                pidPortParam.getPort().setTypeEquals(BaseType.STRING);<a name="line.97"></a>
+<span class="sourceLineNo">098</span><a name="line.98"></a>
+<span class="sourceLineNo">099</span>                // output.setDisplayName("output");<a name="line.99"></a>
+<span class="sourceLineNo">100</span>                output.setTypeEquals(new ArrayType(BaseType.UNSIGNED_BYTE));<a name="line.100"></a>
+<span class="sourceLineNo">101</span>                formatIdOutputPort = new TypedIOPort(this, "Format Id", false, true);<a name="line.101"></a>
+<span class="sourceLineNo">102</span>                formatIdOutputPort.setTypeEquals(BaseType.STRING);<a name="line.102"></a>
+<span class="sourceLineNo">103</span>        }<a name="line.103"></a>
+<span class="sourceLineNo">104</span><a name="line.104"></a>
+<span class="sourceLineNo">105</span>        public void fire() throws IllegalActionException {<a name="line.105"></a>
+<span class="sourceLineNo">106</span>                super.fire();<a name="line.106"></a>
+<span class="sourceLineNo">107</span>                _icon.setBusy();<a name="line.107"></a>
+<span class="sourceLineNo">108</span><a name="line.108"></a>
+<span class="sourceLineNo">109</span>                try {<a name="line.109"></a>
+<span class="sourceLineNo">110</span>                        CNode cNode = D1Client.getCN();<a name="line.110"></a>
+<span class="sourceLineNo">111</span><a name="line.111"></a>
+<span class="sourceLineNo">112</span>                        Identifier pid = new Identifier();<a name="line.112"></a>
+<span class="sourceLineNo">113</span>                        pidPortParam.update();<a name="line.113"></a>
+<span class="sourceLineNo">114</span>                        if (pidPortParam.getToken() != null) {<a name="line.114"></a>
+<span class="sourceLineNo">115</span>                                pid.setValue(((StringToken) pidPortParam.getToken())<a name="line.115"></a>
+<span class="sourceLineNo">116</span>                                                .stringValue());<a name="line.116"></a>
+<span class="sourceLineNo">117</span>                        }<a name="line.117"></a>
+<span class="sourceLineNo">118</span><a name="line.118"></a>
+<span class="sourceLineNo">119</span>                        // Only attempt to fetch pid if necessary<a name="line.119"></a>
+<span class="sourceLineNo">120</span>                        if (output.numberOfSinks() &gt; 0 &amp;&amp; pid.getValue() != null<a name="line.120"></a>
+<span class="sourceLineNo">121</span>                                        &amp;&amp; !pid.getValue().equals("")) {<a name="line.121"></a>
+<span class="sourceLineNo">122</span><a name="line.122"></a>
+<span class="sourceLineNo">123</span>                                ObjectLocationList objectLocationList = cNode.resolve(pid);<a name="line.123"></a>
+<span class="sourceLineNo">124</span><a name="line.124"></a>
+<span class="sourceLineNo">125</span>                                // XXX Instead of first, use a specific node based on some<a name="line.125"></a>
+<span class="sourceLineNo">126</span>                                // criteria?<a name="line.126"></a>
+<span class="sourceLineNo">127</span>                                ObjectLocation objectLocation = objectLocationList<a name="line.127"></a>
+<span class="sourceLineNo">128</span>                                                .getObjectLocation(0);<a name="line.128"></a>
+<span class="sourceLineNo">129</span>                                MNode mnNode = D1Client.getMN(objectLocation<a name="line.129"></a>
+<span class="sourceLineNo">130</span>                                                .getNodeIdentifier());<a name="line.130"></a>
+<span class="sourceLineNo">131</span>                                InputStream inputStream = mnNode.get(pid);<a name="line.131"></a>
+<span class="sourceLineNo">132</span>                                byte[] bytes = IOUtils.toByteArray(inputStream);<a name="line.132"></a>
+<span class="sourceLineNo">133</span>                                logger.debug(" for pid:" + pid.getValue() + " got "<a name="line.133"></a>
+<span class="sourceLineNo">134</span>                                                + bytes.length + " bytes.");<a name="line.134"></a>
+<span class="sourceLineNo">135</span>                                String formatId = "unknown";<a name="line.135"></a>
+<span class="sourceLineNo">136</span>                                SystemMetadata sysMeta = mnNode.getSystemMetadata(pid);<a name="line.136"></a>
+<span class="sourceLineNo">137</span>                                <a name="line.137"></a>
+<span class="sourceLineNo">138</span>                                if (sysMeta != null) {<a name="line.138"></a>
+<span class="sourceLineNo">139</span>                                        ObjectFormatIdentifier objectFormat = sysMeta.getFormatId();<a name="line.139"></a>
+<span class="sourceLineNo">140</span>                                        if (objectFormat != null) {<a name="line.140"></a>
+<span class="sourceLineNo">141</span>                                                formatId = objectFormat.getValue();<a name="line.141"></a>
+<span class="sourceLineNo">142</span>                                        }<a name="line.142"></a>
+<span class="sourceLineNo">143</span>                                }<a name="line.143"></a>
+<span class="sourceLineNo">144</span>                                // System.out.println("=====the format identifier is "+formatId);<a name="line.144"></a>
+<span class="sourceLineNo">145</span>                                // XXX ByteArrayToken offers less overhead<a name="line.145"></a>
+<span class="sourceLineNo">146</span>                                // but currently in ptolemy-excludes<a name="line.146"></a>
+<span class="sourceLineNo">147</span>                                // ByteArrayToken token = new ByteArrayToken();<a name="line.147"></a>
+<span class="sourceLineNo">148</span>                                Token byteTokens[] = new Token[bytes.length];<a name="line.148"></a>
+<span class="sourceLineNo">149</span>                                for (int i = 0; i &lt; bytes.length; i++) {<a name="line.149"></a>
+<span class="sourceLineNo">150</span>                                        byteTokens[i] = new UnsignedByteToken(bytes[i]);<a name="line.150"></a>
+<span class="sourceLineNo">151</span>                                }<a name="line.151"></a>
+<span class="sourceLineNo">152</span>                                output.broadcast(new ArrayToken(byteTokens));<a name="line.152"></a>
+<span class="sourceLineNo">153</span>                                formatIdOutputPort.send(0, new StringToken(formatId));<a name="line.153"></a>
+<span class="sourceLineNo">154</span>                        }<a name="line.154"></a>
+<span class="sourceLineNo">155</span><a name="line.155"></a>
+<span class="sourceLineNo">156</span>                } catch (InvalidToken e) {<a name="line.156"></a>
+<span class="sourceLineNo">157</span>                        // TODO Auto-generated catch block<a name="line.157"></a>
+<span class="sourceLineNo">158</span>                        e.printStackTrace();<a name="line.158"></a>
+<span class="sourceLineNo">159</span>                        throw new IllegalActionException("InvalidToken: " + e.getDescription());<a name="line.159"></a>
+<span class="sourceLineNo">160</span>                } catch (NotAuthorized e) {<a name="line.160"></a>
+<span class="sourceLineNo">161</span>                        // TODO Auto-generated catch block<a name="line.161"></a>
+<span class="sourceLineNo">162</span>                        e.printStackTrace();<a name="line.162"></a>
+<span class="sourceLineNo">163</span>                        throw new IllegalActionException("NotAuthorized: " + e.getDescription());<a name="line.163"></a>
+<span class="sourceLineNo">164</span>                } catch (NotImplemented e) {<a name="line.164"></a>
+<span class="sourceLineNo">165</span>                        // TODO Auto-generated catch block<a name="line.165"></a>
+<span class="sourceLineNo">166</span>                        e.printStackTrace();<a name="line.166"></a>
+<span class="sourceLineNo">167</span>                        throw new IllegalActionException("NotImplemented: "     + e.getDescription());<a name="line.167"></a>
+<span class="sourceLineNo">168</span>                } catch (ServiceFailure e) {<a name="line.168"></a>
+<span class="sourceLineNo">169</span>                        // TODO Auto-generated catch block<a name="line.169"></a>
+<span class="sourceLineNo">170</span>                        e.printStackTrace();<a name="line.170"></a>
+<span class="sourceLineNo">171</span>                        throw new IllegalActionException("ServiceFailure: " + e.getDescription());<a name="line.171"></a>
+<span class="sourceLineNo">172</span>                } catch (NotFound e) {<a name="line.172"></a>
+<span class="sourceLineNo">173</span>                        // TODO Auto-generated catch block<a name="line.173"></a>
+<span class="sourceLineNo">174</span>                        e.printStackTrace();<a name="line.174"></a>
+<span class="sourceLineNo">175</span>                        throw new IllegalActionException("NotFound: " + e.getDescription());<a name="line.175"></a>
+<span class="sourceLineNo">176</span>                } catch (IOException e) {<a name="line.176"></a>
+<span class="sourceLineNo">177</span>                        // TODO Auto-generated catch block<a name="line.177"></a>
+<span class="sourceLineNo">178</span>                        e.printStackTrace();<a name="line.178"></a>
+<span class="sourceLineNo">179</span>                        throw new IllegalActionException("IOException: " + e.toString());<a name="line.179"></a>
+<span class="sourceLineNo">180</span>                } catch (InsufficientResources e) {<a name="line.180"></a>
+<span class="sourceLineNo">181</span>                        // TODO Auto-generated catch block<a name="line.181"></a>
+<span class="sourceLineNo">182</span>                        e.printStackTrace();<a name="line.182"></a>
+<span class="sourceLineNo">183</span>                        throw new IllegalActionException("InsufficientResources: " + e.toString());<a name="line.183"></a>
+<span class="sourceLineNo">184</span>                } finally {<a name="line.184"></a>
+<span class="sourceLineNo">185</span>                        _icon.setReady();<a name="line.185"></a>
+<span class="sourceLineNo">186</span>                }<a name="line.186"></a>
+<span class="sourceLineNo">187</span><a name="line.187"></a>
+<span class="sourceLineNo">188</span>                _icon.setReady();<a name="line.188"></a>
+<span class="sourceLineNo">189</span>        }<a name="line.189"></a>
+<span class="sourceLineNo">190</span><a name="line.190"></a>
+<span class="sourceLineNo">191</span>        public void preinitialize() throws IllegalActionException {<a name="line.191"></a>
+<span class="sourceLineNo">192</span>                super.preinitialize();<a name="line.192"></a>
+<span class="sourceLineNo">193</span>        }<a name="line.193"></a>
+<span class="sourceLineNo">194</span><a name="line.194"></a>
+<span class="sourceLineNo">195</span>        /** The director told us to stop firing immediately. */<a name="line.195"></a>
+<span class="sourceLineNo">196</span>        public void stop() {<a name="line.196"></a>
+<span class="sourceLineNo">197</span>                super.stop();<a name="line.197"></a>
+<span class="sourceLineNo">198</span>                _icon.setReady();<a name="line.198"></a>
+<span class="sourceLineNo">199</span>        }<a name="line.199"></a>
+<span class="sourceLineNo">200</span><a name="line.200"></a>
+<span class="sourceLineNo">201</span>        public void wrapup() throws IllegalActionException {<a name="line.201"></a>
+<span class="sourceLineNo">202</span>                super.wrapup();<a name="line.202"></a>
+<span class="sourceLineNo">203</span>        }<a name="line.203"></a>
+<span class="sourceLineNo">204</span><a name="line.204"></a>
+<span class="sourceLineNo">205</span>}<a name="line.205"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

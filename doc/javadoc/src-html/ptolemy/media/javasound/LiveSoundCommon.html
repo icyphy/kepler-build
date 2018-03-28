@@ -1,0 +1,440 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../../stylesheet.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>/*<a name="line.1"></a>
+<span class="sourceLineNo">002</span> Class containing the platform independent code of LiveSound.<a name="line.2"></a>
+<span class="sourceLineNo">003</span><a name="line.3"></a>
+<span class="sourceLineNo">004</span> Copyright (c) 2011-2014 The Regents of the University of California.<a name="line.4"></a>
+<span class="sourceLineNo">005</span> All rights reserved.<a name="line.5"></a>
+<span class="sourceLineNo">006</span> Permission is hereby granted, without written agreement and without<a name="line.6"></a>
+<span class="sourceLineNo">007</span> license or royalty fees, to use, copy, modify, and distribute this<a name="line.7"></a>
+<span class="sourceLineNo">008</span> software and its documentation for any purpose, provided that the above<a name="line.8"></a>
+<span class="sourceLineNo">009</span> copyright notice and the following two paragraphs appear in all copies<a name="line.9"></a>
+<span class="sourceLineNo">010</span> of this software.<a name="line.10"></a>
+<span class="sourceLineNo">011</span><a name="line.11"></a>
+<span class="sourceLineNo">012</span> IN NO EVENT SHALL THE UNIVERSITY OF CALIFORNIA BE LIABLE TO ANY PARTY<a name="line.12"></a>
+<span class="sourceLineNo">013</span> FOR DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES<a name="line.13"></a>
+<span class="sourceLineNo">014</span> ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION, EVEN IF<a name="line.14"></a>
+<span class="sourceLineNo">015</span> THE UNIVERSITY OF CALIFORNIA HAS BEEN ADVISED OF THE POSSIBILITY OF<a name="line.15"></a>
+<span class="sourceLineNo">016</span> SUCH DAMAGE.<a name="line.16"></a>
+<span class="sourceLineNo">017</span><a name="line.17"></a>
+<span class="sourceLineNo">018</span> THE UNIVERSITY OF CALIFORNIA SPECIFICALLY DISCLAIMS ANY WARRANTIES,<a name="line.18"></a>
+<span class="sourceLineNo">019</span> INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF<a name="line.19"></a>
+<span class="sourceLineNo">020</span> MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE<a name="line.20"></a>
+<span class="sourceLineNo">021</span> PROVIDED HEREUNDER IS ON AN "AS IS" BASIS, AND THE UNIVERSITY OF<a name="line.21"></a>
+<span class="sourceLineNo">022</span> CALIFORNIA HAS NO OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT, UPDATES,<a name="line.22"></a>
+<span class="sourceLineNo">023</span> ENHANCEMENTS, OR MODIFICATIONS.<a name="line.23"></a>
+<span class="sourceLineNo">024</span><a name="line.24"></a>
+<span class="sourceLineNo">025</span> PT_COPYRIGHT_VERSION_2<a name="line.25"></a>
+<span class="sourceLineNo">026</span> COPYRIGHTENDKEY<a name="line.26"></a>
+<span class="sourceLineNo">027</span> */<a name="line.27"></a>
+<span class="sourceLineNo">028</span><a name="line.28"></a>
+<span class="sourceLineNo">029</span>package ptolemy.media.javasound;<a name="line.29"></a>
+<span class="sourceLineNo">030</span><a name="line.30"></a>
+<span class="sourceLineNo">031</span>import java.util.Iterator;<a name="line.31"></a>
+<span class="sourceLineNo">032</span>import java.util.LinkedList;<a name="line.32"></a>
+<span class="sourceLineNo">033</span>import java.util.List;<a name="line.33"></a>
+<span class="sourceLineNo">034</span><a name="line.34"></a>
+<span class="sourceLineNo">035</span>///////////////////////////////////////////////////////////////////<a name="line.35"></a>
+<span class="sourceLineNo">036</span>//// LiveSoundCommon<a name="line.36"></a>
+<span class="sourceLineNo">037</span><a name="line.37"></a>
+<span class="sourceLineNo">038</span>/**<a name="line.38"></a>
+<span class="sourceLineNo">039</span>Class containing the platform independent code of LiveSound actor.<a name="line.39"></a>
+<span class="sourceLineNo">040</span><a name="line.40"></a>
+<span class="sourceLineNo">041</span>@author Brian K. Vogel and Neil E. Turner and Steve Neuendorffer, Edward A. Lee, Contributor: Dennis Geurts, Ishwinder Singh<a name="line.41"></a>
+<span class="sourceLineNo">042</span>@version $Id$<a name="line.42"></a>
+<span class="sourceLineNo">043</span>@since Ptolemy II 10.0<a name="line.43"></a>
+<span class="sourceLineNo">044</span>@Pt.ProposedRating Red (ishwinde)<a name="line.44"></a>
+<span class="sourceLineNo">045</span>@Pt.AcceptedRating Red (ishwinde)<a name="line.45"></a>
+<span class="sourceLineNo">046</span> */<a name="line.46"></a>
+<span class="sourceLineNo">047</span>public class LiveSoundCommon {<a name="line.47"></a>
+<span class="sourceLineNo">048</span><a name="line.48"></a>
+<span class="sourceLineNo">049</span>    /** Add a live sound listener. The listener will be notified<a name="line.49"></a>
+<span class="sourceLineNo">050</span>     *  of all changes in live audio parameters. If the listener<a name="line.50"></a>
+<span class="sourceLineNo">051</span>     *  is already listening, then do nothing.<a name="line.51"></a>
+<span class="sourceLineNo">052</span>     *<a name="line.52"></a>
+<span class="sourceLineNo">053</span>     *  @param listener The LiveSoundListener to add.<a name="line.53"></a>
+<span class="sourceLineNo">054</span>     *  @see #removeLiveSoundListener(LiveSoundListener)<a name="line.54"></a>
+<span class="sourceLineNo">055</span>     */<a name="line.55"></a>
+<span class="sourceLineNo">056</span>    public void addLiveSoundListener(LiveSoundListener listener) {<a name="line.56"></a>
+<span class="sourceLineNo">057</span>        if (!_liveSoundListeners.contains(listener)) {<a name="line.57"></a>
+<span class="sourceLineNo">058</span>            _liveSoundListeners.add(listener);<a name="line.58"></a>
+<span class="sourceLineNo">059</span>        }<a name="line.59"></a>
+<span class="sourceLineNo">060</span>    }<a name="line.60"></a>
+<span class="sourceLineNo">061</span><a name="line.61"></a>
+<span class="sourceLineNo">062</span>    /** Return the number of bits per sample.<a name="line.62"></a>
+<span class="sourceLineNo">063</span>     *  @return The number of bits per sample, which in this base<a name="line.63"></a>
+<span class="sourceLineNo">064</span>     *  class defaults to 16.<a name="line.64"></a>
+<span class="sourceLineNo">065</span>     */<a name="line.65"></a>
+<span class="sourceLineNo">066</span>    public int getBitsPerSample() {<a name="line.66"></a>
+<span class="sourceLineNo">067</span>        return _bitsPerSample;<a name="line.67"></a>
+<span class="sourceLineNo">068</span>    }<a name="line.68"></a>
+<span class="sourceLineNo">069</span><a name="line.69"></a>
+<span class="sourceLineNo">070</span>    /** Return the suggested size of the internal capture and playback audio<a name="line.70"></a>
+<span class="sourceLineNo">071</span>     *  buffers, in samples per channel. This parameter is set by the<a name="line.71"></a>
+<span class="sourceLineNo">072</span>     *  setBufferSize() method.  There is no guarantee that the value returned<a name="line.72"></a>
+<span class="sourceLineNo">073</span>     *  is the actual buffer size used for capture and playback.<a name="line.73"></a>
+<span class="sourceLineNo">074</span>     *  Furthermore, the buffers used for capture and playback may have<a name="line.74"></a>
+<span class="sourceLineNo">075</span>     *  different sizes.  The default value of this parameter is 4096.<a name="line.75"></a>
+<span class="sourceLineNo">076</span>     *<a name="line.76"></a>
+<span class="sourceLineNo">077</span>     *  @return The suggested internal buffer size in samples per<a name="line.77"></a>
+<span class="sourceLineNo">078</span>     *   channel.<a name="line.78"></a>
+<span class="sourceLineNo">079</span>     */<a name="line.79"></a>
+<span class="sourceLineNo">080</span>    public int getBufferSize() {<a name="line.80"></a>
+<span class="sourceLineNo">081</span>        return _bufferSize;<a name="line.81"></a>
+<span class="sourceLineNo">082</span>    }<a name="line.82"></a>
+<span class="sourceLineNo">083</span><a name="line.83"></a>
+<span class="sourceLineNo">084</span>    /** Return the number of audio channels, which is set by<a name="line.84"></a>
+<span class="sourceLineNo">085</span>     *  the setChannels() method. The default value of this<a name="line.85"></a>
+<span class="sourceLineNo">086</span>     *  parameter is 1 (for mono audio).<a name="line.86"></a>
+<span class="sourceLineNo">087</span>     *<a name="line.87"></a>
+<span class="sourceLineNo">088</span>     *  @return The number of audio channels.<a name="line.88"></a>
+<span class="sourceLineNo">089</span>     */<a name="line.89"></a>
+<span class="sourceLineNo">090</span>    public int getChannels() {<a name="line.90"></a>
+<span class="sourceLineNo">091</span>        return _channels;<a name="line.91"></a>
+<span class="sourceLineNo">092</span>    }<a name="line.92"></a>
+<span class="sourceLineNo">093</span><a name="line.93"></a>
+<span class="sourceLineNo">094</span>    /** Return the current sampling rate in Hz, which is set<a name="line.94"></a>
+<span class="sourceLineNo">095</span>     *  by the setSampleRate() method. The default value of<a name="line.95"></a>
+<span class="sourceLineNo">096</span>     *  this parameter is 8000 Hz.<a name="line.96"></a>
+<span class="sourceLineNo">097</span>     *<a name="line.97"></a>
+<span class="sourceLineNo">098</span>     *  @return The sample rate in Hz.<a name="line.98"></a>
+<span class="sourceLineNo">099</span>     */<a name="line.99"></a>
+<span class="sourceLineNo">100</span>    public int getSampleRate() {<a name="line.100"></a>
+<span class="sourceLineNo">101</span>        return (int) _sampleRate;<a name="line.101"></a>
+<span class="sourceLineNo">102</span>    }<a name="line.102"></a>
+<span class="sourceLineNo">103</span><a name="line.103"></a>
+<span class="sourceLineNo">104</span>    /** Get the array length (in samples per channel) to use<a name="line.104"></a>
+<span class="sourceLineNo">105</span>     *  for capturing and playing samples via the putSamples()<a name="line.105"></a>
+<span class="sourceLineNo">106</span>     *  and getSamples() methods. This method gets the size<a name="line.106"></a>
+<span class="sourceLineNo">107</span>     *  of the 2nd dimension of the 2-dimensional array<a name="line.107"></a>
+<span class="sourceLineNo">108</span>     *  used by the putSamples() and getSamples() methods. This<a name="line.108"></a>
+<span class="sourceLineNo">109</span>     *  method returns the value that was set by the<a name="line.109"></a>
+<span class="sourceLineNo">110</span>     *  setTransferSize(). If setTransferSize() was not invoked,<a name="line.110"></a>
+<span class="sourceLineNo">111</span>     *  the default value of 128 is returned.<a name="line.111"></a>
+<span class="sourceLineNo">112</span>     *<a name="line.112"></a>
+<span class="sourceLineNo">113</span>     *  @return The size of the 2nd dimension of the 2-dimensional<a name="line.113"></a>
+<span class="sourceLineNo">114</span>     *   array used by the putSamples() and getSamples() methods.<a name="line.114"></a>
+<span class="sourceLineNo">115</span>     *  @see #setTransferSize(int)<a name="line.115"></a>
+<span class="sourceLineNo">116</span>     */<a name="line.116"></a>
+<span class="sourceLineNo">117</span>    public int getTransferSize() {<a name="line.117"></a>
+<span class="sourceLineNo">118</span>        return _transferSize;<a name="line.118"></a>
+<span class="sourceLineNo">119</span>    }<a name="line.119"></a>
+<span class="sourceLineNo">120</span><a name="line.120"></a>
+<span class="sourceLineNo">121</span>    /** Return true if audio capture is currently active.<a name="line.121"></a>
+<span class="sourceLineNo">122</span>     *  Otherwise return false.<a name="line.122"></a>
+<span class="sourceLineNo">123</span>     *<a name="line.123"></a>
+<span class="sourceLineNo">124</span>     *  @return True If audio capture is currently active.<a name="line.124"></a>
+<span class="sourceLineNo">125</span>     *  Otherwise return false.<a name="line.125"></a>
+<span class="sourceLineNo">126</span>     */<a name="line.126"></a>
+<span class="sourceLineNo">127</span>    public boolean isCaptureActive() {<a name="line.127"></a>
+<span class="sourceLineNo">128</span>        return _captureIsActive;<a name="line.128"></a>
+<span class="sourceLineNo">129</span>    }<a name="line.129"></a>
+<span class="sourceLineNo">130</span><a name="line.130"></a>
+<span class="sourceLineNo">131</span>    /** Return true if audio playback is currently active.<a name="line.131"></a>
+<span class="sourceLineNo">132</span>     *  Otherwise return false.<a name="line.132"></a>
+<span class="sourceLineNo">133</span>     *<a name="line.133"></a>
+<span class="sourceLineNo">134</span>     *  @return True If audio playback is currently active.<a name="line.134"></a>
+<span class="sourceLineNo">135</span>     *  Otherwise return false.<a name="line.135"></a>
+<span class="sourceLineNo">136</span>     */<a name="line.136"></a>
+<span class="sourceLineNo">137</span>    public boolean isPlaybackActive() {<a name="line.137"></a>
+<span class="sourceLineNo">138</span>        return _playbackIsActive;<a name="line.138"></a>
+<span class="sourceLineNo">139</span>    }<a name="line.139"></a>
+<span class="sourceLineNo">140</span><a name="line.140"></a>
+<span class="sourceLineNo">141</span>    /** Remove a live sound listener. If the listener is<a name="line.141"></a>
+<span class="sourceLineNo">142</span>     *  is not listening, then do nothing.<a name="line.142"></a>
+<span class="sourceLineNo">143</span>     *<a name="line.143"></a>
+<span class="sourceLineNo">144</span>     *  @param listener The LiveSoundListener to remove.<a name="line.144"></a>
+<span class="sourceLineNo">145</span>     *  @see #addLiveSoundListener(LiveSoundListener)<a name="line.145"></a>
+<span class="sourceLineNo">146</span>     */<a name="line.146"></a>
+<span class="sourceLineNo">147</span>    public void removeLiveSoundListener(LiveSoundListener listener) {<a name="line.147"></a>
+<span class="sourceLineNo">148</span>        if (_liveSoundListeners.contains(listener)) {<a name="line.148"></a>
+<span class="sourceLineNo">149</span>            _liveSoundListeners.remove(listener);<a name="line.149"></a>
+<span class="sourceLineNo">150</span>        }<a name="line.150"></a>
+<span class="sourceLineNo">151</span>    }<a name="line.151"></a>
+<span class="sourceLineNo">152</span><a name="line.152"></a>
+<span class="sourceLineNo">153</span>    /** Set the array length (in samples per channel) to use<a name="line.153"></a>
+<span class="sourceLineNo">154</span>     *  for capturing and playing samples via the putSamples()<a name="line.154"></a>
+<span class="sourceLineNo">155</span>     *  and getSamples() methods. This method sets the size<a name="line.155"></a>
+<span class="sourceLineNo">156</span>     *  of the 2nd dimension of the 2-dimensional array<a name="line.156"></a>
+<span class="sourceLineNo">157</span>     *  used by the putSamples() and getSamples() methods. If<a name="line.157"></a>
+<span class="sourceLineNo">158</span>     *  this method is not invoked, the default value of 128 is<a name="line.158"></a>
+<span class="sourceLineNo">159</span>     *  used.<a name="line.159"></a>
+<span class="sourceLineNo">160</span>     *  &lt;p&gt;<a name="line.160"></a>
+<span class="sourceLineNo">161</span>     *  This method should only be called while audio capture and<a name="line.161"></a>
+<span class="sourceLineNo">162</span>     *  playback are inactive. Otherwise an exception will occur.<a name="line.162"></a>
+<span class="sourceLineNo">163</span>     *<a name="line.163"></a>
+<span class="sourceLineNo">164</span>     *  @param transferSize The  size of the 2nd dimension of<a name="line.164"></a>
+<span class="sourceLineNo">165</span>     *   the 2-dimensional array used by the putSamples() and<a name="line.165"></a>
+<span class="sourceLineNo">166</span>     *   getSamples() methods<a name="line.166"></a>
+<span class="sourceLineNo">167</span>     *<a name="line.167"></a>
+<span class="sourceLineNo">168</span>     *  @exception IllegalStateException If this method is called<a name="line.168"></a>
+<span class="sourceLineNo">169</span>     *   while audio capture or playback are active.<a name="line.169"></a>
+<span class="sourceLineNo">170</span>     *  @see #getTransferSize()<a name="line.170"></a>
+<span class="sourceLineNo">171</span>     */<a name="line.171"></a>
+<span class="sourceLineNo">172</span>    public void setTransferSize(int transferSize) throws IllegalStateException {<a name="line.172"></a>
+<span class="sourceLineNo">173</span>        // This change only affects capture, so it's OK for it to occur<a name="line.173"></a>
+<span class="sourceLineNo">174</span>        // while there is playback.<a name="line.174"></a>
+<span class="sourceLineNo">175</span>        if (_captureIsActive) {<a name="line.175"></a>
+<span class="sourceLineNo">176</span>            throw new IllegalStateException("LiveSound: "<a name="line.176"></a>
+<span class="sourceLineNo">177</span>                    + "setTransferSize() was called while audio capture "<a name="line.177"></a>
+<span class="sourceLineNo">178</span>                    + "or playback was active.");<a name="line.178"></a>
+<span class="sourceLineNo">179</span>        } else {<a name="line.179"></a>
+<span class="sourceLineNo">180</span>            _transferSize = transferSize;<a name="line.180"></a>
+<span class="sourceLineNo">181</span>        }<a name="line.181"></a>
+<span class="sourceLineNo">182</span>    }<a name="line.182"></a>
+<span class="sourceLineNo">183</span><a name="line.183"></a>
+<span class="sourceLineNo">184</span>    /** Convert a byte array of audio samples in linear signed PCM big endian<a name="line.184"></a>
+<span class="sourceLineNo">185</span>     * format into a double array of audio samples (-1, 1) range.<a name="line.185"></a>
+<span class="sourceLineNo">186</span>     * @param doubleArray The resulting array of doubles.<a name="line.186"></a>
+<span class="sourceLineNo">187</span>     * @param byteArray  The linear signed pcm big endian byte array<a name="line.187"></a>
+<span class="sourceLineNo">188</span>     * formatted array representation of audio data.<a name="line.188"></a>
+<span class="sourceLineNo">189</span>     */<a name="line.189"></a>
+<span class="sourceLineNo">190</span>    protected void _byteArrayToDoubleArray(double[][] doubleArray,<a name="line.190"></a>
+<span class="sourceLineNo">191</span>            byte[] byteArray) {<a name="line.191"></a>
+<span class="sourceLineNo">192</span>        int lengthInSamples = byteArray.length / (_bytesPerSample * _channels);<a name="line.192"></a>
+<span class="sourceLineNo">193</span><a name="line.193"></a>
+<span class="sourceLineNo">194</span>        for (int currSamp = 0; currSamp &lt; lengthInSamples; currSamp++) {<a name="line.194"></a>
+<span class="sourceLineNo">195</span>            // For each channel,<a name="line.195"></a>
+<span class="sourceLineNo">196</span>            for (int currChannel = 0; currChannel &lt; _channels; currChannel++) {<a name="line.196"></a>
+<span class="sourceLineNo">197</span>                // Starting index of relevant bytes.<a name="line.197"></a>
+<span class="sourceLineNo">198</span>                int j = currSamp * _bytesPerSample * _channels<a name="line.198"></a>
+<span class="sourceLineNo">199</span>                        + _bytesPerSample * currChannel;<a name="line.199"></a>
+<span class="sourceLineNo">200</span>                // Note: preserve sign of high order bits.<a name="line.200"></a>
+<span class="sourceLineNo">201</span>                int result = byteArray[j++];<a name="line.201"></a>
+<span class="sourceLineNo">202</span><a name="line.202"></a>
+<span class="sourceLineNo">203</span>                // Shift and add in low order bits.<a name="line.203"></a>
+<span class="sourceLineNo">204</span>                // Note that it is ok to fall through the cases here (I think).<a name="line.204"></a>
+<span class="sourceLineNo">205</span>                switch (_bytesPerSample) {<a name="line.205"></a>
+<span class="sourceLineNo">206</span>                case 4:<a name="line.206"></a>
+<span class="sourceLineNo">207</span>                    result &lt;&lt;= 8;<a name="line.207"></a>
+<span class="sourceLineNo">208</span>                    // Dennis Geurts:<a name="line.208"></a>
+<span class="sourceLineNo">209</span>                    // Use &amp; instead of | here.<a name="line.209"></a>
+<span class="sourceLineNo">210</span>                    // Running ptolemy/actor/lib/javasound/test/auto/testAudioCapture_AudioPlayer.xml<a name="line.210"></a>
+<span class="sourceLineNo">211</span>                    // results in a much better sound.<a name="line.211"></a>
+<span class="sourceLineNo">212</span>                    // See https://chess.eecs.berkeley.edu/bugzilla/show_bug.cgi?id=356<a name="line.212"></a>
+<span class="sourceLineNo">213</span>                    result += byteArray[j++] &amp; 0xff;<a name="line.213"></a>
+<span class="sourceLineNo">214</span><a name="line.214"></a>
+<span class="sourceLineNo">215</span>                case 3:<a name="line.215"></a>
+<span class="sourceLineNo">216</span>                    result &lt;&lt;= 8;<a name="line.216"></a>
+<span class="sourceLineNo">217</span>                    result += byteArray[j++] &amp; 0xff;<a name="line.217"></a>
+<span class="sourceLineNo">218</span><a name="line.218"></a>
+<span class="sourceLineNo">219</span>                case 2:<a name="line.219"></a>
+<span class="sourceLineNo">220</span>                    result &lt;&lt;= 8;<a name="line.220"></a>
+<span class="sourceLineNo">221</span>                    result += byteArray[j++] &amp; 0xff;<a name="line.221"></a>
+<span class="sourceLineNo">222</span>                }<a name="line.222"></a>
+<span class="sourceLineNo">223</span><a name="line.223"></a>
+<span class="sourceLineNo">224</span>                doubleArray[currChannel][currSamp] = result<a name="line.224"></a>
+<span class="sourceLineNo">225</span>                        * _maxSampleReciprocal;<a name="line.225"></a>
+<span class="sourceLineNo">226</span>            }<a name="line.226"></a>
+<span class="sourceLineNo">227</span>        }<a name="line.227"></a>
+<span class="sourceLineNo">228</span>    }<a name="line.228"></a>
+<span class="sourceLineNo">229</span><a name="line.229"></a>
+<span class="sourceLineNo">230</span>    /** Convert a double array of audio samples into a byte array of<a name="line.230"></a>
+<span class="sourceLineNo">231</span>     * audio samples in linear signed PCM big endian format. The<a name="line.231"></a>
+<span class="sourceLineNo">232</span>     * samples contained in &lt;i&gt;doubleArray&lt;/i&gt; should be in the<a name="line.232"></a>
+<span class="sourceLineNo">233</span>     * range (-1, 1). Samples outside this range will be hard clipped<a name="line.233"></a>
+<span class="sourceLineNo">234</span>     * to the range (-1, 1).<a name="line.234"></a>
+<span class="sourceLineNo">235</span>     * @param doubleArray Two dimensional array holding audio samples.<a name="line.235"></a>
+<span class="sourceLineNo">236</span>     *  For each channel, m, doubleArray[m] is a single dimensional<a name="line.236"></a>
+<span class="sourceLineNo">237</span>     *  array containing samples for channel m. All channels are<a name="line.237"></a>
+<span class="sourceLineNo">238</span>     *  required to have the same number of samples, but this is<a name="line.238"></a>
+<span class="sourceLineNo">239</span>     *  not checked.<a name="line.239"></a>
+<span class="sourceLineNo">240</span>     * @return The linear signed PCM big endian byte array formatted<a name="line.240"></a>
+<span class="sourceLineNo">241</span>     *  array representation of &lt;i&gt;doubleArray&lt;/i&gt;. The length of<a name="line.241"></a>
+<span class="sourceLineNo">242</span>     *  the returned array is (doubleArray[i].length*bytesPerSample*channels).<a name="line.242"></a>
+<span class="sourceLineNo">243</span>     */<a name="line.243"></a>
+<span class="sourceLineNo">244</span>    protected byte[] _doubleArrayToByteArray(double[][] doubleArray) {<a name="line.244"></a>
+<span class="sourceLineNo">245</span>        // This method is most efficient if repeated calls pass the same size<a name="line.245"></a>
+<span class="sourceLineNo">246</span>        // array. In this case, it does not re-allocate the byte array that<a name="line.246"></a>
+<span class="sourceLineNo">247</span>        // it returns, but rather reuses the same array on the heap.<a name="line.247"></a>
+<span class="sourceLineNo">248</span>        int numberOfSamples = doubleArray[0].length;<a name="line.248"></a>
+<span class="sourceLineNo">249</span>        int bufferSize = numberOfSamples * _bytesPerSample * _channels;<a name="line.249"></a>
+<span class="sourceLineNo">250</span>        if (_playbackData == null || _playbackData.length != bufferSize) {<a name="line.250"></a>
+<span class="sourceLineNo">251</span>            // Hopefully, the allocation is done only once.<a name="line.251"></a>
+<span class="sourceLineNo">252</span>            _playbackData = new byte[bufferSize];<a name="line.252"></a>
+<span class="sourceLineNo">253</span>        }<a name="line.253"></a>
+<span class="sourceLineNo">254</span>        // Iterate over the samples.<a name="line.254"></a>
+<span class="sourceLineNo">255</span>        for (int currSamp = 0; currSamp &lt; doubleArray[0].length; currSamp++) {<a name="line.255"></a>
+<span class="sourceLineNo">256</span>            // For each channel,<a name="line.256"></a>
+<span class="sourceLineNo">257</span>            for (int currChannel = 0; currChannel &lt; _channels; currChannel++) {<a name="line.257"></a>
+<span class="sourceLineNo">258</span>                double sample = doubleArray[currChannel][currSamp];<a name="line.258"></a>
+<span class="sourceLineNo">259</span><a name="line.259"></a>
+<span class="sourceLineNo">260</span>                // Perform clipping, if necessary.<a name="line.260"></a>
+<span class="sourceLineNo">261</span>                if (sample &gt; 1.0) {<a name="line.261"></a>
+<span class="sourceLineNo">262</span>                    sample = 1.0;<a name="line.262"></a>
+<span class="sourceLineNo">263</span>                } else if (sample &lt; -1.0) {<a name="line.263"></a>
+<span class="sourceLineNo">264</span>                    sample = -1.0;<a name="line.264"></a>
+<span class="sourceLineNo">265</span>                }<a name="line.265"></a>
+<span class="sourceLineNo">266</span><a name="line.266"></a>
+<span class="sourceLineNo">267</span>                // signed integer representation of current sample of the<a name="line.267"></a>
+<span class="sourceLineNo">268</span>                // current channel.<a name="line.268"></a>
+<span class="sourceLineNo">269</span>                // Note: Floor instead of cast to remove deadrange at zero.<a name="line.269"></a>
+<span class="sourceLineNo">270</span>                int intValue = (int) Math.floor(sample * _maxSample);<a name="line.270"></a>
+<span class="sourceLineNo">271</span><a name="line.271"></a>
+<span class="sourceLineNo">272</span>                int base = currSamp * _bytesPerSample * _channels<a name="line.272"></a>
+<span class="sourceLineNo">273</span>                        + _bytesPerSample * currChannel;<a name="line.273"></a>
+<span class="sourceLineNo">274</span>                // Create byte representation of current sample.<a name="line.274"></a>
+<span class="sourceLineNo">275</span>                // Note: unsigned Shift right.<a name="line.275"></a>
+<span class="sourceLineNo">276</span>                // Note: fall through from higher number cases.<a name="line.276"></a>
+<span class="sourceLineNo">277</span>                switch (_bytesPerSample) {<a name="line.277"></a>
+<span class="sourceLineNo">278</span>                case 4:<a name="line.278"></a>
+<span class="sourceLineNo">279</span>                    _playbackData[base + 3] = (byte) intValue;<a name="line.279"></a>
+<span class="sourceLineNo">280</span>                    intValue &gt;&gt;&gt;= 8;<a name="line.280"></a>
+<span class="sourceLineNo">281</span>                case 3:<a name="line.281"></a>
+<span class="sourceLineNo">282</span>                    _playbackData[base + 2] = (byte) intValue;<a name="line.282"></a>
+<span class="sourceLineNo">283</span>                    intValue &gt;&gt;&gt;= 8;<a name="line.283"></a>
+<span class="sourceLineNo">284</span>                case 2:<a name="line.284"></a>
+<span class="sourceLineNo">285</span>                    _playbackData[base + 1] = (byte) intValue;<a name="line.285"></a>
+<span class="sourceLineNo">286</span>                    intValue &gt;&gt;&gt;= 8;<a name="line.286"></a>
+<span class="sourceLineNo">287</span>                case 1:<a name="line.287"></a>
+<span class="sourceLineNo">288</span>                    _playbackData[base] = (byte) intValue;<a name="line.288"></a>
+<span class="sourceLineNo">289</span>                }<a name="line.289"></a>
+<span class="sourceLineNo">290</span>            }<a name="line.290"></a>
+<span class="sourceLineNo">291</span>        }<a name="line.291"></a>
+<span class="sourceLineNo">292</span>        return _playbackData;<a name="line.292"></a>
+<span class="sourceLineNo">293</span>    }<a name="line.293"></a>
+<span class="sourceLineNo">294</span><a name="line.294"></a>
+<span class="sourceLineNo">295</span>    /** Notify the live sound listeners about a change in an audio<a name="line.295"></a>
+<span class="sourceLineNo">296</span>     *  parameter.<a name="line.296"></a>
+<span class="sourceLineNo">297</span>     *<a name="line.297"></a>
+<span class="sourceLineNo">298</span>     *  @param parameter The audio parameter of LiveSound that<a name="line.298"></a>
+<span class="sourceLineNo">299</span>     *   has changed. The value of parameter should be one of<a name="line.299"></a>
+<span class="sourceLineNo">300</span>     *   LiveSoundEvent.SAMPLE_RATE, LiveSoundEvent.CHANNELS,<a name="line.300"></a>
+<span class="sourceLineNo">301</span>     *   LiveSoundEvent.BUFFER_SIZE, or<a name="line.301"></a>
+<span class="sourceLineNo">302</span>     *   LiveSoundEvent.BITS_PER_SAMPLE.<a name="line.302"></a>
+<span class="sourceLineNo">303</span>     */<a name="line.303"></a>
+<span class="sourceLineNo">304</span>    protected void _notifyLiveSoundListeners(int parameter) {<a name="line.304"></a>
+<span class="sourceLineNo">305</span>        if (_liveSoundListeners.size() &gt; 0) {<a name="line.305"></a>
+<span class="sourceLineNo">306</span>            LiveSoundEvent event = new LiveSoundEvent(parameter);<a name="line.306"></a>
+<span class="sourceLineNo">307</span>            Iterator listeners = _liveSoundListeners.iterator();<a name="line.307"></a>
+<span class="sourceLineNo">308</span><a name="line.308"></a>
+<span class="sourceLineNo">309</span>            while (listeners.hasNext()) {<a name="line.309"></a>
+<span class="sourceLineNo">310</span>                ((LiveSoundListener) listeners.next()).liveSoundChanged(event);<a name="line.310"></a>
+<span class="sourceLineNo">311</span>            }<a name="line.311"></a>
+<span class="sourceLineNo">312</span>        }<a name="line.312"></a>
+<span class="sourceLineNo">313</span>    }<a name="line.313"></a>
+<span class="sourceLineNo">314</span><a name="line.314"></a>
+<span class="sourceLineNo">315</span>    ///////////////////////////////////////////////////////////////////<a name="line.315"></a>
+<span class="sourceLineNo">316</span>    ////                         private variables                 ////<a name="line.316"></a>
+<span class="sourceLineNo">317</span><a name="line.317"></a>
+<span class="sourceLineNo">318</span>    /** Array of audio samples in double format. */<a name="line.318"></a>
+<span class="sourceLineNo">319</span>    protected double[][] _audioInDoubleArray;<a name="line.319"></a>
+<span class="sourceLineNo">320</span><a name="line.320"></a>
+<span class="sourceLineNo">321</span>    /** The number of bits per sample. Default is 16. */<a name="line.321"></a>
+<span class="sourceLineNo">322</span>    protected int _bitsPerSample = 16;<a name="line.322"></a>
+<span class="sourceLineNo">323</span><a name="line.323"></a>
+<span class="sourceLineNo">324</span>    /** The requested buffer size in samples per channel. */<a name="line.324"></a>
+<span class="sourceLineNo">325</span>    protected int _bufferSize = 1024;<a name="line.325"></a>
+<span class="sourceLineNo">326</span><a name="line.326"></a>
+<span class="sourceLineNo">327</span>    /** The number of bytes per sample, default 2. */<a name="line.327"></a>
+<span class="sourceLineNo">328</span>    protected int _bytesPerSample = 2;<a name="line.328"></a>
+<span class="sourceLineNo">329</span><a name="line.329"></a>
+<span class="sourceLineNo">330</span>    /** true is audio capture is currently active. */<a name="line.330"></a>
+<span class="sourceLineNo">331</span>    protected boolean _captureIsActive = false;<a name="line.331"></a>
+<span class="sourceLineNo">332</span><a name="line.332"></a>
+<span class="sourceLineNo">333</span>    /** The number of channels. Deafult is 1. */<a name="line.333"></a>
+<span class="sourceLineNo">334</span>    protected int _channels = 1;<a name="line.334"></a>
+<span class="sourceLineNo">335</span><a name="line.335"></a>
+<span class="sourceLineNo">336</span>    /** Array of audio samples in byte format. */<a name="line.336"></a>
+<span class="sourceLineNo">337</span>    protected byte[] _captureData;<a name="line.337"></a>
+<span class="sourceLineNo">338</span><a name="line.338"></a>
+<span class="sourceLineNo">339</span>    /** Byte buffer used for playback data. */<a name="line.339"></a>
+<span class="sourceLineNo">340</span>    protected byte[] _playbackData;<a name="line.340"></a>
+<span class="sourceLineNo">341</span><a name="line.341"></a>
+<span class="sourceLineNo">342</span>    /** The list of listeners. */<a name="line.342"></a>
+<span class="sourceLineNo">343</span>    protected List _liveSoundListeners = new LinkedList();<a name="line.343"></a>
+<span class="sourceLineNo">344</span><a name="line.344"></a>
+<span class="sourceLineNo">345</span>    /** Cached value of the maximum value scaling factor, default for<a name="line.345"></a>
+<span class="sourceLineNo">346</span>     * 16 bits.<a name="line.346"></a>
+<span class="sourceLineNo">347</span>     */<a name="line.347"></a>
+<span class="sourceLineNo">348</span>    protected double _maxSampleReciprocal = 1.0 / 32768;<a name="line.348"></a>
+<span class="sourceLineNo">349</span><a name="line.349"></a>
+<span class="sourceLineNo">350</span>    /** Cached value of the maximum integer value, default for 16<a name="line.350"></a>
+<span class="sourceLineNo">351</span>     *  bits.<a name="line.351"></a>
+<span class="sourceLineNo">352</span>     */<a name="line.352"></a>
+<span class="sourceLineNo">353</span>    protected double _maxSample = 32767;<a name="line.353"></a>
+<span class="sourceLineNo">354</span><a name="line.354"></a>
+<span class="sourceLineNo">355</span>    /** true is audio playback is currently active. */<a name="line.355"></a>
+<span class="sourceLineNo">356</span>    protected boolean _playbackIsActive = false;<a name="line.356"></a>
+<span class="sourceLineNo">357</span><a name="line.357"></a>
+<span class="sourceLineNo">358</span>    /** The sample rate. */<a name="line.358"></a>
+<span class="sourceLineNo">359</span>    protected float _sampleRate;<a name="line.359"></a>
+<span class="sourceLineNo">360</span><a name="line.360"></a>
+<span class="sourceLineNo">361</span>    /** The list of sound consumers. */<a name="line.361"></a>
+<span class="sourceLineNo">362</span>    protected List _soundConsumers = new LinkedList();<a name="line.362"></a>
+<span class="sourceLineNo">363</span><a name="line.363"></a>
+<span class="sourceLineNo">364</span>    /** The number of audio samples to transfer per channel when<a name="line.364"></a>
+<span class="sourceLineNo">365</span>     * getSamples() is invoked. */<a name="line.365"></a>
+<span class="sourceLineNo">366</span>    protected int _transferSize = 128;<a name="line.366"></a>
+<span class="sourceLineNo">367</span><a name="line.367"></a>
+<span class="sourceLineNo">368</span>}<a name="line.368"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

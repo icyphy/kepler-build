@@ -1,0 +1,167 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../../stylesheet.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>/* An interface used by the expression parser for identifier lookup.<a name="line.1"></a>
+<span class="sourceLineNo">002</span><a name="line.2"></a>
+<span class="sourceLineNo">003</span> Copyright (c) 2001-2007 The Regents of the University of California.<a name="line.3"></a>
+<span class="sourceLineNo">004</span> All rights reserved.<a name="line.4"></a>
+<span class="sourceLineNo">005</span> Permission is hereby granted, without written agreement and without<a name="line.5"></a>
+<span class="sourceLineNo">006</span> license or royalty fees, to use, copy, modify, and distribute this<a name="line.6"></a>
+<span class="sourceLineNo">007</span> software and its documentation for any purpose, provided that the above<a name="line.7"></a>
+<span class="sourceLineNo">008</span> copyright notice and the following two paragraphs appear in all copies<a name="line.8"></a>
+<span class="sourceLineNo">009</span> of this software.<a name="line.9"></a>
+<span class="sourceLineNo">010</span><a name="line.10"></a>
+<span class="sourceLineNo">011</span> IN NO EVENT SHALL THE UNIVERSITY OF CALIFORNIA BE LIABLE TO ANY PARTY<a name="line.11"></a>
+<span class="sourceLineNo">012</span> FOR DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES<a name="line.12"></a>
+<span class="sourceLineNo">013</span> ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION, EVEN IF<a name="line.13"></a>
+<span class="sourceLineNo">014</span> THE UNIVERSITY OF CALIFORNIA HAS BEEN ADVISED OF THE POSSIBILITY OF<a name="line.14"></a>
+<span class="sourceLineNo">015</span> SUCH DAMAGE.<a name="line.15"></a>
+<span class="sourceLineNo">016</span><a name="line.16"></a>
+<span class="sourceLineNo">017</span> THE UNIVERSITY OF CALIFORNIA SPECIFICALLY DISCLAIMS ANY WARRANTIES,<a name="line.17"></a>
+<span class="sourceLineNo">018</span> INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF<a name="line.18"></a>
+<span class="sourceLineNo">019</span> MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE<a name="line.19"></a>
+<span class="sourceLineNo">020</span> PROVIDED HEREUNDER IS ON AN "AS IS" BASIS, AND THE UNIVERSITY OF<a name="line.20"></a>
+<span class="sourceLineNo">021</span> CALIFORNIA HAS NO OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT, UPDATES,<a name="line.21"></a>
+<span class="sourceLineNo">022</span> ENHANCEMENTS, OR MODIFICATIONS.<a name="line.22"></a>
+<span class="sourceLineNo">023</span><a name="line.23"></a>
+<span class="sourceLineNo">024</span> PT_COPYRIGHT_VERSION_2<a name="line.24"></a>
+<span class="sourceLineNo">025</span> COPYRIGHTENDKEY<a name="line.25"></a>
+<span class="sourceLineNo">026</span><a name="line.26"></a>
+<span class="sourceLineNo">027</span> @ProposedRating Red (liuxj)<a name="line.27"></a>
+<span class="sourceLineNo">028</span> @AcceptedRating Red (liuxj)<a name="line.28"></a>
+<span class="sourceLineNo">029</span><a name="line.29"></a>
+<span class="sourceLineNo">030</span> */<a name="line.30"></a>
+<span class="sourceLineNo">031</span>package ptolemy.data.expr;<a name="line.31"></a>
+<span class="sourceLineNo">032</span><a name="line.32"></a>
+<span class="sourceLineNo">033</span>import java.util.Set;<a name="line.33"></a>
+<span class="sourceLineNo">034</span><a name="line.34"></a>
+<span class="sourceLineNo">035</span>import ptolemy.kernel.util.IllegalActionException;<a name="line.35"></a>
+<span class="sourceLineNo">036</span><a name="line.36"></a>
+<span class="sourceLineNo">037</span>//////////////////////////////////////////////////////////////////////////<a name="line.37"></a>
+<span class="sourceLineNo">038</span>//// ParserScope<a name="line.38"></a>
+<span class="sourceLineNo">039</span><a name="line.39"></a>
+<span class="sourceLineNo">040</span>/**<a name="line.40"></a>
+<span class="sourceLineNo">041</span> An interface used by the expression parser for identifier lookup.<a name="line.41"></a>
+<span class="sourceLineNo">042</span> &lt;p&gt;<a name="line.42"></a>
+<span class="sourceLineNo">043</span> An object implementing this interface represents the set of identifiers that<a name="line.43"></a>
+<span class="sourceLineNo">044</span> can be used in an expression being evaluated.<a name="line.44"></a>
+<span class="sourceLineNo">045</span><a name="line.45"></a>
+<span class="sourceLineNo">046</span> @author Xiaojun Liu, Steve Neuendorffer<a name="line.46"></a>
+<span class="sourceLineNo">047</span> @version $Id$<a name="line.47"></a>
+<span class="sourceLineNo">048</span> @see ptolemy.data.expr.PtParser<a name="line.48"></a>
+<span class="sourceLineNo">049</span> */<a name="line.49"></a>
+<span class="sourceLineNo">050</span>public interface ParserScope {<a name="line.50"></a>
+<span class="sourceLineNo">051</span>    /** Look up and return the value with the specified name in the<a name="line.51"></a>
+<span class="sourceLineNo">052</span>     *  scope. Return null if the name is not defined in this scope.<a name="line.52"></a>
+<span class="sourceLineNo">053</span>     *  @param name The name of the variable to be looked up.<a name="line.53"></a>
+<span class="sourceLineNo">054</span>     *  @return The token associated with the given name in the scope.<a name="line.54"></a>
+<span class="sourceLineNo">055</span>     *  @exception IllegalActionException If a value in the scope<a name="line.55"></a>
+<span class="sourceLineNo">056</span>     *  exists with the given name, but cannot be evaluated.<a name="line.56"></a>
+<span class="sourceLineNo">057</span>     */<a name="line.57"></a>
+<span class="sourceLineNo">058</span>    public ptolemy.data.Token get(String name) throws IllegalActionException;<a name="line.58"></a>
+<span class="sourceLineNo">059</span><a name="line.59"></a>
+<span class="sourceLineNo">060</span>    /** Look up and return the type of the value with the specified<a name="line.60"></a>
+<span class="sourceLineNo">061</span>     *  name in the scope. Return null if the name is not defined in<a name="line.61"></a>
+<span class="sourceLineNo">062</span>     *  this scope.<a name="line.62"></a>
+<span class="sourceLineNo">063</span>     *  @param name The name of the variable to be looked up.<a name="line.63"></a>
+<span class="sourceLineNo">064</span>     *  @return The token associated with the given name in the scope.<a name="line.64"></a>
+<span class="sourceLineNo">065</span>     *  @exception IllegalActionException If a value in the scope<a name="line.65"></a>
+<span class="sourceLineNo">066</span>     *  exists with the given name, but cannot be evaluated.<a name="line.66"></a>
+<span class="sourceLineNo">067</span>     */<a name="line.67"></a>
+<span class="sourceLineNo">068</span>    public ptolemy.data.type.Type getType(String name)<a name="line.68"></a>
+<span class="sourceLineNo">069</span>            throws IllegalActionException;<a name="line.69"></a>
+<span class="sourceLineNo">070</span><a name="line.70"></a>
+<span class="sourceLineNo">071</span>    /** Look up and return the type term for the specified name<a name="line.71"></a>
+<span class="sourceLineNo">072</span>     *  in the scope. Return null if the name is not defined in this<a name="line.72"></a>
+<span class="sourceLineNo">073</span>     *  scope, or is a constant type.<a name="line.73"></a>
+<span class="sourceLineNo">074</span>     *  @param name The name of the variable to be looked up.<a name="line.74"></a>
+<span class="sourceLineNo">075</span>     *  @return The InequalityTerm associated with the given name in<a name="line.75"></a>
+<span class="sourceLineNo">076</span>     *  the scope.<a name="line.76"></a>
+<span class="sourceLineNo">077</span>     *  @exception IllegalActionException If a value in the scope<a name="line.77"></a>
+<span class="sourceLineNo">078</span>     *  exists with the given name, but cannot be evaluated.<a name="line.78"></a>
+<span class="sourceLineNo">079</span>     */<a name="line.79"></a>
+<span class="sourceLineNo">080</span>    public ptolemy.graph.InequalityTerm getTypeTerm(String name)<a name="line.80"></a>
+<span class="sourceLineNo">081</span>            throws IllegalActionException;<a name="line.81"></a>
+<span class="sourceLineNo">082</span><a name="line.82"></a>
+<span class="sourceLineNo">083</span>    /** Return a list of names corresponding to the identifiers<a name="line.83"></a>
+<span class="sourceLineNo">084</span>     *  defined by this scope.  If an identifier is returned in this<a name="line.84"></a>
+<span class="sourceLineNo">085</span>     *  list, then get() and getType() will return a value for the<a name="line.85"></a>
+<span class="sourceLineNo">086</span>     *  identifier.  Note that generally speaking, this list is<a name="line.86"></a>
+<span class="sourceLineNo">087</span>     *  extremely expensive to compute, and users should avoid calling<a name="line.87"></a>
+<span class="sourceLineNo">088</span>     *  it.  It is primarily used for debugging purposes.<a name="line.88"></a>
+<span class="sourceLineNo">089</span>     *  @return A list of names corresponding to the identifiers<a name="line.89"></a>
+<span class="sourceLineNo">090</span>     *  defined by this scope.<a name="line.90"></a>
+<span class="sourceLineNo">091</span>     *  @exception IllegalActionException If constructing the list causes<a name="line.91"></a>
+<span class="sourceLineNo">092</span>     *  it.<a name="line.92"></a>
+<span class="sourceLineNo">093</span>     */<a name="line.93"></a>
+<span class="sourceLineNo">094</span>    public Set identifierSet() throws IllegalActionException;<a name="line.94"></a>
+<span class="sourceLineNo">095</span>}<a name="line.95"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

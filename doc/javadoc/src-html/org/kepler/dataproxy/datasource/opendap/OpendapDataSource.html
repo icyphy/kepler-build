@@ -1,0 +1,850 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../../../../stylesheet.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>/////////////////////////////////////////////////////////////////////////////<a name="line.1"></a>
+<span class="sourceLineNo">002</span>// Copyright (c) 2009 OPeNDAP, Inc.<a name="line.2"></a>
+<span class="sourceLineNo">003</span>// All rights reserved.<a name="line.3"></a>
+<span class="sourceLineNo">004</span>// Permission is hereby granted, without written agreement and without<a name="line.4"></a>
+<span class="sourceLineNo">005</span>// license or royalty fees, to use, copy, modify, and distribute this<a name="line.5"></a>
+<span class="sourceLineNo">006</span>// software and its documentation for any purpose, provided that the above<a name="line.6"></a>
+<span class="sourceLineNo">007</span>// copyright notice and the following two paragraphs appear in all copies<a name="line.7"></a>
+<span class="sourceLineNo">008</span>// of this software.<a name="line.8"></a>
+<span class="sourceLineNo">009</span>//<a name="line.9"></a>
+<span class="sourceLineNo">010</span>// IN NO EVENT SHALL OPeNDAP BE LIABLE TO ANY PARTY FOR DIRECT, INDIRECT,<a name="line.10"></a>
+<span class="sourceLineNo">011</span>// SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES ARISING OUT OF THE USE OF<a name="line.11"></a>
+<span class="sourceLineNo">012</span>// THIS SOFTWARE AND ITS DOCUMENTATION, EVEN IF OPeNDAP HAS BEEN ADVISED<a name="line.12"></a>
+<span class="sourceLineNo">013</span>// OF THE POSSIBILITY OF SUCH DAMAGE.<a name="line.13"></a>
+<span class="sourceLineNo">014</span>//<a name="line.14"></a>
+<span class="sourceLineNo">015</span>// OPeNDAP SPECIFICALLY DISCLAIMS ANY WARRANTIES, INCLUDING, BUT NOT<a name="line.15"></a>
+<span class="sourceLineNo">016</span>// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A<a name="line.16"></a>
+<span class="sourceLineNo">017</span>// PARTICULAR PURPOSE. THE SOFTWARE PROVIDED HEREUNDER IS ON AN "AS IS"<a name="line.17"></a>
+<span class="sourceLineNo">018</span>// BASIS, AND OPeNDAP HAS NO OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT,<a name="line.18"></a>
+<span class="sourceLineNo">019</span>// UPDATES, ENHANCEMENTS, OR MODIFICATIONS.<a name="line.19"></a>
+<span class="sourceLineNo">020</span>//<a name="line.20"></a>
+<span class="sourceLineNo">021</span>// Author: Nathan David Potter  &lt;ndp@opendap.org&gt;<a name="line.21"></a>
+<span class="sourceLineNo">022</span>// You can contact OPeNDAP, Inc. at PO Box 112, Saunderstown, RI. 02874-0112.<a name="line.22"></a>
+<span class="sourceLineNo">023</span>//<a name="line.23"></a>
+<span class="sourceLineNo">024</span>/////////////////////////////////////////////////////////////////////////////<a name="line.24"></a>
+<span class="sourceLineNo">025</span><a name="line.25"></a>
+<span class="sourceLineNo">026</span>package org.kepler.dataproxy.datasource.opendap;<a name="line.26"></a>
+<span class="sourceLineNo">027</span><a name="line.27"></a>
+<span class="sourceLineNo">028</span>import java.io.IOException;<a name="line.28"></a>
+<span class="sourceLineNo">029</span>import java.util.Collection;<a name="line.29"></a>
+<span class="sourceLineNo">030</span>import java.util.Enumeration;<a name="line.30"></a>
+<span class="sourceLineNo">031</span>import java.util.Iterator;<a name="line.31"></a>
+<span class="sourceLineNo">032</span>import java.util.Vector;<a name="line.32"></a>
+<span class="sourceLineNo">033</span><a name="line.33"></a>
+<span class="sourceLineNo">034</span>import org.apache.commons.logging.Log;<a name="line.34"></a>
+<span class="sourceLineNo">035</span>import org.apache.commons.logging.LogFactory;<a name="line.35"></a>
+<span class="sourceLineNo">036</span>import org.ecoinformatics.seek.datasource.DataSourceIcon;<a name="line.36"></a>
+<span class="sourceLineNo">037</span><a name="line.37"></a>
+<span class="sourceLineNo">038</span>import opendap.dap.DAP2Exception;<a name="line.38"></a>
+<span class="sourceLineNo">039</span>import opendap.dap.DAS;<a name="line.39"></a>
+<span class="sourceLineNo">040</span>import opendap.dap.DArray;<a name="line.40"></a>
+<span class="sourceLineNo">041</span>import opendap.dap.DConnect2;<a name="line.41"></a>
+<span class="sourceLineNo">042</span>import opendap.dap.DConstructor;<a name="line.42"></a>
+<span class="sourceLineNo">043</span>import opendap.dap.DDS;<a name="line.43"></a>
+<span class="sourceLineNo">044</span>import opendap.dap.parser.ParseException;<a name="line.44"></a>
+<span class="sourceLineNo">045</span>import ptolemy.actor.TypedIOPort;<a name="line.45"></a>
+<span class="sourceLineNo">046</span>import ptolemy.actor.lib.LimitedFiringSource;<a name="line.46"></a>
+<span class="sourceLineNo">047</span>import ptolemy.actor.parameters.PortParameter;<a name="line.47"></a>
+<span class="sourceLineNo">048</span>import ptolemy.data.StringToken;<a name="line.48"></a>
+<span class="sourceLineNo">049</span>import ptolemy.data.expr.StringParameter;<a name="line.49"></a>
+<span class="sourceLineNo">050</span>import ptolemy.data.type.BaseType;<a name="line.50"></a>
+<span class="sourceLineNo">051</span>import ptolemy.data.type.Type;<a name="line.51"></a>
+<span class="sourceLineNo">052</span>import ptolemy.kernel.CompositeEntity;<a name="line.52"></a>
+<span class="sourceLineNo">053</span>import ptolemy.kernel.util.IllegalActionException;<a name="line.53"></a>
+<span class="sourceLineNo">054</span>import ptolemy.kernel.util.NameDuplicationException;<a name="line.54"></a>
+<span class="sourceLineNo">055</span><a name="line.55"></a>
+<span class="sourceLineNo">056</span>/**<a name="line.56"></a>
+<span class="sourceLineNo">057</span> * The OPeNDAP actor reads data from OPeNDAP data sources (i.e. servers).<a name="line.57"></a>
+<span class="sourceLineNo">058</span> * &lt;p/&gt;<a name="line.58"></a>
+<span class="sourceLineNo">059</span> * &lt;h1&gt;OPeNDAP Actor Overview&lt;/h1&gt;<a name="line.59"></a>
+<span class="sourceLineNo">060</span> * &lt;p/&gt;<a name="line.60"></a>
+<span class="sourceLineNo">061</span> * The OPeNDAP actor provides access to data served by any Data Access Protocol<a name="line.61"></a>
+<span class="sourceLineNo">062</span> * (DAP) 2.0 compatible data source. The actor takes as configuration parameters<a name="line.62"></a>
+<span class="sourceLineNo">063</span> * the URL to the data source and an optional constraint expression (CE). Based<a name="line.63"></a>
+<span class="sourceLineNo">064</span> * on the URL and optional CE, the actor configures its output ports to match<a name="line.64"></a>
+<span class="sourceLineNo">065</span> * the variables to be read from the data source.<a name="line.65"></a>
+<span class="sourceLineNo">066</span> * &lt;p/&gt;<a name="line.66"></a>
+<span class="sourceLineNo">067</span> * &lt;h2&gt;More information about the OPeNDAP actor&lt;/h2&gt;<a name="line.67"></a>
+<span class="sourceLineNo">068</span> * &lt;p/&gt;<a name="line.68"></a>
+<span class="sourceLineNo">069</span> * The OPeNDAP actor reads data from a single DAP data server and provides that<a name="line.69"></a>
+<span class="sourceLineNo">070</span> * data as either a vector.matrix or array for processing by downstream elements<a name="line.70"></a>
+<span class="sourceLineNo">071</span> * in a Kepler workflow. Each DAP server provides (serves) many data sources and<a name="line.71"></a>
+<span class="sourceLineNo">072</span> * each of those data sources can be uniquely identified using a URL in a way<a name="line.72"></a>
+<span class="sourceLineNo">073</span> * that's similar to how pages are provided by a web server. For more<a name="line.73"></a>
+<span class="sourceLineNo">074</span> * information on the DAP and on OPeNDAP's software, see www.opendap.org.<a name="line.74"></a>
+<span class="sourceLineNo">075</span> * &lt;p/&gt;<a name="line.75"></a>
+<span class="sourceLineNo">076</span> * &lt;h3&gt;Characterization of Data Sources&lt;/h3&gt;<a name="line.76"></a>
+<span class="sourceLineNo">077</span> * &lt;p/&gt;<a name="line.77"></a>
+<span class="sourceLineNo">078</span> * Data sources accessible using DAP 2.0 are characterized by a URL that<a name="line.78"></a>
+<span class="sourceLineNo">079</span> * references a both a specific data server and a data granule available from<a name="line.79"></a>
+<span class="sourceLineNo">080</span> * that server and a Constraint Expression that describes which variables to<a name="line.80"></a>
+<span class="sourceLineNo">081</span> * read from within the data granule. In addition to reading data from a<a name="line.81"></a>
+<span class="sourceLineNo">082</span> * granule, a DAP 2.0 server can provide two pieces of information about the<a name="line.82"></a>
+<span class="sourceLineNo">083</span> * granule: a description of all of its variables, their names and their data<a name="line.83"></a>
+<span class="sourceLineNo">084</span> * types; and a collection of 'attributes' which are bound to those variables.<a name="line.84"></a>
+<span class="sourceLineNo">085</span> * &lt;p/&gt;<a name="line.85"></a>
+<span class="sourceLineNo">086</span> * &lt;h3&gt;Operation of the Actor&lt;/h3&gt;<a name="line.86"></a>
+<span class="sourceLineNo">087</span> * &lt;p/&gt;<a name="line.87"></a>
+<span class="sourceLineNo">088</span> * The actor must have a valid URL before it can provide any information (just<a name="line.88"></a>
+<span class="sourceLineNo">089</span> * as a file reader actor need to point toward a file to provide data). Given a<a name="line.89"></a>
+<span class="sourceLineNo">090</span> * URL and the optional CE, the OPeNDAP actor will interrogate that data source<a name="line.90"></a>
+<span class="sourceLineNo">091</span> * and configure its output ports.<a name="line.91"></a>
+<span class="sourceLineNo">092</span> * &lt;p/&gt;<a name="line.92"></a>
+<span class="sourceLineNo">093</span> * &lt;h3&gt;Data Types Returned by the Actor&lt;/h3&gt;<a name="line.93"></a>
+<span class="sourceLineNo">094</span> * &lt;p/&gt;<a name="line.94"></a>
+<span class="sourceLineNo">095</span> * There are two broad classes of data types returned by the actor. First there<a name="line.95"></a>
+<span class="sourceLineNo">096</span> * are vectors, matrices and arrays. These correspond to one, two and N (&amp;gt; 2)<a name="line.96"></a>
+<span class="sourceLineNo">097</span> * dimensional arrays. The distinction between the vector and matrix types and<a name="line.97"></a>
+<span class="sourceLineNo">098</span> * the N-dimensional array is that Kepler can operate on the vector and matrix<a name="line.98"></a>
+<span class="sourceLineNo">099</span> * types far more efficiently than the N-dimensional arrays. Many variables<a name="line.99"></a>
+<span class="sourceLineNo">100</span> * present in DAP data sources are of the N-dimensional array class and one way<a name="line.100"></a>
+<span class="sourceLineNo">101</span> * to work with these efficiently is to use the constraint expression to reduce<a name="line.101"></a>
+<span class="sourceLineNo">102</span> * the order of these data to one or two, thus causing the actor to store them<a name="line.102"></a>
+<span class="sourceLineNo">103</span> * in a vector or matrix.<a name="line.103"></a>
+<span class="sourceLineNo">104</span> * &lt;p/&gt;<a name="line.104"></a>
+<span class="sourceLineNo">105</span> * &lt;p&gt;<a name="line.105"></a>
+<span class="sourceLineNo">106</span> * As an example, consider the FNOC1 data source available at test.opendap.org.<a name="line.106"></a>
+<span class="sourceLineNo">107</span> * The full URL for this is http://test.opendap.org/opendap/data/nc/fnoc1.nc. It<a name="line.107"></a>
+<span class="sourceLineNo">108</span> * contains a variable 'u' which has three dimensions. We can constrain 'u' so<a name="line.108"></a>
+<span class="sourceLineNo">109</span> * that it has only two dimensions when read into Kepler using the CE<a name="line.109"></a>
+<span class="sourceLineNo">110</span> * 'u[0][0:16][0:20]' which selects only the first element (index 0) for the<a name="line.110"></a>
+<span class="sourceLineNo">111</span> * first dimension while requesting all of the remaining elements for the second<a name="line.111"></a>
+<span class="sourceLineNo">112</span> * and third dimensions. The www.opendap.org has documentation about the CE<a name="line.112"></a>
+<span class="sourceLineNo">113</span> * syntax.<a name="line.113"></a>
+<span class="sourceLineNo">114</span> * &lt;/p&gt;<a name="line.114"></a>
+<span class="sourceLineNo">115</span> * &lt;p/&gt;<a name="line.115"></a>
+<span class="sourceLineNo">116</span> * &lt;p&gt;<a name="line.116"></a>
+<span class="sourceLineNo">117</span> * The second data type returned by the actor is a record. In reality, all DAP<a name="line.117"></a>
+<span class="sourceLineNo">118</span> * data sources are records but the actor automatically 'disassembles' the top<a name="line.118"></a>
+<span class="sourceLineNo">119</span> * most record since we know that's what the vast majority of users will want.<a name="line.119"></a>
+<span class="sourceLineNo">120</span> * However, some data sources contains nested hierarchies of records many levels<a name="line.120"></a>
+<span class="sourceLineNo">121</span> * deep. When dealing with those data sources you will need to use the Kepler<a name="line.121"></a>
+<span class="sourceLineNo">122</span> * record disassembler in your workflow.<a name="line.122"></a>
+<span class="sourceLineNo">123</span> * &lt;/p&gt;<a name="line.123"></a>
+<span class="sourceLineNo">124</span> * <a name="line.124"></a>
+<span class="sourceLineNo">125</span> * @author Nathan Potter<a name="line.125"></a>
+<span class="sourceLineNo">126</span> * @version $Id: OpendapDataSource.java 33629 2015-08-24 22:43:10Z crawl $<a name="line.126"></a>
+<span class="sourceLineNo">127</span> * @date Jul 17, 2007<a name="line.127"></a>
+<span class="sourceLineNo">128</span> * @since Kepler 1.0RC1<a name="line.128"></a>
+<span class="sourceLineNo">129</span> */<a name="line.129"></a>
+<span class="sourceLineNo">130</span>public class OpendapDataSource extends LimitedFiringSource {<a name="line.130"></a>
+<span class="sourceLineNo">131</span><a name="line.131"></a>
+<span class="sourceLineNo">132</span>        static Log log;<a name="line.132"></a>
+<span class="sourceLineNo">133</span><a name="line.133"></a>
+<span class="sourceLineNo">134</span>        static {<a name="line.134"></a>
+<span class="sourceLineNo">135</span>                log = LogFactory<a name="line.135"></a>
+<span class="sourceLineNo">136</span>                                .getLog("org.kepler.dataproxy.datasource.opendap.OpendapDataSource");<a name="line.136"></a>
+<span class="sourceLineNo">137</span>        }<a name="line.137"></a>
+<span class="sourceLineNo">138</span><a name="line.138"></a>
+<span class="sourceLineNo">139</span>        /**<a name="line.139"></a>
+<span class="sourceLineNo">140</span>         * The OPeNDAP URL that identifies a (possibly constrained) dataset.<a name="line.140"></a>
+<span class="sourceLineNo">141</span>         */<a name="line.141"></a>
+<span class="sourceLineNo">142</span>        public PortParameter opendapURLParameter;<a name="line.142"></a>
+<span class="sourceLineNo">143</span>        private String opendapURL;<a name="line.143"></a>
+<span class="sourceLineNo">144</span><a name="line.144"></a>
+<span class="sourceLineNo">145</span>        /**<a name="line.145"></a>
+<span class="sourceLineNo">146</span>         * The OPeNDAP Constraint Expression used to sub sample the dataset.<a name="line.146"></a>
+<span class="sourceLineNo">147</span>         */<a name="line.147"></a>
+<span class="sourceLineNo">148</span>        public PortParameter opendapCEParameter;<a name="line.148"></a>
+<span class="sourceLineNo">149</span>        private String opendapCE;<a name="line.149"></a>
+<span class="sourceLineNo">150</span><a name="line.150"></a>
+<span class="sourceLineNo">151</span>        /**<a name="line.151"></a>
+<span class="sourceLineNo">152</span>         * Controls if and how the DAP2 metadata is incorporated into the Actors<a name="line.152"></a>
+<span class="sourceLineNo">153</span>         * output.<a name="line.153"></a>
+<span class="sourceLineNo">154</span>         * <a name="line.154"></a>
+<span class="sourceLineNo">155</span>         */<a name="line.155"></a>
+<span class="sourceLineNo">156</span>        public StringParameter metadataOptionsParameter;<a name="line.156"></a>
+<span class="sourceLineNo">157</span>        public static int NO_METADATA = 0;<a name="line.157"></a>
+<span class="sourceLineNo">158</span>        public static int EMBEDDED_METADATA = 1;<a name="line.158"></a>
+<span class="sourceLineNo">159</span>        public static int SEPARATE_METADATA_PORT = 2;<a name="line.159"></a>
+<span class="sourceLineNo">160</span>        private String[] metadataChoices = { "No Metadata", "Embedded Metadata",<a name="line.160"></a>
+<span class="sourceLineNo">161</span>                        "Separate Metadata Port" };<a name="line.161"></a>
+<span class="sourceLineNo">162</span><a name="line.162"></a>
+<span class="sourceLineNo">163</span>        public static String separateMetadataPortName = "DAP2 Metadata";<a name="line.163"></a>
+<span class="sourceLineNo">164</span>        public static String globalMetadataPortName = "Global Metadata";<a name="line.164"></a>
+<span class="sourceLineNo">165</span><a name="line.165"></a>
+<span class="sourceLineNo">166</span>        private boolean imbedMetadata;<a name="line.166"></a>
+<span class="sourceLineNo">167</span>        private boolean useSeparateMetadataPort;<a name="line.167"></a>
+<span class="sourceLineNo">168</span><a name="line.168"></a>
+<span class="sourceLineNo">169</span>        private DConnect2 dapConnection;<a name="line.169"></a>
+<span class="sourceLineNo">170</span>        private DataSourceIcon icon;<a name="line.170"></a>
+<span class="sourceLineNo">171</span><a name="line.171"></a>
+<span class="sourceLineNo">172</span>        public OpendapDataSource(CompositeEntity container, String name)<a name="line.172"></a>
+<span class="sourceLineNo">173</span>                        throws NameDuplicationException, IllegalActionException {<a name="line.173"></a>
+<span class="sourceLineNo">174</span>                super(container, name);<a name="line.174"></a>
+<span class="sourceLineNo">175</span><a name="line.175"></a>
+<span class="sourceLineNo">176</span>                // hide the parent class's output port since we cannot delete it<a name="line.176"></a>
+<span class="sourceLineNo">177</span>                new ptolemy.kernel.util.Attribute(output, "_hide");<a name="line.177"></a>
+<span class="sourceLineNo">178</span><a name="line.178"></a>
+<span class="sourceLineNo">179</span>                opendapURLParameter = new PortParameter(this, "DAP2 URL");<a name="line.179"></a>
+<span class="sourceLineNo">180</span>                opendapURLParameter.setStringMode(true);<a name="line.180"></a>
+<span class="sourceLineNo">181</span>                opendapURLParameter.getPort().setTypeEquals(BaseType.STRING);<a name="line.181"></a>
+<span class="sourceLineNo">182</span>                opendapURL = "";<a name="line.182"></a>
+<span class="sourceLineNo">183</span><a name="line.183"></a>
+<span class="sourceLineNo">184</span>                opendapCEParameter = new PortParameter(this,<a name="line.184"></a>
+<span class="sourceLineNo">185</span>                                "DAP2 Constraint Expression");<a name="line.185"></a>
+<span class="sourceLineNo">186</span>                opendapCEParameter.setStringMode(true);<a name="line.186"></a>
+<span class="sourceLineNo">187</span>                opendapCEParameter.getPort().setTypeEquals(BaseType.STRING);<a name="line.187"></a>
+<span class="sourceLineNo">188</span>                opendapCE = "";<a name="line.188"></a>
+<span class="sourceLineNo">189</span><a name="line.189"></a>
+<span class="sourceLineNo">190</span>                metadataOptionsParameter = new StringParameter(this, "Metadata Options");<a name="line.190"></a>
+<span class="sourceLineNo">191</span>                metadataOptionsParameter.setTypeEquals(BaseType.STRING);<a name="line.191"></a>
+<span class="sourceLineNo">192</span>                metadataOptionsParameter.setToken(new StringToken(metadataChoices[0]));<a name="line.192"></a>
+<span class="sourceLineNo">193</span>                for (String choice : metadataChoices) {<a name="line.193"></a>
+<span class="sourceLineNo">194</span>                        metadataOptionsParameter.addChoice(choice);<a name="line.194"></a>
+<span class="sourceLineNo">195</span>                }<a name="line.195"></a>
+<span class="sourceLineNo">196</span>                imbedMetadata = false;<a name="line.196"></a>
+<span class="sourceLineNo">197</span>                useSeparateMetadataPort = false;<a name="line.197"></a>
+<span class="sourceLineNo">198</span><a name="line.198"></a>
+<span class="sourceLineNo">199</span>                dapConnection = null;<a name="line.199"></a>
+<span class="sourceLineNo">200</span>        try{<a name="line.200"></a>
+<span class="sourceLineNo">201</span>                icon = new DataSourceIcon(this);<a name="line.201"></a>
+<span class="sourceLineNo">202</span>        }catch(Throwable ex){<a name="line.202"></a>
+<span class="sourceLineNo">203</span>                log.error(ex.getMessage());<a name="line.203"></a>
+<span class="sourceLineNo">204</span>        }<a name="line.204"></a>
+<span class="sourceLineNo">205</span>        }<a name="line.205"></a>
+<span class="sourceLineNo">206</span><a name="line.206"></a>
+<span class="sourceLineNo">207</span>        /**<a name="line.207"></a>
+<span class="sourceLineNo">208</span>         * @param attribute<a name="line.208"></a>
+<span class="sourceLineNo">209</span>         *            The changed Attribute.<a name="line.209"></a>
+<span class="sourceLineNo">210</span>         * @throws ptolemy.kernel.util.IllegalActionException<a name="line.210"></a>
+<span class="sourceLineNo">211</span>         *             When bad things happen.<a name="line.211"></a>
+<span class="sourceLineNo">212</span>         */<a name="line.212"></a>
+<span class="sourceLineNo">213</span>        public void attributeChanged(ptolemy.kernel.util.Attribute attribute)<a name="line.213"></a>
+<span class="sourceLineNo">214</span>                        throws ptolemy.kernel.util.IllegalActionException {<a name="line.214"></a>
+<span class="sourceLineNo">215</span><a name="line.215"></a>
+<span class="sourceLineNo">216</span>                if (attribute == opendapURLParameter || attribute == opendapCEParameter<a name="line.216"></a>
+<span class="sourceLineNo">217</span>                                || attribute == metadataOptionsParameter) {<a name="line.217"></a>
+<span class="sourceLineNo">218</span>                        updateParameters();<a name="line.218"></a>
+<span class="sourceLineNo">219</span>                } else {<a name="line.219"></a>
+<span class="sourceLineNo">220</span>                        super.attributeChanged(attribute);<a name="line.220"></a>
+<span class="sourceLineNo">221</span>                }<a name="line.221"></a>
+<span class="sourceLineNo">222</span>        }<a name="line.222"></a>
+<span class="sourceLineNo">223</span><a name="line.223"></a>
+<span class="sourceLineNo">224</span>        /**<a name="line.224"></a>
+<span class="sourceLineNo">225</span>         * Update values in URL and CE parameters.<a name="line.225"></a>
+<span class="sourceLineNo">226</span>         * <a name="line.226"></a>
+<span class="sourceLineNo">227</span>         * @throws IllegalActionException<a name="line.227"></a>
+<span class="sourceLineNo">228</span>         *             When the bad things happen.<a name="line.228"></a>
+<span class="sourceLineNo">229</span>         */<a name="line.229"></a>
+<span class="sourceLineNo">230</span>        private void updateParameters() throws IllegalActionException {<a name="line.230"></a>
+<span class="sourceLineNo">231</span><a name="line.231"></a>
+<span class="sourceLineNo">232</span>                boolean reload = false;<a name="line.232"></a>
+<span class="sourceLineNo">233</span><a name="line.233"></a>
+<span class="sourceLineNo">234</span>                String url = ((StringToken) opendapURLParameter.getToken())<a name="line.234"></a>
+<span class="sourceLineNo">235</span>                                .stringValue();<a name="line.235"></a>
+<span class="sourceLineNo">236</span>                if (!opendapURL.equals(url)) {<a name="line.236"></a>
+<span class="sourceLineNo">237</span>                        opendapURL = url;<a name="line.237"></a>
+<span class="sourceLineNo">238</span><a name="line.238"></a>
+<span class="sourceLineNo">239</span>                        if (opendapURL.contains("?"))<a name="line.239"></a>
+<span class="sourceLineNo">240</span>                                throw new IllegalActionException(this,<a name="line.240"></a>
+<span class="sourceLineNo">241</span>                                                "The DAP2 URL must NOT contain a constraint expression or fragment thereof.");<a name="line.241"></a>
+<span class="sourceLineNo">242</span><a name="line.242"></a>
+<span class="sourceLineNo">243</span>                        // only reload if not empty.<a name="line.243"></a>
+<span class="sourceLineNo">244</span>                        if (!url.equals("")) {<a name="line.244"></a>
+<span class="sourceLineNo">245</span>                                reload = true;<a name="line.245"></a>
+<span class="sourceLineNo">246</span>                        }<a name="line.246"></a>
+<span class="sourceLineNo">247</span><a name="line.247"></a>
+<span class="sourceLineNo">248</span>                }<a name="line.248"></a>
+<span class="sourceLineNo">249</span><a name="line.249"></a>
+<span class="sourceLineNo">250</span>                String ce = ((StringToken) opendapCEParameter.getToken()).stringValue();<a name="line.250"></a>
+<span class="sourceLineNo">251</span>                if (!opendapCE.equals(ce)) {<a name="line.251"></a>
+<span class="sourceLineNo">252</span>                        opendapCE = ce;<a name="line.252"></a>
+<span class="sourceLineNo">253</span><a name="line.253"></a>
+<span class="sourceLineNo">254</span>                        if (!opendapURL.equals("")) // Only REload if it looks like they<a name="line.254"></a>
+<span class="sourceLineNo">255</span>                                                                                // have a URL too.<a name="line.255"></a>
+<span class="sourceLineNo">256</span>                                reload = true;<a name="line.256"></a>
+<span class="sourceLineNo">257</span>                }<a name="line.257"></a>
+<span class="sourceLineNo">258</span><a name="line.258"></a>
+<span class="sourceLineNo">259</span>                String mdo = metadataOptionsParameter.stringValue();<a name="line.259"></a>
+<span class="sourceLineNo">260</span>                boolean goodChoice = false;<a name="line.260"></a>
+<span class="sourceLineNo">261</span>                for (String choice : metadataChoices) {<a name="line.261"></a>
+<span class="sourceLineNo">262</span>                        if (mdo.equals(choice))<a name="line.262"></a>
+<span class="sourceLineNo">263</span>                                goodChoice = true;<a name="line.263"></a>
+<span class="sourceLineNo">264</span>                }<a name="line.264"></a>
+<span class="sourceLineNo">265</span>                if (goodChoice) {<a name="line.265"></a>
+<span class="sourceLineNo">266</span><a name="line.266"></a>
+<span class="sourceLineNo">267</span>                        if (mdo.equals(metadataChoices[NO_METADATA])) {<a name="line.267"></a>
+<span class="sourceLineNo">268</span><a name="line.268"></a>
+<span class="sourceLineNo">269</span>                                if (imbedMetadata || useSeparateMetadataPort)<a name="line.269"></a>
+<span class="sourceLineNo">270</span>                                        reload = true;<a name="line.270"></a>
+<span class="sourceLineNo">271</span><a name="line.271"></a>
+<span class="sourceLineNo">272</span>                                imbedMetadata = false;<a name="line.272"></a>
+<span class="sourceLineNo">273</span>                                useSeparateMetadataPort = false;<a name="line.273"></a>
+<span class="sourceLineNo">274</span>                        } else if (mdo.equals(metadataChoices[EMBEDDED_METADATA])) {<a name="line.274"></a>
+<span class="sourceLineNo">275</span><a name="line.275"></a>
+<span class="sourceLineNo">276</span>                                if (!imbedMetadata || useSeparateMetadataPort)<a name="line.276"></a>
+<span class="sourceLineNo">277</span>                                        reload = true;<a name="line.277"></a>
+<span class="sourceLineNo">278</span><a name="line.278"></a>
+<span class="sourceLineNo">279</span>                                imbedMetadata = true;<a name="line.279"></a>
+<span class="sourceLineNo">280</span>                                useSeparateMetadataPort = false;<a name="line.280"></a>
+<span class="sourceLineNo">281</span>                        } else if (mdo.equals(metadataChoices[SEPARATE_METADATA_PORT])) {<a name="line.281"></a>
+<span class="sourceLineNo">282</span><a name="line.282"></a>
+<span class="sourceLineNo">283</span>                                if (imbedMetadata || !useSeparateMetadataPort)<a name="line.283"></a>
+<span class="sourceLineNo">284</span>                                        reload = true;<a name="line.284"></a>
+<span class="sourceLineNo">285</span><a name="line.285"></a>
+<span class="sourceLineNo">286</span>                                imbedMetadata = false;<a name="line.286"></a>
+<span class="sourceLineNo">287</span>                                useSeparateMetadataPort = true;<a name="line.287"></a>
+<span class="sourceLineNo">288</span>                        }<a name="line.288"></a>
+<span class="sourceLineNo">289</span><a name="line.289"></a>
+<span class="sourceLineNo">290</span>                } else {<a name="line.290"></a>
+<span class="sourceLineNo">291</span>                        String msg = "You may not edit the metadata options. "<a name="line.291"></a>
+<span class="sourceLineNo">292</span>                                        + "You must chose one of: ";<a name="line.292"></a>
+<span class="sourceLineNo">293</span>                        for (String choice : this.metadataChoices) {<a name="line.293"></a>
+<span class="sourceLineNo">294</span>                                msg += "[" + choice + "]   ";<a name="line.294"></a>
+<span class="sourceLineNo">295</span>                        }<a name="line.295"></a>
+<span class="sourceLineNo">296</span>                        throw new IllegalActionException(this, msg);<a name="line.296"></a>
+<span class="sourceLineNo">297</span>                }<a name="line.297"></a>
+<span class="sourceLineNo">298</span><a name="line.298"></a>
+<span class="sourceLineNo">299</span>                if (reload) {<a name="line.299"></a>
+<span class="sourceLineNo">300</span><a name="line.300"></a>
+<span class="sourceLineNo">301</span>                        try {<a name="line.301"></a>
+<span class="sourceLineNo">302</span><a name="line.302"></a>
+<span class="sourceLineNo">303</span>                                log.debug("OPeNDAP URL: " + opendapURL);<a name="line.303"></a>
+<span class="sourceLineNo">304</span>                                dapConnection = new DConnect2(opendapURL);<a name="line.304"></a>
+<span class="sourceLineNo">305</span><a name="line.305"></a>
+<span class="sourceLineNo">306</span>                                DDS dds = getDDS(ce, false);<a name="line.306"></a>
+<span class="sourceLineNo">307</span><a name="line.307"></a>
+<span class="sourceLineNo">308</span>                                // log.debug("Before ports configured.");<a name="line.308"></a>
+<span class="sourceLineNo">309</span>                                // dds.print(System.out);<a name="line.309"></a>
+<span class="sourceLineNo">310</span><a name="line.310"></a>
+<span class="sourceLineNo">311</span>                                log.debug("Configuring ports.");<a name="line.311"></a>
+<span class="sourceLineNo">312</span>                                configureOutputPorts(dds);<a name="line.312"></a>
+<span class="sourceLineNo">313</span><a name="line.313"></a>
+<span class="sourceLineNo">314</span>                                // log.debug("After ports configured.");<a name="line.314"></a>
+<span class="sourceLineNo">315</span>                                // dds.print(System.out);<a name="line.315"></a>
+<span class="sourceLineNo">316</span><a name="line.316"></a>
+<span class="sourceLineNo">317</span>                        } catch (Exception e) {<a name="line.317"></a>
+<span class="sourceLineNo">318</span>                                e.printStackTrace();<a name="line.318"></a>
+<span class="sourceLineNo">319</span>                                throw new IllegalActionException(this, "Problem accessing "<a name="line.319"></a>
+<span class="sourceLineNo">320</span>                                                + "OPeNDAP Data Source: " + e.getMessage());<a name="line.320"></a>
+<span class="sourceLineNo">321</span>                        }<a name="line.321"></a>
+<span class="sourceLineNo">322</span><a name="line.322"></a>
+<span class="sourceLineNo">323</span>                }<a name="line.323"></a>
+<span class="sourceLineNo">324</span>        }<a name="line.324"></a>
+<span class="sourceLineNo">325</span><a name="line.325"></a>
+<span class="sourceLineNo">326</span>        public void preinitialize() throws IllegalActionException {<a name="line.326"></a>
+<span class="sourceLineNo">327</span>                super.preinitialize();<a name="line.327"></a>
+<span class="sourceLineNo">328</span><a name="line.328"></a>
+<span class="sourceLineNo">329</span>                String ce;<a name="line.329"></a>
+<span class="sourceLineNo">330</span>                ce = ((StringToken) opendapCEParameter.getToken()).stringValue();<a name="line.330"></a>
+<span class="sourceLineNo">331</span>                log.debug("opendapCEParameter: " + ce);<a name="line.331"></a>
+<span class="sourceLineNo">332</span><a name="line.332"></a>
+<span class="sourceLineNo">333</span>                if (ce.equals("")) {<a name="line.333"></a>
+<span class="sourceLineNo">334</span>                        ce = createCEfromWiredPorts();<a name="line.334"></a>
+<span class="sourceLineNo">335</span>                        log.debug("Created CE from wired ports. CE: " + ce);<a name="line.335"></a>
+<span class="sourceLineNo">336</span>                        opendapCEParameter.setToken(new StringToken(ce));<a name="line.336"></a>
+<span class="sourceLineNo">337</span>                        updateParameters();<a name="line.337"></a>
+<span class="sourceLineNo">338</span>                }<a name="line.338"></a>
+<span class="sourceLineNo">339</span>                log.debug("metadataOptionsParameter.stringValue(): "<a name="line.339"></a>
+<span class="sourceLineNo">340</span>                                + metadataOptionsParameter.stringValue());<a name="line.340"></a>
+<span class="sourceLineNo">341</span>                log.debug("ce: "<a name="line.341"></a>
+<span class="sourceLineNo">342</span>                                + ((StringToken) opendapCEParameter.getToken()).stringValue());<a name="line.342"></a>
+<span class="sourceLineNo">343</span><a name="line.343"></a>
+<span class="sourceLineNo">344</span>        }<a name="line.344"></a>
+<span class="sourceLineNo">345</span><a name="line.345"></a>
+<span class="sourceLineNo">346</span>        public void fire() throws IllegalActionException {<a name="line.346"></a>
+<span class="sourceLineNo">347</span>                super.fire();<a name="line.347"></a>
+<span class="sourceLineNo">348</span>                log.debug("\n\n\n--- fire");<a name="line.348"></a>
+<span class="sourceLineNo">349</span><a name="line.349"></a>
+<span class="sourceLineNo">350</span>                opendapURLParameter.update();<a name="line.350"></a>
+<span class="sourceLineNo">351</span>                opendapCEParameter.update();<a name="line.351"></a>
+<span class="sourceLineNo">352</span>                updateParameters();<a name="line.352"></a>
+<span class="sourceLineNo">353</span><a name="line.353"></a>
+<span class="sourceLineNo">354</span>                try {<a name="line.354"></a>
+<span class="sourceLineNo">355</span>                        if (icon != null)<a name="line.355"></a>
+<span class="sourceLineNo">356</span>                                icon.setBusy();<a name="line.356"></a>
+<span class="sourceLineNo">357</span><a name="line.357"></a>
+<span class="sourceLineNo">358</span>                        String ce;<a name="line.358"></a>
+<span class="sourceLineNo">359</span>                        ce = ((StringToken) opendapCEParameter.getToken()).stringValue();<a name="line.359"></a>
+<span class="sourceLineNo">360</span><a name="line.360"></a>
+<span class="sourceLineNo">361</span>                        log.debug("ConstraintExpression: " + ce);<a name="line.361"></a>
+<span class="sourceLineNo">362</span><a name="line.362"></a>
+<span class="sourceLineNo">363</span>                        DDS dds = getDDS(ce, true);<a name="line.363"></a>
+<span class="sourceLineNo">364</span><a name="line.364"></a>
+<span class="sourceLineNo">365</span>                        // log.debug("fire(): dapConnection.getData(ce) returned DataDDS:");<a name="line.365"></a>
+<span class="sourceLineNo">366</span><a name="line.366"></a>
+<span class="sourceLineNo">367</span>                        log.debug("Broadcasting DAP data arrays.");<a name="line.367"></a>
+<span class="sourceLineNo">368</span>                        broadcastDapData(dds);<a name="line.368"></a>
+<span class="sourceLineNo">369</span>                        <a name="line.369"></a>
+<span class="sourceLineNo">370</span>                        if (icon != null)<a name="line.370"></a>
+<span class="sourceLineNo">371</span>                                icon.setReady();<a name="line.371"></a>
+<span class="sourceLineNo">372</span><a name="line.372"></a>
+<span class="sourceLineNo">373</span>                        // log.debug("fire(): After data broadcast:");<a name="line.373"></a>
+<span class="sourceLineNo">374</span>                        // dds.print(System.out);<a name="line.374"></a>
+<span class="sourceLineNo">375</span><a name="line.375"></a>
+<span class="sourceLineNo">376</span>                } catch (Exception e) {<a name="line.376"></a>
+<span class="sourceLineNo">377</span>                        log.error("fire() Failed: ", e);<a name="line.377"></a>
+<span class="sourceLineNo">378</span><a name="line.378"></a>
+<span class="sourceLineNo">379</span>                }<a name="line.379"></a>
+<span class="sourceLineNo">380</span>        }<a name="line.380"></a>
+<span class="sourceLineNo">381</span><a name="line.381"></a>
+<span class="sourceLineNo">382</span>        /**<a name="line.382"></a>
+<span class="sourceLineNo">383</span>         * Build up the projection part of the constraint expression (CE) in order<a name="line.383"></a>
+<span class="sourceLineNo">384</span>         * to minimize the amount of data retrieved. If the CE is empty, then this<a name="line.384"></a>
+<span class="sourceLineNo">385</span>         * will build a list of projected variables based on which output ports are<a name="line.385"></a>
+<span class="sourceLineNo">386</span>         * wired. If the CE is not empty then it will not be modified.<a name="line.386"></a>
+<span class="sourceLineNo">387</span>         * <a name="line.387"></a>
+<span class="sourceLineNo">388</span>         * @return A new CE if the passed one is not empty, a new one corresponding<a name="line.388"></a>
+<span class="sourceLineNo">389</span>         *         to the wired output ports otherwise.<a name="line.389"></a>
+<span class="sourceLineNo">390</span>         * @exception IllegalActionException<a name="line.390"></a>
+<span class="sourceLineNo">391</span>         *                If thrown will getting the width of the ports.<a name="line.391"></a>
+<span class="sourceLineNo">392</span>         */<a name="line.392"></a>
+<span class="sourceLineNo">393</span>        private String createCEfromWiredPorts() throws IllegalActionException {<a name="line.393"></a>
+<span class="sourceLineNo">394</span><a name="line.394"></a>
+<span class="sourceLineNo">395</span>                String ce;<a name="line.395"></a>
+<span class="sourceLineNo">396</span><a name="line.396"></a>
+<span class="sourceLineNo">397</span>                // Get the port list<a name="line.397"></a>
+<span class="sourceLineNo">398</span>                Iterator i = this.outputPortList().iterator();<a name="line.398"></a>
+<span class="sourceLineNo">399</span><a name="line.399"></a>
+<span class="sourceLineNo">400</span>                String projection = "";<a name="line.400"></a>
+<span class="sourceLineNo">401</span>                int pcount = 0;<a name="line.401"></a>
+<span class="sourceLineNo">402</span>                while (i.hasNext()) {<a name="line.402"></a>
+<span class="sourceLineNo">403</span>                        TypedIOPort port = (TypedIOPort) i.next();<a name="line.403"></a>
+<span class="sourceLineNo">404</span><a name="line.404"></a>
+<span class="sourceLineNo">405</span>                        if (port.getWidth() &gt; 0<a name="line.405"></a>
+<span class="sourceLineNo">406</span>                                        &amp;&amp; !port.getName().equals(separateMetadataPortName)) {<a name="line.406"></a>
+<span class="sourceLineNo">407</span><a name="line.407"></a>
+<span class="sourceLineNo">408</span>                                log.debug("Added " + port.getName() + " to projection.");<a name="line.408"></a>
+<span class="sourceLineNo">409</span>                                if (pcount &gt; 0)<a name="line.409"></a>
+<span class="sourceLineNo">410</span>                                        projection += ",";<a name="line.410"></a>
+<span class="sourceLineNo">411</span>                                projection += port.getName();<a name="line.411"></a>
+<span class="sourceLineNo">412</span>                                pcount++;<a name="line.412"></a>
+<span class="sourceLineNo">413</span>                        }<a name="line.413"></a>
+<span class="sourceLineNo">414</span>                }<a name="line.414"></a>
+<span class="sourceLineNo">415</span>                ce = projection;<a name="line.415"></a>
+<span class="sourceLineNo">416</span><a name="line.416"></a>
+<span class="sourceLineNo">417</span>                return ce;<a name="line.417"></a>
+<span class="sourceLineNo">418</span><a name="line.418"></a>
+<span class="sourceLineNo">419</span>        }<a name="line.419"></a>
+<span class="sourceLineNo">420</span><a name="line.420"></a>
+<span class="sourceLineNo">421</span>        /**<a name="line.421"></a>
+<span class="sourceLineNo">422</span>         * Walks through the DDS, converts DAP data to ptII data, and broadcasts the<a name="line.422"></a>
+<span class="sourceLineNo">423</span>         * data onto the appropriate ports.<a name="line.423"></a>
+<span class="sourceLineNo">424</span>         * <a name="line.424"></a>
+<span class="sourceLineNo">425</span>         * @param dds<a name="line.425"></a>
+<span class="sourceLineNo">426</span>         *            The DDS from which to get the data to send<a name="line.426"></a>
+<span class="sourceLineNo">427</span>         * @throws IllegalActionException<a name="line.427"></a>
+<span class="sourceLineNo">428</span>         *             When bad things happen.<a name="line.428"></a>
+<span class="sourceLineNo">429</span>         */<a name="line.429"></a>
+<span class="sourceLineNo">430</span>        private void broadcastDapData(DDS dds) throws IllegalActionException {<a name="line.430"></a>
+<span class="sourceLineNo">431</span><a name="line.431"></a>
+<span class="sourceLineNo">432</span>                // log.debug("broadcastDapData(): DataDDS prior to broadcast:");<a name="line.432"></a>
+<span class="sourceLineNo">433</span>                // dds.print(System.out);<a name="line.433"></a>
+<span class="sourceLineNo">434</span><a name="line.434"></a>
+<span class="sourceLineNo">435</span>                TypedIOPort port;<a name="line.435"></a>
+<span class="sourceLineNo">436</span><a name="line.436"></a>
+<span class="sourceLineNo">437</span>                // log.debug("Broadcasting Dap Data for DDS: ");<a name="line.437"></a>
+<span class="sourceLineNo">438</span>                // dds.print(System.out);<a name="line.438"></a>
+<span class="sourceLineNo">439</span><a name="line.439"></a>
+<span class="sourceLineNo">440</span>                if (useSeparateMetadataPort) {<a name="line.440"></a>
+<span class="sourceLineNo">441</span>                        log.debug("Sending " + separateMetadataPortName + " data.");<a name="line.441"></a>
+<span class="sourceLineNo">442</span>                        port = (TypedIOPort) this.getPort(separateMetadataPortName);<a name="line.442"></a>
+<span class="sourceLineNo">443</span>                        port.broadcast(AttTypeMapper.buildMetaDataTokens(dds));<a name="line.443"></a>
+<span class="sourceLineNo">444</span>                        log.debug("Sent " + separateMetadataPortName);<a name="line.444"></a>
+<span class="sourceLineNo">445</span>                }<a name="line.445"></a>
+<span class="sourceLineNo">446</span><a name="line.446"></a>
+<span class="sourceLineNo">447</span>                if (imbedMetadata) {<a name="line.447"></a>
+<span class="sourceLineNo">448</span>                        log.debug("Sending " + globalMetadataPortName + " port data.");<a name="line.448"></a>
+<span class="sourceLineNo">449</span>                        port = (TypedIOPort) this.getPort(globalMetadataPortName);<a name="line.449"></a>
+<span class="sourceLineNo">450</span>                        port.broadcast(AttTypeMapper.convertAttributeToToken(dds<a name="line.450"></a>
+<span class="sourceLineNo">451</span>                                        .getAttribute()));<a name="line.451"></a>
+<span class="sourceLineNo">452</span>                        log.debug("Sent " + globalMetadataPortName);<a name="line.452"></a>
+<span class="sourceLineNo">453</span>                }<a name="line.453"></a>
+<span class="sourceLineNo">454</span><a name="line.454"></a>
+<span class="sourceLineNo">455</span>                Enumeration e = dds.getVariables();<a name="line.455"></a>
+<span class="sourceLineNo">456</span>                while (e.hasMoreElements()) {<a name="line.456"></a>
+<span class="sourceLineNo">457</span>                        opendap.dap.BaseType bt = (opendap.dap.BaseType) e.nextElement();<a name="line.457"></a>
+<span class="sourceLineNo">458</span><a name="line.458"></a>
+<span class="sourceLineNo">459</span>                        String columnName = TypeMapper.replacePeriods(bt.getName().trim());<a name="line.459"></a>
+<span class="sourceLineNo">460</span>                        // Get the port associated with this DDS variable.<a name="line.460"></a>
+<span class="sourceLineNo">461</span>                        port = (TypedIOPort) this.getPort(columnName);<a name="line.461"></a>
+<span class="sourceLineNo">462</span>                        if (port == null) {<a name="line.462"></a>
+<span class="sourceLineNo">463</span>                                throw new IllegalActionException(this,<a name="line.463"></a>
+<span class="sourceLineNo">464</span>                                                "Request Output Port Missing: " + columnName);<a name="line.464"></a>
+<span class="sourceLineNo">465</span>                        }<a name="line.465"></a>
+<span class="sourceLineNo">466</span><a name="line.466"></a>
+<span class="sourceLineNo">467</span>                        log.debug("Translating data.");<a name="line.467"></a>
+<span class="sourceLineNo">468</span>                        // bt.printDecl(System.out);<a name="line.468"></a>
+<span class="sourceLineNo">469</span><a name="line.469"></a>
+<span class="sourceLineNo">470</span>                        // Map the DAP data for this variable into the ptII Token model.<a name="line.470"></a>
+<span class="sourceLineNo">471</span>                        ptolemy.data.Token token = TokenMapper.mapDapObjectToToken(bt,<a name="line.471"></a>
+<span class="sourceLineNo">472</span>                                        imbedMetadata);<a name="line.472"></a>
+<span class="sourceLineNo">473</span>                        log.debug("Data Translated.");<a name="line.473"></a>
+<span class="sourceLineNo">474</span>                        // bt.printDecl(System.out);<a name="line.474"></a>
+<span class="sourceLineNo">475</span><a name="line.475"></a>
+<span class="sourceLineNo">476</span>                        // Send the data.<a name="line.476"></a>
+<span class="sourceLineNo">477</span>                        log.debug("Sending data.");<a name="line.477"></a>
+<span class="sourceLineNo">478</span>                        port.broadcast(token);<a name="line.478"></a>
+<span class="sourceLineNo">479</span>                        log.debug("Sent data.");<a name="line.479"></a>
+<span class="sourceLineNo">480</span><a name="line.480"></a>
+<span class="sourceLineNo">481</span>                }<a name="line.481"></a>
+<span class="sourceLineNo">482</span><a name="line.482"></a>
+<span class="sourceLineNo">483</span>        }<a name="line.483"></a>
+<span class="sourceLineNo">484</span><a name="line.484"></a>
+<span class="sourceLineNo">485</span>        /**<a name="line.485"></a>
+<span class="sourceLineNo">486</span>         * Configure the output ports to expose all of the variables at the top<a name="line.486"></a>
+<span class="sourceLineNo">487</span>         * level of the (potentially constrained) DDS.<a name="line.487"></a>
+<span class="sourceLineNo">488</span>         * <a name="line.488"></a>
+<span class="sourceLineNo">489</span>         * @param dds<a name="line.489"></a>
+<span class="sourceLineNo">490</span>         *            The DDS<a name="line.490"></a>
+<span class="sourceLineNo">491</span>         * @throws IllegalActionException<a name="line.491"></a>
+<span class="sourceLineNo">492</span>         *             When bad things happen.<a name="line.492"></a>
+<span class="sourceLineNo">493</span>         */<a name="line.493"></a>
+<span class="sourceLineNo">494</span>        private void configureOutputPorts(DDS dds) throws IllegalActionException {<a name="line.494"></a>
+<span class="sourceLineNo">495</span><a name="line.495"></a>
+<span class="sourceLineNo">496</span>                Vector&lt;Type&gt; types = new Vector&lt;Type&gt;();<a name="line.496"></a>
+<span class="sourceLineNo">497</span>                Vector&lt;String&gt; names = new Vector&lt;String&gt;();<a name="line.497"></a>
+<span class="sourceLineNo">498</span><a name="line.498"></a>
+<span class="sourceLineNo">499</span>                if (useSeparateMetadataPort) {<a name="line.499"></a>
+<span class="sourceLineNo">500</span>                        log.debug("Adding " + separateMetadataPortName<a name="line.500"></a>
+<span class="sourceLineNo">501</span>                                        + " port to port list.");<a name="line.501"></a>
+<span class="sourceLineNo">502</span>                        names.add(separateMetadataPortName);<a name="line.502"></a>
+<span class="sourceLineNo">503</span>                        types.add(AttTypeMapper.buildMetaDataTypes(dds));<a name="line.503"></a>
+<span class="sourceLineNo">504</span>                        log.debug("Added " + separateMetadataPortName<a name="line.504"></a>
+<span class="sourceLineNo">505</span>                                        + " port to port list.");<a name="line.505"></a>
+<span class="sourceLineNo">506</span>                }<a name="line.506"></a>
+<span class="sourceLineNo">507</span><a name="line.507"></a>
+<span class="sourceLineNo">508</span>                if (imbedMetadata) {<a name="line.508"></a>
+<span class="sourceLineNo">509</span>                        log.debug("Adding " + globalMetadataPortName<a name="line.509"></a>
+<span class="sourceLineNo">510</span>                                        + " port to port list.");<a name="line.510"></a>
+<span class="sourceLineNo">511</span>                        names.add(globalMetadataPortName);<a name="line.511"></a>
+<span class="sourceLineNo">512</span>                        types.add(AttTypeMapper.convertAttributeToType(dds.getAttribute()));<a name="line.512"></a>
+<span class="sourceLineNo">513</span>                        log.debug("Added " + globalMetadataPortName + " port.");<a name="line.513"></a>
+<span class="sourceLineNo">514</span>                }<a name="line.514"></a>
+<span class="sourceLineNo">515</span><a name="line.515"></a>
+<span class="sourceLineNo">516</span>                Enumeration e = dds.getVariables();<a name="line.516"></a>
+<span class="sourceLineNo">517</span>                while (e.hasMoreElements()) {<a name="line.517"></a>
+<span class="sourceLineNo">518</span>                        opendap.dap.BaseType bt = (opendap.dap.BaseType) e.nextElement();<a name="line.518"></a>
+<span class="sourceLineNo">519</span>                        types.add(TypeMapper.mapDapObjectToType(bt, imbedMetadata));<a name="line.519"></a>
+<span class="sourceLineNo">520</span>                        names.add(TypeMapper.replacePeriods(bt.getName()));<a name="line.520"></a>
+<span class="sourceLineNo">521</span>                }<a name="line.521"></a>
+<span class="sourceLineNo">522</span><a name="line.522"></a>
+<span class="sourceLineNo">523</span>                removeOtherOutputPorts(names);<a name="line.523"></a>
+<span class="sourceLineNo">524</span><a name="line.524"></a>
+<span class="sourceLineNo">525</span>                Iterator ti = types.iterator();<a name="line.525"></a>
+<span class="sourceLineNo">526</span>                Iterator ni = names.iterator();<a name="line.526"></a>
+<span class="sourceLineNo">527</span><a name="line.527"></a>
+<span class="sourceLineNo">528</span>                while (ti.hasNext() &amp;&amp; ni.hasNext()) {<a name="line.528"></a>
+<span class="sourceLineNo">529</span>                        Type type = (Type) ti.next();<a name="line.529"></a>
+<span class="sourceLineNo">530</span>                        String name = (String) ni.next();<a name="line.530"></a>
+<span class="sourceLineNo">531</span>                        initializePort(name, type);<a name="line.531"></a>
+<span class="sourceLineNo">532</span>                }<a name="line.532"></a>
+<span class="sourceLineNo">533</span><a name="line.533"></a>
+<span class="sourceLineNo">534</span>        }<a name="line.534"></a>
+<span class="sourceLineNo">535</span><a name="line.535"></a>
+<span class="sourceLineNo">536</span>        /**<a name="line.536"></a>
+<span class="sourceLineNo">537</span>         * Add a new port.<a name="line.537"></a>
+<span class="sourceLineNo">538</span>         * <a name="line.538"></a>
+<span class="sourceLineNo">539</span>         * @param aPortName<a name="line.539"></a>
+<span class="sourceLineNo">540</span>         *            name of new port<a name="line.540"></a>
+<span class="sourceLineNo">541</span>         * @param aPortType<a name="line.541"></a>
+<span class="sourceLineNo">542</span>         *            Type of new port<a name="line.542"></a>
+<span class="sourceLineNo">543</span>         * @throws IllegalActionException<a name="line.543"></a>
+<span class="sourceLineNo">544</span>         *             When bad things happen.<a name="line.544"></a>
+<span class="sourceLineNo">545</span>         */<a name="line.545"></a>
+<span class="sourceLineNo">546</span>        void initializePort(String aPortName, Type aPortType)<a name="line.546"></a>
+<span class="sourceLineNo">547</span>                        throws IllegalActionException {<a name="line.547"></a>
+<span class="sourceLineNo">548</span>                try {<a name="line.548"></a>
+<span class="sourceLineNo">549</span>                        String columnName = aPortName.trim();<a name="line.549"></a>
+<span class="sourceLineNo">550</span>                        // Create a new port for each Column in the resultset<a name="line.550"></a>
+<span class="sourceLineNo">551</span>                        TypedIOPort port = (TypedIOPort) this.getPort(columnName);<a name="line.551"></a>
+<span class="sourceLineNo">552</span>                        boolean aIsNew = (port == null);<a name="line.552"></a>
+<span class="sourceLineNo">553</span>                        if (aIsNew) {<a name="line.553"></a>
+<span class="sourceLineNo">554</span>                                // Create a new typed port and add it to this container<a name="line.554"></a>
+<span class="sourceLineNo">555</span>                                port = new TypedIOPort(this, columnName, false, true);<a name="line.555"></a>
+<span class="sourceLineNo">556</span>                                new ptolemy.kernel.util.Attribute(port, "_showName");<a name="line.556"></a>
+<span class="sourceLineNo">557</span>                                log.debug("Creating port [" + columnName + "]" + this);<a name="line.557"></a>
+<span class="sourceLineNo">558</span>                        }<a name="line.558"></a>
+<span class="sourceLineNo">559</span><a name="line.559"></a>
+<span class="sourceLineNo">560</span>                        // FIXME: we cannot set the port type during fire() since this<a name="line.560"></a>
+<span class="sourceLineNo">561</span>                        // requires write access to the workspace, which could lead to<a name="line.561"></a>
+<span class="sourceLineNo">562</span>                        // a deadlock. For now, we check to see if the port type is<a name="line.562"></a>
+<span class="sourceLineNo">563</span>                        // different; it usually is the same when we're in fire().<a name="line.563"></a>
+<span class="sourceLineNo">564</span><a name="line.564"></a>
+<span class="sourceLineNo">565</span>                        // See if the port types are different.<a name="line.565"></a>
+<span class="sourceLineNo">566</span>                        if (!port.getType().equals(aPortType)) {<a name="line.566"></a>
+<span class="sourceLineNo">567</span>                                port.setTypeEquals(aPortType);<a name="line.567"></a>
+<span class="sourceLineNo">568</span>                        }<a name="line.568"></a>
+<span class="sourceLineNo">569</span><a name="line.569"></a>
+<span class="sourceLineNo">570</span>                } catch (ptolemy.kernel.util.NameDuplicationException nde) {<a name="line.570"></a>
+<span class="sourceLineNo">571</span>                        throw new IllegalActionException(this,<a name="line.571"></a>
+<span class="sourceLineNo">572</span>                                        "One or more attributes has the same name.  Please correct this and try again.");<a name="line.572"></a>
+<span class="sourceLineNo">573</span>                }<a name="line.573"></a>
+<span class="sourceLineNo">574</span><a name="line.574"></a>
+<span class="sourceLineNo">575</span>        }<a name="line.575"></a>
+<span class="sourceLineNo">576</span><a name="line.576"></a>
+<span class="sourceLineNo">577</span>        /**<a name="line.577"></a>
+<span class="sourceLineNo">578</span>         * Remove all ports which's name is not in the selected vector<a name="line.578"></a>
+<span class="sourceLineNo">579</span>         * <a name="line.579"></a>
+<span class="sourceLineNo">580</span>         * @param nonRemovePortName<a name="line.580"></a>
+<span class="sourceLineNo">581</span>         *            The ports to NOT remove. That means keep. Whatever...<a name="line.581"></a>
+<span class="sourceLineNo">582</span>         * @throws IllegalActionException<a name="line.582"></a>
+<span class="sourceLineNo">583</span>         *             When bad things happen.<a name="line.583"></a>
+<span class="sourceLineNo">584</span>         */<a name="line.584"></a>
+<span class="sourceLineNo">585</span>        void removeOtherOutputPorts(Collection nonRemovePortName)<a name="line.585"></a>
+<span class="sourceLineNo">586</span>                        throws IllegalActionException {<a name="line.586"></a>
+<span class="sourceLineNo">587</span>                // Use toArray() to make a deep copy of this.portList().<a name="line.587"></a>
+<span class="sourceLineNo">588</span>                // Do this to prevent ConcurrentModificationExceptions.<a name="line.588"></a>
+<span class="sourceLineNo">589</span>                TypedIOPort[] l = new TypedIOPort[0];<a name="line.589"></a>
+<span class="sourceLineNo">590</span>                l = (TypedIOPort[]) this.portList().toArray(l);<a name="line.590"></a>
+<span class="sourceLineNo">591</span><a name="line.591"></a>
+<span class="sourceLineNo">592</span>                for (TypedIOPort port : l) {<a name="line.592"></a>
+<span class="sourceLineNo">593</span>                        if (port == null || port.isInput()) {<a name="line.593"></a>
+<span class="sourceLineNo">594</span>                                continue;<a name="line.594"></a>
+<span class="sourceLineNo">595</span>                        }<a name="line.595"></a>
+<span class="sourceLineNo">596</span>                        String currPortName = port.getName();<a name="line.596"></a>
+<span class="sourceLineNo">597</span><a name="line.597"></a>
+<span class="sourceLineNo">598</span>                        // Do not remove the output port since it belongs to a<a name="line.598"></a>
+<span class="sourceLineNo">599</span>                        // parent class.<a name="line.599"></a>
+<span class="sourceLineNo">600</span>                        if (!nonRemovePortName.contains(currPortName)<a name="line.600"></a>
+<span class="sourceLineNo">601</span>                                        &amp;&amp; !currPortName.equals("output")) {<a name="line.601"></a>
+<span class="sourceLineNo">602</span>                                try {<a name="line.602"></a>
+<span class="sourceLineNo">603</span>                                        port.setContainer(null);<a name="line.603"></a>
+<span class="sourceLineNo">604</span>                                } catch (Exception ex) {<a name="line.604"></a>
+<span class="sourceLineNo">605</span>                                        throw new IllegalActionException(this,<a name="line.605"></a>
+<span class="sourceLineNo">606</span>                                                        "Error removing port: " + currPortName);<a name="line.606"></a>
+<span class="sourceLineNo">607</span>                                }<a name="line.607"></a>
+<span class="sourceLineNo">608</span>                        }<a name="line.608"></a>
+<span class="sourceLineNo">609</span>                }<a name="line.609"></a>
+<span class="sourceLineNo">610</span>        }<a name="line.610"></a>
+<span class="sourceLineNo">611</span><a name="line.611"></a>
+<span class="sourceLineNo">612</span>        /**<a name="line.612"></a>
+<span class="sourceLineNo">613</span>         * Remove all ports.<a name="line.613"></a>
+<span class="sourceLineNo">614</span>         * <a name="line.614"></a>
+<span class="sourceLineNo">615</span>         * @throws IllegalActionException<a name="line.615"></a>
+<span class="sourceLineNo">616</span>         *             When bad things happen.<a name="line.616"></a>
+<span class="sourceLineNo">617</span>         */<a name="line.617"></a>
+<span class="sourceLineNo">618</span>        void removeAllOutputPorts() throws IllegalActionException {<a name="line.618"></a>
+<span class="sourceLineNo">619</span>                // Use toArray() to make a deep copy of this.portList().<a name="line.619"></a>
+<span class="sourceLineNo">620</span>                // Do this to prevent ConcurrentModificationExceptions.<a name="line.620"></a>
+<span class="sourceLineNo">621</span>                TypedIOPort[] ports = new TypedIOPort[0];<a name="line.621"></a>
+<span class="sourceLineNo">622</span>                ports = (TypedIOPort[]) this.portList().toArray(ports);<a name="line.622"></a>
+<span class="sourceLineNo">623</span><a name="line.623"></a>
+<span class="sourceLineNo">624</span>                for (TypedIOPort port : ports) {<a name="line.624"></a>
+<span class="sourceLineNo">625</span>                        if (port != null &amp;&amp; port.isOutput()) {<a name="line.625"></a>
+<span class="sourceLineNo">626</span>                                String currPortName = port.getName();<a name="line.626"></a>
+<span class="sourceLineNo">627</span>                                try {<a name="line.627"></a>
+<span class="sourceLineNo">628</span>                                        port.setContainer(null);<a name="line.628"></a>
+<span class="sourceLineNo">629</span>                                } catch (Exception ex) {<a name="line.629"></a>
+<span class="sourceLineNo">630</span>                                        throw new IllegalActionException(this,<a name="line.630"></a>
+<span class="sourceLineNo">631</span>                                                        "Error removing port: " + currPortName);<a name="line.631"></a>
+<span class="sourceLineNo">632</span>                                }<a name="line.632"></a>
+<span class="sourceLineNo">633</span>                        }<a name="line.633"></a>
+<span class="sourceLineNo">634</span><a name="line.634"></a>
+<span class="sourceLineNo">635</span>                }<a name="line.635"></a>
+<span class="sourceLineNo">636</span>        }<a name="line.636"></a>
+<span class="sourceLineNo">637</span><a name="line.637"></a>
+<span class="sourceLineNo">638</span>        /**<a name="line.638"></a>
+<span class="sourceLineNo">639</span>         * Probe a port<a name="line.639"></a>
+<span class="sourceLineNo">640</span>         * <a name="line.640"></a>
+<span class="sourceLineNo">641</span>         * @param port<a name="line.641"></a>
+<span class="sourceLineNo">642</span>         *            The port to probe.<a name="line.642"></a>
+<span class="sourceLineNo">643</span>         * @return The probe report.<a name="line.643"></a>
+<span class="sourceLineNo">644</span>         */<a name="line.644"></a>
+<span class="sourceLineNo">645</span>        public static String portInfo(TypedIOPort port) {<a name="line.645"></a>
+<span class="sourceLineNo">646</span>                String width = "";<a name="line.646"></a>
+<span class="sourceLineNo">647</span>                try {<a name="line.647"></a>
+<span class="sourceLineNo">648</span>                        width = Integer.valueOf(port.getWidth()).toString();<a name="line.648"></a>
+<span class="sourceLineNo">649</span>                } catch (IllegalActionException ex) {<a name="line.649"></a>
+<span class="sourceLineNo">650</span>                        width = "Failed to get width of port " + port.getFullName() + ex;<a name="line.650"></a>
+<span class="sourceLineNo">651</span>                }<a name="line.651"></a>
+<span class="sourceLineNo">652</span><a name="line.652"></a>
+<span class="sourceLineNo">653</span>                String description = "";<a name="line.653"></a>
+<span class="sourceLineNo">654</span>                try {<a name="line.654"></a>
+<span class="sourceLineNo">655</span>                        description = port.description();<a name="line.655"></a>
+<span class="sourceLineNo">656</span>                } catch (IllegalActionException ex) {<a name="line.656"></a>
+<span class="sourceLineNo">657</span>                        description = "Failed to get the description of port "<a name="line.657"></a>
+<span class="sourceLineNo">658</span>                                        + port.getFullName() + ": " + ex;<a name="line.658"></a>
+<span class="sourceLineNo">659</span>                }<a name="line.659"></a>
+<span class="sourceLineNo">660</span>                String msg = "Port Info: \n";<a name="line.660"></a>
+<span class="sourceLineNo">661</span>                msg += "    getName():         " + port.getName() + "\n";<a name="line.661"></a>
+<span class="sourceLineNo">662</span>                msg += "    getWidth():        " + width + "\n";<a name="line.662"></a>
+<span class="sourceLineNo">663</span>                msg += "    isInput():         " + port.isInput() + "\n";<a name="line.663"></a>
+<span class="sourceLineNo">664</span>                msg += "    isOutput():        " + port.isOutput() + "\n";<a name="line.664"></a>
+<span class="sourceLineNo">665</span>                msg += "    isMultiport():     " + port.isMultiport() + "\n";<a name="line.665"></a>
+<span class="sourceLineNo">666</span>                msg += "    className():       " + port.getClassName() + "\n";<a name="line.666"></a>
+<span class="sourceLineNo">667</span>                msg += "    getDisplayName():  " + port.getDisplayName() + "\n";<a name="line.667"></a>
+<span class="sourceLineNo">668</span>                msg += "    getElementName():  " + port.getElementName() + "\n";<a name="line.668"></a>
+<span class="sourceLineNo">669</span>                msg += "    getFullName():     " + port.getFullName() + "\n";<a name="line.669"></a>
+<span class="sourceLineNo">670</span>                msg += "    getSource():       " + port.getSource() + "\n";<a name="line.670"></a>
+<span class="sourceLineNo">671</span>                msg += "    description():     " + description + "\n";<a name="line.671"></a>
+<span class="sourceLineNo">672</span>                msg += "    toString():        " + port + "\n";<a name="line.672"></a>
+<span class="sourceLineNo">673</span>                return msg;<a name="line.673"></a>
+<span class="sourceLineNo">674</span>        }<a name="line.674"></a>
+<span class="sourceLineNo">675</span><a name="line.675"></a>
+<span class="sourceLineNo">676</span>        private DDS getDDS(String ce, boolean getData) throws IOException,<a name="line.676"></a>
+<span class="sourceLineNo">677</span>                        ParseException, DAP2Exception {<a name="line.677"></a>
+<span class="sourceLineNo">678</span><a name="line.678"></a>
+<span class="sourceLineNo">679</span>                DDS dds, ddx;<a name="line.679"></a>
+<span class="sourceLineNo">680</span>                DAS das;<a name="line.680"></a>
+<span class="sourceLineNo">681</span><a name="line.681"></a>
+<span class="sourceLineNo">682</span>                /*<a name="line.682"></a>
+<span class="sourceLineNo">683</span>                 * ------------------------------------------------------------- Get the<a name="line.683"></a>
+<span class="sourceLineNo">684</span>                 * metadata - this is ugly because there is a bug in DConnect that<a name="line.684"></a>
+<span class="sourceLineNo">685</span>                 * causes calls to getDataDDX to return a DDS object that contains no<a name="line.685"></a>
+<span class="sourceLineNo">686</span>                 * data.<a name="line.686"></a>
+<span class="sourceLineNo">687</span>                 */<a name="line.687"></a>
+<span class="sourceLineNo">688</span><a name="line.688"></a>
+<span class="sourceLineNo">689</span>                try {<a name="line.689"></a>
+<span class="sourceLineNo">690</span>                        log.debug("Attempting to get DDX.");<a name="line.690"></a>
+<span class="sourceLineNo">691</span><a name="line.691"></a>
+<span class="sourceLineNo">692</span>                        ddx = dapConnection.getDDX(ce);<a name="line.692"></a>
+<span class="sourceLineNo">693</span><a name="line.693"></a>
+<span class="sourceLineNo">694</span>                        log.debug("Got DDX.");<a name="line.694"></a>
+<span class="sourceLineNo">695</span>                        // ddx.print(System.out);<a name="line.695"></a>
+<span class="sourceLineNo">696</span>                } catch (Exception e) {<a name="line.696"></a>
+<span class="sourceLineNo">697</span>                        log.debug("Failed to get DataDDX. Msg: " + e.getMessage());<a name="line.697"></a>
+<span class="sourceLineNo">698</span><a name="line.698"></a>
+<span class="sourceLineNo">699</span>                        log.debug("Attempting to get DDS. ce: " + ce);<a name="line.699"></a>
+<span class="sourceLineNo">700</span>                        ddx = dapConnection.getDDS(ce);<a name="line.700"></a>
+<span class="sourceLineNo">701</span>                        log.debug("Got DDS.");<a name="line.701"></a>
+<span class="sourceLineNo">702</span><a name="line.702"></a>
+<span class="sourceLineNo">703</span>                        log.debug("Attempting to get DAS.");<a name="line.703"></a>
+<span class="sourceLineNo">704</span>                        das = dapConnection.getDAS();<a name="line.704"></a>
+<span class="sourceLineNo">705</span>                        log.debug("Got DAS.");<a name="line.705"></a>
+<span class="sourceLineNo">706</span><a name="line.706"></a>
+<span class="sourceLineNo">707</span>                        log.debug("Calling DDS.ingestDAS().");<a name="line.707"></a>
+<span class="sourceLineNo">708</span>                        ddx.ingestDAS(das);<a name="line.708"></a>
+<span class="sourceLineNo">709</span><a name="line.709"></a>
+<span class="sourceLineNo">710</span>                }<a name="line.710"></a>
+<span class="sourceLineNo">711</span>                log.debug("Squeezing DDX arrays.");<a name="line.711"></a>
+<span class="sourceLineNo">712</span>                squeezeArrays(ddx);<a name="line.712"></a>
+<span class="sourceLineNo">713</span><a name="line.713"></a>
+<span class="sourceLineNo">714</span>                if (getData) {<a name="line.714"></a>
+<span class="sourceLineNo">715</span>                        // Get the data.<a name="line.715"></a>
+<span class="sourceLineNo">716</span>                        log.debug("Attempting to get DataDDS.");<a name="line.716"></a>
+<span class="sourceLineNo">717</span>                        dds = dapConnection.getData(ce);<a name="line.717"></a>
+<span class="sourceLineNo">718</span>                        log.debug("Got DataDDS.");<a name="line.718"></a>
+<span class="sourceLineNo">719</span>                        // dds.print(System.out);<a name="line.719"></a>
+<span class="sourceLineNo">720</span><a name="line.720"></a>
+<span class="sourceLineNo">721</span>                        log.debug("Squeezing DDS arrays.");<a name="line.721"></a>
+<span class="sourceLineNo">722</span>                        squeezeArrays(dds);<a name="line.722"></a>
+<span class="sourceLineNo">723</span><a name="line.723"></a>
+<span class="sourceLineNo">724</span>                        // Extract the metadata we got from the ddx.<a name="line.724"></a>
+<span class="sourceLineNo">725</span>                        log.debug("Retrieving DAS from DDX.");<a name="line.725"></a>
+<span class="sourceLineNo">726</span>                        das = ddx.getDAS();<a name="line.726"></a>
+<span class="sourceLineNo">727</span><a name="line.727"></a>
+<span class="sourceLineNo">728</span>                        // Tie the extracted metadata back into the DataDDS<a name="line.728"></a>
+<span class="sourceLineNo">729</span>                        log.debug("Calling DDS.ingestDAS().");<a name="line.729"></a>
+<span class="sourceLineNo">730</span>                        dds.ingestDAS(das);<a name="line.730"></a>
+<span class="sourceLineNo">731</span>                        // dds.print(System.out);<a name="line.731"></a>
+<span class="sourceLineNo">732</span><a name="line.732"></a>
+<span class="sourceLineNo">733</span>                        return dds;<a name="line.733"></a>
+<span class="sourceLineNo">734</span>                }<a name="line.734"></a>
+<span class="sourceLineNo">735</span>                /*<a name="line.735"></a>
+<span class="sourceLineNo">736</span>                 * End of the ugly bit. Once the bug in DConnect2 is fixed we can<a name="line.736"></a>
+<span class="sourceLineNo">737</span>                 * replace this with a call to getDataDDX().<a name="line.737"></a>
+<span class="sourceLineNo">738</span>                 * <a name="line.738"></a>
+<span class="sourceLineNo">739</span>                 * -----------------------------------------------------------<a name="line.739"></a>
+<span class="sourceLineNo">740</span>                 */<a name="line.740"></a>
+<span class="sourceLineNo">741</span>                // dds.print(System.out);<a name="line.741"></a>
+<span class="sourceLineNo">742</span>                return ddx;<a name="line.742"></a>
+<span class="sourceLineNo">743</span><a name="line.743"></a>
+<span class="sourceLineNo">744</span>        }<a name="line.744"></a>
+<span class="sourceLineNo">745</span><a name="line.745"></a>
+<span class="sourceLineNo">746</span>        /**<a name="line.746"></a>
+<span class="sourceLineNo">747</span>         * Eliminates array dimensions whose dimensions are 1 (and thus in practice<a name="line.747"></a>
+<span class="sourceLineNo">748</span>         * don't exist)<a name="line.748"></a>
+<span class="sourceLineNo">749</span>         * <a name="line.749"></a>
+<span class="sourceLineNo">750</span>         * @param dds<a name="line.750"></a>
+<span class="sourceLineNo">751</span>         *            The DDS to traverse and squeeze its member arrays.<a name="line.751"></a>
+<span class="sourceLineNo">752</span>         */<a name="line.752"></a>
+<span class="sourceLineNo">753</span>        public static void squeezeArrays(DConstructor dds) {<a name="line.753"></a>
+<span class="sourceLineNo">754</span><a name="line.754"></a>
+<span class="sourceLineNo">755</span>                DArray a;<a name="line.755"></a>
+<span class="sourceLineNo">756</span><a name="line.756"></a>
+<span class="sourceLineNo">757</span>                Enumeration e = dds.getVariables();<a name="line.757"></a>
+<span class="sourceLineNo">758</span>                while (e.hasMoreElements()) {<a name="line.758"></a>
+<span class="sourceLineNo">759</span>                        opendap.dap.BaseType bt = (opendap.dap.BaseType) e.nextElement();<a name="line.759"></a>
+<span class="sourceLineNo">760</span><a name="line.760"></a>
+<span class="sourceLineNo">761</span>                        if (bt instanceof DArray) {<a name="line.761"></a>
+<span class="sourceLineNo">762</span>                                a = (DArray) bt;<a name="line.762"></a>
+<span class="sourceLineNo">763</span>                                log.debug("Squeezing array " + a.getTypeName() + " "<a name="line.763"></a>
+<span class="sourceLineNo">764</span>                                                + a.getLongName() + ";");<a name="line.764"></a>
+<span class="sourceLineNo">765</span>                                a.squeeze();<a name="line.765"></a>
+<span class="sourceLineNo">766</span>                                // System.out.print("Post squeezing: ");<a name="line.766"></a>
+<span class="sourceLineNo">767</span>                                // a.printDecl(System.out);<a name="line.767"></a>
+<span class="sourceLineNo">768</span>                                bt = a.getPrimitiveVector().getTemplate();<a name="line.768"></a>
+<span class="sourceLineNo">769</span>                                if (bt instanceof DConstructor)<a name="line.769"></a>
+<span class="sourceLineNo">770</span>                                        squeezeArrays((DConstructor) bt);<a name="line.770"></a>
+<span class="sourceLineNo">771</span>                        } else if (bt instanceof DConstructor) {<a name="line.771"></a>
+<span class="sourceLineNo">772</span>                                squeezeArrays((DConstructor) bt);<a name="line.772"></a>
+<span class="sourceLineNo">773</span>                        }<a name="line.773"></a>
+<span class="sourceLineNo">774</span><a name="line.774"></a>
+<span class="sourceLineNo">775</span>                }<a name="line.775"></a>
+<span class="sourceLineNo">776</span>        }<a name="line.776"></a>
+<span class="sourceLineNo">777</span><a name="line.777"></a>
+<span class="sourceLineNo">778</span>}<a name="line.778"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

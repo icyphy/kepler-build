@@ -1,0 +1,337 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../stylesheet.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>/* An output port that publishes its data on a named channel.<a name="line.1"></a>
+<span class="sourceLineNo">002</span><a name="line.2"></a>
+<span class="sourceLineNo">003</span> Copyright (c) 1997-2014 The Regents of the University of California.<a name="line.3"></a>
+<span class="sourceLineNo">004</span> All rights reserved.<a name="line.4"></a>
+<span class="sourceLineNo">005</span> Permission is hereby granted, without written agreement and without<a name="line.5"></a>
+<span class="sourceLineNo">006</span> license or royalty fees, to use, copy, modify, and distribute this<a name="line.6"></a>
+<span class="sourceLineNo">007</span> software and its documentation for any purpose, provided that the above<a name="line.7"></a>
+<span class="sourceLineNo">008</span> copyright notice and the following two paragraphs appear in all copies<a name="line.8"></a>
+<span class="sourceLineNo">009</span> of this software.<a name="line.9"></a>
+<span class="sourceLineNo">010</span><a name="line.10"></a>
+<span class="sourceLineNo">011</span> IN NO EVENT SHALL THE UNIVERSITY OF CALIFORNIA BE LIABLE TO ANY PARTY<a name="line.11"></a>
+<span class="sourceLineNo">012</span> FOR DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES<a name="line.12"></a>
+<span class="sourceLineNo">013</span> ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION, EVEN IF<a name="line.13"></a>
+<span class="sourceLineNo">014</span> THE UNIVERSITY OF CALIFORNIA HAS BEEN ADVISED OF THE POSSIBILITY OF<a name="line.14"></a>
+<span class="sourceLineNo">015</span> SUCH DAMAGE.<a name="line.15"></a>
+<span class="sourceLineNo">016</span><a name="line.16"></a>
+<span class="sourceLineNo">017</span> THE UNIVERSITY OF CALIFORNIA SPECIFICALLY DISCLAIMS ANY WARRANTIES,<a name="line.17"></a>
+<span class="sourceLineNo">018</span> INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF<a name="line.18"></a>
+<span class="sourceLineNo">019</span> MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE<a name="line.19"></a>
+<span class="sourceLineNo">020</span> PROVIDED HEREUNDER IS ON AN "AS IS" BASIS, AND THE UNIVERSITY OF<a name="line.20"></a>
+<span class="sourceLineNo">021</span> CALIFORNIA HAS NO OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT, UPDATES,<a name="line.21"></a>
+<span class="sourceLineNo">022</span> ENHANCEMENTS, OR MODIFICATIONS.<a name="line.22"></a>
+<span class="sourceLineNo">023</span><a name="line.23"></a>
+<span class="sourceLineNo">024</span> PT_COPYRIGHT_VERSION_2<a name="line.24"></a>
+<span class="sourceLineNo">025</span> COPYRIGHTENDKEY<a name="line.25"></a>
+<span class="sourceLineNo">026</span> */<a name="line.26"></a>
+<span class="sourceLineNo">027</span>package ptolemy.actor;<a name="line.27"></a>
+<span class="sourceLineNo">028</span><a name="line.28"></a>
+<span class="sourceLineNo">029</span>import ptolemy.data.IntToken;<a name="line.29"></a>
+<span class="sourceLineNo">030</span>import ptolemy.data.Token;<a name="line.30"></a>
+<span class="sourceLineNo">031</span>import ptolemy.data.expr.Parameter;<a name="line.31"></a>
+<span class="sourceLineNo">032</span>import ptolemy.data.type.BaseType;<a name="line.32"></a>
+<span class="sourceLineNo">033</span>import ptolemy.kernel.ComponentEntity;<a name="line.33"></a>
+<span class="sourceLineNo">034</span>import ptolemy.kernel.util.IllegalActionException;<a name="line.34"></a>
+<span class="sourceLineNo">035</span>import ptolemy.kernel.util.NameDuplicationException;<a name="line.35"></a>
+<span class="sourceLineNo">036</span>import ptolemy.kernel.util.Settable;<a name="line.36"></a>
+<span class="sourceLineNo">037</span><a name="line.37"></a>
+<span class="sourceLineNo">038</span>///////////////////////////////////////////////////////////////////<a name="line.38"></a>
+<span class="sourceLineNo">039</span>//// ConstantPublisherPort<a name="line.39"></a>
+<span class="sourceLineNo">040</span><a name="line.40"></a>
+<span class="sourceLineNo">041</span>/**<a name="line.41"></a>
+<span class="sourceLineNo">042</span> This is a specialized output port that publishes constant data sent on<a name="line.42"></a>
+<span class="sourceLineNo">043</span> the specified named channel.  The tokens are<a name="line.43"></a>
+<span class="sourceLineNo">044</span> "tunneled" to any instance of {@link SubscriberPort} that names the same channel.<a name="line.44"></a>
+<span class="sourceLineNo">045</span> If {@link #global} is false (the default), then this publisher<a name="line.45"></a>
+<span class="sourceLineNo">046</span> will only send to instances of SubscriberPort that are under the<a name="line.46"></a>
+<span class="sourceLineNo">047</span> control of the same director. That is, it can<a name="line.47"></a>
+<span class="sourceLineNo">048</span> be at a different level of the hierarchy, or in an entirely different<a name="line.48"></a>
+<span class="sourceLineNo">049</span> composite actor, as long as the relevant composite actors are<a name="line.49"></a>
+<span class="sourceLineNo">050</span> transparent (have no director). If {@link #global} is true,<a name="line.50"></a>
+<span class="sourceLineNo">051</span> then the subscriber may be anywhere in the model, as long as its<a name="line.51"></a>
+<span class="sourceLineNo">052</span> &lt;i&gt;global&lt;/i&gt; parameter is also true.<a name="line.52"></a>
+<span class="sourceLineNo">053</span>  &lt;p&gt;<a name="line.53"></a>
+<span class="sourceLineNo">054</span> Note that this port should be used just like a {@link PublisherPort}.<a name="line.54"></a>
+<span class="sourceLineNo">055</span> If you put it in an opaque composite actor, then it requires a<a name="line.55"></a>
+<span class="sourceLineNo">056</span> token on the inside in order to produce its output. It will replace<a name="line.56"></a>
+<span class="sourceLineNo">057</span> each token with the constant value. Similarly, if it is put into<a name="line.57"></a>
+<span class="sourceLineNo">058</span> a transparent composite actor, then tokens must be sent through<a name="line.58"></a>
+<span class="sourceLineNo">059</span> it. Those tokens will be replaced with the constant value. If it<a name="line.59"></a>
+<span class="sourceLineNo">060</span> is put into an atomic actor, then the actor should call one of<a name="line.60"></a>
+<span class="sourceLineNo">061</span> its broadcast or send methods, providing a token that will be<a name="line.61"></a>
+<span class="sourceLineNo">062</span> replaced with the constant token. This pattern ensures that data<a name="line.62"></a>
+<span class="sourceLineNo">063</span> dependencies work with this port just as with any other port.<a name="line.63"></a>
+<span class="sourceLineNo">064</span>&lt;p&gt;<a name="line.64"></a>
+<span class="sourceLineNo">065</span> It is an error to have two instances of PublisherPort<a name="line.65"></a>
+<span class="sourceLineNo">066</span> or ConstantPublisherPort using the same<a name="line.66"></a>
+<span class="sourceLineNo">067</span> channel under the control of the same director. When you create a<a name="line.67"></a>
+<span class="sourceLineNo">068</span> new PublisherPort or<a name="line.68"></a>
+<span class="sourceLineNo">069</span> ConstantPublisherPort, by default, it has no channel name. You have to<a name="line.69"></a>
+<span class="sourceLineNo">070</span> specify a channel name to use it.<a name="line.70"></a>
+<span class="sourceLineNo">071</span> &lt;p&gt;<a name="line.71"></a>
+<span class="sourceLineNo">072</span> &lt;b&gt;How it works:&lt;/b&gt;<a name="line.72"></a>
+<span class="sourceLineNo">073</span> When the channel name<a name="line.73"></a>
+<span class="sourceLineNo">074</span> is specified, typically during model construction, this actor<a name="line.74"></a>
+<span class="sourceLineNo">075</span> causes a relation to be created in the least opaque composite<a name="line.75"></a>
+<span class="sourceLineNo">076</span> actor above it in the hierarchy and links to that relation.<a name="line.76"></a>
+<span class="sourceLineNo">077</span> In addition, if {@link #global} is set to true, it causes<a name="line.77"></a>
+<span class="sourceLineNo">078</span> a port to be created in that composite, and also links that<a name="line.78"></a>
+<span class="sourceLineNo">079</span> port to the relation on the inside.  The relation is recorded by the opaque<a name="line.79"></a>
+<span class="sourceLineNo">080</span> composite.  When a SubscriberPort is preinitialized that refers<a name="line.80"></a>
+<span class="sourceLineNo">081</span> to the same channel, that SubscriberPort finds the relation (by<a name="line.81"></a>
+<span class="sourceLineNo">082</span> finding the least opaque composite actor above it) and links<a name="line.82"></a>
+<span class="sourceLineNo">083</span> to the relation. Some of these links are "liberal links" in that<a name="line.83"></a>
+<span class="sourceLineNo">084</span> they cross levels of the hierarchy.<a name="line.84"></a>
+<span class="sourceLineNo">085</span> &lt;p&gt;<a name="line.85"></a>
+<span class="sourceLineNo">086</span> Since publishers are linked to subscribers,<a name="line.86"></a>
+<span class="sourceLineNo">087</span> any data dependencies that the director might assume on a regular<a name="line.87"></a>
+<span class="sourceLineNo">088</span> "wired" connection will also be assumed across publisher-subscriber<a name="line.88"></a>
+<span class="sourceLineNo">089</span> pairs. Similarly, type constraints will propagate across<a name="line.89"></a>
+<span class="sourceLineNo">090</span> publisher-subscriber pairs. That is, the type of the subscriber<a name="line.90"></a>
+<span class="sourceLineNo">091</span> output will match the type of the publisher input.<a name="line.91"></a>
+<span class="sourceLineNo">092</span><a name="line.92"></a>
+<span class="sourceLineNo">093</span> @author Edward A. Lee<a name="line.93"></a>
+<span class="sourceLineNo">094</span> @version $Id$<a name="line.94"></a>
+<span class="sourceLineNo">095</span> @since Ptolemy II 10.0<a name="line.95"></a>
+<span class="sourceLineNo">096</span> @Pt.ProposedRating Yellow (eal)<a name="line.96"></a>
+<span class="sourceLineNo">097</span> @Pt.AcceptedRating Red (eal)<a name="line.97"></a>
+<span class="sourceLineNo">098</span> */<a name="line.98"></a>
+<span class="sourceLineNo">099</span>public class ConstantPublisherPort extends PublisherPort {<a name="line.99"></a>
+<span class="sourceLineNo">100</span><a name="line.100"></a>
+<span class="sourceLineNo">101</span>    /** Construct a constant publisher port with the specified name and container.<a name="line.101"></a>
+<span class="sourceLineNo">102</span>     *  @param container The container actor.<a name="line.102"></a>
+<span class="sourceLineNo">103</span>     *  @param name The name of the port.<a name="line.103"></a>
+<span class="sourceLineNo">104</span>     *  @exception IllegalActionException If the port is not of an acceptable<a name="line.104"></a>
+<span class="sourceLineNo">105</span>     *   class for the container, or if the container does not implement the<a name="line.105"></a>
+<span class="sourceLineNo">106</span>     *   Actor interface.<a name="line.106"></a>
+<span class="sourceLineNo">107</span>     *  @exception NameDuplicationException If the name coincides with<a name="line.107"></a>
+<span class="sourceLineNo">108</span>     *   a port already in the container.<a name="line.108"></a>
+<span class="sourceLineNo">109</span>     */<a name="line.109"></a>
+<span class="sourceLineNo">110</span>    public ConstantPublisherPort(ComponentEntity container, String name)<a name="line.110"></a>
+<span class="sourceLineNo">111</span>            throws IllegalActionException, NameDuplicationException {<a name="line.111"></a>
+<span class="sourceLineNo">112</span>        super(container, name);<a name="line.112"></a>
+<span class="sourceLineNo">113</span><a name="line.113"></a>
+<span class="sourceLineNo">114</span>        constantValue = new Parameter(this, "constantValue");<a name="line.114"></a>
+<span class="sourceLineNo">115</span>        constantValue.setExpression("0");<a name="line.115"></a>
+<span class="sourceLineNo">116</span><a name="line.116"></a>
+<span class="sourceLineNo">117</span>        Parameter UNBOUNDED = new Parameter(this, "UNBOUNDED");<a name="line.117"></a>
+<span class="sourceLineNo">118</span>        UNBOUNDED.setTypeEquals(BaseType.INT);<a name="line.118"></a>
+<span class="sourceLineNo">119</span>        UNBOUNDED.setExpression("-1");<a name="line.119"></a>
+<span class="sourceLineNo">120</span>        UNBOUNDED.setPersistent(false);<a name="line.120"></a>
+<span class="sourceLineNo">121</span>        UNBOUNDED.setVisibility(Settable.NONE);<a name="line.121"></a>
+<span class="sourceLineNo">122</span><a name="line.122"></a>
+<span class="sourceLineNo">123</span>        numberOfTokens = new Parameter(this, "numberOfTokens");<a name="line.123"></a>
+<span class="sourceLineNo">124</span>        numberOfTokens.setExpression("UNBOUNDED");<a name="line.124"></a>
+<span class="sourceLineNo">125</span>        numberOfTokens.setTypeEquals(BaseType.INT);<a name="line.125"></a>
+<span class="sourceLineNo">126</span><a name="line.126"></a>
+<span class="sourceLineNo">127</span>        numberOfTokens.moveToFirst();<a name="line.127"></a>
+<span class="sourceLineNo">128</span>        constantValue.moveToFirst();<a name="line.128"></a>
+<span class="sourceLineNo">129</span><a name="line.129"></a>
+<span class="sourceLineNo">130</span>        // Hide the initial tokens, as they make no sense for this port.<a name="line.130"></a>
+<span class="sourceLineNo">131</span>        initialTokens.setVisibility(Settable.NONE);<a name="line.131"></a>
+<span class="sourceLineNo">132</span><a name="line.132"></a>
+<span class="sourceLineNo">133</span>        setTypeSameAs(constantValue);<a name="line.133"></a>
+<span class="sourceLineNo">134</span>    }<a name="line.134"></a>
+<span class="sourceLineNo">135</span><a name="line.135"></a>
+<span class="sourceLineNo">136</span>    ///////////////////////////////////////////////////////////////////<a name="line.136"></a>
+<span class="sourceLineNo">137</span>    ////                         parameters                        ////<a name="line.137"></a>
+<span class="sourceLineNo">138</span><a name="line.138"></a>
+<span class="sourceLineNo">139</span>    /** The constant value to publish. This can have any type.<a name="line.139"></a>
+<span class="sourceLineNo">140</span>     *  It defaults to the integer 0.<a name="line.140"></a>
+<span class="sourceLineNo">141</span>     */<a name="line.141"></a>
+<span class="sourceLineNo">142</span>    public Parameter constantValue;<a name="line.142"></a>
+<span class="sourceLineNo">143</span><a name="line.143"></a>
+<span class="sourceLineNo">144</span>    /** The number of constant tokens to publish. By default,<a name="line.144"></a>
+<span class="sourceLineNo">145</span>     *  this is UNBOUNDED, which means that there is no limit.<a name="line.145"></a>
+<span class="sourceLineNo">146</span>     */<a name="line.146"></a>
+<span class="sourceLineNo">147</span>    public Parameter numberOfTokens;<a name="line.147"></a>
+<span class="sourceLineNo">148</span><a name="line.148"></a>
+<span class="sourceLineNo">149</span>    ///////////////////////////////////////////////////////////////////<a name="line.149"></a>
+<span class="sourceLineNo">150</span>    ////                         public methods                    ////<a name="line.150"></a>
+<span class="sourceLineNo">151</span><a name="line.151"></a>
+<span class="sourceLineNo">152</span>    /** Override the base class to replace the specified token with<a name="line.152"></a>
+<span class="sourceLineNo">153</span>     *  the value of &lt;i&gt;constantValue&lt;/i&gt;.<a name="line.153"></a>
+<span class="sourceLineNo">154</span>     *  @param token A token, which will be replaced.<a name="line.154"></a>
+<span class="sourceLineNo">155</span>     *  @exception IllegalActionException Not thrown in this base class.<a name="line.155"></a>
+<span class="sourceLineNo">156</span>     *  @exception NoRoomException If a send to one of the channels throws<a name="line.156"></a>
+<span class="sourceLineNo">157</span>     *     it.<a name="line.157"></a>
+<span class="sourceLineNo">158</span>     */<a name="line.158"></a>
+<span class="sourceLineNo">159</span>    @Override<a name="line.159"></a>
+<span class="sourceLineNo">160</span>    public void broadcast(Token token)<a name="line.160"></a>
+<span class="sourceLineNo">161</span>            throws IllegalActionException, NoRoomException {<a name="line.161"></a>
+<span class="sourceLineNo">162</span>        if (token == null) {<a name="line.162"></a>
+<span class="sourceLineNo">163</span>            super.broadcast(null);<a name="line.163"></a>
+<span class="sourceLineNo">164</span>        } else {<a name="line.164"></a>
+<span class="sourceLineNo">165</span>            int limit = ((IntToken) numberOfTokens.getToken()).intValue();<a name="line.165"></a>
+<span class="sourceLineNo">166</span>            if (limit &gt;= 0) {<a name="line.166"></a>
+<span class="sourceLineNo">167</span>                if (_numberOfTokensSent &gt;= limit) {<a name="line.167"></a>
+<span class="sourceLineNo">168</span>                    return;<a name="line.168"></a>
+<span class="sourceLineNo">169</span>                }<a name="line.169"></a>
+<span class="sourceLineNo">170</span>                _numberOfTokensSent++;<a name="line.170"></a>
+<span class="sourceLineNo">171</span>            }<a name="line.171"></a>
+<span class="sourceLineNo">172</span>            super.broadcast(constantValue.getToken());<a name="line.172"></a>
+<span class="sourceLineNo">173</span>        }<a name="line.173"></a>
+<span class="sourceLineNo">174</span>    }<a name="line.174"></a>
+<span class="sourceLineNo">175</span><a name="line.175"></a>
+<span class="sourceLineNo">176</span>    /** Override the base class to replace the specified tokens with<a name="line.176"></a>
+<span class="sourceLineNo">177</span>     *  the value of &lt;i&gt;constantValue&lt;/i&gt;.<a name="line.177"></a>
+<span class="sourceLineNo">178</span>     *  @param tokenArray The token array to replace.<a name="line.178"></a>
+<span class="sourceLineNo">179</span>     *  @param vectorLength The number of elements of the token<a name="line.179"></a>
+<span class="sourceLineNo">180</span>     *   array to send.<a name="line.180"></a>
+<span class="sourceLineNo">181</span>     *  @exception NoRoomException If there is no room in the receiver.<a name="line.181"></a>
+<span class="sourceLineNo">182</span>     *  @exception IllegalActionException Not thrown in this base class.<a name="line.182"></a>
+<span class="sourceLineNo">183</span>     */<a name="line.183"></a>
+<span class="sourceLineNo">184</span>    @Override<a name="line.184"></a>
+<span class="sourceLineNo">185</span>    public void broadcast(Token[] tokenArray, int vectorLength)<a name="line.185"></a>
+<span class="sourceLineNo">186</span>            throws IllegalActionException, NoRoomException {<a name="line.186"></a>
+<span class="sourceLineNo">187</span>        Token[] replacement = new Token[tokenArray.length];<a name="line.187"></a>
+<span class="sourceLineNo">188</span>        for (int i = 0; i &lt; tokenArray.length; i++) {<a name="line.188"></a>
+<span class="sourceLineNo">189</span>            replacement[i] = tokenArray[i];<a name="line.189"></a>
+<span class="sourceLineNo">190</span>        }<a name="line.190"></a>
+<span class="sourceLineNo">191</span>        int limit = ((IntToken) numberOfTokens.getToken()).intValue();<a name="line.191"></a>
+<span class="sourceLineNo">192</span>        if (limit &gt;= 0) {<a name="line.192"></a>
+<span class="sourceLineNo">193</span>            if (_numberOfTokensSent &gt;= limit) {<a name="line.193"></a>
+<span class="sourceLineNo">194</span>                return;<a name="line.194"></a>
+<span class="sourceLineNo">195</span>            }<a name="line.195"></a>
+<span class="sourceLineNo">196</span>            _numberOfTokensSent += vectorLength;<a name="line.196"></a>
+<span class="sourceLineNo">197</span>        }<a name="line.197"></a>
+<span class="sourceLineNo">198</span>        super.broadcast(replacement, vectorLength);<a name="line.198"></a>
+<span class="sourceLineNo">199</span>    }<a name="line.199"></a>
+<span class="sourceLineNo">200</span><a name="line.200"></a>
+<span class="sourceLineNo">201</span>    /** Override the base class to initialize the token count.<a name="line.201"></a>
+<span class="sourceLineNo">202</span>     *  @exception IllegalActionException If initialTokens is invalid.<a name="line.202"></a>
+<span class="sourceLineNo">203</span>     */<a name="line.203"></a>
+<span class="sourceLineNo">204</span>    @Override<a name="line.204"></a>
+<span class="sourceLineNo">205</span>    public void initialize() throws IllegalActionException {<a name="line.205"></a>
+<span class="sourceLineNo">206</span>        super.initialize();<a name="line.206"></a>
+<span class="sourceLineNo">207</span>        _numberOfTokensSent = 0;<a name="line.207"></a>
+<span class="sourceLineNo">208</span>    }<a name="line.208"></a>
+<span class="sourceLineNo">209</span><a name="line.209"></a>
+<span class="sourceLineNo">210</span>    /** Override the base class to replace the specified token with<a name="line.210"></a>
+<span class="sourceLineNo">211</span>     *  the value of &lt;i&gt;constantValue&lt;/i&gt;.<a name="line.211"></a>
+<span class="sourceLineNo">212</span>     *  @param channelIndex The index of the channel, from 0 to width-1<a name="line.212"></a>
+<span class="sourceLineNo">213</span>     *  @param token The token to replace, or null to send no token.<a name="line.213"></a>
+<span class="sourceLineNo">214</span>     *  @exception NoRoomException If there is no room in the receiver.<a name="line.214"></a>
+<span class="sourceLineNo">215</span>     *  @exception IllegalActionException Not thrown in this base class.<a name="line.215"></a>
+<span class="sourceLineNo">216</span>     */<a name="line.216"></a>
+<span class="sourceLineNo">217</span>    @Override<a name="line.217"></a>
+<span class="sourceLineNo">218</span>    public void send(int channelIndex, Token token)<a name="line.218"></a>
+<span class="sourceLineNo">219</span>            throws IllegalActionException, NoRoomException {<a name="line.219"></a>
+<span class="sourceLineNo">220</span>        if (token == null) {<a name="line.220"></a>
+<span class="sourceLineNo">221</span>            super.send(channelIndex, null);<a name="line.221"></a>
+<span class="sourceLineNo">222</span>        } else {<a name="line.222"></a>
+<span class="sourceLineNo">223</span>            int limit = ((IntToken) numberOfTokens.getToken()).intValue();<a name="line.223"></a>
+<span class="sourceLineNo">224</span>            if (limit &gt;= 0) {<a name="line.224"></a>
+<span class="sourceLineNo">225</span>                if (_numberOfTokensSent &gt;= limit) {<a name="line.225"></a>
+<span class="sourceLineNo">226</span>                    return;<a name="line.226"></a>
+<span class="sourceLineNo">227</span>                }<a name="line.227"></a>
+<span class="sourceLineNo">228</span>                _numberOfTokensSent++;<a name="line.228"></a>
+<span class="sourceLineNo">229</span>            }<a name="line.229"></a>
+<span class="sourceLineNo">230</span>            super.send(channelIndex, constantValue.getToken());<a name="line.230"></a>
+<span class="sourceLineNo">231</span>        }<a name="line.231"></a>
+<span class="sourceLineNo">232</span>    }<a name="line.232"></a>
+<span class="sourceLineNo">233</span><a name="line.233"></a>
+<span class="sourceLineNo">234</span>    /** Override the base class to replace the specified tokens with<a name="line.234"></a>
+<span class="sourceLineNo">235</span>     *  the value of &lt;i&gt;constantValue&lt;/i&gt;.<a name="line.235"></a>
+<span class="sourceLineNo">236</span>     *  @param channelIndex The index of the channel, from 0 to width-1<a name="line.236"></a>
+<span class="sourceLineNo">237</span>     *  @param tokenArray The token array to replace.<a name="line.237"></a>
+<span class="sourceLineNo">238</span>     *  @param vectorLength The number of elements of of the token<a name="line.238"></a>
+<span class="sourceLineNo">239</span>     *   array to send.<a name="line.239"></a>
+<span class="sourceLineNo">240</span>     *  @exception NoRoomException If there is no room in the receiver.<a name="line.240"></a>
+<span class="sourceLineNo">241</span>     *  @exception IllegalActionException Not thrown in this base class.<a name="line.241"></a>
+<span class="sourceLineNo">242</span>     */<a name="line.242"></a>
+<span class="sourceLineNo">243</span>    @Override<a name="line.243"></a>
+<span class="sourceLineNo">244</span>    public void send(int channelIndex, Token[] tokenArray, int vectorLength)<a name="line.244"></a>
+<span class="sourceLineNo">245</span>            throws IllegalActionException, NoRoomException {<a name="line.245"></a>
+<span class="sourceLineNo">246</span>        Token[] replacement = new Token[tokenArray.length];<a name="line.246"></a>
+<span class="sourceLineNo">247</span>        for (int i = 0; i &lt; tokenArray.length; i++) {<a name="line.247"></a>
+<span class="sourceLineNo">248</span>            replacement[i] = tokenArray[i];<a name="line.248"></a>
+<span class="sourceLineNo">249</span>        }<a name="line.249"></a>
+<span class="sourceLineNo">250</span>        int limit = ((IntToken) numberOfTokens.getToken()).intValue();<a name="line.250"></a>
+<span class="sourceLineNo">251</span>        if (limit &gt;= 0) {<a name="line.251"></a>
+<span class="sourceLineNo">252</span>            if (_numberOfTokensSent &gt;= limit) {<a name="line.252"></a>
+<span class="sourceLineNo">253</span>                return;<a name="line.253"></a>
+<span class="sourceLineNo">254</span>            }<a name="line.254"></a>
+<span class="sourceLineNo">255</span>            _numberOfTokensSent += vectorLength;<a name="line.255"></a>
+<span class="sourceLineNo">256</span>        }<a name="line.256"></a>
+<span class="sourceLineNo">257</span>        super.send(channelIndex, replacement, vectorLength);<a name="line.257"></a>
+<span class="sourceLineNo">258</span>    }<a name="line.258"></a>
+<span class="sourceLineNo">259</span><a name="line.259"></a>
+<span class="sourceLineNo">260</span>    ///////////////////////////////////////////////////////////////////<a name="line.260"></a>
+<span class="sourceLineNo">261</span>    ////                         private variables                 ////<a name="line.261"></a>
+<span class="sourceLineNo">262</span><a name="line.262"></a>
+<span class="sourceLineNo">263</span>    /** Number of tokens sent since initialize(). */<a name="line.263"></a>
+<span class="sourceLineNo">264</span>    private int _numberOfTokensSent = 0;<a name="line.264"></a>
+<span class="sourceLineNo">265</span>}<a name="line.265"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

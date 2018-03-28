@@ -1,0 +1,737 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../../stylesheet.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>/*<a name="line.1"></a>
+<span class="sourceLineNo">002</span> * Copyright (c) 2006-2010 The Regents of the University of California.<a name="line.2"></a>
+<span class="sourceLineNo">003</span> * All rights reserved.<a name="line.3"></a>
+<span class="sourceLineNo">004</span> *<a name="line.4"></a>
+<span class="sourceLineNo">005</span> * '$Author: crawl $'<a name="line.5"></a>
+<span class="sourceLineNo">006</span> * '$Date: 2015-01-26 13:41:18 -0800 (Mon, 26 Jan 2015) $' <a name="line.6"></a>
+<span class="sourceLineNo">007</span> * '$Revision: 33211 $'<a name="line.7"></a>
+<span class="sourceLineNo">008</span> * <a name="line.8"></a>
+<span class="sourceLineNo">009</span> * Permission is hereby granted, without written agreement and without<a name="line.9"></a>
+<span class="sourceLineNo">010</span> * license or royalty fees, to use, copy, modify, and distribute this<a name="line.10"></a>
+<span class="sourceLineNo">011</span> * software and its documentation for any purpose, provided that the above<a name="line.11"></a>
+<span class="sourceLineNo">012</span> * copyright notice and the following two paragraphs appear in all copies<a name="line.12"></a>
+<span class="sourceLineNo">013</span> * of this software.<a name="line.13"></a>
+<span class="sourceLineNo">014</span> *<a name="line.14"></a>
+<span class="sourceLineNo">015</span> * IN NO EVENT SHALL THE UNIVERSITY OF CALIFORNIA BE LIABLE TO ANY PARTY<a name="line.15"></a>
+<span class="sourceLineNo">016</span> * FOR DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES<a name="line.16"></a>
+<span class="sourceLineNo">017</span> * ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION, EVEN IF<a name="line.17"></a>
+<span class="sourceLineNo">018</span> * THE UNIVERSITY OF CALIFORNIA HAS BEEN ADVISED OF THE POSSIBILITY OF<a name="line.18"></a>
+<span class="sourceLineNo">019</span> * SUCH DAMAGE.<a name="line.19"></a>
+<span class="sourceLineNo">020</span> *<a name="line.20"></a>
+<span class="sourceLineNo">021</span> * THE UNIVERSITY OF CALIFORNIA SPECIFICALLY DISCLAIMS ANY WARRANTIES,<a name="line.21"></a>
+<span class="sourceLineNo">022</span> * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF<a name="line.22"></a>
+<span class="sourceLineNo">023</span> * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE<a name="line.23"></a>
+<span class="sourceLineNo">024</span> * PROVIDED HEREUNDER IS ON AN "AS IS" BASIS, AND THE UNIVERSITY OF<a name="line.24"></a>
+<span class="sourceLineNo">025</span> * CALIFORNIA HAS NO OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT, UPDATES,<a name="line.25"></a>
+<span class="sourceLineNo">026</span> * ENHANCEMENTS, OR MODIFICATIONS.<a name="line.26"></a>
+<span class="sourceLineNo">027</span> *<a name="line.27"></a>
+<span class="sourceLineNo">028</span> */<a name="line.28"></a>
+<span class="sourceLineNo">029</span><a name="line.29"></a>
+<span class="sourceLineNo">030</span>package org.kepler.gui;<a name="line.30"></a>
+<span class="sourceLineNo">031</span><a name="line.31"></a>
+<span class="sourceLineNo">032</span>import java.awt.Color;<a name="line.32"></a>
+<span class="sourceLineNo">033</span>import java.awt.Component;<a name="line.33"></a>
+<span class="sourceLineNo">034</span>import java.awt.Dimension;<a name="line.34"></a>
+<span class="sourceLineNo">035</span>import java.awt.Font;<a name="line.35"></a>
+<span class="sourceLineNo">036</span>import java.awt.Frame;<a name="line.36"></a>
+<span class="sourceLineNo">037</span>import java.io.File;<a name="line.37"></a>
+<span class="sourceLineNo">038</span>import java.net.URL;<a name="line.38"></a>
+<span class="sourceLineNo">039</span>import java.util.Enumeration;<a name="line.39"></a>
+<span class="sourceLineNo">040</span>import java.util.Hashtable;<a name="line.40"></a>
+<span class="sourceLineNo">041</span>import java.util.Iterator;<a name="line.41"></a>
+<span class="sourceLineNo">042</span>import java.util.LinkedList;<a name="line.42"></a>
+<span class="sourceLineNo">043</span>import java.util.List;<a name="line.43"></a>
+<span class="sourceLineNo">044</span><a name="line.44"></a>
+<span class="sourceLineNo">045</span>import javax.swing.BorderFactory;<a name="line.45"></a>
+<span class="sourceLineNo">046</span>import javax.swing.Box;<a name="line.46"></a>
+<span class="sourceLineNo">047</span>import javax.swing.BoxLayout;<a name="line.47"></a>
+<span class="sourceLineNo">048</span>import javax.swing.JComponent;<a name="line.48"></a>
+<span class="sourceLineNo">049</span>import javax.swing.JLabel;<a name="line.49"></a>
+<span class="sourceLineNo">050</span>import javax.swing.JOptionPane;<a name="line.50"></a>
+<span class="sourceLineNo">051</span>import javax.swing.JPanel;<a name="line.51"></a>
+<span class="sourceLineNo">052</span>import javax.swing.JScrollPane;<a name="line.52"></a>
+<span class="sourceLineNo">053</span>import javax.swing.JTextArea;<a name="line.53"></a>
+<span class="sourceLineNo">054</span>import javax.swing.JTextField;<a name="line.54"></a>
+<span class="sourceLineNo">055</span>import javax.swing.text.Caret;<a name="line.55"></a>
+<span class="sourceLineNo">056</span>import javax.swing.text.JTextComponent;<a name="line.56"></a>
+<span class="sourceLineNo">057</span><a name="line.57"></a>
+<span class="sourceLineNo">058</span>import org.kepler.kar.SuperClassPathFinderDoclet;<a name="line.58"></a>
+<span class="sourceLineNo">059</span><a name="line.59"></a>
+<span class="sourceLineNo">060</span>import ptolemy.actor.IOPort;<a name="line.60"></a>
+<span class="sourceLineNo">061</span>import ptolemy.actor.gui.Effigy;<a name="line.61"></a>
+<span class="sourceLineNo">062</span>import ptolemy.gui.ComponentDialog;<a name="line.62"></a>
+<span class="sourceLineNo">063</span>import ptolemy.kernel.Entity;<a name="line.63"></a>
+<span class="sourceLineNo">064</span>import ptolemy.kernel.util.Attribute;<a name="line.64"></a>
+<span class="sourceLineNo">065</span>import ptolemy.kernel.util.ConfigurableAttribute;<a name="line.65"></a>
+<span class="sourceLineNo">066</span>import ptolemy.kernel.util.NamedObj;<a name="line.66"></a>
+<span class="sourceLineNo">067</span>import ptolemy.moml.MoMLChangeRequest;<a name="line.67"></a>
+<span class="sourceLineNo">068</span>import ptolemy.util.ExecuteCommands;<a name="line.68"></a>
+<span class="sourceLineNo">069</span>import ptolemy.util.StringUtilities;<a name="line.69"></a>
+<span class="sourceLineNo">070</span>import ptolemy.vergil.actor.DocApplicationSpecializer;<a name="line.70"></a>
+<span class="sourceLineNo">071</span>import ptolemy.vergil.basic.KeplerDocumentationAttribute;<a name="line.71"></a>
+<span class="sourceLineNo">072</span><a name="line.72"></a>
+<span class="sourceLineNo">073</span>//////////////////////////////////////////////////////////////////////////<a name="line.73"></a>
+<span class="sourceLineNo">074</span>//// KeplerDocApplicationSpecializer<a name="line.74"></a>
+<span class="sourceLineNo">075</span><a name="line.75"></a>
+<span class="sourceLineNo">076</span>/**<a name="line.76"></a>
+<span class="sourceLineNo">077</span> * Kepler specific specialization of the Ptolemy II Documentation system.<a name="line.77"></a>
+<span class="sourceLineNo">078</span> * <a name="line.78"></a>
+<span class="sourceLineNo">079</span> * @author Christopher Brooks<a name="line.79"></a>
+<span class="sourceLineNo">080</span> * @version $Id: KeplerDocApplicationSpecializer.java 14354 2008-03-04 21:07:33Z<a name="line.80"></a>
+<span class="sourceLineNo">081</span> *          berkley $<a name="line.81"></a>
+<span class="sourceLineNo">082</span> * @since Ptolemy II 6.0<a name="line.82"></a>
+<span class="sourceLineNo">083</span> * @Pt.ProposedRating Red (cxh)<a name="line.83"></a>
+<span class="sourceLineNo">084</span> * @Pt.AcceptedRating Red (cxh)<a name="line.84"></a>
+<span class="sourceLineNo">085</span> */<a name="line.85"></a>
+<span class="sourceLineNo">086</span>public class KeplerDocApplicationSpecializer implements<a name="line.86"></a>
+<span class="sourceLineNo">087</span>                DocApplicationSpecializer {<a name="line.87"></a>
+<span class="sourceLineNo">088</span><a name="line.88"></a>
+<span class="sourceLineNo">089</span>        // the standard width of the components in the edit dialog<a name="line.89"></a>
+<span class="sourceLineNo">090</span>        private int standardX = 500;<a name="line.90"></a>
+<span class="sourceLineNo">091</span>        // a hash of the editable components in the edit dialog<a name="line.91"></a>
+<span class="sourceLineNo">092</span>        private Hashtable&lt;String, JTextComponent&gt; editableComponents;<a name="line.92"></a>
+<span class="sourceLineNo">093</span><a name="line.93"></a>
+<span class="sourceLineNo">094</span>        // /////////////////////////////////////////////////////////////////<a name="line.94"></a>
+<span class="sourceLineNo">095</span>        // // public methods ////<a name="line.95"></a>
+<span class="sourceLineNo">096</span><a name="line.96"></a>
+<span class="sourceLineNo">097</span>        /**<a name="line.97"></a>
+<span class="sourceLineNo">098</span>         * Given a dot separated class name, return the URL of the PtDoc .xml file<a name="line.98"></a>
+<span class="sourceLineNo">099</span>         * documentation or the Actor Index. All other document types (Javadoc,<a name="line.99"></a>
+<span class="sourceLineNo">100</span>         * source documentation) are currently not not searched for. Thus the either<a name="line.100"></a>
+<span class="sourceLineNo">101</span>         * the lookForPtDoc or lookForActorIndex parameter must be true, otherwise<a name="line.101"></a>
+<span class="sourceLineNo">102</span>         * this method will return null.<a name="line.102"></a>
+<span class="sourceLineNo">103</span>         * <a name="line.103"></a>
+<span class="sourceLineNo">104</span>         * &lt;p&gt;<a name="line.104"></a>
+<span class="sourceLineNo">105</span>         * If the KEPLER_DOCS property is set, then its value is assumed to point to<a name="line.105"></a>
+<span class="sourceLineNo">106</span>         * the Kepler documentation. If KEPLER_DOCS is not set, then the file<a name="line.106"></a>
+<span class="sourceLineNo">107</span>         * ./doc/docsInfo.txt is read, and if that file contains the string of the<a name="line.107"></a>
+<span class="sourceLineNo">108</span>         * format &lt;code&gt;KeplerDocs: &lt;i&gt;path to kepler-docs&lt;/i&gt;&lt;/code&gt; then the value<a name="line.108"></a>
+<span class="sourceLineNo">109</span>         * of &lt;code&gt;&lt;i&gt;path to kepler-docs&lt;/i&gt;&lt;/code&gt; is used. For example,<a name="line.109"></a>
+<span class="sourceLineNo">110</span>         * docsInfo.txt might contain &lt;code&gt;KeplerDocs: c:\src\kepler-docs&lt;/code&gt;,<a name="line.110"></a>
+<span class="sourceLineNo">111</span>         * which means that the documentation is to be found in<a name="line.111"></a>
+<span class="sourceLineNo">112</span>         * &lt;code&gt;c:\src\kepler-docs&lt;/code&gt;. docsInfo.txt is created by running<a name="line.112"></a>
+<span class="sourceLineNo">113</span>         * &lt;code&gt;cd $KEPLER; ant generateDoc&lt;/code&gt;. The documentation for<a name="line.113"></a>
+<span class="sourceLineNo">114</span>         * &lt;code&gt;&lt;i&gt;className&lt;/i&gt;&lt;/code&gt; is assumed to be in<a name="line.114"></a>
+<span class="sourceLineNo">115</span>         * &lt;code&gt;$KEPLER_DOCS/dev/documentationFramework/generatedJavadocs/&lt;i&gt;className&lt;/i&gt;.doc.xml&lt;/code&gt;.<a name="line.115"></a>
+<span class="sourceLineNo">116</span>         * <a name="line.116"></a>
+<span class="sourceLineNo">117</span>         * @param remoteDocumentationURLBase<a name="line.117"></a>
+<span class="sourceLineNo">118</span>         *            If non-null, the URL of the documentation. Usually, this is<a name="line.118"></a>
+<span class="sourceLineNo">119</span>         *            set by reading the _remoteDocumentationBase parameter from the<a name="line.119"></a>
+<span class="sourceLineNo">120</span>         *            configuration in the caller.<a name="line.120"></a>
+<span class="sourceLineNo">121</span>         * @param className<a name="line.121"></a>
+<span class="sourceLineNo">122</span>         *            The dot separated class name.<a name="line.122"></a>
+<span class="sourceLineNo">123</span>         * @param lookForPtDoc<a name="line.123"></a>
+<span class="sourceLineNo">124</span>         *            True if we should look for ptdoc .xml files.<a name="line.124"></a>
+<span class="sourceLineNo">125</span>         * @param lookForJavadoc<a name="line.125"></a>
+<span class="sourceLineNo">126</span>         *            Ignored<a name="line.126"></a>
+<span class="sourceLineNo">127</span>         * @param lookForSource<a name="line.127"></a>
+<span class="sourceLineNo">128</span>         *            Ignored<a name="line.128"></a>
+<span class="sourceLineNo">129</span>         * @param lookForActorIndex<a name="line.129"></a>
+<span class="sourceLineNo">130</span>         *            True if we should search for the actor index *Idx.htm file.<a name="line.130"></a>
+<span class="sourceLineNo">131</span>         * @return The URL of the documentation, if any. If no documentation was<a name="line.131"></a>
+<span class="sourceLineNo">132</span>         *         found, return null.<a name="line.132"></a>
+<span class="sourceLineNo">133</span>         */<a name="line.133"></a>
+<span class="sourceLineNo">134</span>        @Override<a name="line.134"></a>
+<span class="sourceLineNo">135</span>    public URL docClassNameToURL(String remoteDocumentationURLBase,<a name="line.135"></a>
+<span class="sourceLineNo">136</span>                        String className, boolean lookForPtDoc, boolean lookForJavadoc,<a name="line.136"></a>
+<span class="sourceLineNo">137</span>                        boolean lookForSource, boolean lookForActorIndex) {<a name="line.137"></a>
+<span class="sourceLineNo">138</span>                if (!lookForPtDoc &amp;&amp; !lookForActorIndex) {<a name="line.138"></a>
+<span class="sourceLineNo">139</span>                        return null;<a name="line.139"></a>
+<span class="sourceLineNo">140</span>                }<a name="line.140"></a>
+<span class="sourceLineNo">141</span>                URL toRead = null;<a name="line.141"></a>
+<span class="sourceLineNo">142</span>                try {<a name="line.142"></a>
+<span class="sourceLineNo">143</span>                        String actorName = className<a name="line.143"></a>
+<span class="sourceLineNo">144</span>                                        .substring(className.lastIndexOf('.') + 1);<a name="line.144"></a>
+<span class="sourceLineNo">145</span>                        <a name="line.145"></a>
+<span class="sourceLineNo">146</span>                        /** $KEPLER_DOCS no longer set in Kepler 2.0<a name="line.146"></a>
+<span class="sourceLineNo">147</span>                        <a name="line.147"></a>
+<span class="sourceLineNo">148</span>                        // Javadocs located under a elsewhere in Kepler<a name="line.148"></a>
+<span class="sourceLineNo">149</span><a name="line.149"></a>
+<span class="sourceLineNo">150</span>                        // Use StringUtilities.getProperty() so that we properly<a name="line.150"></a>
+<span class="sourceLineNo">151</span>                        // handle getting properties under applets or webstart.<a name="line.151"></a>
+<span class="sourceLineNo">152</span>                        String keplerDocsHome = StringUtilities.getProperty("KEPLER_DOCS");<a name="line.152"></a>
+<span class="sourceLineNo">153</span><a name="line.153"></a>
+<span class="sourceLineNo">154</span>                        if (keplerDocsHome.equals("")<a name="line.154"></a>
+<span class="sourceLineNo">155</span>                                        || keplerDocsHome.equals("${env.KEPLER_DOCS}")) {<a name="line.155"></a>
+<span class="sourceLineNo">156</span>                                // Read ./doc/docsInfo.txt<a name="line.156"></a>
+<span class="sourceLineNo">157</span>                                BufferedReader inDocsInfo = new BufferedReader(new FileReader(<a name="line.157"></a>
+<span class="sourceLineNo">158</span>                                                "./doc/docsInfo.txt"));<a name="line.158"></a>
+<span class="sourceLineNo">159</span>                                String info = inDocsInfo.readLine();<a name="line.159"></a>
+<span class="sourceLineNo">160</span><a name="line.160"></a>
+<span class="sourceLineNo">161</span>                                if (info != null) {<a name="line.161"></a>
+<span class="sourceLineNo">162</span>                                        String docsInfo = info.substring(info.indexOf(":") + 1);<a name="line.162"></a>
+<span class="sourceLineNo">163</span>                                        docsInfo = docsInfo.replace('\\', '/');<a name="line.163"></a>
+<span class="sourceLineNo">164</span>                                        docsInfo = docsInfo.trim();<a name="line.164"></a>
+<span class="sourceLineNo">165</span>                                        keplerDocsHome = docsInfo;<a name="line.165"></a>
+<span class="sourceLineNo">166</span>                                }<a name="line.166"></a>
+<span class="sourceLineNo">167</span>                        }<a name="line.167"></a>
+<span class="sourceLineNo">168</span>                        if (keplerDocsHome.equals("")<a name="line.168"></a>
+<span class="sourceLineNo">169</span>                                        || keplerDocsHome.equals("${env.KEPLER_DOCS}")) {<a name="line.169"></a>
+<span class="sourceLineNo">170</span>                                // If $KEPLER_DOCS is not set, look for<a name="line.170"></a>
+<span class="sourceLineNo">171</span>                                // $KEPLER/dev/documentationFramework.<a name="line.171"></a>
+<span class="sourceLineNo">172</span><a name="line.172"></a>
+<span class="sourceLineNo">173</span>                                // Use StringUtilities.getProperty() so that we properly<a name="line.173"></a>
+<span class="sourceLineNo">174</span>                                // handle getting properties under applets or webstart.<a name="line.174"></a>
+<span class="sourceLineNo">175</span>                                String keplerHome = StringUtilities.getProperty("KEPLER");<a name="line.175"></a>
+<span class="sourceLineNo">176</span>                                File file = new File(keplerHome + "/dev/documentationFramework");<a name="line.176"></a>
+<span class="sourceLineNo">177</span>                                if (file.isDirectory()) {<a name="line.177"></a>
+<span class="sourceLineNo">178</span>                                        keplerDocsHome = keplerHome;<a name="line.178"></a>
+<span class="sourceLineNo">179</span>                                }<a name="line.179"></a>
+<span class="sourceLineNo">180</span>                        }<a name="line.180"></a>
+<span class="sourceLineNo">181</span><a name="line.181"></a>
+<span class="sourceLineNo">182</span>                        InputStream toReadStream = null;<a name="line.182"></a>
+<span class="sourceLineNo">183</span>                        if (!keplerDocsHome.equals("")<a name="line.183"></a>
+<span class="sourceLineNo">184</span>                                        &amp;&amp; !keplerDocsHome.equals("${env.KEPLER_DOCS}")) {<a name="line.184"></a>
+<span class="sourceLineNo">185</span><a name="line.185"></a>
+<span class="sourceLineNo">186</span>                                keplerDocsHome = keplerDocsHome.replace('\\', '/');<a name="line.186"></a>
+<span class="sourceLineNo">187</span><a name="line.187"></a>
+<span class="sourceLineNo">188</span>                                File file = null;<a name="line.188"></a>
+<span class="sourceLineNo">189</span>                                if (lookForActorIndex) {<a name="line.189"></a>
+<span class="sourceLineNo">190</span>                                        file = new File(keplerDocsHome<a name="line.190"></a>
+<span class="sourceLineNo">191</span>                                                        + "/dev/documentationFramework/generatedJavadocs/"<a name="line.191"></a>
+<span class="sourceLineNo">192</span>                                                        + className.replace('.', '/') + "Idx.htm");<a name="line.192"></a>
+<span class="sourceLineNo">193</span>                                } else {<a name="line.193"></a>
+<span class="sourceLineNo">194</span>                                        file = new File(keplerDocsHome<a name="line.194"></a>
+<span class="sourceLineNo">195</span>                                                        + "/dev/documentationFramework/generatedJavadocs/"<a name="line.195"></a>
+<span class="sourceLineNo">196</span>                                                        + actorName + ".doc.xml");<a name="line.196"></a>
+<span class="sourceLineNo">197</span><a name="line.197"></a>
+<span class="sourceLineNo">198</span>                                }<a name="line.198"></a>
+<span class="sourceLineNo">199</span>                                toRead = file.toURL();<a name="line.199"></a>
+<span class="sourceLineNo">200</span>                                // Verify that we can read the URL.<a name="line.200"></a>
+<span class="sourceLineNo">201</span>                                try {<a name="line.201"></a>
+<span class="sourceLineNo">202</span>                                        toReadStream = toRead.openStream();<a name="line.202"></a>
+<span class="sourceLineNo">203</span>                                } catch (IOException ex) {<a name="line.203"></a>
+<span class="sourceLineNo">204</span>                                        toRead = null;<a name="line.204"></a>
+<span class="sourceLineNo">205</span>                                } finally {<a name="line.205"></a>
+<span class="sourceLineNo">206</span>                                        if (toReadStream != null) {<a name="line.206"></a>
+<span class="sourceLineNo">207</span>                                                try {<a name="line.207"></a>
+<span class="sourceLineNo">208</span>                                                        toReadStream.close();<a name="line.208"></a>
+<span class="sourceLineNo">209</span>                                                } catch (IOException ex2) {<a name="line.209"></a>
+<span class="sourceLineNo">210</span>                                                        // Ignore.<a name="line.210"></a>
+<span class="sourceLineNo">211</span>                                                }<a name="line.211"></a>
+<span class="sourceLineNo">212</span>                                        }<a name="line.212"></a>
+<span class="sourceLineNo">213</span>                                }<a name="line.213"></a>
+<span class="sourceLineNo">214</span>                        }<a name="line.214"></a>
+<span class="sourceLineNo">215</span>                        if (toRead == null &amp;&amp; remoteDocumentationURLBase != null) {<a name="line.215"></a>
+<span class="sourceLineNo">216</span>                                try {<a name="line.216"></a>
+<span class="sourceLineNo">217</span>                                        if (lookForActorIndex) {<a name="line.217"></a>
+<span class="sourceLineNo">218</span>                                                toRead = new URL(remoteDocumentationURLBase<a name="line.218"></a>
+<span class="sourceLineNo">219</span>                                                                + className.replace('.', '/') + "Idx.htm");<a name="line.219"></a>
+<span class="sourceLineNo">220</span>                                        } else {<a name="line.220"></a>
+<span class="sourceLineNo">221</span>                                                toRead = new URL(remoteDocumentationURLBase + actorName<a name="line.221"></a>
+<span class="sourceLineNo">222</span>                                                                + ".doc.xml");<a name="line.222"></a>
+<span class="sourceLineNo">223</span>                                        }<a name="line.223"></a>
+<span class="sourceLineNo">224</span>                                        toReadStream = toRead.openStream();<a name="line.224"></a>
+<span class="sourceLineNo">225</span>                                } catch (Exception ex) {<a name="line.225"></a>
+<span class="sourceLineNo">226</span>                                        toRead = null;<a name="line.226"></a>
+<span class="sourceLineNo">227</span>                                } finally {<a name="line.227"></a>
+<span class="sourceLineNo">228</span>                                        if (toReadStream != null) {<a name="line.228"></a>
+<span class="sourceLineNo">229</span>                                                try {<a name="line.229"></a>
+<span class="sourceLineNo">230</span>                                                        toReadStream.close();<a name="line.230"></a>
+<span class="sourceLineNo">231</span>                                                } catch (IOException ex2) {<a name="line.231"></a>
+<span class="sourceLineNo">232</span>                                                        // Ignore.<a name="line.232"></a>
+<span class="sourceLineNo">233</span>                                                }<a name="line.233"></a>
+<span class="sourceLineNo">234</span>                                        }<a name="line.234"></a>
+<span class="sourceLineNo">235</span>                                }<a name="line.235"></a>
+<span class="sourceLineNo">236</span>                        }<a name="line.236"></a>
+<span class="sourceLineNo">237</span>        */<a name="line.237"></a>
+<span class="sourceLineNo">238</span>                        <a name="line.238"></a>
+<span class="sourceLineNo">239</span>                if(lookForSource) {<a name="line.239"></a>
+<span class="sourceLineNo">240</span>                    String path = SuperClassPathFinderDoclet.getFileNameForClassName(className);<a name="line.240"></a>
+<span class="sourceLineNo">241</span>                    File file = new File(path);<a name="line.241"></a>
+<span class="sourceLineNo">242</span>                    if(file.isFile()) {<a name="line.242"></a>
+<span class="sourceLineNo">243</span>                        toRead = file.toURI().toURL();<a name="line.243"></a>
+<span class="sourceLineNo">244</span>                    }<a name="line.244"></a>
+<span class="sourceLineNo">245</span>                }<a name="line.245"></a>
+<span class="sourceLineNo">246</span><a name="line.246"></a>
+<span class="sourceLineNo">247</span>                } catch (Throwable throwable) {<a name="line.247"></a>
+<span class="sourceLineNo">248</span>                        // Ignore and return null.<a name="line.248"></a>
+<span class="sourceLineNo">249</span>                        return null;<a name="line.249"></a>
+<span class="sourceLineNo">250</span>                }<a name="line.250"></a>
+<span class="sourceLineNo">251</span>                <a name="line.251"></a>
+<span class="sourceLineNo">252</span>                        <a name="line.252"></a>
+<span class="sourceLineNo">253</span>                return toRead;<a name="line.253"></a>
+<span class="sourceLineNo">254</span>        }<a name="line.254"></a>
+<span class="sourceLineNo">255</span><a name="line.255"></a>
+<span class="sourceLineNo">256</span>        /**<a name="line.256"></a>
+<span class="sourceLineNo">257</span>         * Set up the commands necessary to build the documentation. For Kepler, we<a name="line.257"></a>
+<span class="sourceLineNo">258</span>         * run "ant generateDoc" in $KEPLER&gt;<a name="line.258"></a>
+<span class="sourceLineNo">259</span>         * <a name="line.259"></a>
+<span class="sourceLineNo">260</span>         * @param executeCommands<a name="line.260"></a>
+<span class="sourceLineNo">261</span>         *            The command execution environment necessary to build the<a name="line.261"></a>
+<span class="sourceLineNo">262</span>         *            documentation.<a name="line.262"></a>
+<span class="sourceLineNo">263</span>         * @return A List of Strings, where each String represents the a command to<a name="line.263"></a>
+<span class="sourceLineNo">264</span>         *         be executed.<a name="line.264"></a>
+<span class="sourceLineNo">265</span>         */<a name="line.265"></a>
+<span class="sourceLineNo">266</span>        @Override<a name="line.266"></a>
+<span class="sourceLineNo">267</span>    public List buildCommands(ExecuteCommands executeCommands) {<a name="line.267"></a>
+<span class="sourceLineNo">268</span>                List&lt;String&gt; commands = new LinkedList&lt;String&gt;();<a name="line.268"></a>
+<span class="sourceLineNo">269</span><a name="line.269"></a>
+<span class="sourceLineNo">270</span>                String osName = StringUtilities.getProperty("os.name");<a name="line.270"></a>
+<span class="sourceLineNo">271</span>                if (osName != null &amp;&amp; osName.startsWith("Windows")) {<a name="line.271"></a>
+<span class="sourceLineNo">272</span>                        commands.add("ant.bat generateDoc");<a name="line.272"></a>
+<span class="sourceLineNo">273</span>                } else {<a name="line.273"></a>
+<span class="sourceLineNo">274</span>                        commands.add("ant generateDoc");<a name="line.274"></a>
+<span class="sourceLineNo">275</span>                }<a name="line.275"></a>
+<span class="sourceLineNo">276</span>                executeCommands.setCommands(commands);<a name="line.276"></a>
+<span class="sourceLineNo">277</span><a name="line.277"></a>
+<span class="sourceLineNo">278</span>                File kepler = new File(StringUtilities.getProperty("KEPLER"));<a name="line.278"></a>
+<span class="sourceLineNo">279</span>                executeCommands.setWorkingDirectory(kepler);<a name="line.279"></a>
+<span class="sourceLineNo">280</span>                return commands;<a name="line.280"></a>
+<span class="sourceLineNo">281</span>        }<a name="line.281"></a>
+<span class="sourceLineNo">282</span><a name="line.282"></a>
+<span class="sourceLineNo">283</span>        /**<a name="line.283"></a>
+<span class="sourceLineNo">284</span>         * returns the name of the documentation attribute<a name="line.284"></a>
+<span class="sourceLineNo">285</span>         */<a name="line.285"></a>
+<span class="sourceLineNo">286</span>        @Override<a name="line.286"></a>
+<span class="sourceLineNo">287</span>    public String getDocumentationAttributeClassName() {<a name="line.287"></a>
+<span class="sourceLineNo">288</span>                return "ptolemy.vergil.basic.KeplerDocumentationAttribute";<a name="line.288"></a>
+<span class="sourceLineNo">289</span>        }<a name="line.289"></a>
+<span class="sourceLineNo">290</span><a name="line.290"></a>
+<span class="sourceLineNo">291</span>        /**<a name="line.291"></a>
+<span class="sourceLineNo">292</span>         * create a gui to edit the documentation in the attribute<a name="line.292"></a>
+<span class="sourceLineNo">293</span>         * <a name="line.293"></a>
+<span class="sourceLineNo">294</span>         * @param owner<a name="line.294"></a>
+<span class="sourceLineNo">295</span>         *            the editors gui parent<a name="line.295"></a>
+<span class="sourceLineNo">296</span>         * @param attribute<a name="line.296"></a>
+<span class="sourceLineNo">297</span>         *            the documentation attribute to edit<a name="line.297"></a>
+<span class="sourceLineNo">298</span>         * @param target<a name="line.298"></a>
+<span class="sourceLineNo">299</span>         *            the parent component to the attribute<a name="line.299"></a>
+<span class="sourceLineNo">300</span>         */<a name="line.300"></a>
+<span class="sourceLineNo">301</span>        @Override<a name="line.301"></a>
+<span class="sourceLineNo">302</span>    public void editDocumentation(Frame owner, Attribute attribute,<a name="line.302"></a>
+<span class="sourceLineNo">303</span>                        NamedObj target) {<a name="line.303"></a>
+<span class="sourceLineNo">304</span>                String actorName = target.getName();<a name="line.304"></a>
+<span class="sourceLineNo">305</span>                String title = "Editing Documentation for " + actorName;<a name="line.305"></a>
+<span class="sourceLineNo">306</span>                JPanel panel = createEditingPanel(attribute, target, owner<a name="line.306"></a>
+<span class="sourceLineNo">307</span>                                .getBackground());<a name="line.307"></a>
+<span class="sourceLineNo">308</span>                JScrollPane scrollPane = new JScrollPane(panel);<a name="line.308"></a>
+<span class="sourceLineNo">309</span>                scrollPane.setViewportBorder(BorderFactory.createEmptyBorder());<a name="line.309"></a>
+<span class="sourceLineNo">310</span>                ComponentDialog editor = new ComponentDialog(owner, title, scrollPane);         <a name="line.310"></a>
+<span class="sourceLineNo">311</span>                String buttonpressed = editor.buttonPressed();<a name="line.311"></a>
+<span class="sourceLineNo">312</span>                // System.out.println("the " + buttonpressed + " button was pressed.");<a name="line.312"></a>
+<span class="sourceLineNo">313</span>                if (buttonpressed.equals("OK")) { <a name="line.313"></a>
+<span class="sourceLineNo">314</span>                        // save the documentation. if cancel was clicked, do nothing<a name="line.314"></a>
+<span class="sourceLineNo">315</span>                        saveDocumentation((KeplerDocumentationAttribute) attribute, panel);<a name="line.315"></a>
+<span class="sourceLineNo">316</span>                }<a name="line.316"></a>
+<span class="sourceLineNo">317</span>        }<a name="line.317"></a>
+<span class="sourceLineNo">318</span><a name="line.318"></a>
+<span class="sourceLineNo">319</span>        /**<a name="line.319"></a>
+<span class="sourceLineNo">320</span>         * handle the case where the component does not have a KeplerDocumentation<a name="line.320"></a>
+<span class="sourceLineNo">321</span>         * attribute<a name="line.321"></a>
+<span class="sourceLineNo">322</span>         * <a name="line.322"></a>
+<span class="sourceLineNo">323</span>         * @param target<a name="line.323"></a>
+<span class="sourceLineNo">324</span>         *            the component<a name="line.324"></a>
+<span class="sourceLineNo">325</span>         */<a name="line.325"></a>
+<span class="sourceLineNo">326</span>        @Override<a name="line.326"></a>
+<span class="sourceLineNo">327</span>    public void handleDocumentationAttributeDoesNotExist(Frame owner,<a name="line.327"></a>
+<span class="sourceLineNo">328</span>                        NamedObj target) {<a name="line.328"></a>
+<span class="sourceLineNo">329</span>                try {<a name="line.329"></a>
+<span class="sourceLineNo">330</span>                        KeplerDocumentationAttribute kda = new KeplerDocumentationAttribute(<a name="line.330"></a>
+<span class="sourceLineNo">331</span>                                        target, "KeplerDocumentation");<a name="line.331"></a>
+<span class="sourceLineNo">332</span>                        kda.createEmptyFields(target);<a name="line.332"></a>
+<span class="sourceLineNo">333</span>                        editDocumentation(owner, kda, target);<a name="line.333"></a>
+<span class="sourceLineNo">334</span>                } catch (Exception e) {<a name="line.334"></a>
+<span class="sourceLineNo">335</span>                        System.out.println("Error adding documentation attribute");<a name="line.335"></a>
+<span class="sourceLineNo">336</span>                }<a name="line.336"></a>
+<span class="sourceLineNo">337</span>        }<a name="line.337"></a>
+<span class="sourceLineNo">338</span><a name="line.338"></a>
+<span class="sourceLineNo">339</span>        /**<a name="line.339"></a>
+<span class="sourceLineNo">340</span>         * handle the case where the user tried to edit documentation and the<a name="line.340"></a>
+<span class="sourceLineNo">341</span>         * attribute does not exist.<a name="line.341"></a>
+<span class="sourceLineNo">342</span>         */<a name="line.342"></a>
+<span class="sourceLineNo">343</span>        @Override<a name="line.343"></a>
+<span class="sourceLineNo">344</span>    public void handleDocumentationNotFound(String classname, Effigy effigy) {<a name="line.344"></a>
+<span class="sourceLineNo">345</span>                String msg = "Sorry, but there is no documentation associated with this "<a name="line.345"></a>
+<span class="sourceLineNo">346</span>                                + "component.\n"<a name="line.346"></a>
+<span class="sourceLineNo">347</span>                                + "If you built Kepler from sources, please run "<a name="line.347"></a>
+<span class="sourceLineNo">348</span>                                + "'ant javadoc' and restart Kepler.\n"<a name="line.348"></a>
+<span class="sourceLineNo">349</span>                                + "To add custom "<a name="line.349"></a>
+<span class="sourceLineNo">350</span>                                + "documentation, please right click on the actor and "<a name="line.350"></a>
+<span class="sourceLineNo">351</span>                                + "choose 'Documentation/Customize'.";<a name="line.351"></a>
+<span class="sourceLineNo">352</span><a name="line.352"></a>
+<span class="sourceLineNo">353</span>                try {<a name="line.353"></a>
+<span class="sourceLineNo">354</span>                        JOptionPane.showMessageDialog(effigy.getTableauFactory()<a name="line.354"></a>
+<span class="sourceLineNo">355</span>                                        .createTableau(effigy).getFrame(), msg, "alert",<a name="line.355"></a>
+<span class="sourceLineNo">356</span>                                        JOptionPane.ERROR_MESSAGE);<a name="line.356"></a>
+<span class="sourceLineNo">357</span>                } catch (Exception e) {<a name="line.357"></a>
+<span class="sourceLineNo">358</span>                }<a name="line.358"></a>
+<span class="sourceLineNo">359</span>        }<a name="line.359"></a>
+<span class="sourceLineNo">360</span><a name="line.360"></a>
+<span class="sourceLineNo">361</span>        /**<a name="line.361"></a>
+<span class="sourceLineNo">362</span>         * save the user entered documentation in the panel to the attribute<a name="line.362"></a>
+<span class="sourceLineNo">363</span>         */<a name="line.363"></a>
+<span class="sourceLineNo">364</span>        private void saveDocumentation(KeplerDocumentationAttribute att,<a name="line.364"></a>
+<span class="sourceLineNo">365</span>                        JPanel panel) {<a name="line.365"></a>
+<span class="sourceLineNo">366</span>                Enumeration&lt;String&gt; keys = editableComponents.keys();<a name="line.366"></a>
+<span class="sourceLineNo">367</span>                while (keys.hasMoreElements()) {<a name="line.367"></a>
+<span class="sourceLineNo">368</span>                        String name = (String) keys.nextElement();<a name="line.368"></a>
+<span class="sourceLineNo">369</span>                        JTextComponent comp = (JTextComponent) editableComponents.get(name);<a name="line.369"></a>
+<span class="sourceLineNo">370</span>                        String value = comp.getText();<a name="line.370"></a>
+<span class="sourceLineNo">371</span>                        ConfigurableAttribute a = (ConfigurableAttribute) att<a name="line.371"></a>
+<span class="sourceLineNo">372</span>                                        .getAttribute(name);<a name="line.372"></a>
+<span class="sourceLineNo">373</span>                        if (a == null) {<a name="line.373"></a>
+<span class="sourceLineNo">374</span>                                try {<a name="line.374"></a>
+<span class="sourceLineNo">375</span>                                        a = new ConfigurableAttribute(att, name);<a name="line.375"></a>
+<span class="sourceLineNo">376</span>                                        a.setExpression(value);<a name="line.376"></a>
+<span class="sourceLineNo">377</span>                                } catch (Exception e) {<a name="line.377"></a>
+<span class="sourceLineNo">378</span>                                        System.out.println("error saving documentation: "<a name="line.378"></a>
+<span class="sourceLineNo">379</span>                                                        + e.getMessage());<a name="line.379"></a>
+<span class="sourceLineNo">380</span>                                }<a name="line.380"></a>
+<span class="sourceLineNo">381</span>                        } else {<a name="line.381"></a>
+<span class="sourceLineNo">382</span>                                String oldval = a.getExpression();<a name="line.382"></a>
+<span class="sourceLineNo">383</span>                                if (!value.equals(oldval)) {<a name="line.383"></a>
+<span class="sourceLineNo">384</span>                                        try {<a name="line.384"></a>
+<span class="sourceLineNo">385</span>                                                a.setExpression(value);<a name="line.385"></a>
+<span class="sourceLineNo">386</span>                                        } catch (Exception e) {<a name="line.386"></a>
+<span class="sourceLineNo">387</span>                                                JOptionPane.showMessageDialog(null,<a name="line.387"></a>
+<span class="sourceLineNo">388</span>                                                                "Error saving attribute " + name + " : "<a name="line.388"></a>
+<span class="sourceLineNo">389</span>                                                                                + e.getMessage(), "Error",<a name="line.389"></a>
+<span class="sourceLineNo">390</span>                                                                JOptionPane.ERROR_MESSAGE);<a name="line.390"></a>
+<span class="sourceLineNo">391</span>                                        }<a name="line.391"></a>
+<span class="sourceLineNo">392</span>                                }<a name="line.392"></a>
+<span class="sourceLineNo">393</span>                        }<a name="line.393"></a>
+<span class="sourceLineNo">394</span>                }<a name="line.394"></a>
+<span class="sourceLineNo">395</span><a name="line.395"></a>
+<span class="sourceLineNo">396</span>                // Make sure the revision gets rolled on the lsid by issuing a change<a name="line.396"></a>
+<span class="sourceLineNo">397</span>                // request on one of the fields, chose here to change "author", could be<a name="line.397"></a>
+<span class="sourceLineNo">398</span>                // any of them<a name="line.398"></a>
+<span class="sourceLineNo">399</span>                JTextComponent component = (JTextComponent) editableComponents<a name="line.399"></a>
+<span class="sourceLineNo">400</span>                                .get("author");<a name="line.400"></a>
+<span class="sourceLineNo">401</span>                String value = component.getText();<a name="line.401"></a>
+<span class="sourceLineNo">402</span>                String caStr = "ptolemy.kernel.util.ConfigurableAttribute";<a name="line.402"></a>
+<span class="sourceLineNo">403</span><a name="line.403"></a>
+<span class="sourceLineNo">404</span>                String updateMoml = "&lt;property name=\"author\" " + "class=\"" + caStr<a name="line.404"></a>
+<span class="sourceLineNo">405</span>                                + "\" value=\"" + value + "\"/&gt;";<a name="line.405"></a>
+<span class="sourceLineNo">406</span>                MoMLChangeRequest updateRequest = new MoMLChangeRequest(this, att<a name="line.406"></a>
+<span class="sourceLineNo">407</span>                                .getContainer(), updateMoml);<a name="line.407"></a>
+<span class="sourceLineNo">408</span>                att.requestChange(updateRequest);<a name="line.408"></a>
+<span class="sourceLineNo">409</span>        }<a name="line.409"></a>
+<span class="sourceLineNo">410</span><a name="line.410"></a>
+<span class="sourceLineNo">411</span>        /**<a name="line.411"></a>
+<span class="sourceLineNo">412</span>         * create the panel that does the editing<a name="line.412"></a>
+<span class="sourceLineNo">413</span>         */<a name="line.413"></a>
+<span class="sourceLineNo">414</span>        private JPanel createEditingPanel(Attribute attribute, NamedObj target,<a name="line.414"></a>
+<span class="sourceLineNo">415</span>                        Color background) {<a name="line.415"></a>
+<span class="sourceLineNo">416</span>                editableComponents = new Hashtable&lt;String, JTextComponent&gt;();<a name="line.416"></a>
+<span class="sourceLineNo">417</span>                // System.out.println("attribute: " + attribute.exportMoML());<a name="line.417"></a>
+<span class="sourceLineNo">418</span>                KeplerDocumentationAttribute att = (KeplerDocumentationAttribute) attribute;<a name="line.418"></a>
+<span class="sourceLineNo">419</span>                att.createInstanceFromExisting(att);<a name="line.419"></a>
+<span class="sourceLineNo">420</span>                JPanel outerPanel = new JPanel();<a name="line.420"></a>
+<span class="sourceLineNo">421</span>                // outerPanel.setBackground(background);<a name="line.421"></a>
+<span class="sourceLineNo">422</span>                BoxLayout outerBox = new BoxLayout(outerPanel, BoxLayout.Y_AXIS);<a name="line.422"></a>
+<span class="sourceLineNo">423</span>                outerPanel.setLayout(outerBox);<a name="line.423"></a>
+<span class="sourceLineNo">424</span><a name="line.424"></a>
+<span class="sourceLineNo">425</span>                // header - name of component<a name="line.425"></a>
+<span class="sourceLineNo">426</span>                JLabel componentNameLabel = new JLabel(target.getName());<a name="line.426"></a>
+<span class="sourceLineNo">427</span>                componentNameLabel.setFont(new Font("Times", Font.BOLD, 20));<a name="line.427"></a>
+<span class="sourceLineNo">428</span>                componentNameLabel.setOpaque(false);<a name="line.428"></a>
+<span class="sourceLineNo">429</span>                JPanel componentNamePanel = new JPanel();<a name="line.429"></a>
+<span class="sourceLineNo">430</span>                componentNamePanel.add(componentNameLabel);<a name="line.430"></a>
+<span class="sourceLineNo">431</span>                componentNamePanel.setMaximumSize(new Dimension(standardX, 50));<a name="line.431"></a>
+<span class="sourceLineNo">432</span>                componentNamePanel.setOpaque(false);<a name="line.432"></a>
+<span class="sourceLineNo">433</span>                outerPanel.add(componentNamePanel);<a name="line.433"></a>
+<span class="sourceLineNo">434</span>                outerPanel.add(Box.createVerticalStrut(10));<a name="line.434"></a>
+<span class="sourceLineNo">435</span><a name="line.435"></a>
+<span class="sourceLineNo">436</span>                // author and version<a name="line.436"></a>
+<span class="sourceLineNo">437</span>                JTextField authorTextField = new JTextField(att.getAuthor());<a name="line.437"></a>
+<span class="sourceLineNo">438</span>                editableComponents.put("author", authorTextField);<a name="line.438"></a>
+<span class="sourceLineNo">439</span>                authorTextField.setColumns(50);<a name="line.439"></a>
+<span class="sourceLineNo">440</span>                JLabel authorLabel = new JLabel("Author(s):");<a name="line.440"></a>
+<span class="sourceLineNo">441</span>                JPanel authorPanel = createEditBox(authorLabel, authorTextField);<a name="line.441"></a>
+<span class="sourceLineNo">442</span>                JTextField versionTextField = new JTextField(att.getVersion());<a name="line.442"></a>
+<span class="sourceLineNo">443</span>                editableComponents.put("version", versionTextField);<a name="line.443"></a>
+<span class="sourceLineNo">444</span>                versionTextField.setColumns(10);<a name="line.444"></a>
+<span class="sourceLineNo">445</span>                JLabel versionLabel = new JLabel("Version:");<a name="line.445"></a>
+<span class="sourceLineNo">446</span>                JPanel versionPanel = createEditBox(versionLabel, versionTextField);<a name="line.446"></a>
+<span class="sourceLineNo">447</span><a name="line.447"></a>
+<span class="sourceLineNo">448</span>                JPanel authorVersionPanel = new JPanel();<a name="line.448"></a>
+<span class="sourceLineNo">449</span>                BoxLayout authorVersionBox = new BoxLayout(authorVersionPanel,<a name="line.449"></a>
+<span class="sourceLineNo">450</span>                                BoxLayout.X_AXIS);<a name="line.450"></a>
+<span class="sourceLineNo">451</span>                authorVersionPanel.setLayout(authorVersionBox);<a name="line.451"></a>
+<span class="sourceLineNo">452</span>                authorVersionPanel.add(authorPanel);<a name="line.452"></a>
+<span class="sourceLineNo">453</span>                authorVersionPanel.add(Box.createHorizontalStrut(10));<a name="line.453"></a>
+<span class="sourceLineNo">454</span>                authorVersionPanel.add(versionPanel);<a name="line.454"></a>
+<span class="sourceLineNo">455</span>                authorVersionPanel.setOpaque(false);<a name="line.455"></a>
+<span class="sourceLineNo">456</span>                authorVersionPanel.setMaximumSize(new Dimension(standardX, 40));<a name="line.456"></a>
+<span class="sourceLineNo">457</span><a name="line.457"></a>
+<span class="sourceLineNo">458</span>                outerPanel.add(authorVersionPanel);<a name="line.458"></a>
+<span class="sourceLineNo">459</span>                outerPanel.add(Box.createVerticalStrut(10));<a name="line.459"></a>
+<span class="sourceLineNo">460</span><a name="line.460"></a>
+<span class="sourceLineNo">461</span>                // description<a name="line.461"></a>
+<span class="sourceLineNo">462</span>                JTextArea descriptionTextArea = new JTextArea(att.getDescription());<a name="line.462"></a>
+<span class="sourceLineNo">463</span>                editableComponents.put("description", descriptionTextArea);<a name="line.463"></a>
+<span class="sourceLineNo">464</span>                descriptionTextArea.setLineWrap(true);<a name="line.464"></a>
+<span class="sourceLineNo">465</span>                JScrollPane descriptionScrollPane = new JScrollPane(descriptionTextArea);<a name="line.465"></a>
+<span class="sourceLineNo">466</span>                descriptionTextArea.setColumns(50);<a name="line.466"></a>
+<span class="sourceLineNo">467</span>                descriptionTextArea.setRows(5);<a name="line.467"></a>
+<span class="sourceLineNo">468</span>                JLabel descriptionLabel = new JLabel("Description:");<a name="line.468"></a>
+<span class="sourceLineNo">469</span>                JPanel descriptionPanel = createEditBox(descriptionLabel,<a name="line.469"></a>
+<span class="sourceLineNo">470</span>                                descriptionScrollPane);<a name="line.470"></a>
+<span class="sourceLineNo">471</span>                descriptionPanel.setMaximumSize(new Dimension(standardX, 100));<a name="line.471"></a>
+<span class="sourceLineNo">472</span>                outerPanel.add(descriptionPanel);<a name="line.472"></a>
+<span class="sourceLineNo">473</span>                outerPanel.add(Box.createVerticalStrut(10));<a name="line.473"></a>
+<span class="sourceLineNo">474</span><a name="line.474"></a>
+<span class="sourceLineNo">475</span>                // userLevelDescription<a name="line.475"></a>
+<span class="sourceLineNo">476</span>                JTextArea uldTextArea = new JTextArea(att.getUserLevelDocumentation());<a name="line.476"></a>
+<span class="sourceLineNo">477</span>                editableComponents.put("userLevelDocumentation", uldTextArea);<a name="line.477"></a>
+<span class="sourceLineNo">478</span>                uldTextArea.setLineWrap(true);<a name="line.478"></a>
+<span class="sourceLineNo">479</span>                JScrollPane uldScrollPane = new JScrollPane(uldTextArea);<a name="line.479"></a>
+<span class="sourceLineNo">480</span>                uldTextArea.setColumns(50);<a name="line.480"></a>
+<span class="sourceLineNo">481</span>                uldTextArea.setRows(8);<a name="line.481"></a>
+<span class="sourceLineNo">482</span>                JLabel uldLabel = new JLabel("Documentation:");<a name="line.482"></a>
+<span class="sourceLineNo">483</span>                JPanel uldPanel = createEditBox(uldLabel, uldScrollPane);<a name="line.483"></a>
+<span class="sourceLineNo">484</span>                uldPanel.setMaximumSize(new Dimension(standardX, 100));<a name="line.484"></a>
+<span class="sourceLineNo">485</span>                outerPanel.add(uldPanel);<a name="line.485"></a>
+<span class="sourceLineNo">486</span>                outerPanel.add(Box.createVerticalStrut(10));<a name="line.486"></a>
+<span class="sourceLineNo">487</span><a name="line.487"></a>
+<span class="sourceLineNo">488</span>                // TODO: compare the kepler documentation att props and ports with the<a name="line.488"></a>
+<span class="sourceLineNo">489</span>                // actual props and ports in the component. if there are any missing,<a name="line.489"></a>
+<span class="sourceLineNo">490</span>                // add them or remove ones from the docs that no longer exist<a name="line.490"></a>
+<span class="sourceLineNo">491</span><a name="line.491"></a>
+<span class="sourceLineNo">492</span>                // check for properties that do not have a documentation entry<a name="line.492"></a>
+<span class="sourceLineNo">493</span>                Iterator atts = target.attributeList().iterator();<a name="line.493"></a>
+<span class="sourceLineNo">494</span>                while (atts.hasNext()) {<a name="line.494"></a>
+<span class="sourceLineNo">495</span>                        Attribute a = (Attribute) atts.next();<a name="line.495"></a>
+<span class="sourceLineNo">496</span>                        String aName = a.getName();<a name="line.496"></a>
+<span class="sourceLineNo">497</span>                        Hashtable props = att.getPropertyHash();<a name="line.497"></a>
+<span class="sourceLineNo">498</span>                        Enumeration keys = props.keys();<a name="line.498"></a>
+<span class="sourceLineNo">499</span>                        boolean add = true;<a name="line.499"></a>
+<span class="sourceLineNo">500</span>                        while (keys.hasMoreElements()) {<a name="line.500"></a>
+<span class="sourceLineNo">501</span>                                String name = (String) keys.nextElement();<a name="line.501"></a>
+<span class="sourceLineNo">502</span>                                if (name.equals(aName)) {<a name="line.502"></a>
+<span class="sourceLineNo">503</span>                                        add = false;<a name="line.503"></a>
+<span class="sourceLineNo">504</span>                                }<a name="line.504"></a>
+<span class="sourceLineNo">505</span>                        }<a name="line.505"></a>
+<span class="sourceLineNo">506</span><a name="line.506"></a>
+<span class="sourceLineNo">507</span>                        if (!aName.trim().equals("") &amp;&amp; add) {<a name="line.507"></a>
+<span class="sourceLineNo">508</span>                                if (!aName.substring(0, 1).equals("_")<a name="line.508"></a>
+<span class="sourceLineNo">509</span>                                                &amp;&amp; !aName.equals("KeplerDocumentation")<a name="line.509"></a>
+<span class="sourceLineNo">510</span>                                                &amp;&amp; !aName.equals("entityId") &amp;&amp; !aName.equals("class")<a name="line.510"></a>
+<span class="sourceLineNo">511</span>                                                &amp;&amp; !aName.equals("derivedFrom")<a name="line.511"></a>
+<span class="sourceLineNo">512</span>                                                &amp;&amp; aName.indexOf("semanticType") == -1) {<a name="line.512"></a>
+<span class="sourceLineNo">513</span>                                        try {<a name="line.513"></a>
+<span class="sourceLineNo">514</span>                                                att.addProperty(aName, "");<a name="line.514"></a>
+<span class="sourceLineNo">515</span>                                                // ConfigurableAttribute ca = new<a name="line.515"></a>
+<span class="sourceLineNo">516</span>                                                // ConfigurableAttribute(att, "prop:" + aName);<a name="line.516"></a>
+<span class="sourceLineNo">517</span>                                                // ca.setExpression("");<a name="line.517"></a>
+<span class="sourceLineNo">518</span>                                        } catch (Exception e) {<a name="line.518"></a>
+<span class="sourceLineNo">519</span>                                                JOptionPane.showMessageDialog(null,<a name="line.519"></a>
+<span class="sourceLineNo">520</span>                                                                "Error adding attribute " + aName + " : "<a name="line.520"></a>
+<span class="sourceLineNo">521</span>                                                                                + e.getMessage(), "Error",<a name="line.521"></a>
+<span class="sourceLineNo">522</span>                                                                JOptionPane.ERROR_MESSAGE);<a name="line.522"></a>
+<span class="sourceLineNo">523</span>                                        }<a name="line.523"></a>
+<span class="sourceLineNo">524</span><a name="line.524"></a>
+<span class="sourceLineNo">525</span>                                }<a name="line.525"></a>
+<span class="sourceLineNo">526</span>                        }<a name="line.526"></a>
+<span class="sourceLineNo">527</span>                }<a name="line.527"></a>
+<span class="sourceLineNo">528</span><a name="line.528"></a>
+<span class="sourceLineNo">529</span>                // check for ports that have been added that don't have a doc property<a name="line.529"></a>
+<span class="sourceLineNo">530</span>                if (target instanceof Entity) {<a name="line.530"></a>
+<span class="sourceLineNo">531</span>                        Enumeration portEnum = ((Entity) target).getPorts();<a name="line.531"></a>
+<span class="sourceLineNo">532</span>                        while (portEnum.hasMoreElements()) {<a name="line.532"></a>
+<span class="sourceLineNo">533</span>                                IOPort iop = (IOPort) portEnum.nextElement();<a name="line.533"></a>
+<span class="sourceLineNo">534</span>                                String iopName = iop.getName();<a name="line.534"></a>
+<span class="sourceLineNo">535</span>                                Hashtable ports = att.getPortHash();<a name="line.535"></a>
+<span class="sourceLineNo">536</span>                                Enumeration keys = ports.keys();<a name="line.536"></a>
+<span class="sourceLineNo">537</span>                                boolean add = true;<a name="line.537"></a>
+<span class="sourceLineNo">538</span>                                while (keys.hasMoreElements()) {<a name="line.538"></a>
+<span class="sourceLineNo">539</span>                                        String name = (String) keys.nextElement();<a name="line.539"></a>
+<span class="sourceLineNo">540</span>                                        if (name.equals(iopName)) {<a name="line.540"></a>
+<span class="sourceLineNo">541</span>                                                add = false;<a name="line.541"></a>
+<span class="sourceLineNo">542</span>                                        }<a name="line.542"></a>
+<span class="sourceLineNo">543</span>                                }<a name="line.543"></a>
+<span class="sourceLineNo">544</span><a name="line.544"></a>
+<span class="sourceLineNo">545</span>                                if (add) {<a name="line.545"></a>
+<span class="sourceLineNo">546</span>                                        try {<a name="line.546"></a>
+<span class="sourceLineNo">547</span>                                                att.addPort(iopName, "");<a name="line.547"></a>
+<span class="sourceLineNo">548</span>                                        } catch (Exception e) {<a name="line.548"></a>
+<span class="sourceLineNo">549</span>                                                JOptionPane.showMessageDialog(null,<a name="line.549"></a>
+<span class="sourceLineNo">550</span>                                                                "Error adding port " + iopName + " : "<a name="line.550"></a>
+<span class="sourceLineNo">551</span>                                                                                + e.getMessage(), "Error",<a name="line.551"></a>
+<span class="sourceLineNo">552</span>                                                                JOptionPane.ERROR_MESSAGE);<a name="line.552"></a>
+<span class="sourceLineNo">553</span>                                        }<a name="line.553"></a>
+<span class="sourceLineNo">554</span>                                }<a name="line.554"></a>
+<span class="sourceLineNo">555</span>                        }<a name="line.555"></a>
+<span class="sourceLineNo">556</span><a name="line.556"></a>
+<span class="sourceLineNo">557</span>                        // ports<a name="line.557"></a>
+<span class="sourceLineNo">558</span>                        JPanel portHeaderLabelPanel = new JPanel();<a name="line.558"></a>
+<span class="sourceLineNo">559</span>                        JLabel portHeaderLabel = new JLabel("Ports");<a name="line.559"></a>
+<span class="sourceLineNo">560</span>                        portHeaderLabel.setFont(new Font("Times", Font.BOLD, 20));<a name="line.560"></a>
+<span class="sourceLineNo">561</span>                        portHeaderLabelPanel.add(portHeaderLabel);<a name="line.561"></a>
+<span class="sourceLineNo">562</span>                        portHeaderLabelPanel.setMaximumSize(new Dimension(standardX, 50));<a name="line.562"></a>
+<span class="sourceLineNo">563</span>                        portHeaderLabelPanel.setOpaque(false);<a name="line.563"></a>
+<span class="sourceLineNo">564</span>                        outerPanel.add(portHeaderLabelPanel);<a name="line.564"></a>
+<span class="sourceLineNo">565</span><a name="line.565"></a>
+<span class="sourceLineNo">566</span>                        Hashtable portHash = att.getPortHash();<a name="line.566"></a>
+<span class="sourceLineNo">567</span>                        JPanel portPanel = createHashPanel(portHash, "port");<a name="line.567"></a>
+<span class="sourceLineNo">568</span>                        portPanel.setMaximumSize(new Dimension(standardX, 1000));<a name="line.568"></a>
+<span class="sourceLineNo">569</span>                        outerPanel.add(portPanel);<a name="line.569"></a>
+<span class="sourceLineNo">570</span>                        outerPanel.add(Box.createVerticalStrut(20));<a name="line.570"></a>
+<span class="sourceLineNo">571</span>                }<a name="line.571"></a>
+<span class="sourceLineNo">572</span><a name="line.572"></a>
+<span class="sourceLineNo">573</span>                // params<a name="line.573"></a>
+<span class="sourceLineNo">574</span>                JPanel propHeaderLabelPanel = new JPanel();<a name="line.574"></a>
+<span class="sourceLineNo">575</span>                JLabel propHeaderLabel = new JLabel("Properties");<a name="line.575"></a>
+<span class="sourceLineNo">576</span>                propHeaderLabel.setFont(new Font("Times", Font.BOLD, 20));<a name="line.576"></a>
+<span class="sourceLineNo">577</span><a name="line.577"></a>
+<span class="sourceLineNo">578</span>                propHeaderLabelPanel.add(propHeaderLabel);<a name="line.578"></a>
+<span class="sourceLineNo">579</span>                propHeaderLabelPanel.setMaximumSize(new Dimension(standardX, 50));<a name="line.579"></a>
+<span class="sourceLineNo">580</span>                propHeaderLabelPanel.setOpaque(false);<a name="line.580"></a>
+<span class="sourceLineNo">581</span>                outerPanel.add(propHeaderLabelPanel);<a name="line.581"></a>
+<span class="sourceLineNo">582</span><a name="line.582"></a>
+<span class="sourceLineNo">583</span>                Hashtable propHash = att.getPropertyHash();<a name="line.583"></a>
+<span class="sourceLineNo">584</span>                JPanel propPanel = createHashPanel(propHash, "prop");<a name="line.584"></a>
+<span class="sourceLineNo">585</span>                propPanel.setMaximumSize(new Dimension(standardX, 1000));<a name="line.585"></a>
+<span class="sourceLineNo">586</span>                outerPanel.add(propPanel);<a name="line.586"></a>
+<span class="sourceLineNo">587</span>                outerPanel.add(Box.createVerticalStrut(20));<a name="line.587"></a>
+<span class="sourceLineNo">588</span><a name="line.588"></a>
+<span class="sourceLineNo">589</span>                Component[] comps = outerPanel.getComponents();<a name="line.589"></a>
+<span class="sourceLineNo">590</span>                int y = 0;<a name="line.590"></a>
+<span class="sourceLineNo">591</span>                for (int i = 0; i &lt; comps.length; i++) {<a name="line.591"></a>
+<span class="sourceLineNo">592</span>                        // set the size of the dialog based on the size of the components in<a name="line.592"></a>
+<span class="sourceLineNo">593</span>                        // it<a name="line.593"></a>
+<span class="sourceLineNo">594</span>                        y += comps[i].getMinimumSize().getHeight();<a name="line.594"></a>
+<span class="sourceLineNo">595</span>                }<a name="line.595"></a>
+<span class="sourceLineNo">596</span><a name="line.596"></a>
+<span class="sourceLineNo">597</span>                outerPanel.setPreferredSize(new Dimension(standardX + 50, y + 100));<a name="line.597"></a>
+<span class="sourceLineNo">598</span>                return outerPanel;<a name="line.598"></a>
+<span class="sourceLineNo">599</span>        }<a name="line.599"></a>
+<span class="sourceLineNo">600</span><a name="line.600"></a>
+<span class="sourceLineNo">601</span>        /**<a name="line.601"></a>
+<span class="sourceLineNo">602</span>         * create a panel of inputs based on a hashtable<a name="line.602"></a>
+<span class="sourceLineNo">603</span>         */<a name="line.603"></a>
+<span class="sourceLineNo">604</span>        private JPanel createHashPanel(Hashtable hash, String type) {<a name="line.604"></a>
+<span class="sourceLineNo">605</span>                JPanel propLabelPanel = new JPanel();<a name="line.605"></a>
+<span class="sourceLineNo">606</span>                BoxLayout propLabelPanelBox = new BoxLayout(propLabelPanel,<a name="line.606"></a>
+<span class="sourceLineNo">607</span>                                BoxLayout.Y_AXIS);<a name="line.607"></a>
+<span class="sourceLineNo">608</span>                propLabelPanel.setLayout(propLabelPanelBox);<a name="line.608"></a>
+<span class="sourceLineNo">609</span>                propLabelPanel.setMaximumSize(new Dimension(100, 1000));<a name="line.609"></a>
+<span class="sourceLineNo">610</span><a name="line.610"></a>
+<span class="sourceLineNo">611</span>                JPanel propTextBoxPanel = new JPanel();<a name="line.611"></a>
+<span class="sourceLineNo">612</span>                BoxLayout propTextBoxPanelBox = new BoxLayout(propTextBoxPanel,<a name="line.612"></a>
+<span class="sourceLineNo">613</span>                                BoxLayout.Y_AXIS);<a name="line.613"></a>
+<span class="sourceLineNo">614</span>                propTextBoxPanel.setLayout(propTextBoxPanelBox);<a name="line.614"></a>
+<span class="sourceLineNo">615</span>                propTextBoxPanel.setMaximumSize(new Dimension(400, 1000));<a name="line.615"></a>
+<span class="sourceLineNo">616</span><a name="line.616"></a>
+<span class="sourceLineNo">617</span>                JPanel propPanel = new JPanel();<a name="line.617"></a>
+<span class="sourceLineNo">618</span>                BoxLayout propPanelBox = new BoxLayout(propPanel, BoxLayout.Y_AXIS);<a name="line.618"></a>
+<span class="sourceLineNo">619</span>                propPanel.setLayout(propPanelBox);<a name="line.619"></a>
+<span class="sourceLineNo">620</span><a name="line.620"></a>
+<span class="sourceLineNo">621</span>                Enumeration propEnum = hash.keys();<a name="line.621"></a>
+<span class="sourceLineNo">622</span>                while (propEnum.hasMoreElements()) {<a name="line.622"></a>
+<span class="sourceLineNo">623</span>                        String name = (String) propEnum.nextElement();<a name="line.623"></a>
+<span class="sourceLineNo">624</span>                        String value = (String) hash.get(name);<a name="line.624"></a>
+<span class="sourceLineNo">625</span>                        JLabel propLabel = new JLabel(name.trim() + ":");<a name="line.625"></a>
+<span class="sourceLineNo">626</span>                        propLabel.setMaximumSize(new Dimension(150, 1000));<a name="line.626"></a>
+<span class="sourceLineNo">627</span>                        JTextField propTextField = new JTextField(value.trim());<a name="line.627"></a>
+<span class="sourceLineNo">628</span>                        propTextField.setMaximumSize(new Dimension(350, 1000));<a name="line.628"></a>
+<span class="sourceLineNo">629</span>                        propTextField.setMinimumSize(new Dimension(350, 20));<a name="line.629"></a>
+<span class="sourceLineNo">630</span>                        propTextField.setPreferredSize(new Dimension(350, 20));<a name="line.630"></a>
+<span class="sourceLineNo">631</span>                        Caret caret = propTextField.getCaret();<a name="line.631"></a>
+<span class="sourceLineNo">632</span>                        // move the carot in the text to the beginning instead of the end<a name="line.632"></a>
+<span class="sourceLineNo">633</span>                        caret.setDot(0);<a name="line.633"></a>
+<span class="sourceLineNo">634</span>                        propTextField.setCaret(caret);<a name="line.634"></a>
+<span class="sourceLineNo">635</span>                        editableComponents.put(type + ":" + name, propTextField);<a name="line.635"></a>
+<span class="sourceLineNo">636</span>                        JPanel editBoxPanel = createEditBox(propLabel, propTextField);<a name="line.636"></a>
+<span class="sourceLineNo">637</span><a name="line.637"></a>
+<span class="sourceLineNo">638</span>                        propPanel.add(editBoxPanel);<a name="line.638"></a>
+<span class="sourceLineNo">639</span>                }<a name="line.639"></a>
+<span class="sourceLineNo">640</span><a name="line.640"></a>
+<span class="sourceLineNo">641</span>                propPanel.setMaximumSize(new Dimension(standardX, 1000));<a name="line.641"></a>
+<span class="sourceLineNo">642</span><a name="line.642"></a>
+<span class="sourceLineNo">643</span>                return propPanel;<a name="line.643"></a>
+<span class="sourceLineNo">644</span>        }<a name="line.644"></a>
+<span class="sourceLineNo">645</span><a name="line.645"></a>
+<span class="sourceLineNo">646</span>        /**<a name="line.646"></a>
+<span class="sourceLineNo">647</span>         * create an edit box with a label<a name="line.647"></a>
+<span class="sourceLineNo">648</span>         */<a name="line.648"></a>
+<span class="sourceLineNo">649</span>        private JPanel createEditBox(JLabel label, JComponent textbox) {<a name="line.649"></a>
+<span class="sourceLineNo">650</span>                JPanel panel = new JPanel();<a name="line.650"></a>
+<span class="sourceLineNo">651</span>                BoxLayout box = new BoxLayout(panel, BoxLayout.X_AXIS);<a name="line.651"></a>
+<span class="sourceLineNo">652</span>                panel.setLayout(box);<a name="line.652"></a>
+<span class="sourceLineNo">653</span>                double labelWidth = label.getMinimumSize().getWidth();<a name="line.653"></a>
+<span class="sourceLineNo">654</span>                double textboxWidth = textbox.getMaximumSize().getWidth();<a name="line.654"></a>
+<span class="sourceLineNo">655</span>                int offset = (int) (150 - labelWidth);<a name="line.655"></a>
+<span class="sourceLineNo">656</span><a name="line.656"></a>
+<span class="sourceLineNo">657</span>                panel.add(label);<a name="line.657"></a>
+<span class="sourceLineNo">658</span>                panel.add(Box.createHorizontalStrut(offset));<a name="line.658"></a>
+<span class="sourceLineNo">659</span>                panel.add(textbox);<a name="line.659"></a>
+<span class="sourceLineNo">660</span>                panel.setOpaque(false);<a name="line.660"></a>
+<span class="sourceLineNo">661</span><a name="line.661"></a>
+<span class="sourceLineNo">662</span>                return panel;<a name="line.662"></a>
+<span class="sourceLineNo">663</span>        }<a name="line.663"></a>
+<span class="sourceLineNo">664</span><a name="line.664"></a>
+<span class="sourceLineNo">665</span>}<a name="line.665"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

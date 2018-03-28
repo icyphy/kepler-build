@@ -1,0 +1,298 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../stylesheet.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>/** An interface defining the operations on a complete partial order (CPO).<a name="line.1"></a>
+<span class="sourceLineNo">002</span><a name="line.2"></a>
+<span class="sourceLineNo">003</span> Copyright (c) 1997-2013 The Regents of the University of California.<a name="line.3"></a>
+<span class="sourceLineNo">004</span> All rights reserved.<a name="line.4"></a>
+<span class="sourceLineNo">005</span> Permission is hereby granted, without written agreement and without<a name="line.5"></a>
+<span class="sourceLineNo">006</span> license or royalty fees, to use, copy, modify, and distribute this<a name="line.6"></a>
+<span class="sourceLineNo">007</span> software and its documentation for any purpose, provided that the above<a name="line.7"></a>
+<span class="sourceLineNo">008</span> copyright notice and the following two paragraphs appear in all copies<a name="line.8"></a>
+<span class="sourceLineNo">009</span> of this software.<a name="line.9"></a>
+<span class="sourceLineNo">010</span><a name="line.10"></a>
+<span class="sourceLineNo">011</span> IN NO EVENT SHALL THE UNIVERSITY OF CALIFORNIA BE LIABLE TO ANY PARTY<a name="line.11"></a>
+<span class="sourceLineNo">012</span> FOR DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES<a name="line.12"></a>
+<span class="sourceLineNo">013</span> ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION, EVEN IF<a name="line.13"></a>
+<span class="sourceLineNo">014</span> THE UNIVERSITY OF CALIFORNIA HAS BEEN ADVISED OF THE POSSIBILITY OF<a name="line.14"></a>
+<span class="sourceLineNo">015</span> SUCH DAMAGE.<a name="line.15"></a>
+<span class="sourceLineNo">016</span><a name="line.16"></a>
+<span class="sourceLineNo">017</span> THE UNIVERSITY OF CALIFORNIA SPECIFICALLY DISCLAIMS ANY WARRANTIES,<a name="line.17"></a>
+<span class="sourceLineNo">018</span> INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF<a name="line.18"></a>
+<span class="sourceLineNo">019</span> MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE<a name="line.19"></a>
+<span class="sourceLineNo">020</span> PROVIDED HEREUNDER IS ON AN "AS IS" BASIS, AND THE UNIVERSITY OF<a name="line.20"></a>
+<span class="sourceLineNo">021</span> CALIFORNIA HAS NO OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT, UPDATES,<a name="line.21"></a>
+<span class="sourceLineNo">022</span> ENHANCEMENTS, OR MODIFICATIONS.<a name="line.22"></a>
+<span class="sourceLineNo">023</span><a name="line.23"></a>
+<span class="sourceLineNo">024</span> PT_COPYRIGHT_VERSION_2<a name="line.24"></a>
+<span class="sourceLineNo">025</span> COPYRIGHTENDKEY<a name="line.25"></a>
+<span class="sourceLineNo">026</span><a name="line.26"></a>
+<span class="sourceLineNo">027</span><a name="line.27"></a>
+<span class="sourceLineNo">028</span> */<a name="line.28"></a>
+<span class="sourceLineNo">029</span>package ptolemy.graph;<a name="line.29"></a>
+<span class="sourceLineNo">030</span><a name="line.30"></a>
+<span class="sourceLineNo">031</span>import java.util.Set;<a name="line.31"></a>
+<span class="sourceLineNo">032</span><a name="line.32"></a>
+<span class="sourceLineNo">033</span>///////////////////////////////////////////////////////////////////<a name="line.33"></a>
+<span class="sourceLineNo">034</span>//// CPO<a name="line.34"></a>
+<span class="sourceLineNo">035</span><a name="line.35"></a>
+<span class="sourceLineNo">036</span>/**<a name="line.36"></a>
+<span class="sourceLineNo">037</span> An interface defining the operations on complete partial order (CPO).<a name="line.37"></a>
+<span class="sourceLineNo">038</span> The definitions of these operations can be found in "Introduction to<a name="line.38"></a>
+<span class="sourceLineNo">039</span> Lattices and Order," Cambridge University Press, 1990, by B. A. Davey<a name="line.39"></a>
+<span class="sourceLineNo">040</span> and H. A. Priestley. Informal definitions are given in the code comments.<a name="line.40"></a>
+<span class="sourceLineNo">041</span><a name="line.41"></a>
+<span class="sourceLineNo">042</span> Each element in the CPO is represented by an Object.<a name="line.42"></a>
+<span class="sourceLineNo">043</span> For infinite CPOs, the result of some of the operations may be an<a name="line.43"></a>
+<span class="sourceLineNo">044</span> infinite set, in which case, the class implementing those operations<a name="line.44"></a>
+<span class="sourceLineNo">045</span> can throw an Exception.<a name="line.45"></a>
+<span class="sourceLineNo">046</span><a name="line.46"></a>
+<span class="sourceLineNo">047</span> @author Yuhong Xiong<a name="line.47"></a>
+<span class="sourceLineNo">048</span> @version $Id$<a name="line.48"></a>
+<span class="sourceLineNo">049</span> @since Ptolemy II 0.2<a name="line.49"></a>
+<span class="sourceLineNo">050</span> @Pt.ProposedRating Green (yuhong)<a name="line.50"></a>
+<span class="sourceLineNo">051</span> @Pt.AcceptedRating Green (kienhuis)<a name="line.51"></a>
+<span class="sourceLineNo">052</span> */<a name="line.52"></a>
+<span class="sourceLineNo">053</span>public interface CPO&lt;T extends Object&gt; {<a name="line.53"></a>
+<span class="sourceLineNo">054</span>    ///////////////////////////////////////////////////////////////////<a name="line.54"></a>
+<span class="sourceLineNo">055</span>    ////                         public methods                    ////<a name="line.55"></a>
+<span class="sourceLineNo">056</span><a name="line.56"></a>
+<span class="sourceLineNo">057</span>    /** Return the bottom element of this CPO.<a name="line.57"></a>
+<span class="sourceLineNo">058</span>     *  The bottom element is the element in the CPO that is lower than<a name="line.58"></a>
+<span class="sourceLineNo">059</span>     *  all the other elements.<a name="line.59"></a>
+<span class="sourceLineNo">060</span>     *  @return An Object representing the bottom element, or<a name="line.60"></a>
+<span class="sourceLineNo">061</span>     *   &lt;code&gt;null&lt;/code&gt; if the bottom does not exist.<a name="line.61"></a>
+<span class="sourceLineNo">062</span>     */<a name="line.62"></a>
+<span class="sourceLineNo">063</span>    public Object bottom();<a name="line.63"></a>
+<span class="sourceLineNo">064</span><a name="line.64"></a>
+<span class="sourceLineNo">065</span>    /** Compare two elements in this CPO.<a name="line.65"></a>
+<span class="sourceLineNo">066</span>     *  @param e1 An Object representing a CPO element.<a name="line.66"></a>
+<span class="sourceLineNo">067</span>     *  @param e2 An Object representing a CPO element.<a name="line.67"></a>
+<span class="sourceLineNo">068</span>     *  @return One of &lt;code&gt;CPO.LOWER, CPO.SAME,<a name="line.68"></a>
+<span class="sourceLineNo">069</span>     *   CPO.HIGHER, CPO.INCOMPARABLE&lt;/code&gt;.<a name="line.69"></a>
+<span class="sourceLineNo">070</span>     *  @exception IllegalArgumentException If at least one of the<a name="line.70"></a>
+<span class="sourceLineNo">071</span>     *   specified Objects is not an element of this CPO.<a name="line.71"></a>
+<span class="sourceLineNo">072</span>     */<a name="line.72"></a>
+<span class="sourceLineNo">073</span>    public int compare(Object e1, Object e2);<a name="line.73"></a>
+<span class="sourceLineNo">074</span><a name="line.74"></a>
+<span class="sourceLineNo">075</span>    /** Compute the down-set of an element in this CPO.<a name="line.75"></a>
+<span class="sourceLineNo">076</span>     *  The down-set of an element is the subset consisting of<a name="line.76"></a>
+<span class="sourceLineNo">077</span>     *  all the elements lower than or the same as the specified element.<a name="line.77"></a>
+<span class="sourceLineNo">078</span>     *  @param e An Object representing an element in this CPO.<a name="line.78"></a>
+<span class="sourceLineNo">079</span>     *  @return An array of Objects representing the elements in the<a name="line.79"></a>
+<span class="sourceLineNo">080</span>     *   down-set of the specified element.<a name="line.80"></a>
+<span class="sourceLineNo">081</span>     *  @exception IllegalArgumentException If the specified Object is not<a name="line.81"></a>
+<span class="sourceLineNo">082</span>     *   an element in this CPO, or the resulting set is infinite.<a name="line.82"></a>
+<span class="sourceLineNo">083</span>     */<a name="line.83"></a>
+<span class="sourceLineNo">084</span>    public Object[] downSet(Object e); // FIXME: return Set instead of array<a name="line.84"></a>
+<span class="sourceLineNo">085</span><a name="line.85"></a>
+<span class="sourceLineNo">086</span>    /** Compute the greatest element of a subset.<a name="line.86"></a>
+<span class="sourceLineNo">087</span>     *  The greatest element of a subset is an element in the<a name="line.87"></a>
+<span class="sourceLineNo">088</span>     *  subset that is higher than all the other elements in the<a name="line.88"></a>
+<span class="sourceLineNo">089</span>     *  subset.<a name="line.89"></a>
+<span class="sourceLineNo">090</span>     *  @param subset A set of Objects representing the subset.<a name="line.90"></a>
+<span class="sourceLineNo">091</span>     *  @return An Object representing the greatest element of the subset,<a name="line.91"></a>
+<span class="sourceLineNo">092</span>     *   or &lt;code&gt;null&lt;/code&gt; if the greatest element does not exist.<a name="line.92"></a>
+<span class="sourceLineNo">093</span>     *  @exception IllegalArgumentException If at least one Object in the<a name="line.93"></a>
+<span class="sourceLineNo">094</span>     *   specified array is not an element of this CPO.<a name="line.94"></a>
+<span class="sourceLineNo">095</span>     */<a name="line.95"></a>
+<span class="sourceLineNo">096</span>    public Object greatestElement(Set&lt;T&gt; subset);<a name="line.96"></a>
+<span class="sourceLineNo">097</span><a name="line.97"></a>
+<span class="sourceLineNo">098</span>    /** Compute the greatest lower bound (GLB) of two elements.<a name="line.98"></a>
+<span class="sourceLineNo">099</span>     *  The GLB of two elements is the greatest element in the CPO<a name="line.99"></a>
+<span class="sourceLineNo">100</span>     *  that is lower than or the same as both of the two elements.<a name="line.100"></a>
+<span class="sourceLineNo">101</span>     *  @param e1 An Object representing an element in this CPO.<a name="line.101"></a>
+<span class="sourceLineNo">102</span>     *  @param e2 An Object representing an element in this CPO.<a name="line.102"></a>
+<span class="sourceLineNo">103</span>     *  @return An Object representing the GLB of the two specified<a name="line.103"></a>
+<span class="sourceLineNo">104</span>     *   elements, or &lt;code&gt;null&lt;/code&gt; if the GLB does not exist.<a name="line.104"></a>
+<span class="sourceLineNo">105</span>     *  @exception IllegalArgumentException If at least one of the<a name="line.105"></a>
+<span class="sourceLineNo">106</span>     *   specified Objects is not an element of this CPO.<a name="line.106"></a>
+<span class="sourceLineNo">107</span>     */<a name="line.107"></a>
+<span class="sourceLineNo">108</span>    public Object greatestLowerBound(Object e1, Object e2);<a name="line.108"></a>
+<span class="sourceLineNo">109</span><a name="line.109"></a>
+<span class="sourceLineNo">110</span>    /** Compute the greatest lower bound (GLB) of a subset.<a name="line.110"></a>
+<span class="sourceLineNo">111</span>     *  The GLB of a subset is the greatest element in the CPO that<a name="line.111"></a>
+<span class="sourceLineNo">112</span>     *  is lower than or the same as all the elements in the<a name="line.112"></a>
+<span class="sourceLineNo">113</span>     *  subset.<a name="line.113"></a>
+<span class="sourceLineNo">114</span>     *  @param subset A set of Objects representing the subset.<a name="line.114"></a>
+<span class="sourceLineNo">115</span>     *  @return An Object representing the GLB of the subset, or<a name="line.115"></a>
+<span class="sourceLineNo">116</span>     *   &lt;code&gt;null&lt;/code&gt; if the GLB does not exist.<a name="line.116"></a>
+<span class="sourceLineNo">117</span>     *  @exception IllegalArgumentException If at least one Object<a name="line.117"></a>
+<span class="sourceLineNo">118</span>     *   in the specified array is not an element of this CPO.<a name="line.118"></a>
+<span class="sourceLineNo">119</span>     */<a name="line.119"></a>
+<span class="sourceLineNo">120</span>    public T greatestLowerBound(Set&lt;T&gt; subset);<a name="line.120"></a>
+<span class="sourceLineNo">121</span><a name="line.121"></a>
+<span class="sourceLineNo">122</span>    /** Test if this CPO is a lattice.<a name="line.122"></a>
+<span class="sourceLineNo">123</span>     *  A lattice is a CPO where the LUB and GLB of any pair of elements<a name="line.123"></a>
+<span class="sourceLineNo">124</span>     *  exist.<a name="line.124"></a>
+<span class="sourceLineNo">125</span>     *  @return True if this CPO is a lattice;<a name="line.125"></a>
+<span class="sourceLineNo">126</span>     *   &lt;code&gt;false&lt;/code&gt; otherwise.<a name="line.126"></a>
+<span class="sourceLineNo">127</span>     */<a name="line.127"></a>
+<span class="sourceLineNo">128</span>    public boolean isLattice();<a name="line.128"></a>
+<span class="sourceLineNo">129</span><a name="line.129"></a>
+<span class="sourceLineNo">130</span>    /** Compute the least element of a subset.<a name="line.130"></a>
+<span class="sourceLineNo">131</span>     *  The least element of a subset is an element in the<a name="line.131"></a>
+<span class="sourceLineNo">132</span>     *  subset that is lower than all the other element in the<a name="line.132"></a>
+<span class="sourceLineNo">133</span>     *  subset.<a name="line.133"></a>
+<span class="sourceLineNo">134</span>     *  @param subset A set of Objects representing the subset.<a name="line.134"></a>
+<span class="sourceLineNo">135</span>     *  @return An Object representing the least element of the subset,<a name="line.135"></a>
+<span class="sourceLineNo">136</span>     *   or &lt;code&gt;null&lt;/code&gt; if the least element does not exist.<a name="line.136"></a>
+<span class="sourceLineNo">137</span>     *  @exception IllegalArgumentException If at least one Object in the<a name="line.137"></a>
+<span class="sourceLineNo">138</span>     *   specified array is not an element of this CPO.<a name="line.138"></a>
+<span class="sourceLineNo">139</span>     */<a name="line.139"></a>
+<span class="sourceLineNo">140</span>    public Object leastElement(Set&lt;T&gt; subset);<a name="line.140"></a>
+<span class="sourceLineNo">141</span><a name="line.141"></a>
+<span class="sourceLineNo">142</span>    /** Compute the least upper bound (LUB) of two elements.<a name="line.142"></a>
+<span class="sourceLineNo">143</span>     *  The LUB of two elements is the least element in the CPO<a name="line.143"></a>
+<span class="sourceLineNo">144</span>     *  that is greater than or the same as both of the two elements.<a name="line.144"></a>
+<span class="sourceLineNo">145</span>     *  @param e1 An Object representing an element in this CPO.<a name="line.145"></a>
+<span class="sourceLineNo">146</span>     *  @param e2 An Object representing an element in this CPO.<a name="line.146"></a>
+<span class="sourceLineNo">147</span>     *  @return An Object representing the LUB of the two specified<a name="line.147"></a>
+<span class="sourceLineNo">148</span>     *   elements, or &lt;code&gt;null&lt;/code&gt; if the LUB does not exist.<a name="line.148"></a>
+<span class="sourceLineNo">149</span>     *  @exception IllegalArgumentException If at least one of the<a name="line.149"></a>
+<span class="sourceLineNo">150</span>     *   specified Objects is not an element of this CPO.<a name="line.150"></a>
+<span class="sourceLineNo">151</span>     */<a name="line.151"></a>
+<span class="sourceLineNo">152</span>    public Object leastUpperBound(Object e1, Object e2);<a name="line.152"></a>
+<span class="sourceLineNo">153</span><a name="line.153"></a>
+<span class="sourceLineNo">154</span>    /** Compute the least upper bound (LUB) of a subset.<a name="line.154"></a>
+<span class="sourceLineNo">155</span>     *  The LUB of a subset is the least element in the CPO that<a name="line.155"></a>
+<span class="sourceLineNo">156</span>     *  is greater than or the same as all the elements in the<a name="line.156"></a>
+<span class="sourceLineNo">157</span>     *  subset.<a name="line.157"></a>
+<span class="sourceLineNo">158</span>     *  @param subset A set of Objects representing the subset.<a name="line.158"></a>
+<span class="sourceLineNo">159</span>     *  @return An Object representing the LUB of the subset, or<a name="line.159"></a>
+<span class="sourceLineNo">160</span>     *   &lt;code&gt;null&lt;/code&gt; if the LUB does not exist.<a name="line.160"></a>
+<span class="sourceLineNo">161</span>     *  @exception IllegalArgumentException If at least one Object<a name="line.161"></a>
+<span class="sourceLineNo">162</span>     *   in the specified array is not an element of this CPO.<a name="line.162"></a>
+<span class="sourceLineNo">163</span>     */<a name="line.163"></a>
+<span class="sourceLineNo">164</span>    public T leastUpperBound(Set&lt;T&gt; subset);<a name="line.164"></a>
+<span class="sourceLineNo">165</span><a name="line.165"></a>
+<span class="sourceLineNo">166</span>    /** Return the top element of this CPO.<a name="line.166"></a>
+<span class="sourceLineNo">167</span>     *  The top element is the element in the CPO that is higher than<a name="line.167"></a>
+<span class="sourceLineNo">168</span>     *  all the other elements.<a name="line.168"></a>
+<span class="sourceLineNo">169</span>     *  @return An Object representing the top element, or<a name="line.169"></a>
+<span class="sourceLineNo">170</span>     *   &lt;code&gt;null&lt;/code&gt; if the top does not exist.<a name="line.170"></a>
+<span class="sourceLineNo">171</span>     */<a name="line.171"></a>
+<span class="sourceLineNo">172</span>    public Object top();<a name="line.172"></a>
+<span class="sourceLineNo">173</span><a name="line.173"></a>
+<span class="sourceLineNo">174</span>    /** Compute the up-set of an element in this CPO.<a name="line.174"></a>
+<span class="sourceLineNo">175</span>     *  The up-set of an element is the subset consisting of<a name="line.175"></a>
+<span class="sourceLineNo">176</span>     *  all the elements higher than or the same as the specified element.<a name="line.176"></a>
+<span class="sourceLineNo">177</span>     *  @param e An Object representing an element in this CPO.<a name="line.177"></a>
+<span class="sourceLineNo">178</span>     *  @return An array of Objects representing the elements in the<a name="line.178"></a>
+<span class="sourceLineNo">179</span>     *   up-set of the specified element.<a name="line.179"></a>
+<span class="sourceLineNo">180</span>     *  @exception IllegalArgumentException If the specified Object is not<a name="line.180"></a>
+<span class="sourceLineNo">181</span>     *   an element of this CPO, or the resulting set is infinite.<a name="line.181"></a>
+<span class="sourceLineNo">182</span>     */<a name="line.182"></a>
+<span class="sourceLineNo">183</span>    public Object[] upSet(Object e); // FIXME: return Set instead of array<a name="line.183"></a>
+<span class="sourceLineNo">184</span><a name="line.184"></a>
+<span class="sourceLineNo">185</span>    ///////////////////////////////////////////////////////////////////<a name="line.185"></a>
+<span class="sourceLineNo">186</span>    ////                         public variables                  ////<a name="line.186"></a>
+<span class="sourceLineNo">187</span><a name="line.187"></a>
+<span class="sourceLineNo">188</span>    /** One of the return values of &lt;code&gt;compare&lt;/code&gt;, indicating<a name="line.188"></a>
+<span class="sourceLineNo">189</span>     *  that the first element is higher than the second.<a name="line.189"></a>
+<span class="sourceLineNo">190</span>     *  @see #compare<a name="line.190"></a>
+<span class="sourceLineNo">191</span>     */<a name="line.191"></a>
+<span class="sourceLineNo">192</span>    public static final int HIGHER = 1;<a name="line.192"></a>
+<span class="sourceLineNo">193</span><a name="line.193"></a>
+<span class="sourceLineNo">194</span>    /** One of the return values of &lt;code&gt;compare&lt;/code&gt;, indicating<a name="line.194"></a>
+<span class="sourceLineNo">195</span>     *  that the two elements are incomparable.<a name="line.195"></a>
+<span class="sourceLineNo">196</span>     *  @see #compare<a name="line.196"></a>
+<span class="sourceLineNo">197</span>     */<a name="line.197"></a>
+<span class="sourceLineNo">198</span>    public static final int INCOMPARABLE = 2;<a name="line.198"></a>
+<span class="sourceLineNo">199</span><a name="line.199"></a>
+<span class="sourceLineNo">200</span>    /** One of the return values of &lt;code&gt;compare&lt;/code&gt;, indicating<a name="line.200"></a>
+<span class="sourceLineNo">201</span>     *  that the first element is lower than the second.<a name="line.201"></a>
+<span class="sourceLineNo">202</span>     *  @see #compare<a name="line.202"></a>
+<span class="sourceLineNo">203</span>     */<a name="line.203"></a>
+<span class="sourceLineNo">204</span>    public static final int LOWER = -1;<a name="line.204"></a>
+<span class="sourceLineNo">205</span><a name="line.205"></a>
+<span class="sourceLineNo">206</span>    /** One of the return values of &lt;code&gt;compare&lt;/code&gt;, indicating<a name="line.206"></a>
+<span class="sourceLineNo">207</span>     *  that the two elements are the same.<a name="line.207"></a>
+<span class="sourceLineNo">208</span>     *  @see #compare<a name="line.208"></a>
+<span class="sourceLineNo">209</span>     */<a name="line.209"></a>
+<span class="sourceLineNo">210</span>    public static final int SAME = 0;<a name="line.210"></a>
+<span class="sourceLineNo">211</span><a name="line.211"></a>
+<span class="sourceLineNo">212</span>    ///////////////////////////////////////////////////////////////////<a name="line.212"></a>
+<span class="sourceLineNo">213</span>    ////                         public inner classes              ////<a name="line.213"></a>
+<span class="sourceLineNo">214</span><a name="line.214"></a>
+<span class="sourceLineNo">215</span>    /** An enumeration type to represent the two different types of bounds<a name="line.215"></a>
+<span class="sourceLineNo">216</span>     *  that can be calculated on a set of nodes in a CPO; either<a name="line.216"></a>
+<span class="sourceLineNo">217</span>     *  a greatest lower bound or least upper bound.<a name="line.217"></a>
+<span class="sourceLineNo">218</span>     */<a name="line.218"></a>
+<span class="sourceLineNo">219</span>    public static enum BoundType {<a name="line.219"></a>
+<span class="sourceLineNo">220</span>        /** Represents the greatest lower bound. */<a name="line.220"></a>
+<span class="sourceLineNo">221</span>        GREATESTLOWER,<a name="line.221"></a>
+<span class="sourceLineNo">222</span><a name="line.222"></a>
+<span class="sourceLineNo">223</span>        /** Represents the least upper bound. */<a name="line.223"></a>
+<span class="sourceLineNo">224</span>        LEASTUPPER<a name="line.224"></a>
+<span class="sourceLineNo">225</span>    }<a name="line.225"></a>
+<span class="sourceLineNo">226</span>}<a name="line.226"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

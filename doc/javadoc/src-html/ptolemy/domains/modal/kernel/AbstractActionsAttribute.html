@@ -1,0 +1,696 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../../../stylesheet.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>/* A base class for actions with semicolon delimited lists of commands.<a name="line.1"></a>
+<span class="sourceLineNo">002</span><a name="line.2"></a>
+<span class="sourceLineNo">003</span> Copyright (c) 2000-2015 The Regents of the University of California.<a name="line.3"></a>
+<span class="sourceLineNo">004</span> All rights reserved.<a name="line.4"></a>
+<span class="sourceLineNo">005</span> Permission is hereby granted, without written agreement and without<a name="line.5"></a>
+<span class="sourceLineNo">006</span> license or royalty fees, to use, copy, modify, and distribute this<a name="line.6"></a>
+<span class="sourceLineNo">007</span> software and its documentation for any purpose, provided that the above<a name="line.7"></a>
+<span class="sourceLineNo">008</span> copyright notice and the following two paragraphs appear in all copies<a name="line.8"></a>
+<span class="sourceLineNo">009</span> of this software.<a name="line.9"></a>
+<span class="sourceLineNo">010</span><a name="line.10"></a>
+<span class="sourceLineNo">011</span> IN NO EVENT SHALL THE UNIVERSITY OF CALIFORNIA BE LIABLE TO ANY PARTY<a name="line.11"></a>
+<span class="sourceLineNo">012</span> FOR DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES<a name="line.12"></a>
+<span class="sourceLineNo">013</span> ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION, EVEN IF<a name="line.13"></a>
+<span class="sourceLineNo">014</span> THE UNIVERSITY OF CALIFORNIA HAS BEEN ADVISED OF THE POSSIBILITY OF<a name="line.14"></a>
+<span class="sourceLineNo">015</span> SUCH DAMAGE.<a name="line.15"></a>
+<span class="sourceLineNo">016</span><a name="line.16"></a>
+<span class="sourceLineNo">017</span> THE UNIVERSITY OF CALIFORNIA SPECIFICALLY DISCLAIMS ANY WARRANTIES,<a name="line.17"></a>
+<span class="sourceLineNo">018</span> INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF<a name="line.18"></a>
+<span class="sourceLineNo">019</span> MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE<a name="line.19"></a>
+<span class="sourceLineNo">020</span> PROVIDED HEREUNDER IS ON AN "AS IS" BASIS, AND THE UNIVERSITY OF<a name="line.20"></a>
+<span class="sourceLineNo">021</span> CALIFORNIA HAS NO OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT, UPDATES,<a name="line.21"></a>
+<span class="sourceLineNo">022</span> ENHANCEMENTS, OR MODIFICATIONS.<a name="line.22"></a>
+<span class="sourceLineNo">023</span><a name="line.23"></a>
+<span class="sourceLineNo">024</span> PT_COPYRIGHT_VERSION_2<a name="line.24"></a>
+<span class="sourceLineNo">025</span> COPYRIGHTENDKEY<a name="line.25"></a>
+<span class="sourceLineNo">026</span> */<a name="line.26"></a>
+<span class="sourceLineNo">027</span>package ptolemy.domains.modal.kernel;<a name="line.27"></a>
+<span class="sourceLineNo">028</span><a name="line.28"></a>
+<span class="sourceLineNo">029</span>import java.util.Collections;<a name="line.29"></a>
+<span class="sourceLineNo">030</span>import java.util.HashSet;<a name="line.30"></a>
+<span class="sourceLineNo">031</span>import java.util.Iterator;<a name="line.31"></a>
+<span class="sourceLineNo">032</span>import java.util.LinkedList;<a name="line.32"></a>
+<span class="sourceLineNo">033</span>import java.util.List;<a name="line.33"></a>
+<span class="sourceLineNo">034</span>import java.util.Map;<a name="line.34"></a>
+<span class="sourceLineNo">035</span>import java.util.Set;<a name="line.35"></a>
+<span class="sourceLineNo">036</span><a name="line.36"></a>
+<span class="sourceLineNo">037</span>import ptolemy.data.IntToken;<a name="line.37"></a>
+<span class="sourceLineNo">038</span>import ptolemy.data.Token;<a name="line.38"></a>
+<span class="sourceLineNo">039</span>import ptolemy.data.expr.ASTPtAssignmentNode;<a name="line.39"></a>
+<span class="sourceLineNo">040</span>import ptolemy.data.expr.ASTPtRootNode;<a name="line.40"></a>
+<span class="sourceLineNo">041</span>import ptolemy.data.expr.ParseTreeEvaluator;<a name="line.41"></a>
+<span class="sourceLineNo">042</span>import ptolemy.data.expr.ParseTreeFreeVariableCollector;<a name="line.42"></a>
+<span class="sourceLineNo">043</span>import ptolemy.data.expr.ParseTreeTypeInference;<a name="line.43"></a>
+<span class="sourceLineNo">044</span>import ptolemy.data.expr.ParseTreeWriter;<a name="line.44"></a>
+<span class="sourceLineNo">045</span>import ptolemy.data.expr.ParserScope;<a name="line.45"></a>
+<span class="sourceLineNo">046</span>import ptolemy.data.expr.PtParser;<a name="line.46"></a>
+<span class="sourceLineNo">047</span>import ptolemy.data.expr.Variable;<a name="line.47"></a>
+<span class="sourceLineNo">048</span>import ptolemy.data.type.ArrayType;<a name="line.48"></a>
+<span class="sourceLineNo">049</span>import ptolemy.data.type.BaseType;<a name="line.49"></a>
+<span class="sourceLineNo">050</span>import ptolemy.data.type.HasTypeConstraints;<a name="line.50"></a>
+<span class="sourceLineNo">051</span>import ptolemy.data.type.MonotonicFunction;<a name="line.51"></a>
+<span class="sourceLineNo">052</span>import ptolemy.data.type.Type;<a name="line.52"></a>
+<span class="sourceLineNo">053</span>import ptolemy.data.type.Typeable;<a name="line.53"></a>
+<span class="sourceLineNo">054</span>import ptolemy.graph.Inequality;<a name="line.54"></a>
+<span class="sourceLineNo">055</span>import ptolemy.graph.InequalityTerm;<a name="line.55"></a>
+<span class="sourceLineNo">056</span>import ptolemy.kernel.Entity;<a name="line.56"></a>
+<span class="sourceLineNo">057</span>import ptolemy.kernel.util.IllegalActionException;<a name="line.57"></a>
+<span class="sourceLineNo">058</span>import ptolemy.kernel.util.NameDuplicationException;<a name="line.58"></a>
+<span class="sourceLineNo">059</span>import ptolemy.kernel.util.NamedObj;<a name="line.59"></a>
+<span class="sourceLineNo">060</span>import ptolemy.kernel.util.Workspace;<a name="line.60"></a>
+<span class="sourceLineNo">061</span><a name="line.61"></a>
+<span class="sourceLineNo">062</span>///////////////////////////////////////////////////////////////////<a name="line.62"></a>
+<span class="sourceLineNo">063</span>//// AbstractActionsAttribute<a name="line.63"></a>
+<span class="sourceLineNo">064</span><a name="line.64"></a>
+<span class="sourceLineNo">065</span>/**<a name="line.65"></a>
+<span class="sourceLineNo">066</span> A base class for actions with semicolon delimited lists of commands.<a name="line.66"></a>
+<span class="sourceLineNo">067</span> &lt;p&gt;<a name="line.67"></a>
+<span class="sourceLineNo">068</span> The value of this attribute is a semicolon separated list of commands,<a name="line.68"></a>
+<span class="sourceLineNo">069</span> where each command gives a destination to send data to and a value<a name="line.69"></a>
+<span class="sourceLineNo">070</span> to send. The actions are given by calling setExpression() with<a name="line.70"></a>
+<span class="sourceLineNo">071</span> a string of the form:<a name="line.71"></a>
+<span class="sourceLineNo">072</span> &lt;pre&gt;<a name="line.72"></a>
+<span class="sourceLineNo">073</span> &lt;i&gt;command&lt;/i&gt;; &lt;i&gt;command&lt;/i&gt;; ...<a name="line.73"></a>
+<span class="sourceLineNo">074</span> &lt;/pre&gt;<a name="line.74"></a>
+<span class="sourceLineNo">075</span> where each &lt;i&gt;command&lt;/i&gt; has the form:<a name="line.75"></a>
+<span class="sourceLineNo">076</span> &lt;pre&gt;<a name="line.76"></a>
+<span class="sourceLineNo">077</span> &lt;i&gt;destination&lt;/i&gt; = &lt;i&gt;expression&lt;/i&gt;<a name="line.77"></a>
+<span class="sourceLineNo">078</span> &lt;/pre&gt;<a name="line.78"></a>
+<span class="sourceLineNo">079</span> where &lt;i&gt;destination&lt;/i&gt; is either<a name="line.79"></a>
+<span class="sourceLineNo">080</span> &lt;pre&gt;<a name="line.80"></a>
+<span class="sourceLineNo">081</span> &lt;i&gt;name&lt;/i&gt;<a name="line.81"></a>
+<span class="sourceLineNo">082</span> &lt;/pre&gt;<a name="line.82"></a>
+<span class="sourceLineNo">083</span> or<a name="line.83"></a>
+<span class="sourceLineNo">084</span> &lt;pre&gt;<a name="line.84"></a>
+<span class="sourceLineNo">085</span> &lt;i&gt;name&lt;/i&gt;(&lt;i&gt;number&lt;/i&gt;)<a name="line.85"></a>
+<span class="sourceLineNo">086</span> &lt;/pre&gt;<a name="line.86"></a>
+<span class="sourceLineNo">087</span> &lt;p&gt;<a name="line.87"></a>
+<span class="sourceLineNo">088</span> The &lt;i&gt;expression&lt;/i&gt; is a string giving an expression in the usual<a name="line.88"></a>
+<span class="sourceLineNo">089</span> Ptolemy II expression language.  The expression may include references<a name="line.89"></a>
+<span class="sourceLineNo">090</span> to variables and parameters contained by the FSM actor.<a name="line.90"></a>
+<span class="sourceLineNo">091</span><a name="line.91"></a>
+<span class="sourceLineNo">092</span> @author Xiaojun Liu and Edward A. Lee<a name="line.92"></a>
+<span class="sourceLineNo">093</span> @version $Id$<a name="line.93"></a>
+<span class="sourceLineNo">094</span> @since Ptolemy II 8.0<a name="line.94"></a>
+<span class="sourceLineNo">095</span> @Pt.ProposedRating Yellow (eal)<a name="line.95"></a>
+<span class="sourceLineNo">096</span> @Pt.AcceptedRating Red (eal)<a name="line.96"></a>
+<span class="sourceLineNo">097</span> @see CommitActionsAttribute<a name="line.97"></a>
+<span class="sourceLineNo">098</span> @see Transition<a name="line.98"></a>
+<span class="sourceLineNo">099</span> @see FSMActor<a name="line.99"></a>
+<span class="sourceLineNo">100</span> */<a name="line.100"></a>
+<span class="sourceLineNo">101</span>public abstract class AbstractActionsAttribute extends Action<a name="line.101"></a>
+<span class="sourceLineNo">102</span>        implements HasTypeConstraints {<a name="line.102"></a>
+<span class="sourceLineNo">103</span>    /** Construct an action with the given name contained<a name="line.103"></a>
+<span class="sourceLineNo">104</span>     *  by the specified container (which should be a Transition when used in<a name="line.104"></a>
+<span class="sourceLineNo">105</span>     *  the FSM domain, and an Event in the Ptera domain). The &lt;i&gt;container&lt;/i&gt;<a name="line.105"></a>
+<span class="sourceLineNo">106</span>     *  argument must not<a name="line.106"></a>
+<span class="sourceLineNo">107</span>     *  be null, or a NullPointerException will be thrown. This action will<a name="line.107"></a>
+<span class="sourceLineNo">108</span>     *  use the workspace of the container for synchronization and<a name="line.108"></a>
+<span class="sourceLineNo">109</span>     *  version counts. If the name argument is null, then the name is<a name="line.109"></a>
+<span class="sourceLineNo">110</span>     *  set to the empty string.<a name="line.110"></a>
+<span class="sourceLineNo">111</span>     *  This increments the version of the workspace.<a name="line.111"></a>
+<span class="sourceLineNo">112</span>     *  @param container The container that contains this action.<a name="line.112"></a>
+<span class="sourceLineNo">113</span>     *  @param name The name of this action.<a name="line.113"></a>
+<span class="sourceLineNo">114</span>     *  @exception IllegalActionException If the action is not of an<a name="line.114"></a>
+<span class="sourceLineNo">115</span>     *   acceptable class for the container, or if the name contains<a name="line.115"></a>
+<span class="sourceLineNo">116</span>     *   a period.<a name="line.116"></a>
+<span class="sourceLineNo">117</span>     *  @exception NameDuplicationException If the container already<a name="line.117"></a>
+<span class="sourceLineNo">118</span>     *   has an attribute with the name.<a name="line.118"></a>
+<span class="sourceLineNo">119</span>     */<a name="line.119"></a>
+<span class="sourceLineNo">120</span>    public AbstractActionsAttribute(NamedObj container, String name)<a name="line.120"></a>
+<span class="sourceLineNo">121</span>            throws IllegalActionException, NameDuplicationException {<a name="line.121"></a>
+<span class="sourceLineNo">122</span>        super(container, name);<a name="line.122"></a>
+<span class="sourceLineNo">123</span>    }<a name="line.123"></a>
+<span class="sourceLineNo">124</span><a name="line.124"></a>
+<span class="sourceLineNo">125</span>    /** Construct an action in the specified workspace with an empty<a name="line.125"></a>
+<span class="sourceLineNo">126</span>     *  string as a name.<a name="line.126"></a>
+<span class="sourceLineNo">127</span>     *  The object is added to the directory of the workspace.<a name="line.127"></a>
+<span class="sourceLineNo">128</span>     *  Increment the version number of the workspace.<a name="line.128"></a>
+<span class="sourceLineNo">129</span>     *  @param workspace The workspace that will list the attribute.<a name="line.129"></a>
+<span class="sourceLineNo">130</span>     */<a name="line.130"></a>
+<span class="sourceLineNo">131</span>    public AbstractActionsAttribute(Workspace workspace) {<a name="line.131"></a>
+<span class="sourceLineNo">132</span>        super(workspace);<a name="line.132"></a>
+<span class="sourceLineNo">133</span>    }<a name="line.133"></a>
+<span class="sourceLineNo">134</span><a name="line.134"></a>
+<span class="sourceLineNo">135</span>    ///////////////////////////////////////////////////////////////////<a name="line.135"></a>
+<span class="sourceLineNo">136</span>    ////                         public methods                    ////<a name="line.136"></a>
+<span class="sourceLineNo">137</span><a name="line.137"></a>
+<span class="sourceLineNo">138</span>    /** Clone the actor into the specified workspace. This calls the<a name="line.138"></a>
+<span class="sourceLineNo">139</span>     *  base class and then sets the attribute public members to refer<a name="line.139"></a>
+<span class="sourceLineNo">140</span>     *  to the attributes of the new actor.<a name="line.140"></a>
+<span class="sourceLineNo">141</span>     *  @param workspace The workspace for the new actor.<a name="line.141"></a>
+<span class="sourceLineNo">142</span>     *  @return A new FSMActor.<a name="line.142"></a>
+<span class="sourceLineNo">143</span>     *  @exception CloneNotSupportedException If a derived class contains<a name="line.143"></a>
+<span class="sourceLineNo">144</span>     *   an attribute that cannot be cloned.<a name="line.144"></a>
+<span class="sourceLineNo">145</span>     */<a name="line.145"></a>
+<span class="sourceLineNo">146</span>    @Override<a name="line.146"></a>
+<span class="sourceLineNo">147</span>    public Object clone(Workspace workspace) throws CloneNotSupportedException {<a name="line.147"></a>
+<span class="sourceLineNo">148</span>        AbstractActionsAttribute newObject = (AbstractActionsAttribute) super.clone(<a name="line.148"></a>
+<span class="sourceLineNo">149</span>                workspace);<a name="line.149"></a>
+<span class="sourceLineNo">150</span>        newObject._destinations = null;<a name="line.150"></a>
+<span class="sourceLineNo">151</span>        newObject._destinationsListVersion = -1;<a name="line.151"></a>
+<span class="sourceLineNo">152</span>        newObject._numbers = null;<a name="line.152"></a>
+<span class="sourceLineNo">153</span>        newObject._parseTreeEvaluator = null;<a name="line.153"></a>
+<span class="sourceLineNo">154</span>        newObject._parseTrees = null;<a name="line.154"></a>
+<span class="sourceLineNo">155</span><a name="line.155"></a>
+<span class="sourceLineNo">156</span>        newObject._scope = null;<a name="line.156"></a>
+<span class="sourceLineNo">157</span><a name="line.157"></a>
+<span class="sourceLineNo">158</span>        // The _destinationNames is a list of ports or parameter names that are<a name="line.158"></a>
+<span class="sourceLineNo">159</span>        // written to by this action. It is constructed in setExpression().<a name="line.159"></a>
+<span class="sourceLineNo">160</span>        // The clone needs to reconstruct this.<a name="line.160"></a>
+<span class="sourceLineNo">161</span>        newObject._destinationNames = null;<a name="line.161"></a>
+<span class="sourceLineNo">162</span>        try {<a name="line.162"></a>
+<span class="sourceLineNo">163</span>            newObject.setExpression(getExpression());<a name="line.163"></a>
+<span class="sourceLineNo">164</span>        } catch (IllegalActionException e) {<a name="line.164"></a>
+<span class="sourceLineNo">165</span>            throw new CloneNotSupportedException(e.getMessage());<a name="line.165"></a>
+<span class="sourceLineNo">166</span>        }<a name="line.166"></a>
+<span class="sourceLineNo">167</span><a name="line.167"></a>
+<span class="sourceLineNo">168</span>        return newObject;<a name="line.168"></a>
+<span class="sourceLineNo">169</span>    }<a name="line.169"></a>
+<span class="sourceLineNo">170</span><a name="line.170"></a>
+<span class="sourceLineNo">171</span>    /** Execute this action.  For each destination identified in the<a name="line.171"></a>
+<span class="sourceLineNo">172</span>     *  action, compute the value in the action and perform the<a name="line.172"></a>
+<span class="sourceLineNo">173</span>     *  particular assignment.  This method should be extended by<a name="line.173"></a>
+<span class="sourceLineNo">174</span>     *  derived classes to perform the evaluation and assignment as<a name="line.174"></a>
+<span class="sourceLineNo">175</span>     *  appropriate.<a name="line.175"></a>
+<span class="sourceLineNo">176</span>     *  @exception IllegalActionException If a destination is not found.<a name="line.176"></a>
+<span class="sourceLineNo">177</span>     */<a name="line.177"></a>
+<span class="sourceLineNo">178</span>    @Override<a name="line.178"></a>
+<span class="sourceLineNo">179</span>    public void execute() throws IllegalActionException {<a name="line.179"></a>
+<span class="sourceLineNo">180</span>        if (_destinationsListVersion != workspace().getVersion()) {<a name="line.180"></a>
+<span class="sourceLineNo">181</span>            _updateDestinations();<a name="line.181"></a>
+<span class="sourceLineNo">182</span>        }<a name="line.182"></a>
+<span class="sourceLineNo">183</span><a name="line.183"></a>
+<span class="sourceLineNo">184</span>        if (_parseTreeEvaluator == null) {<a name="line.184"></a>
+<span class="sourceLineNo">185</span>            _parseTreeEvaluator = new ParseTreeEvaluator();<a name="line.185"></a>
+<span class="sourceLineNo">186</span>        }<a name="line.186"></a>
+<span class="sourceLineNo">187</span>    }<a name="line.187"></a>
+<span class="sourceLineNo">188</span><a name="line.188"></a>
+<span class="sourceLineNo">189</span>    /** Return the list of channel numbers given in expression set<a name="line.189"></a>
+<span class="sourceLineNo">190</span>     *  for this attribute.  If no destinations are specified, then return<a name="line.190"></a>
+<span class="sourceLineNo">191</span>     *  an empty list.<a name="line.191"></a>
+<span class="sourceLineNo">192</span>     *  @return the list of channel numbers.<a name="line.192"></a>
+<span class="sourceLineNo">193</span>     *  @exception IllegalActionException If thrown while evaluating<a name="line.193"></a>
+<span class="sourceLineNo">194</span>     *  the channel numbers.<a name="line.194"></a>
+<span class="sourceLineNo">195</span>     */<a name="line.195"></a>
+<span class="sourceLineNo">196</span>    public List getChannelNumberList() throws IllegalActionException {<a name="line.196"></a>
+<span class="sourceLineNo">197</span>        List list = new LinkedList();<a name="line.197"></a>
+<span class="sourceLineNo">198</span>        if (_numbers != null) {<a name="line.198"></a>
+<span class="sourceLineNo">199</span>            Iterator iterator = _numbers.iterator();<a name="line.199"></a>
+<span class="sourceLineNo">200</span>            while (iterator.hasNext()) {<a name="line.200"></a>
+<span class="sourceLineNo">201</span>                Object next = iterator.next();<a name="line.201"></a>
+<span class="sourceLineNo">202</span>                if (next instanceof Integer) {<a name="line.202"></a>
+<span class="sourceLineNo">203</span>                    list.add(next);<a name="line.203"></a>
+<span class="sourceLineNo">204</span>                } else if (next instanceof ASTPtRootNode) {<a name="line.204"></a>
+<span class="sourceLineNo">205</span>                    Token token = _parseTreeEvaluator.evaluateParseTree(<a name="line.205"></a>
+<span class="sourceLineNo">206</span>                            (ASTPtRootNode) next, _getParserScope());<a name="line.206"></a>
+<span class="sourceLineNo">207</span>                    list.add(((IntToken) token).intValue());<a name="line.207"></a>
+<span class="sourceLineNo">208</span>                } else {<a name="line.208"></a>
+<span class="sourceLineNo">209</span>                    list.add(null);<a name="line.209"></a>
+<span class="sourceLineNo">210</span>                }<a name="line.210"></a>
+<span class="sourceLineNo">211</span>            }<a name="line.211"></a>
+<span class="sourceLineNo">212</span>        }<a name="line.212"></a>
+<span class="sourceLineNo">213</span>        return list;<a name="line.213"></a>
+<span class="sourceLineNo">214</span>    }<a name="line.214"></a>
+<span class="sourceLineNo">215</span><a name="line.215"></a>
+<span class="sourceLineNo">216</span>    /** Return the destination object referred to by the given name.<a name="line.216"></a>
+<span class="sourceLineNo">217</span>     *  Depending on the subclass of this class, this might be a variable,<a name="line.217"></a>
+<span class="sourceLineNo">218</span>     *  or an output port.<a name="line.218"></a>
+<span class="sourceLineNo">219</span>     *  @param name The name of the destination object.<a name="line.219"></a>
+<span class="sourceLineNo">220</span>     *  @return The destination object with the given name.<a name="line.220"></a>
+<span class="sourceLineNo">221</span>     *  @exception IllegalActionException If the given name is not a valid<a name="line.221"></a>
+<span class="sourceLineNo">222</span>     *  destination for this action.<a name="line.222"></a>
+<span class="sourceLineNo">223</span>     */<a name="line.223"></a>
+<span class="sourceLineNo">224</span>    public NamedObj getDestination(String name) throws IllegalActionException {<a name="line.224"></a>
+<span class="sourceLineNo">225</span>        return _getDestination(name);<a name="line.225"></a>
+<span class="sourceLineNo">226</span>    }<a name="line.226"></a>
+<span class="sourceLineNo">227</span><a name="line.227"></a>
+<span class="sourceLineNo">228</span>    /** Return the list of destinations of assignments in this action.<a name="line.228"></a>
+<span class="sourceLineNo">229</span>     *  @return A list of IOPort for output actions, and a list of parameters<a name="line.229"></a>
+<span class="sourceLineNo">230</span>     *   for set actions.<a name="line.230"></a>
+<span class="sourceLineNo">231</span>     *  @exception IllegalActionException If the destination list cannot be<a name="line.231"></a>
+<span class="sourceLineNo">232</span>     *   constructed.<a name="line.232"></a>
+<span class="sourceLineNo">233</span>     */<a name="line.233"></a>
+<span class="sourceLineNo">234</span>    @Override<a name="line.234"></a>
+<span class="sourceLineNo">235</span>    public List getDestinations() throws IllegalActionException {<a name="line.235"></a>
+<span class="sourceLineNo">236</span>        if (_destinationsListVersion != workspace().getVersion()) {<a name="line.236"></a>
+<span class="sourceLineNo">237</span>            _updateDestinations();<a name="line.237"></a>
+<span class="sourceLineNo">238</span>        }<a name="line.238"></a>
+<span class="sourceLineNo">239</span>        return _destinations;<a name="line.239"></a>
+<span class="sourceLineNo">240</span>    }<a name="line.240"></a>
+<span class="sourceLineNo">241</span><a name="line.241"></a>
+<span class="sourceLineNo">242</span>    /** Return the list of destination names given in expression set<a name="line.242"></a>
+<span class="sourceLineNo">243</span>     *  for this attribute.  If no destinations are specified, then return<a name="line.243"></a>
+<span class="sourceLineNo">244</span>     *  an empty list.<a name="line.244"></a>
+<span class="sourceLineNo">245</span>     *  @return the list of destination names.<a name="line.245"></a>
+<span class="sourceLineNo">246</span>     */<a name="line.246"></a>
+<span class="sourceLineNo">247</span>    public List getDestinationNameList() {<a name="line.247"></a>
+<span class="sourceLineNo">248</span>        if (_destinationNames == null) {<a name="line.248"></a>
+<span class="sourceLineNo">249</span>            return new LinkedList();<a name="line.249"></a>
+<span class="sourceLineNo">250</span>        } else {<a name="line.250"></a>
+<span class="sourceLineNo">251</span>            return Collections.unmodifiableList(_destinationNames);<a name="line.251"></a>
+<span class="sourceLineNo">252</span>        }<a name="line.252"></a>
+<span class="sourceLineNo">253</span>    }<a name="line.253"></a>
+<span class="sourceLineNo">254</span><a name="line.254"></a>
+<span class="sourceLineNo">255</span>    /** Return the expression referred to by the given name.  When the<a name="line.255"></a>
+<span class="sourceLineNo">256</span>     *  action is executed, this expression will be evaluated and<a name="line.256"></a>
+<span class="sourceLineNo">257</span>     *  assigned to the object associated with the name.<a name="line.257"></a>
+<span class="sourceLineNo">258</span>     *  @param name The name of an expression.<a name="line.258"></a>
+<span class="sourceLineNo">259</span>     *  @return The expression referred to by the given name.<a name="line.259"></a>
+<span class="sourceLineNo">260</span>     *  @see #setExpression<a name="line.260"></a>
+<span class="sourceLineNo">261</span>     */<a name="line.261"></a>
+<span class="sourceLineNo">262</span>    public String getExpression(String name) {<a name="line.262"></a>
+<span class="sourceLineNo">263</span>        ParseTreeWriter writer = new ParseTreeWriter();<a name="line.263"></a>
+<span class="sourceLineNo">264</span>        return writer.printParseTree((ASTPtRootNode) _parseTrees<a name="line.264"></a>
+<span class="sourceLineNo">265</span>                .get(_destinationNames.indexOf(name)));<a name="line.265"></a>
+<span class="sourceLineNo">266</span>    }<a name="line.266"></a>
+<span class="sourceLineNo">267</span><a name="line.267"></a>
+<span class="sourceLineNo">268</span>    /** Return the parse tree referred to by the given name.<a name="line.268"></a>
+<span class="sourceLineNo">269</span>     *  @param name The name of a parse tree.<a name="line.269"></a>
+<span class="sourceLineNo">270</span>     *  @return The parse tree referred to by the given name.<a name="line.270"></a>
+<span class="sourceLineNo">271</span>     */<a name="line.271"></a>
+<span class="sourceLineNo">272</span>    public ASTPtRootNode getParseTree(String name) {<a name="line.272"></a>
+<span class="sourceLineNo">273</span>        return (ASTPtRootNode) _parseTrees.get(_destinationNames.indexOf(name));<a name="line.273"></a>
+<span class="sourceLineNo">274</span>    }<a name="line.274"></a>
+<span class="sourceLineNo">275</span><a name="line.275"></a>
+<span class="sourceLineNo">276</span>    /** Return the list of parse trees given in expression set<a name="line.276"></a>
+<span class="sourceLineNo">277</span>     *  for this attribute.  If no destinations are specified, then return<a name="line.277"></a>
+<span class="sourceLineNo">278</span>     *  an empty list.<a name="line.278"></a>
+<span class="sourceLineNo">279</span>     *  @return the list of parse trees.<a name="line.279"></a>
+<span class="sourceLineNo">280</span>     */<a name="line.280"></a>
+<span class="sourceLineNo">281</span>    public List getParseTreeList() {<a name="line.281"></a>
+<span class="sourceLineNo">282</span>        if (_parseTrees == null) {<a name="line.282"></a>
+<span class="sourceLineNo">283</span>            return new LinkedList();<a name="line.283"></a>
+<span class="sourceLineNo">284</span>        } else {<a name="line.284"></a>
+<span class="sourceLineNo">285</span>            return Collections.unmodifiableList(_parseTrees);<a name="line.285"></a>
+<span class="sourceLineNo">286</span>        }<a name="line.286"></a>
+<span class="sourceLineNo">287</span>    }<a name="line.287"></a>
+<span class="sourceLineNo">288</span><a name="line.288"></a>
+<span class="sourceLineNo">289</span>    /** Test if a channel number is associated with the given name.<a name="line.289"></a>
+<span class="sourceLineNo">290</span>     *  @param name The channel name.<a name="line.290"></a>
+<span class="sourceLineNo">291</span>     *  @return true If a channel was specified.<a name="line.291"></a>
+<span class="sourceLineNo">292</span>     */<a name="line.292"></a>
+<span class="sourceLineNo">293</span>    public boolean isChannelSpecified(String name) {<a name="line.293"></a>
+<span class="sourceLineNo">294</span>        Integer integer = (Integer) _numbers<a name="line.294"></a>
+<span class="sourceLineNo">295</span>                .get(_destinationNames.indexOf(name));<a name="line.295"></a>
+<span class="sourceLineNo">296</span>        return integer != null;<a name="line.296"></a>
+<span class="sourceLineNo">297</span>    }<a name="line.297"></a>
+<span class="sourceLineNo">298</span><a name="line.298"></a>
+<span class="sourceLineNo">299</span>    /** Set the action and notify the container<a name="line.299"></a>
+<span class="sourceLineNo">300</span>     *  that the action has changed by calling attributeChanged(),<a name="line.300"></a>
+<span class="sourceLineNo">301</span>     *  and notify any listeners that have<a name="line.301"></a>
+<span class="sourceLineNo">302</span>     *  been registered using addValueListener().<a name="line.302"></a>
+<span class="sourceLineNo">303</span>     *  @param expression The action.<a name="line.303"></a>
+<span class="sourceLineNo">304</span>     *  @exception IllegalActionException If the change is not acceptable<a name="line.304"></a>
+<span class="sourceLineNo">305</span>     *  to the container, or if the action is syntactically incorrect.<a name="line.305"></a>
+<span class="sourceLineNo">306</span>     *  @see #getExpression<a name="line.306"></a>
+<span class="sourceLineNo">307</span>     */<a name="line.307"></a>
+<span class="sourceLineNo">308</span>    @Override<a name="line.308"></a>
+<span class="sourceLineNo">309</span>    public void setExpression(String expression) throws IllegalActionException {<a name="line.309"></a>
+<span class="sourceLineNo">310</span>        super.setExpression(expression);<a name="line.310"></a>
+<span class="sourceLineNo">311</span><a name="line.311"></a>
+<span class="sourceLineNo">312</span>        // Initialize the lists that store the commands to be executed.<a name="line.312"></a>
+<span class="sourceLineNo">313</span>        // NOTE: This must be done before we return if the expression is<a name="line.313"></a>
+<span class="sourceLineNo">314</span>        // null, otherwise, previous set actions will continue to be<a name="line.314"></a>
+<span class="sourceLineNo">315</span>        // executed.<a name="line.315"></a>
+<span class="sourceLineNo">316</span>        _destinationNames = new LinkedList();<a name="line.316"></a>
+<span class="sourceLineNo">317</span>        _numbers = new LinkedList();<a name="line.317"></a>
+<span class="sourceLineNo">318</span>        _parseTrees = new LinkedList();<a name="line.318"></a>
+<span class="sourceLineNo">319</span><a name="line.319"></a>
+<span class="sourceLineNo">320</span>        // Indicate that the _destinations list is invalid.  We defer<a name="line.320"></a>
+<span class="sourceLineNo">321</span>        // determination of the destinations because the destinations<a name="line.321"></a>
+<span class="sourceLineNo">322</span>        // may not have been created yet.<a name="line.322"></a>
+<span class="sourceLineNo">323</span>        _destinationsListVersion = -1;<a name="line.323"></a>
+<span class="sourceLineNo">324</span><a name="line.324"></a>
+<span class="sourceLineNo">325</span>        // This is important for InterfaceAutomata which extend from<a name="line.325"></a>
+<span class="sourceLineNo">326</span>        // this class.<a name="line.326"></a>
+<span class="sourceLineNo">327</span>        if (expression == null || expression.trim().equals("")) {<a name="line.327"></a>
+<span class="sourceLineNo">328</span>            return;<a name="line.328"></a>
+<span class="sourceLineNo">329</span>        }<a name="line.329"></a>
+<span class="sourceLineNo">330</span><a name="line.330"></a>
+<span class="sourceLineNo">331</span>        PtParser parser = new PtParser();<a name="line.331"></a>
+<span class="sourceLineNo">332</span>        Map map = parser.generateAssignmentMap(expression);<a name="line.332"></a>
+<span class="sourceLineNo">333</span><a name="line.333"></a>
+<span class="sourceLineNo">334</span>        for (Iterator names = map.entrySet().iterator(); names.hasNext();) {<a name="line.334"></a>
+<span class="sourceLineNo">335</span>            Map.Entry entry = (Map.Entry) names.next();<a name="line.335"></a>
+<span class="sourceLineNo">336</span>            ASTPtAssignmentNode node = (ASTPtAssignmentNode) entry.getValue();<a name="line.336"></a>
+<span class="sourceLineNo">337</span><a name="line.337"></a>
+<span class="sourceLineNo">338</span>            // Parse the destination specification first.<a name="line.338"></a>
+<span class="sourceLineNo">339</span>            String completeDestinationSpec = node.getIdentifier();<a name="line.339"></a>
+<span class="sourceLineNo">340</span>            int openParen = completeDestinationSpec.indexOf("(");<a name="line.340"></a>
+<span class="sourceLineNo">341</span><a name="line.341"></a>
+<span class="sourceLineNo">342</span>            if (openParen &gt; 0) {<a name="line.342"></a>
+<span class="sourceLineNo">343</span>                // A channel is being specified.<a name="line.343"></a>
+<span class="sourceLineNo">344</span>                int closeParen = completeDestinationSpec.indexOf(")");<a name="line.344"></a>
+<span class="sourceLineNo">345</span><a name="line.345"></a>
+<span class="sourceLineNo">346</span>                if (closeParen &lt; openParen) {<a name="line.346"></a>
+<span class="sourceLineNo">347</span>                    throw new IllegalActionException(this,<a name="line.347"></a>
+<span class="sourceLineNo">348</span>                            "Malformed action: expected destination = "<a name="line.348"></a>
+<span class="sourceLineNo">349</span>                                    + "expression. Got: "<a name="line.349"></a>
+<span class="sourceLineNo">350</span>                                    + completeDestinationSpec);<a name="line.350"></a>
+<span class="sourceLineNo">351</span>                }<a name="line.351"></a>
+<span class="sourceLineNo">352</span><a name="line.352"></a>
+<span class="sourceLineNo">353</span>                _destinationNames.add(<a name="line.353"></a>
+<span class="sourceLineNo">354</span>                        completeDestinationSpec.substring(0, openParen).trim());<a name="line.354"></a>
+<span class="sourceLineNo">355</span><a name="line.355"></a>
+<span class="sourceLineNo">356</span>                String channelSpec = completeDestinationSpec<a name="line.356"></a>
+<span class="sourceLineNo">357</span>                        .substring(openParen + 1, closeParen);<a name="line.357"></a>
+<span class="sourceLineNo">358</span><a name="line.358"></a>
+<span class="sourceLineNo">359</span>                try {<a name="line.359"></a>
+<span class="sourceLineNo">360</span>                    _numbers.add(Integer.valueOf(channelSpec));<a name="line.360"></a>
+<span class="sourceLineNo">361</span>                } catch (NumberFormatException ex) {<a name="line.361"></a>
+<span class="sourceLineNo">362</span>                    _numbers.add(parser.generateParseTree(channelSpec));<a name="line.362"></a>
+<span class="sourceLineNo">363</span>                }<a name="line.363"></a>
+<span class="sourceLineNo">364</span>            } else {<a name="line.364"></a>
+<span class="sourceLineNo">365</span>                // No channel is specified.<a name="line.365"></a>
+<span class="sourceLineNo">366</span>                _destinationNames.add(completeDestinationSpec);<a name="line.366"></a>
+<span class="sourceLineNo">367</span>                _numbers.add(null);<a name="line.367"></a>
+<span class="sourceLineNo">368</span>            }<a name="line.368"></a>
+<span class="sourceLineNo">369</span><a name="line.369"></a>
+<span class="sourceLineNo">370</span>            // Parse the expression<a name="line.370"></a>
+<span class="sourceLineNo">371</span>            _parseTrees.add(node.getExpressionTree());<a name="line.371"></a>
+<span class="sourceLineNo">372</span>        }<a name="line.372"></a>
+<span class="sourceLineNo">373</span>    }<a name="line.373"></a>
+<span class="sourceLineNo">374</span><a name="line.374"></a>
+<span class="sourceLineNo">375</span>    /** Give a descriptive string.<a name="line.375"></a>
+<span class="sourceLineNo">376</span>     *  @return The expression.<a name="line.376"></a>
+<span class="sourceLineNo">377</span>     */<a name="line.377"></a>
+<span class="sourceLineNo">378</span>    @Override<a name="line.378"></a>
+<span class="sourceLineNo">379</span>    public String toString() {<a name="line.379"></a>
+<span class="sourceLineNo">380</span>        return getExpression();<a name="line.380"></a>
+<span class="sourceLineNo">381</span>    }<a name="line.381"></a>
+<span class="sourceLineNo">382</span><a name="line.382"></a>
+<span class="sourceLineNo">383</span>    /** Return the type constraints of this object.<a name="line.383"></a>
+<span class="sourceLineNo">384</span>     *  The constraints are a set of inequalities.<a name="line.384"></a>
+<span class="sourceLineNo">385</span>     *  @return a list of instances of Inequality.<a name="line.385"></a>
+<span class="sourceLineNo">386</span>     *  @see ptolemy.graph.Inequality<a name="line.386"></a>
+<span class="sourceLineNo">387</span>     */<a name="line.387"></a>
+<span class="sourceLineNo">388</span>    @Override<a name="line.388"></a>
+<span class="sourceLineNo">389</span>    public Set&lt;Inequality&gt; typeConstraints() {<a name="line.389"></a>
+<span class="sourceLineNo">390</span>        Set&lt;Inequality&gt; list = new HashSet&lt;Inequality&gt;();<a name="line.390"></a>
+<span class="sourceLineNo">391</span><a name="line.391"></a>
+<span class="sourceLineNo">392</span>        for (Iterator names = getDestinationNameList().iterator(); names<a name="line.392"></a>
+<span class="sourceLineNo">393</span>                .hasNext();) {<a name="line.393"></a>
+<span class="sourceLineNo">394</span>            String name = (String) names.next();<a name="line.394"></a>
+<span class="sourceLineNo">395</span><a name="line.395"></a>
+<span class="sourceLineNo">396</span>            try {<a name="line.396"></a>
+<span class="sourceLineNo">397</span>                NamedObj object = getDestination(name);<a name="line.397"></a>
+<span class="sourceLineNo">398</span><a name="line.398"></a>
+<span class="sourceLineNo">399</span>                if (object instanceof Typeable) {<a name="line.399"></a>
+<span class="sourceLineNo">400</span>                    InequalityTerm term = ((Typeable) object).getTypeTerm();<a name="line.400"></a>
+<span class="sourceLineNo">401</span>                    list.add(new Inequality(new TypeFunction(name), term));<a name="line.401"></a>
+<span class="sourceLineNo">402</span>                }<a name="line.402"></a>
+<span class="sourceLineNo">403</span>            } catch (Exception ex) {<a name="line.403"></a>
+<span class="sourceLineNo">404</span>                throw new RuntimeException(ex);<a name="line.404"></a>
+<span class="sourceLineNo">405</span>            }<a name="line.405"></a>
+<span class="sourceLineNo">406</span>        }<a name="line.406"></a>
+<span class="sourceLineNo">407</span><a name="line.407"></a>
+<span class="sourceLineNo">408</span>        return list;<a name="line.408"></a>
+<span class="sourceLineNo">409</span>    }<a name="line.409"></a>
+<span class="sourceLineNo">410</span><a name="line.410"></a>
+<span class="sourceLineNo">411</span>    ///////////////////////////////////////////////////////////////////<a name="line.411"></a>
+<span class="sourceLineNo">412</span>    ////                         protected methods                 ////<a name="line.412"></a>
+<span class="sourceLineNo">413</span><a name="line.413"></a>
+<span class="sourceLineNo">414</span>    /** Given a destination name, return a NamedObj that matches that<a name="line.414"></a>
+<span class="sourceLineNo">415</span>     *  destination.  An implementation of this method should never return<a name="line.415"></a>
+<span class="sourceLineNo">416</span>     *  null (throw an exception instead).<a name="line.416"></a>
+<span class="sourceLineNo">417</span>     *  @param name The name of the destination, or null if none is found.<a name="line.417"></a>
+<span class="sourceLineNo">418</span>     *  @return An object (like a port or a variable) with the specified name.<a name="line.418"></a>
+<span class="sourceLineNo">419</span>     *  @exception IllegalActionException If the associated FSMActor<a name="line.419"></a>
+<span class="sourceLineNo">420</span>     *   does not have a destination with the specified name.<a name="line.420"></a>
+<span class="sourceLineNo">421</span>     */<a name="line.421"></a>
+<span class="sourceLineNo">422</span>    protected abstract NamedObj _getDestination(String name)<a name="line.422"></a>
+<span class="sourceLineNo">423</span>            throws IllegalActionException;<a name="line.423"></a>
+<span class="sourceLineNo">424</span><a name="line.424"></a>
+<span class="sourceLineNo">425</span>    ///////////////////////////////////////////////////////////////////<a name="line.425"></a>
+<span class="sourceLineNo">426</span>    ////                         protected variables               ////<a name="line.426"></a>
+<span class="sourceLineNo">427</span><a name="line.427"></a>
+<span class="sourceLineNo">428</span>    /** Return a parser scope used to evaluate or type-check this action.<a name="line.428"></a>
+<span class="sourceLineNo">429</span>     *<a name="line.429"></a>
+<span class="sourceLineNo">430</span>     *  @return The parser scope.<a name="line.430"></a>
+<span class="sourceLineNo">431</span>     */<a name="line.431"></a>
+<span class="sourceLineNo">432</span>    protected ParserScope _getParserScope() {<a name="line.432"></a>
+<span class="sourceLineNo">433</span>        if (_scope == null) {<a name="line.433"></a>
+<span class="sourceLineNo">434</span>            FSMActor fsmActor = (FSMActor) getContainer().getContainer();<a name="line.434"></a>
+<span class="sourceLineNo">435</span>            _scope = fsmActor.getPortScope();<a name="line.435"></a>
+<span class="sourceLineNo">436</span>        }<a name="line.436"></a>
+<span class="sourceLineNo">437</span>        return _scope;<a name="line.437"></a>
+<span class="sourceLineNo">438</span>    }<a name="line.438"></a>
+<span class="sourceLineNo">439</span><a name="line.439"></a>
+<span class="sourceLineNo">440</span>    /** List of destination names. */<a name="line.440"></a>
+<span class="sourceLineNo">441</span>    protected List _destinationNames;<a name="line.441"></a>
+<span class="sourceLineNo">442</span><a name="line.442"></a>
+<span class="sourceLineNo">443</span>    /** List of destinations. */<a name="line.443"></a>
+<span class="sourceLineNo">444</span>    protected List _destinations;<a name="line.444"></a>
+<span class="sourceLineNo">445</span><a name="line.445"></a>
+<span class="sourceLineNo">446</span>    /** The workspace version number when the _destinations list is last<a name="line.446"></a>
+<span class="sourceLineNo">447</span>     *  updated.<a name="line.447"></a>
+<span class="sourceLineNo">448</span>     */<a name="line.448"></a>
+<span class="sourceLineNo">449</span>    protected long _destinationsListVersion = -1;<a name="line.449"></a>
+<span class="sourceLineNo">450</span><a name="line.450"></a>
+<span class="sourceLineNo">451</span>    /** The parse tree evaluator. */<a name="line.451"></a>
+<span class="sourceLineNo">452</span>    protected ParseTreeEvaluator _parseTreeEvaluator;<a name="line.452"></a>
+<span class="sourceLineNo">453</span><a name="line.453"></a>
+<span class="sourceLineNo">454</span>    /** The list of parse trees. */<a name="line.454"></a>
+<span class="sourceLineNo">455</span>    protected List _parseTrees;<a name="line.455"></a>
+<span class="sourceLineNo">456</span><a name="line.456"></a>
+<span class="sourceLineNo">457</span>    ///////////////////////////////////////////////////////////////////<a name="line.457"></a>
+<span class="sourceLineNo">458</span>    ////                         private methods                   ////<a name="line.458"></a>
+<span class="sourceLineNo">459</span><a name="line.459"></a>
+<span class="sourceLineNo">460</span>    /*  Cache a reference to each destination of this action.  For<a name="line.460"></a>
+<span class="sourceLineNo">461</span>     *  each destination in the _destinationNames list, create a<a name="line.461"></a>
+<span class="sourceLineNo">462</span>     *  corresponding entry in the _destinations list that refers to<a name="line.462"></a>
+<span class="sourceLineNo">463</span>     *  the destination.<a name="line.463"></a>
+<span class="sourceLineNo">464</span>     *  @exception IllegalActionException If the associated FSMActor<a name="line.464"></a>
+<span class="sourceLineNo">465</span>     *   does not have a destination with the specified name.<a name="line.465"></a>
+<span class="sourceLineNo">466</span>     */<a name="line.466"></a>
+<span class="sourceLineNo">467</span>    private void _updateDestinations() throws IllegalActionException {<a name="line.467"></a>
+<span class="sourceLineNo">468</span>        try {<a name="line.468"></a>
+<span class="sourceLineNo">469</span>            workspace().getReadAccess();<a name="line.469"></a>
+<span class="sourceLineNo">470</span>            _destinations = new LinkedList();<a name="line.470"></a>
+<span class="sourceLineNo">471</span><a name="line.471"></a>
+<span class="sourceLineNo">472</span>            if (_destinationNames != null) {<a name="line.472"></a>
+<span class="sourceLineNo">473</span>                Iterator destinationNames = _destinationNames.iterator();<a name="line.473"></a>
+<span class="sourceLineNo">474</span>                while (destinationNames.hasNext()) {<a name="line.474"></a>
+<span class="sourceLineNo">475</span>                    String destinationName = (String) destinationNames.next();<a name="line.475"></a>
+<span class="sourceLineNo">476</span>                    NamedObj destination = _getDestination(destinationName);<a name="line.476"></a>
+<span class="sourceLineNo">477</span>                    _destinations.add(destination);<a name="line.477"></a>
+<span class="sourceLineNo">478</span>                }<a name="line.478"></a>
+<span class="sourceLineNo">479</span>            }<a name="line.479"></a>
+<span class="sourceLineNo">480</span><a name="line.480"></a>
+<span class="sourceLineNo">481</span>            _destinationsListVersion = workspace().getVersion();<a name="line.481"></a>
+<span class="sourceLineNo">482</span>        } finally {<a name="line.482"></a>
+<span class="sourceLineNo">483</span>            workspace().doneReading();<a name="line.483"></a>
+<span class="sourceLineNo">484</span>        }<a name="line.484"></a>
+<span class="sourceLineNo">485</span>    }<a name="line.485"></a>
+<span class="sourceLineNo">486</span><a name="line.486"></a>
+<span class="sourceLineNo">487</span>    /** The scope. */<a name="line.487"></a>
+<span class="sourceLineNo">488</span>    private ParserScope _scope;<a name="line.488"></a>
+<span class="sourceLineNo">489</span><a name="line.489"></a>
+<span class="sourceLineNo">490</span>    // This class implements a monotonic function of the type of<a name="line.490"></a>
+<span class="sourceLineNo">491</span>    // the output port.<a name="line.491"></a>
+<span class="sourceLineNo">492</span>    // The function value is determined by type inference on the<a name="line.492"></a>
+<span class="sourceLineNo">493</span>    // expression, in the scope of this Expression actor.<a name="line.493"></a>
+<span class="sourceLineNo">494</span>    private class TypeFunction extends MonotonicFunction {<a name="line.494"></a>
+<span class="sourceLineNo">495</span>        /** Create a new type function.  This function represents a<a name="line.495"></a>
+<span class="sourceLineNo">496</span>         * constraint on the type of the destination with the given<a name="line.496"></a>
+<span class="sourceLineNo">497</span>         * name.<a name="line.497"></a>
+<span class="sourceLineNo">498</span>         */<a name="line.498"></a>
+<span class="sourceLineNo">499</span>        public TypeFunction(String name) {<a name="line.499"></a>
+<span class="sourceLineNo">500</span>            _name = name;<a name="line.500"></a>
+<span class="sourceLineNo">501</span>        }<a name="line.501"></a>
+<span class="sourceLineNo">502</span><a name="line.502"></a>
+<span class="sourceLineNo">503</span>        ///////////////////////////////////////////////////////////////<a name="line.503"></a>
+<span class="sourceLineNo">504</span>        ////                       public inner methods            ////<a name="line.504"></a>
+<span class="sourceLineNo">505</span><a name="line.505"></a>
+<span class="sourceLineNo">506</span>        /** Return the function result.<a name="line.506"></a>
+<span class="sourceLineNo">507</span>         *  @return A Type.<a name="line.507"></a>
+<span class="sourceLineNo">508</span>         *  @exception IllegalActionException If inferring types for the<a name="line.508"></a>
+<span class="sourceLineNo">509</span>         *  expression fails.<a name="line.509"></a>
+<span class="sourceLineNo">510</span>         */<a name="line.510"></a>
+<span class="sourceLineNo">511</span>        @Override<a name="line.511"></a>
+<span class="sourceLineNo">512</span>        public Object getValue() throws IllegalActionException {<a name="line.512"></a>
+<span class="sourceLineNo">513</span>            try {<a name="line.513"></a>
+<span class="sourceLineNo">514</span>                // Deal with the singularity at UNKNOWN..  Assume that if<a name="line.514"></a>
+<span class="sourceLineNo">515</span>                // any variable that the expression depends on is UNKNOWN,<a name="line.515"></a>
+<span class="sourceLineNo">516</span>                // then the type of the whole expression is unknown..<a name="line.516"></a>
+<span class="sourceLineNo">517</span>                // This allows us to properly find functions that do exist<a name="line.517"></a>
+<span class="sourceLineNo">518</span>                // (but not for UNKNOWN arguments), and to give good error<a name="line.518"></a>
+<span class="sourceLineNo">519</span>                // messages when functions are not found.<a name="line.519"></a>
+<span class="sourceLineNo">520</span>                InequalityTerm[] terms = getVariables();<a name="line.520"></a>
+<span class="sourceLineNo">521</span><a name="line.521"></a>
+<span class="sourceLineNo">522</span>                for (InequalityTerm term : terms) {<a name="line.522"></a>
+<span class="sourceLineNo">523</span>                    if (term != this &amp;&amp; term.getValue() == BaseType.UNKNOWN) {<a name="line.523"></a>
+<span class="sourceLineNo">524</span>                        return BaseType.UNKNOWN;<a name="line.524"></a>
+<span class="sourceLineNo">525</span>                    }<a name="line.525"></a>
+<span class="sourceLineNo">526</span>                }<a name="line.526"></a>
+<span class="sourceLineNo">527</span><a name="line.527"></a>
+<span class="sourceLineNo">528</span>                int index = _destinationNames.indexOf(_name);<a name="line.528"></a>
+<span class="sourceLineNo">529</span>                ASTPtRootNode parseTree = (ASTPtRootNode) _parseTrees<a name="line.529"></a>
+<span class="sourceLineNo">530</span>                        .get(index);<a name="line.530"></a>
+<span class="sourceLineNo">531</span><a name="line.531"></a>
+<span class="sourceLineNo">532</span>                Type type = _typeInference.inferTypes(parseTree,<a name="line.532"></a>
+<span class="sourceLineNo">533</span>                        _getParserScope());<a name="line.533"></a>
+<span class="sourceLineNo">534</span><a name="line.534"></a>
+<span class="sourceLineNo">535</span>                // Return the array type with type as the element type when<a name="line.535"></a>
+<span class="sourceLineNo">536</span>                // there is an index following the name and the name resolves to<a name="line.536"></a>
+<span class="sourceLineNo">537</span>                // a variable. E.g., A(i) accesses the i-th element of variable<a name="line.537"></a>
+<span class="sourceLineNo">538</span>                // A, so when we get "type" as the type of A(i), we return the<a name="line.538"></a>
+<span class="sourceLineNo">539</span>                // array type constructed with "type" as the type of A itself.<a name="line.539"></a>
+<span class="sourceLineNo">540</span>                // -- tfeng (11/22/2008)<a name="line.540"></a>
+<span class="sourceLineNo">541</span>                NamedObj container = getContainer();<a name="line.541"></a>
+<span class="sourceLineNo">542</span>                while (container != null &amp;&amp; !(container instanceof Entity)) {<a name="line.542"></a>
+<span class="sourceLineNo">543</span>                    container = container.getContainer();<a name="line.543"></a>
+<span class="sourceLineNo">544</span>                }<a name="line.544"></a>
+<span class="sourceLineNo">545</span>                if (container != null<a name="line.545"></a>
+<span class="sourceLineNo">546</span>                        &amp;&amp; ((Entity) container).getPort(_name) == null) {<a name="line.546"></a>
+<span class="sourceLineNo">547</span>                    // Not a port, then it must be a variable.<a name="line.547"></a>
+<span class="sourceLineNo">548</span>                    if (_numbers.get(index) != null &amp;&amp;<a name="line.548"></a>
+<span class="sourceLineNo">549</span>                    // If the destination is not a variable, it should<a name="line.549"></a>
+<span class="sourceLineNo">550</span>                    // be a port, and port(i) refers to the i-th channel<a name="line.550"></a>
+<span class="sourceLineNo">551</span>                    // of the port, which has the same type as the port<a name="line.551"></a>
+<span class="sourceLineNo">552</span>                    // itself.<a name="line.552"></a>
+<span class="sourceLineNo">553</span>                    // -- tfeng (11/26/2008)<a name="line.553"></a>
+<span class="sourceLineNo">554</span>                            getDestination(_name) instanceof Variable) {<a name="line.554"></a>
+<span class="sourceLineNo">555</span>                        // Has a number in parentheses following the name.<a name="line.555"></a>
+<span class="sourceLineNo">556</span>                        ArrayType arrayType = new ArrayType(type);<a name="line.556"></a>
+<span class="sourceLineNo">557</span>                        return arrayType;<a name="line.557"></a>
+<span class="sourceLineNo">558</span>                    }<a name="line.558"></a>
+<span class="sourceLineNo">559</span>                }<a name="line.559"></a>
+<span class="sourceLineNo">560</span><a name="line.560"></a>
+<span class="sourceLineNo">561</span>                return type;<a name="line.561"></a>
+<span class="sourceLineNo">562</span>            } catch (Exception ex) {<a name="line.562"></a>
+<span class="sourceLineNo">563</span>                throw new IllegalActionException(AbstractActionsAttribute.this,<a name="line.563"></a>
+<span class="sourceLineNo">564</span>                        ex,<a name="line.564"></a>
+<span class="sourceLineNo">565</span>                        "An error occurred during expression type inference");<a name="line.565"></a>
+<span class="sourceLineNo">566</span>            }<a name="line.566"></a>
+<span class="sourceLineNo">567</span>        }<a name="line.567"></a>
+<span class="sourceLineNo">568</span><a name="line.568"></a>
+<span class="sourceLineNo">569</span>        /** Return the type variable in this inequality term. If the type<a name="line.569"></a>
+<span class="sourceLineNo">570</span>         *  of input ports are not declared, return an one element array<a name="line.570"></a>
+<span class="sourceLineNo">571</span>         *  containing the inequality term representing the type of the port;<a name="line.571"></a>
+<span class="sourceLineNo">572</span>         *  otherwise, return an empty array.<a name="line.572"></a>
+<span class="sourceLineNo">573</span>         *  @return An array of InequalityTerm.<a name="line.573"></a>
+<span class="sourceLineNo">574</span>         */<a name="line.574"></a>
+<span class="sourceLineNo">575</span>        @Override<a name="line.575"></a>
+<span class="sourceLineNo">576</span>        public InequalityTerm[] getVariables() {<a name="line.576"></a>
+<span class="sourceLineNo">577</span>            // Return an array that contains type terms for all of the<a name="line.577"></a>
+<span class="sourceLineNo">578</span>            // inputs and all of the parameters that are free variables for<a name="line.578"></a>
+<span class="sourceLineNo">579</span>            // the expression.<a name="line.579"></a>
+<span class="sourceLineNo">580</span>            try {<a name="line.580"></a>
+<span class="sourceLineNo">581</span>                ASTPtRootNode parseTree = (ASTPtRootNode) _parseTrees<a name="line.581"></a>
+<span class="sourceLineNo">582</span>                        .get(_destinationNames.indexOf(_name));<a name="line.582"></a>
+<span class="sourceLineNo">583</span><a name="line.583"></a>
+<span class="sourceLineNo">584</span>                Set set = _variableCollector.collectFreeVariables(parseTree,<a name="line.584"></a>
+<span class="sourceLineNo">585</span>                        _getParserScope());<a name="line.585"></a>
+<span class="sourceLineNo">586</span>                List termList = new LinkedList();<a name="line.586"></a>
+<span class="sourceLineNo">587</span><a name="line.587"></a>
+<span class="sourceLineNo">588</span>                for (Iterator elements = set.iterator(); elements.hasNext();) {<a name="line.588"></a>
+<span class="sourceLineNo">589</span>                    String name = (String) elements.next();<a name="line.589"></a>
+<span class="sourceLineNo">590</span>                    InequalityTerm term = _getParserScope().getTypeTerm(name);<a name="line.590"></a>
+<span class="sourceLineNo">591</span><a name="line.591"></a>
+<span class="sourceLineNo">592</span>                    if (term != null &amp;&amp; term.isSettable()) {<a name="line.592"></a>
+<span class="sourceLineNo">593</span>                        termList.add(term);<a name="line.593"></a>
+<span class="sourceLineNo">594</span>                    }<a name="line.594"></a>
+<span class="sourceLineNo">595</span>                }<a name="line.595"></a>
+<span class="sourceLineNo">596</span><a name="line.596"></a>
+<span class="sourceLineNo">597</span>                return (InequalityTerm[]) termList<a name="line.597"></a>
+<span class="sourceLineNo">598</span>                        .toArray(new InequalityTerm[termList.size()]);<a name="line.598"></a>
+<span class="sourceLineNo">599</span>            } catch (IllegalActionException ex) {<a name="line.599"></a>
+<span class="sourceLineNo">600</span>                return new InequalityTerm[0];<a name="line.600"></a>
+<span class="sourceLineNo">601</span>            }<a name="line.601"></a>
+<span class="sourceLineNo">602</span>        }<a name="line.602"></a>
+<span class="sourceLineNo">603</span><a name="line.603"></a>
+<span class="sourceLineNo">604</span>        /** Override the base class to give a description of this term.<a name="line.604"></a>
+<span class="sourceLineNo">605</span>         *  @return A description of this term.<a name="line.605"></a>
+<span class="sourceLineNo">606</span>         */<a name="line.606"></a>
+<span class="sourceLineNo">607</span>        @Override<a name="line.607"></a>
+<span class="sourceLineNo">608</span>        public String getVerboseString() {<a name="line.608"></a>
+<span class="sourceLineNo">609</span>            return getExpression(_name);<a name="line.609"></a>
+<span class="sourceLineNo">610</span>        }<a name="line.610"></a>
+<span class="sourceLineNo">611</span><a name="line.611"></a>
+<span class="sourceLineNo">612</span>        ///////////////////////////////////////////////////////////////<a name="line.612"></a>
+<span class="sourceLineNo">613</span>        ////                      private inner variables          ////<a name="line.613"></a>
+<span class="sourceLineNo">614</span><a name="line.614"></a>
+<span class="sourceLineNo">615</span>        private String _name;<a name="line.615"></a>
+<span class="sourceLineNo">616</span><a name="line.616"></a>
+<span class="sourceLineNo">617</span>        private ParseTreeTypeInference _typeInference = new ParseTreeTypeInference();<a name="line.617"></a>
+<span class="sourceLineNo">618</span><a name="line.618"></a>
+<span class="sourceLineNo">619</span>        private ParseTreeFreeVariableCollector _variableCollector = new ParseTreeFreeVariableCollector();<a name="line.619"></a>
+<span class="sourceLineNo">620</span>    }<a name="line.620"></a>
+<span class="sourceLineNo">621</span><a name="line.621"></a>
+<span class="sourceLineNo">622</span>    /** List of channels. Elements may be numbers or variable names. */<a name="line.622"></a>
+<span class="sourceLineNo">623</span>    private List _numbers;<a name="line.623"></a>
+<span class="sourceLineNo">624</span>}<a name="line.624"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

@@ -1,0 +1,137 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../../../stylesheet.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>/* An interface to the analyzers used for the computation of transitive closure<a name="line.1"></a>
+<span class="sourceLineNo">002</span> of a directed graph.<a name="line.2"></a>
+<span class="sourceLineNo">003</span><a name="line.3"></a>
+<span class="sourceLineNo">004</span> Copyright (c) 2003-2005 The University of Maryland.<a name="line.4"></a>
+<span class="sourceLineNo">005</span> All rights reserved.<a name="line.5"></a>
+<span class="sourceLineNo">006</span> Permission is hereby granted, without written agreement and without<a name="line.6"></a>
+<span class="sourceLineNo">007</span> license or royalty fees, to use, copy, modify, and distribute this<a name="line.7"></a>
+<span class="sourceLineNo">008</span> software and its documentation for any purpose, provided that the above<a name="line.8"></a>
+<span class="sourceLineNo">009</span> copyright notice and the following two paragraphs appear in all copies<a name="line.9"></a>
+<span class="sourceLineNo">010</span> of this software.<a name="line.10"></a>
+<span class="sourceLineNo">011</span><a name="line.11"></a>
+<span class="sourceLineNo">012</span> IN NO EVENT SHALL THE UNIVERSITY OF MARYLAND BE LIABLE TO ANY PARTY<a name="line.12"></a>
+<span class="sourceLineNo">013</span> FOR DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES<a name="line.13"></a>
+<span class="sourceLineNo">014</span> ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION, EVEN IF<a name="line.14"></a>
+<span class="sourceLineNo">015</span> THE UNIVERSITY OF MARYLAND HAS BEEN ADVISED OF THE POSSIBILITY OF<a name="line.15"></a>
+<span class="sourceLineNo">016</span> SUCH DAMAGE.<a name="line.16"></a>
+<span class="sourceLineNo">017</span><a name="line.17"></a>
+<span class="sourceLineNo">018</span> THE UNIVERSITY OF MARYLAND SPECIFICALLY DISCLAIMS ANY WARRANTIES,<a name="line.18"></a>
+<span class="sourceLineNo">019</span> INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF<a name="line.19"></a>
+<span class="sourceLineNo">020</span> MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE<a name="line.20"></a>
+<span class="sourceLineNo">021</span> PROVIDED HEREUNDER IS ON AN "AS IS" BASIS, AND THE UNIVERSITY OF<a name="line.21"></a>
+<span class="sourceLineNo">022</span> MARYLAND HAS NO OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT, UPDATES,<a name="line.22"></a>
+<span class="sourceLineNo">023</span> ENHANCEMENTS, OR MODIFICATIONS.<a name="line.23"></a>
+<span class="sourceLineNo">024</span><a name="line.24"></a>
+<span class="sourceLineNo">025</span> */<a name="line.25"></a>
+<span class="sourceLineNo">026</span>package ptolemy.graph.analysis.analyzer;<a name="line.26"></a>
+<span class="sourceLineNo">027</span><a name="line.27"></a>
+<span class="sourceLineNo">028</span>import ptolemy.graph.Node;<a name="line.28"></a>
+<span class="sourceLineNo">029</span><a name="line.29"></a>
+<span class="sourceLineNo">030</span>//////////////////////////////////////////////////////////////////////////<a name="line.30"></a>
+<span class="sourceLineNo">031</span>//// TransitiveClosureAnalyzer<a name="line.31"></a>
+<span class="sourceLineNo">032</span><a name="line.32"></a>
+<span class="sourceLineNo">033</span>/**<a name="line.33"></a>
+<span class="sourceLineNo">034</span> An interface to the analyzers for the computation of transitive closure<a name="line.34"></a>
+<span class="sourceLineNo">035</span> of a directed graph.<a name="line.35"></a>
+<span class="sourceLineNo">036</span> &lt;p&gt;<a name="line.36"></a>
+<span class="sourceLineNo">037</span> @see ptolemy.graph.analysis.TransitiveClosureAnalysis<a name="line.37"></a>
+<span class="sourceLineNo">038</span> @since Ptolemy II 4.0<a name="line.38"></a>
+<span class="sourceLineNo">039</span> @Pt.ProposedRating Red (shahrooz)<a name="line.39"></a>
+<span class="sourceLineNo">040</span> @Pt.AcceptedRating Red (ssb)<a name="line.40"></a>
+<span class="sourceLineNo">041</span> @author Shahrooz Shahparnia<a name="line.41"></a>
+<span class="sourceLineNo">042</span> @version $Id$<a name="line.42"></a>
+<span class="sourceLineNo">043</span> */<a name="line.43"></a>
+<span class="sourceLineNo">044</span>public interface TransitiveClosureAnalyzer extends GraphAnalyzer {<a name="line.44"></a>
+<span class="sourceLineNo">045</span>    /** Check if there exist a path between a starting node "startNode" and an<a name="line.45"></a>
+<span class="sourceLineNo">046</span>     *  ending node "endNode" on the graph under analysis.<a name="line.46"></a>
+<span class="sourceLineNo">047</span>     *<a name="line.47"></a>
+<span class="sourceLineNo">048</span>     *  @param startNode The starting node.<a name="line.48"></a>
+<span class="sourceLineNo">049</span>     *  @param endNode The ending node.<a name="line.49"></a>
+<span class="sourceLineNo">050</span>     *  @return True if such a path exists.<a name="line.50"></a>
+<span class="sourceLineNo">051</span>     */<a name="line.51"></a>
+<span class="sourceLineNo">052</span>    public boolean pathExistence(Node startNode, Node endNode);<a name="line.52"></a>
+<span class="sourceLineNo">053</span><a name="line.53"></a>
+<span class="sourceLineNo">054</span>    /** Return the transitive closure of the graph under analysis in the<a name="line.54"></a>
+<span class="sourceLineNo">055</span>     *  form of two dimensional array. The first dimension represents<a name="line.55"></a>
+<span class="sourceLineNo">056</span>     *  source node label while the second one represents sink node label.<a name="line.56"></a>
+<span class="sourceLineNo">057</span>     *  Assume i and j are labels of two nodes.<a name="line.57"></a>
+<span class="sourceLineNo">058</span>     *  The value of {@link #transitiveClosureMatrix()}[i][j] is true if there<a name="line.58"></a>
+<span class="sourceLineNo">059</span>     *  is a path on the graph from "i" to "j".<a name="line.59"></a>
+<span class="sourceLineNo">060</span>     *<a name="line.60"></a>
+<span class="sourceLineNo">061</span>     *  @see ptolemy.graph.Graph#nodeLabel<a name="line.61"></a>
+<span class="sourceLineNo">062</span>     *  @return The transitive closure in the form of 2D array.<a name="line.62"></a>
+<span class="sourceLineNo">063</span>     */<a name="line.63"></a>
+<span class="sourceLineNo">064</span>    public boolean[][] transitiveClosureMatrix();<a name="line.64"></a>
+<span class="sourceLineNo">065</span>}<a name="line.65"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

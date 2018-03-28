@@ -1,0 +1,1784 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../../../stylesheet.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>/*<a name="line.1"></a>
+<span class="sourceLineNo">002</span> * Copyright (c) 2004-2007 by Michael Connor. All Rights Reserved.<a name="line.2"></a>
+<span class="sourceLineNo">003</span> *<a name="line.3"></a>
+<span class="sourceLineNo">004</span> * Redistribution and use in source and binary forms, with or without<a name="line.4"></a>
+<span class="sourceLineNo">005</span> * modification, are permitted provided that the following conditions are met:<a name="line.5"></a>
+<span class="sourceLineNo">006</span> *<a name="line.6"></a>
+<span class="sourceLineNo">007</span> *  o Redistributions of source code must retain the above copyright notice,<a name="line.7"></a>
+<span class="sourceLineNo">008</span> *    this list of conditions and the following disclaimer.<a name="line.8"></a>
+<span class="sourceLineNo">009</span> *<a name="line.9"></a>
+<span class="sourceLineNo">010</span> *  o Redistributions in binary form must reproduce the above copyright notice,<a name="line.10"></a>
+<span class="sourceLineNo">011</span> *    this list of conditions and the following disclaimer in the documentation<a name="line.11"></a>
+<span class="sourceLineNo">012</span> *    and/or other materials provided with the distribution.<a name="line.12"></a>
+<span class="sourceLineNo">013</span> *<a name="line.13"></a>
+<span class="sourceLineNo">014</span> *  o Neither the name of FormLayoutBuilder or Michael Connor nor the names of<a name="line.14"></a>
+<span class="sourceLineNo">015</span> *    its contributors may be used to endorse or promote products derived<a name="line.15"></a>
+<span class="sourceLineNo">016</span> *    from this software without specific prior written permission.<a name="line.16"></a>
+<span class="sourceLineNo">017</span> *<a name="line.17"></a>
+<span class="sourceLineNo">018</span> * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"<a name="line.18"></a>
+<span class="sourceLineNo">019</span> * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,<a name="line.19"></a>
+<span class="sourceLineNo">020</span> * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR<a name="line.20"></a>
+<span class="sourceLineNo">021</span> * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR<a name="line.21"></a>
+<span class="sourceLineNo">022</span> * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,<a name="line.22"></a>
+<span class="sourceLineNo">023</span> * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,<a name="line.23"></a>
+<span class="sourceLineNo">024</span> * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;<a name="line.24"></a>
+<span class="sourceLineNo">025</span> * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,<a name="line.25"></a>
+<span class="sourceLineNo">026</span> * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE<a name="line.26"></a>
+<span class="sourceLineNo">027</span> * OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,<a name="line.27"></a>
+<span class="sourceLineNo">028</span> * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.<a name="line.28"></a>
+<span class="sourceLineNo">029</span> */<a name="line.29"></a>
+<span class="sourceLineNo">030</span>package org.mlc.swing.layout;<a name="line.30"></a>
+<span class="sourceLineNo">031</span><a name="line.31"></a>
+<span class="sourceLineNo">032</span>import java.awt.BorderLayout;<a name="line.32"></a>
+<span class="sourceLineNo">033</span>import java.awt.Color;<a name="line.33"></a>
+<span class="sourceLineNo">034</span>import java.awt.Component;<a name="line.34"></a>
+<span class="sourceLineNo">035</span>import java.awt.Container;<a name="line.35"></a>
+<span class="sourceLineNo">036</span>import java.awt.Font;<a name="line.36"></a>
+<span class="sourceLineNo">037</span>import java.awt.Frame;<a name="line.37"></a>
+<span class="sourceLineNo">038</span>import java.awt.Insets;<a name="line.38"></a>
+<span class="sourceLineNo">039</span>import java.awt.Point;<a name="line.39"></a>
+<span class="sourceLineNo">040</span>import java.awt.Rectangle;<a name="line.40"></a>
+<span class="sourceLineNo">041</span>import java.awt.event.ActionEvent;<a name="line.41"></a>
+<span class="sourceLineNo">042</span>import java.awt.event.ActionListener;<a name="line.42"></a>
+<span class="sourceLineNo">043</span>import java.awt.event.InputEvent;<a name="line.43"></a>
+<span class="sourceLineNo">044</span>import java.awt.event.KeyEvent;<a name="line.44"></a>
+<span class="sourceLineNo">045</span>import java.awt.event.MouseAdapter;<a name="line.45"></a>
+<span class="sourceLineNo">046</span>import java.awt.event.MouseEvent;<a name="line.46"></a>
+<span class="sourceLineNo">047</span>import java.util.ArrayList;<a name="line.47"></a>
+<span class="sourceLineNo">048</span>import java.util.HashMap;<a name="line.48"></a>
+<span class="sourceLineNo">049</span>import java.util.HashSet;<a name="line.49"></a>
+<span class="sourceLineNo">050</span>import java.util.List;<a name="line.50"></a>
+<span class="sourceLineNo">051</span>import java.util.Locale;<a name="line.51"></a>
+<span class="sourceLineNo">052</span>import java.util.Map;<a name="line.52"></a>
+<span class="sourceLineNo">053</span>import java.util.Set;<a name="line.53"></a>
+<span class="sourceLineNo">054</span><a name="line.54"></a>
+<span class="sourceLineNo">055</span>import javax.swing.AbstractAction;<a name="line.55"></a>
+<span class="sourceLineNo">056</span>import javax.swing.AbstractListModel;<a name="line.56"></a>
+<span class="sourceLineNo">057</span>import javax.swing.AbstractSpinnerModel;<a name="line.57"></a>
+<span class="sourceLineNo">058</span>import javax.swing.Action;<a name="line.58"></a>
+<span class="sourceLineNo">059</span>import javax.swing.ImageIcon;<a name="line.59"></a>
+<span class="sourceLineNo">060</span>import javax.swing.JButton;<a name="line.60"></a>
+<span class="sourceLineNo">061</span>import javax.swing.JComboBox;<a name="line.61"></a>
+<span class="sourceLineNo">062</span>import javax.swing.JDialog;<a name="line.62"></a>
+<span class="sourceLineNo">063</span>import javax.swing.JFrame;<a name="line.63"></a>
+<span class="sourceLineNo">064</span>import javax.swing.JLabel;<a name="line.64"></a>
+<span class="sourceLineNo">065</span>import javax.swing.JList;<a name="line.65"></a>
+<span class="sourceLineNo">066</span>import javax.swing.JOptionPane;<a name="line.66"></a>
+<span class="sourceLineNo">067</span>import javax.swing.JPanel;<a name="line.67"></a>
+<span class="sourceLineNo">068</span>import javax.swing.JScrollPane;<a name="line.68"></a>
+<span class="sourceLineNo">069</span>import javax.swing.JSpinner;<a name="line.69"></a>
+<span class="sourceLineNo">070</span>import javax.swing.JSplitPane;<a name="line.70"></a>
+<span class="sourceLineNo">071</span>import javax.swing.JTable;<a name="line.71"></a>
+<span class="sourceLineNo">072</span>import javax.swing.JTextField;<a name="line.72"></a>
+<span class="sourceLineNo">073</span>import javax.swing.JToolBar;<a name="line.73"></a>
+<span class="sourceLineNo">074</span>import javax.swing.JViewport;<a name="line.74"></a>
+<span class="sourceLineNo">075</span>import javax.swing.KeyStroke;<a name="line.75"></a>
+<span class="sourceLineNo">076</span>import javax.swing.ListCellRenderer;<a name="line.76"></a>
+<span class="sourceLineNo">077</span>import javax.swing.ListModel;<a name="line.77"></a>
+<span class="sourceLineNo">078</span>import javax.swing.ListSelectionModel;<a name="line.78"></a>
+<span class="sourceLineNo">079</span>import javax.swing.SpinnerNumberModel;<a name="line.79"></a>
+<span class="sourceLineNo">080</span>import javax.swing.SwingUtilities;<a name="line.80"></a>
+<span class="sourceLineNo">081</span>import javax.swing.UIManager;<a name="line.81"></a>
+<span class="sourceLineNo">082</span>import javax.swing.border.Border;<a name="line.82"></a>
+<span class="sourceLineNo">083</span>import javax.swing.border.EmptyBorder;<a name="line.83"></a>
+<span class="sourceLineNo">084</span>import javax.swing.event.ChangeEvent;<a name="line.84"></a>
+<span class="sourceLineNo">085</span>import javax.swing.event.ChangeListener;<a name="line.85"></a>
+<span class="sourceLineNo">086</span>import javax.swing.event.ListSelectionEvent;<a name="line.86"></a>
+<span class="sourceLineNo">087</span>import javax.swing.event.ListSelectionListener;<a name="line.87"></a>
+<span class="sourceLineNo">088</span>import javax.swing.table.DefaultTableCellRenderer;<a name="line.88"></a>
+<span class="sourceLineNo">089</span><a name="line.89"></a>
+<span class="sourceLineNo">090</span>import com.jgoodies.forms.factories.Borders;<a name="line.90"></a>
+<span class="sourceLineNo">091</span>import com.jgoodies.forms.factories.DefaultComponentFactory;<a name="line.91"></a>
+<span class="sourceLineNo">092</span>import com.jgoodies.forms.layout.CellConstraints;<a name="line.92"></a>
+<span class="sourceLineNo">093</span><a name="line.93"></a>
+<span class="sourceLineNo">094</span>/**<a name="line.94"></a>
+<span class="sourceLineNo">095</span> * This is the main panel that is used in LayoutFrame serving as the user<a name="line.95"></a>
+<span class="sourceLineNo">096</span> * interface for the builder. This is a pretty juicy file because there is a lot<a name="line.96"></a>
+<span class="sourceLineNo">097</span> * going on here. Better docs to come...<a name="line.97"></a>
+<span class="sourceLineNo">098</span> *<a name="line.98"></a>
+<span class="sourceLineNo">099</span> * @author Michael Connor mlconnor&amp;#064;yahoo.com<a name="line.99"></a>
+<span class="sourceLineNo">100</span>@version $Id$<a name="line.100"></a>
+<span class="sourceLineNo">101</span>@since Ptolemy II 8.0<a name="line.101"></a>
+<span class="sourceLineNo">102</span> */<a name="line.102"></a>
+<span class="sourceLineNo">103</span>@SuppressWarnings("serial")<a name="line.103"></a>
+<span class="sourceLineNo">104</span>public class FormEditor extends JPanel {<a name="line.104"></a>
+<span class="sourceLineNo">105</span>    String[] verticalAlignmentList = { LayoutConstraintsManager.DEFAULT,<a name="line.105"></a>
+<span class="sourceLineNo">106</span>            LayoutConstraintsManager.FILL, LayoutConstraintsManager.CENTER,<a name="line.106"></a>
+<span class="sourceLineNo">107</span>            LayoutConstraintsManager.TOP, LayoutConstraintsManager.BOTTOM };<a name="line.107"></a>
+<span class="sourceLineNo">108</span><a name="line.108"></a>
+<span class="sourceLineNo">109</span>    String[] horizontalAlignmentList = { LayoutConstraintsManager.DEFAULT,<a name="line.109"></a>
+<span class="sourceLineNo">110</span>            LayoutConstraintsManager.FILL, LayoutConstraintsManager.CENTER,<a name="line.110"></a>
+<span class="sourceLineNo">111</span>            LayoutConstraintsManager.LEFT, LayoutConstraintsManager.RIGHT };<a name="line.111"></a>
+<span class="sourceLineNo">112</span><a name="line.112"></a>
+<span class="sourceLineNo">113</span>    ColSpanSpinnerModel colSpinnerModel = new ColSpanSpinnerModel();<a name="line.113"></a>
+<span class="sourceLineNo">114</span><a name="line.114"></a>
+<span class="sourceLineNo">115</span>    RowSpanSpinnerModel rowSpinnerModel = new RowSpanSpinnerModel();<a name="line.115"></a>
+<span class="sourceLineNo">116</span><a name="line.116"></a>
+<span class="sourceLineNo">117</span>    Action newComponentAction = new NewComponentAction();<a name="line.117"></a>
+<span class="sourceLineNo">118</span><a name="line.118"></a>
+<span class="sourceLineNo">119</span>    Action removeComponentAction = new RemoveComponentAction();<a name="line.119"></a>
+<span class="sourceLineNo">120</span><a name="line.120"></a>
+<span class="sourceLineNo">121</span>    Action insertRowBeforeAction = new InsertRowBeforeAction();<a name="line.121"></a>
+<span class="sourceLineNo">122</span><a name="line.122"></a>
+<span class="sourceLineNo">123</span>    Action insertRowAfterAction = new InsertRowAfterAction();<a name="line.123"></a>
+<span class="sourceLineNo">124</span><a name="line.124"></a>
+<span class="sourceLineNo">125</span>    Action deleteRowAction = new DeleteRowAction();<a name="line.125"></a>
+<span class="sourceLineNo">126</span><a name="line.126"></a>
+<span class="sourceLineNo">127</span>    Action insertColumnBeforeAction = new InsertColumnBeforeAction();<a name="line.127"></a>
+<span class="sourceLineNo">128</span><a name="line.128"></a>
+<span class="sourceLineNo">129</span>    Action insertColumnAfterAction = new InsertColumnAfterAction();<a name="line.129"></a>
+<span class="sourceLineNo">130</span><a name="line.130"></a>
+<span class="sourceLineNo">131</span>    Action deleteColumnAction = new DeleteColumnAction();<a name="line.131"></a>
+<span class="sourceLineNo">132</span><a name="line.132"></a>
+<span class="sourceLineNo">133</span>    JComboBox verticalAlignmentCombo = new JComboBox(verticalAlignmentList);<a name="line.133"></a>
+<span class="sourceLineNo">134</span><a name="line.134"></a>
+<span class="sourceLineNo">135</span>    JComboBox horizontalAlignmentCombo = new JComboBox(horizontalAlignmentList);<a name="line.135"></a>
+<span class="sourceLineNo">136</span><a name="line.136"></a>
+<span class="sourceLineNo">137</span>    JSpinner rowSpanSpinner = new JSpinner(rowSpinnerModel);<a name="line.137"></a>
+<span class="sourceLineNo">138</span><a name="line.138"></a>
+<span class="sourceLineNo">139</span>    JSpinner columnSpanSpinner = new JSpinner(colSpinnerModel);<a name="line.139"></a>
+<span class="sourceLineNo">140</span><a name="line.140"></a>
+<span class="sourceLineNo">141</span>    JLabel columnSpanLabel = new JLabel("Column Span");<a name="line.141"></a>
+<span class="sourceLineNo">142</span><a name="line.142"></a>
+<span class="sourceLineNo">143</span>    JLabel horizontalAlignmentLabel = new JLabel("Horizontal Alignment");<a name="line.143"></a>
+<span class="sourceLineNo">144</span><a name="line.144"></a>
+<span class="sourceLineNo">145</span>    JLabel rowSpanLabel = new JLabel("Row Span");<a name="line.145"></a>
+<span class="sourceLineNo">146</span><a name="line.146"></a>
+<span class="sourceLineNo">147</span>    JLabel verticalAlignmentLabel = new JLabel("Vertical Alignment");<a name="line.147"></a>
+<span class="sourceLineNo">148</span><a name="line.148"></a>
+<span class="sourceLineNo">149</span>    JPanel contentPanel = new JPanel();<a name="line.149"></a>
+<span class="sourceLineNo">150</span><a name="line.150"></a>
+<span class="sourceLineNo">151</span>    JPanel insetsPanel = new JPanel();<a name="line.151"></a>
+<span class="sourceLineNo">152</span><a name="line.152"></a>
+<span class="sourceLineNo">153</span>    SpinnerNumberModel rightInsetSpinnerModel = new SpinnerNumberModel(0, 0,<a name="line.153"></a>
+<span class="sourceLineNo">154</span>            Integer.MAX_VALUE, 1);<a name="line.154"></a>
+<span class="sourceLineNo">155</span><a name="line.155"></a>
+<span class="sourceLineNo">156</span>    SpinnerNumberModel topInsetSpinnerModel = new SpinnerNumberModel(0, 0,<a name="line.156"></a>
+<span class="sourceLineNo">157</span>            Integer.MAX_VALUE, 1);<a name="line.157"></a>
+<span class="sourceLineNo">158</span><a name="line.158"></a>
+<span class="sourceLineNo">159</span>    SpinnerNumberModel bottomInsetSpinnerModel = new SpinnerNumberModel(0, 0,<a name="line.159"></a>
+<span class="sourceLineNo">160</span>            Integer.MAX_VALUE, 1);<a name="line.160"></a>
+<span class="sourceLineNo">161</span><a name="line.161"></a>
+<span class="sourceLineNo">162</span>    SpinnerNumberModel leftInsetSpinnerModel = new SpinnerNumberModel(0, 0,<a name="line.162"></a>
+<span class="sourceLineNo">163</span>            Integer.MAX_VALUE, 1);<a name="line.163"></a>
+<span class="sourceLineNo">164</span><a name="line.164"></a>
+<span class="sourceLineNo">165</span>    JSpinner rightInsetSpinner = new JSpinner(rightInsetSpinnerModel);<a name="line.165"></a>
+<span class="sourceLineNo">166</span><a name="line.166"></a>
+<span class="sourceLineNo">167</span>    JSpinner bottomInsetSpinner = new JSpinner(bottomInsetSpinnerModel);<a name="line.167"></a>
+<span class="sourceLineNo">168</span><a name="line.168"></a>
+<span class="sourceLineNo">169</span>    JSpinner leftInsetSpinner = new JSpinner(leftInsetSpinnerModel);<a name="line.169"></a>
+<span class="sourceLineNo">170</span><a name="line.170"></a>
+<span class="sourceLineNo">171</span>    JSpinner topInsetSpinner = new JSpinner(topInsetSpinnerModel);<a name="line.171"></a>
+<span class="sourceLineNo">172</span><a name="line.172"></a>
+<span class="sourceLineNo">173</span>    GridTableModel tableModel = new GridTableModel();<a name="line.173"></a>
+<span class="sourceLineNo">174</span><a name="line.174"></a>
+<span class="sourceLineNo">175</span>    JLabel insetsLabel = new JLabel("Insets");<a name="line.175"></a>
+<span class="sourceLineNo">176</span><a name="line.176"></a>
+<span class="sourceLineNo">177</span>    JLabel componentsLabel = new JLabel("Components (Drag n Drop)");<a name="line.177"></a>
+<span class="sourceLineNo">178</span><a name="line.178"></a>
+<span class="sourceLineNo">179</span>    JLabel componentPaletteLabel = new JLabel("Palette (Drag n Drop)");<a name="line.179"></a>
+<span class="sourceLineNo">180</span><a name="line.180"></a>
+<span class="sourceLineNo">181</span>    ComponentPaletteListModel componentPaletteListModel = new ComponentPaletteListModel();<a name="line.181"></a>
+<span class="sourceLineNo">182</span><a name="line.182"></a>
+<span class="sourceLineNo">183</span>    // KBR JList componentPalette = new JList(componentPaletteListModel);<a name="line.183"></a>
+<span class="sourceLineNo">184</span>    DndList componentPalette = new DndList(this, componentPaletteListModel);<a name="line.184"></a>
+<span class="sourceLineNo">185</span><a name="line.185"></a>
+<span class="sourceLineNo">186</span>    JScrollPane componentPaletteScrollPane = new JScrollPane(componentPalette);<a name="line.186"></a>
+<span class="sourceLineNo">187</span><a name="line.187"></a>
+<span class="sourceLineNo">188</span>    ComponentSelectionListModel componentSelectionListModel = new ComponentSelectionListModel();<a name="line.188"></a>
+<span class="sourceLineNo">189</span><a name="line.189"></a>
+<span class="sourceLineNo">190</span>    DndList componentList = new DndList(this, componentSelectionListModel);<a name="line.190"></a>
+<span class="sourceLineNo">191</span><a name="line.191"></a>
+<span class="sourceLineNo">192</span>    JScrollPane componentListScrollPane = new JScrollPane(componentList);<a name="line.192"></a>
+<span class="sourceLineNo">193</span><a name="line.193"></a>
+<span class="sourceLineNo">194</span>    ComponentListCellRenderer componentListCellRenderer = new ComponentListCellRenderer();<a name="line.194"></a>
+<span class="sourceLineNo">195</span><a name="line.195"></a>
+<span class="sourceLineNo">196</span>    Component constraintsSeparator = DefaultComponentFactory.getInstance()<a name="line.196"></a>
+<span class="sourceLineNo">197</span>            .createSeparator("Component Constraints");<a name="line.197"></a>
+<span class="sourceLineNo">198</span><a name="line.198"></a>
+<span class="sourceLineNo">199</span>    Component positionsSeparator = DefaultComponentFactory.getInstance()<a name="line.199"></a>
+<span class="sourceLineNo">200</span>            .createSeparator("Component Positions (Drag n Drop)");<a name="line.200"></a>
+<span class="sourceLineNo">201</span><a name="line.201"></a>
+<span class="sourceLineNo">202</span>    JPanel componentsPanel = new JPanel();<a name="line.202"></a>
+<span class="sourceLineNo">203</span><a name="line.203"></a>
+<span class="sourceLineNo">204</span>    JPanel propertiesPanel = new JPanel();<a name="line.204"></a>
+<span class="sourceLineNo">205</span><a name="line.205"></a>
+<span class="sourceLineNo">206</span>    JSplitPane componentsSplitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT,<a name="line.206"></a>
+<span class="sourceLineNo">207</span>            componentsPanel, propertiesPanel);<a name="line.207"></a>
+<span class="sourceLineNo">208</span><a name="line.208"></a>
+<span class="sourceLineNo">209</span>    JTextField colSpecField = new JTextField();<a name="line.209"></a>
+<span class="sourceLineNo">210</span><a name="line.210"></a>
+<span class="sourceLineNo">211</span>    JTextField rowSpecField = new JTextField();<a name="line.211"></a>
+<span class="sourceLineNo">212</span><a name="line.212"></a>
+<span class="sourceLineNo">213</span>    Set&lt;Component&gt; newComponents = new HashSet&lt;Component&gt;();<a name="line.213"></a>
+<span class="sourceLineNo">214</span><a name="line.214"></a>
+<span class="sourceLineNo">215</span>    LayoutConstraintsManager layoutConstraintsManager;<a name="line.215"></a>
+<span class="sourceLineNo">216</span><a name="line.216"></a>
+<span class="sourceLineNo">217</span>    JToolBar toolbar = new JToolBar();<a name="line.217"></a>
+<span class="sourceLineNo">218</span><a name="line.218"></a>
+<span class="sourceLineNo">219</span>    JButton newComponentButton = new JButton(newComponentAction);<a name="line.219"></a>
+<span class="sourceLineNo">220</span><a name="line.220"></a>
+<span class="sourceLineNo">221</span>    JButton removeComponentButton = new JButton(removeComponentAction);<a name="line.221"></a>
+<span class="sourceLineNo">222</span><a name="line.222"></a>
+<span class="sourceLineNo">223</span>    JButton columnDeleteButton = new JButton(deleteColumnAction);<a name="line.223"></a>
+<span class="sourceLineNo">224</span><a name="line.224"></a>
+<span class="sourceLineNo">225</span>    JButton columnInsertAfterButton = new JButton(insertColumnAfterAction);<a name="line.225"></a>
+<span class="sourceLineNo">226</span><a name="line.226"></a>
+<span class="sourceLineNo">227</span>    JButton columnInsertBeforeButton = new JButton(insertColumnBeforeAction);<a name="line.227"></a>
+<span class="sourceLineNo">228</span><a name="line.228"></a>
+<span class="sourceLineNo">229</span>    JButton rowDeleteButton = new JButton(deleteRowAction);<a name="line.229"></a>
+<span class="sourceLineNo">230</span><a name="line.230"></a>
+<span class="sourceLineNo">231</span>    JButton rowInsertBeforeButton = new JButton(insertRowBeforeAction);<a name="line.231"></a>
+<span class="sourceLineNo">232</span><a name="line.232"></a>
+<span class="sourceLineNo">233</span>    JButton rowInsertAfterButton = new JButton(insertRowAfterAction);<a name="line.233"></a>
+<span class="sourceLineNo">234</span><a name="line.234"></a>
+<span class="sourceLineNo">235</span>    Container container;<a name="line.235"></a>
+<span class="sourceLineNo">236</span><a name="line.236"></a>
+<span class="sourceLineNo">237</span>    ContainerLayout containerLayout;<a name="line.237"></a>
+<span class="sourceLineNo">238</span><a name="line.238"></a>
+<span class="sourceLineNo">239</span>    MultiContainerFrame layoutFrame;<a name="line.239"></a>
+<span class="sourceLineNo">240</span>    DnDTable table = null;<a name="line.240"></a>
+<span class="sourceLineNo">241</span>    JScrollPane tableScrollPane = null;<a name="line.241"></a>
+<span class="sourceLineNo">242</span>    JSplitPane constraintsSplitPane = null;<a name="line.242"></a>
+<span class="sourceLineNo">243</span><a name="line.243"></a>
+<span class="sourceLineNo">244</span>    Component topComponent = null;<a name="line.244"></a>
+<span class="sourceLineNo">245</span><a name="line.245"></a>
+<span class="sourceLineNo">246</span>    boolean suspendConstraintControlUpdates = false;<a name="line.246"></a>
+<span class="sourceLineNo">247</span><a name="line.247"></a>
+<span class="sourceLineNo">248</span>    void setContainer(Container container) {<a name="line.248"></a>
+<span class="sourceLineNo">249</span>        java.awt.LayoutManager layoutManager = container.getLayout();<a name="line.249"></a>
+<span class="sourceLineNo">250</span>        if (!(layoutManager instanceof ContainerLayout)) {<a name="line.250"></a>
+<span class="sourceLineNo">251</span>            throw new RuntimeException(<a name="line.251"></a>
+<span class="sourceLineNo">252</span>                    "Container layout must be of type ContainerLayout");<a name="line.252"></a>
+<span class="sourceLineNo">253</span>        }<a name="line.253"></a>
+<span class="sourceLineNo">254</span>        this.container = container;<a name="line.254"></a>
+<span class="sourceLineNo">255</span>    }<a name="line.255"></a>
+<span class="sourceLineNo">256</span><a name="line.256"></a>
+<span class="sourceLineNo">257</span>    public FormEditor(MultiContainerFrame layoutFrame, ContainerLayout layout,<a name="line.257"></a>
+<span class="sourceLineNo">258</span>            Container container) {<a name="line.258"></a>
+<span class="sourceLineNo">259</span>        super();<a name="line.259"></a>
+<span class="sourceLineNo">260</span><a name="line.260"></a>
+<span class="sourceLineNo">261</span>        this.layoutFrame = layoutFrame;<a name="line.261"></a>
+<span class="sourceLineNo">262</span>        table = new DnDTable(layoutFrame, this);<a name="line.262"></a>
+<span class="sourceLineNo">263</span>        tableScrollPane = new JScrollPane(table);<a name="line.263"></a>
+<span class="sourceLineNo">264</span>        constraintsSplitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,<a name="line.264"></a>
+<span class="sourceLineNo">265</span>                tableScrollPane, componentsSplitPane);<a name="line.265"></a>
+<span class="sourceLineNo">266</span><a name="line.266"></a>
+<span class="sourceLineNo">267</span>        setContainer(container);<a name="line.267"></a>
+<span class="sourceLineNo">268</span>        containerLayout = layout;<a name="line.268"></a>
+<span class="sourceLineNo">269</span><a name="line.269"></a>
+<span class="sourceLineNo">270</span>        table.setBackground(java.awt.Color.white);<a name="line.270"></a>
+<span class="sourceLineNo">271</span>        table.setSelectionBackground(new Color(220, 220, 255));<a name="line.271"></a>
+<span class="sourceLineNo">272</span>        table.setSelectionForeground(Color.black);<a name="line.272"></a>
+<span class="sourceLineNo">273</span><a name="line.273"></a>
+<span class="sourceLineNo">274</span>        table.setDefaultRenderer(Object.class,<a name="line.274"></a>
+<span class="sourceLineNo">275</span>                new ConstraintTableCellRenderer());<a name="line.275"></a>
+<span class="sourceLineNo">276</span>        table.setRowHeight(20);<a name="line.276"></a>
+<span class="sourceLineNo">277</span>        table.setModel(tableModel);<a name="line.277"></a>
+<span class="sourceLineNo">278</span>        table.setCellSelectionEnabled(true);<a name="line.278"></a>
+<span class="sourceLineNo">279</span>        table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);<a name="line.279"></a>
+<span class="sourceLineNo">280</span><a name="line.280"></a>
+<span class="sourceLineNo">281</span>        // let's put the cursor in the table so the create component<a name="line.281"></a>
+<span class="sourceLineNo">282</span>        // icon is enabled. at least then the user knows what to do...<a name="line.282"></a>
+<span class="sourceLineNo">283</span>        if (tableModel.getRowCount() &gt; 1 &amp;&amp; tableModel.getColumnCount() &gt; 1) {<a name="line.283"></a>
+<span class="sourceLineNo">284</span>            // KBR do NOT force visible so constraints row can still be seen<a name="line.284"></a>
+<span class="sourceLineNo">285</span>            setSelectedCell(1, 1, false);<a name="line.285"></a>
+<span class="sourceLineNo">286</span>        }<a name="line.286"></a>
+<span class="sourceLineNo">287</span><a name="line.287"></a>
+<span class="sourceLineNo">288</span>        componentList.setCellRenderer(componentListCellRenderer);<a name="line.288"></a>
+<span class="sourceLineNo">289</span><a name="line.289"></a>
+<span class="sourceLineNo">290</span>        // let's setup all of the usability stuff...<a name="line.290"></a>
+<span class="sourceLineNo">291</span>        componentsLabel.setLabelFor(componentListScrollPane);<a name="line.291"></a>
+<span class="sourceLineNo">292</span>        // componentsLabel.setDisplayedMnemonic(KeyEvent.VK_S);<a name="line.292"></a>
+<span class="sourceLineNo">293</span>        verticalAlignmentLabel.setLabelFor(verticalAlignmentCombo);<a name="line.293"></a>
+<span class="sourceLineNo">294</span>        verticalAlignmentLabel.setDisplayedMnemonic(KeyEvent.VK_V);<a name="line.294"></a>
+<span class="sourceLineNo">295</span>        horizontalAlignmentLabel.setLabelFor(horizontalAlignmentCombo);<a name="line.295"></a>
+<span class="sourceLineNo">296</span>        horizontalAlignmentLabel.setDisplayedMnemonic(KeyEvent.VK_H);<a name="line.296"></a>
+<span class="sourceLineNo">297</span>        columnSpanLabel.setLabelFor(columnSpanSpinner);<a name="line.297"></a>
+<span class="sourceLineNo">298</span>        columnSpanLabel.setDisplayedMnemonic(KeyEvent.VK_C);<a name="line.298"></a>
+<span class="sourceLineNo">299</span>        rowSpanLabel.setLabelFor(rowSpanSpinner);<a name="line.299"></a>
+<span class="sourceLineNo">300</span>        rowSpanLabel.setDisplayedMnemonic(KeyEvent.VK_R);<a name="line.300"></a>
+<span class="sourceLineNo">301</span><a name="line.301"></a>
+<span class="sourceLineNo">302</span>        columnInsertAfterButton<a name="line.302"></a>
+<span class="sourceLineNo">303</span>                .setToolTipText("Insert a column after this column");<a name="line.303"></a>
+<span class="sourceLineNo">304</span>        columnInsertBeforeButton<a name="line.304"></a>
+<span class="sourceLineNo">305</span>                .setToolTipText("Insert a column before this column");<a name="line.305"></a>
+<span class="sourceLineNo">306</span>        columnDeleteButton.setToolTipText("Delete this column");<a name="line.306"></a>
+<span class="sourceLineNo">307</span>        rowInsertBeforeButton.setToolTipText("Insert a row before this row");<a name="line.307"></a>
+<span class="sourceLineNo">308</span>        rowInsertAfterButton.setToolTipText("Insert a row after this row");<a name="line.308"></a>
+<span class="sourceLineNo">309</span><a name="line.309"></a>
+<span class="sourceLineNo">310</span>        // let's setup the table toolbar<a name="line.310"></a>
+<span class="sourceLineNo">311</span>        toolbar.add(newComponentButton);<a name="line.311"></a>
+<span class="sourceLineNo">312</span>        toolbar.add(removeComponentButton);<a name="line.312"></a>
+<span class="sourceLineNo">313</span>        toolbar.addSeparator();<a name="line.313"></a>
+<span class="sourceLineNo">314</span>        toolbar.add(columnDeleteButton);<a name="line.314"></a>
+<span class="sourceLineNo">315</span>        toolbar.add(columnInsertBeforeButton);<a name="line.315"></a>
+<span class="sourceLineNo">316</span>        toolbar.add(columnInsertAfterButton);<a name="line.316"></a>
+<span class="sourceLineNo">317</span>        toolbar.addSeparator();<a name="line.317"></a>
+<span class="sourceLineNo">318</span>        toolbar.add(rowDeleteButton);<a name="line.318"></a>
+<span class="sourceLineNo">319</span>        toolbar.add(rowInsertBeforeButton);<a name="line.319"></a>
+<span class="sourceLineNo">320</span>        toolbar.add(rowInsertAfterButton);<a name="line.320"></a>
+<span class="sourceLineNo">321</span><a name="line.321"></a>
+<span class="sourceLineNo">322</span>        setFormComponent(null);<a name="line.322"></a>
+<span class="sourceLineNo">323</span><a name="line.323"></a>
+<span class="sourceLineNo">324</span>        layoutConstraintsManager = LayoutConstraintsManager<a name="line.324"></a>
+<span class="sourceLineNo">325</span>                .getLayoutConstraintsManager(this.getClass()<a name="line.325"></a>
+<span class="sourceLineNo">326</span>                        .getResourceAsStream("editableLayoutConstraints.xml"));<a name="line.326"></a>
+<span class="sourceLineNo">327</span><a name="line.327"></a>
+<span class="sourceLineNo">328</span>        layoutConstraintsManager.setLayout("mainLayout", contentPanel);<a name="line.328"></a>
+<span class="sourceLineNo">329</span>        layoutConstraintsManager.setLayout("insetsLayout", insetsPanel);<a name="line.329"></a>
+<span class="sourceLineNo">330</span>        layoutConstraintsManager.setLayout("componentsLayout", componentsPanel);<a name="line.330"></a>
+<span class="sourceLineNo">331</span>        layoutConstraintsManager.setLayout("propertiesLayout", propertiesPanel);<a name="line.331"></a>
+<span class="sourceLineNo">332</span><a name="line.332"></a>
+<span class="sourceLineNo">333</span>        insetsPanel.add(rightInsetSpinner, "rightInsetSpinner");<a name="line.333"></a>
+<span class="sourceLineNo">334</span>        insetsPanel.add(leftInsetSpinner, "leftInsetSpinner");<a name="line.334"></a>
+<span class="sourceLineNo">335</span>        insetsPanel.add(topInsetSpinner, "topInsetSpinner");<a name="line.335"></a>
+<span class="sourceLineNo">336</span>        insetsPanel.add(bottomInsetSpinner, "bottomInsetSpinner");<a name="line.336"></a>
+<span class="sourceLineNo">337</span><a name="line.337"></a>
+<span class="sourceLineNo">338</span>        componentsPanel.add(componentListScrollPane, "componentListScrollPane");<a name="line.338"></a>
+<span class="sourceLineNo">339</span>        componentsPanel.add(componentsLabel, "componentsLabel");<a name="line.339"></a>
+<span class="sourceLineNo">340</span>        propertiesPanel.add(componentPaletteScrollPane,<a name="line.340"></a>
+<span class="sourceLineNo">341</span>                "componentPaletteScrollPane");<a name="line.341"></a>
+<span class="sourceLineNo">342</span>        componentPalette.setCellRenderer(new ComponentPaletteListRenderer());<a name="line.342"></a>
+<span class="sourceLineNo">343</span>        propertiesPanel.add(componentPaletteLabel, "componentPaletteLabel");<a name="line.343"></a>
+<span class="sourceLineNo">344</span><a name="line.344"></a>
+<span class="sourceLineNo">345</span>        contentPanel.add(rowSpanLabel, "rowSpanLabel");<a name="line.345"></a>
+<span class="sourceLineNo">346</span>        contentPanel.add(horizontalAlignmentCombo, "horizontalAlignmentCombo");<a name="line.346"></a>
+<span class="sourceLineNo">347</span>        contentPanel.add(horizontalAlignmentLabel, "horizontalAlignmentLabel");<a name="line.347"></a>
+<span class="sourceLineNo">348</span>        contentPanel.add(rowSpanSpinner, "rowSpanSpinner");<a name="line.348"></a>
+<span class="sourceLineNo">349</span>        contentPanel.add(verticalAlignmentCombo, "verticalAlignmentCombo");<a name="line.349"></a>
+<span class="sourceLineNo">350</span>        contentPanel.add(columnSpanLabel, "columnSpanLabel");<a name="line.350"></a>
+<span class="sourceLineNo">351</span>        contentPanel.add(verticalAlignmentLabel, "verticalAlignmentLabel");<a name="line.351"></a>
+<span class="sourceLineNo">352</span>        contentPanel.add(columnSpanSpinner, "columnSpanSpinner");<a name="line.352"></a>
+<span class="sourceLineNo">353</span>        contentPanel.add(insetsPanel, "insetsPanel");<a name="line.353"></a>
+<span class="sourceLineNo">354</span>        contentPanel.add(insetsLabel, "insetsLabel");<a name="line.354"></a>
+<span class="sourceLineNo">355</span>        contentPanel.add(constraintsSeparator, "constraintsSeparator");<a name="line.355"></a>
+<span class="sourceLineNo">356</span>        contentPanel.add(positionsSeparator, "positionsSeparator");<a name="line.356"></a>
+<span class="sourceLineNo">357</span>        contentPanel.add(toolbar, "toolbar");<a name="line.357"></a>
+<span class="sourceLineNo">358</span>        contentPanel.add(constraintsSplitPane, "constraintsSplitPane");<a name="line.358"></a>
+<span class="sourceLineNo">359</span><a name="line.359"></a>
+<span class="sourceLineNo">360</span>        constraintsSplitPane.setDividerLocation(605);<a name="line.360"></a>
+<span class="sourceLineNo">361</span><a name="line.361"></a>
+<span class="sourceLineNo">362</span>        contentPanel.setBorder(Borders.DIALOG_BORDER);<a name="line.362"></a>
+<span class="sourceLineNo">363</span><a name="line.363"></a>
+<span class="sourceLineNo">364</span>        setLayout(new BorderLayout());<a name="line.364"></a>
+<span class="sourceLineNo">365</span>        add(contentPanel, BorderLayout.CENTER);<a name="line.365"></a>
+<span class="sourceLineNo">366</span><a name="line.366"></a>
+<span class="sourceLineNo">367</span>        setupListeners();<a name="line.367"></a>
+<span class="sourceLineNo">368</span>    }<a name="line.368"></a>
+<span class="sourceLineNo">369</span><a name="line.369"></a>
+<span class="sourceLineNo">370</span>    private void setupListeners() {<a name="line.370"></a>
+<span class="sourceLineNo">371</span><a name="line.371"></a>
+<span class="sourceLineNo">372</span>        verticalAlignmentCombo.addActionListener(new ActionListener() {<a name="line.372"></a>
+<span class="sourceLineNo">373</span>            @Override<a name="line.373"></a>
+<span class="sourceLineNo">374</span>            public void actionPerformed(ActionEvent e) {<a name="line.374"></a>
+<span class="sourceLineNo">375</span>                Component component = table.getSelectedControl();<a name="line.375"></a>
+<span class="sourceLineNo">376</span>                if (component != null) {<a name="line.376"></a>
+<span class="sourceLineNo">377</span>                    CellConstraints cellConstraints = getComponentConstraints(<a name="line.377"></a>
+<span class="sourceLineNo">378</span>                            component);<a name="line.378"></a>
+<span class="sourceLineNo">379</span>                    cellConstraints.vAlign = LayoutConstraintsManager<a name="line.379"></a>
+<span class="sourceLineNo">380</span>                            .getAlignment((String) verticalAlignmentCombo<a name="line.380"></a>
+<span class="sourceLineNo">381</span>                                    .getSelectedItem());<a name="line.381"></a>
+<span class="sourceLineNo">382</span>                    updateLayout(component);<a name="line.382"></a>
+<span class="sourceLineNo">383</span>                }<a name="line.383"></a>
+<span class="sourceLineNo">384</span>            }<a name="line.384"></a>
+<span class="sourceLineNo">385</span>        });<a name="line.385"></a>
+<span class="sourceLineNo">386</span><a name="line.386"></a>
+<span class="sourceLineNo">387</span>        horizontalAlignmentCombo.addActionListener(new ActionListener() {<a name="line.387"></a>
+<span class="sourceLineNo">388</span>            @Override<a name="line.388"></a>
+<span class="sourceLineNo">389</span>            public void actionPerformed(ActionEvent e) {<a name="line.389"></a>
+<span class="sourceLineNo">390</span>                Component component = table.getSelectedControl();<a name="line.390"></a>
+<span class="sourceLineNo">391</span>                if (component != null) {<a name="line.391"></a>
+<span class="sourceLineNo">392</span>                    CellConstraints cellConstraints = getComponentConstraints(<a name="line.392"></a>
+<span class="sourceLineNo">393</span>                            component);<a name="line.393"></a>
+<span class="sourceLineNo">394</span>                    cellConstraints.hAlign = LayoutConstraintsManager<a name="line.394"></a>
+<span class="sourceLineNo">395</span>                            .getAlignment((String) horizontalAlignmentCombo<a name="line.395"></a>
+<span class="sourceLineNo">396</span>                                    .getSelectedItem());<a name="line.396"></a>
+<span class="sourceLineNo">397</span>                    updateLayout(component);<a name="line.397"></a>
+<span class="sourceLineNo">398</span>                }<a name="line.398"></a>
+<span class="sourceLineNo">399</span>            }<a name="line.399"></a>
+<span class="sourceLineNo">400</span>        });<a name="line.400"></a>
+<span class="sourceLineNo">401</span><a name="line.401"></a>
+<span class="sourceLineNo">402</span>        topInsetSpinnerModel.addChangeListener(new ChangeListener() {<a name="line.402"></a>
+<span class="sourceLineNo">403</span>            @Override<a name="line.403"></a>
+<span class="sourceLineNo">404</span>            public void stateChanged(ChangeEvent e) {<a name="line.404"></a>
+<span class="sourceLineNo">405</span>                if (!suspendConstraintControlUpdates) {<a name="line.405"></a>
+<span class="sourceLineNo">406</span>                    Component component = table.getSelectedControl();<a name="line.406"></a>
+<span class="sourceLineNo">407</span>                    CellConstraints constraints = getComponentConstraints(<a name="line.407"></a>
+<span class="sourceLineNo">408</span>                            component);<a name="line.408"></a>
+<span class="sourceLineNo">409</span>                    Insets insets = new Insets(<a name="line.409"></a>
+<span class="sourceLineNo">410</span>                            topInsetSpinnerModel.getNumber().intValue(),<a name="line.410"></a>
+<span class="sourceLineNo">411</span>                            constraints.insets.left, constraints.insets.bottom,<a name="line.411"></a>
+<span class="sourceLineNo">412</span>                            constraints.insets.right);<a name="line.412"></a>
+<span class="sourceLineNo">413</span>                    constraints.insets = insets;<a name="line.413"></a>
+<span class="sourceLineNo">414</span>                    updateLayout(component);<a name="line.414"></a>
+<span class="sourceLineNo">415</span>                }<a name="line.415"></a>
+<span class="sourceLineNo">416</span>            }<a name="line.416"></a>
+<span class="sourceLineNo">417</span>        });<a name="line.417"></a>
+<span class="sourceLineNo">418</span><a name="line.418"></a>
+<span class="sourceLineNo">419</span>        leftInsetSpinnerModel.addChangeListener(new ChangeListener() {<a name="line.419"></a>
+<span class="sourceLineNo">420</span>            @Override<a name="line.420"></a>
+<span class="sourceLineNo">421</span>            public void stateChanged(ChangeEvent e) {<a name="line.421"></a>
+<span class="sourceLineNo">422</span>                if (!suspendConstraintControlUpdates) {<a name="line.422"></a>
+<span class="sourceLineNo">423</span>                    Component component = table.getSelectedControl();<a name="line.423"></a>
+<span class="sourceLineNo">424</span>                    CellConstraints constraints = getComponentConstraints(<a name="line.424"></a>
+<span class="sourceLineNo">425</span>                            component);<a name="line.425"></a>
+<span class="sourceLineNo">426</span>                    Insets insets = new Insets(constraints.insets.top,<a name="line.426"></a>
+<span class="sourceLineNo">427</span>                            leftInsetSpinnerModel.getNumber().intValue(),<a name="line.427"></a>
+<span class="sourceLineNo">428</span>                            constraints.insets.bottom,<a name="line.428"></a>
+<span class="sourceLineNo">429</span>                            constraints.insets.right);<a name="line.429"></a>
+<span class="sourceLineNo">430</span>                    constraints.insets = insets;<a name="line.430"></a>
+<span class="sourceLineNo">431</span>                    updateLayout(component);<a name="line.431"></a>
+<span class="sourceLineNo">432</span>                }<a name="line.432"></a>
+<span class="sourceLineNo">433</span>            }<a name="line.433"></a>
+<span class="sourceLineNo">434</span>        });<a name="line.434"></a>
+<span class="sourceLineNo">435</span><a name="line.435"></a>
+<span class="sourceLineNo">436</span>        rightInsetSpinnerModel.addChangeListener(new ChangeListener() {<a name="line.436"></a>
+<span class="sourceLineNo">437</span>            @Override<a name="line.437"></a>
+<span class="sourceLineNo">438</span>            public void stateChanged(ChangeEvent e) {<a name="line.438"></a>
+<span class="sourceLineNo">439</span>                if (!suspendConstraintControlUpdates) {<a name="line.439"></a>
+<span class="sourceLineNo">440</span>                    Component component = table.getSelectedControl();<a name="line.440"></a>
+<span class="sourceLineNo">441</span>                    CellConstraints constraints = getComponentConstraints(<a name="line.441"></a>
+<span class="sourceLineNo">442</span>                            component);<a name="line.442"></a>
+<span class="sourceLineNo">443</span>                    Insets insets = new Insets(constraints.insets.top,<a name="line.443"></a>
+<span class="sourceLineNo">444</span>                            constraints.insets.left, constraints.insets.bottom,<a name="line.444"></a>
+<span class="sourceLineNo">445</span>                            rightInsetSpinnerModel.getNumber().intValue());<a name="line.445"></a>
+<span class="sourceLineNo">446</span>                    constraints.insets = insets;<a name="line.446"></a>
+<span class="sourceLineNo">447</span>                    updateLayout(component);<a name="line.447"></a>
+<span class="sourceLineNo">448</span>                }<a name="line.448"></a>
+<span class="sourceLineNo">449</span>            }<a name="line.449"></a>
+<span class="sourceLineNo">450</span>        });<a name="line.450"></a>
+<span class="sourceLineNo">451</span><a name="line.451"></a>
+<span class="sourceLineNo">452</span>        bottomInsetSpinnerModel.addChangeListener(new ChangeListener() {<a name="line.452"></a>
+<span class="sourceLineNo">453</span>            @Override<a name="line.453"></a>
+<span class="sourceLineNo">454</span>            public void stateChanged(ChangeEvent e) {<a name="line.454"></a>
+<span class="sourceLineNo">455</span>                if (!suspendConstraintControlUpdates) {<a name="line.455"></a>
+<span class="sourceLineNo">456</span>                    Component component = table.getSelectedControl();<a name="line.456"></a>
+<span class="sourceLineNo">457</span>                    CellConstraints constraints = getComponentConstraints(<a name="line.457"></a>
+<span class="sourceLineNo">458</span>                            component);<a name="line.458"></a>
+<span class="sourceLineNo">459</span>                    Insets insets = new Insets(constraints.insets.top,<a name="line.459"></a>
+<span class="sourceLineNo">460</span>                            constraints.insets.left,<a name="line.460"></a>
+<span class="sourceLineNo">461</span>                            bottomInsetSpinnerModel.getNumber().intValue(),<a name="line.461"></a>
+<span class="sourceLineNo">462</span>                            constraints.insets.right);<a name="line.462"></a>
+<span class="sourceLineNo">463</span>                    constraints.insets = insets;<a name="line.463"></a>
+<span class="sourceLineNo">464</span>                    updateLayout(component);<a name="line.464"></a>
+<span class="sourceLineNo">465</span>                }<a name="line.465"></a>
+<span class="sourceLineNo">466</span>            }<a name="line.466"></a>
+<span class="sourceLineNo">467</span>        });<a name="line.467"></a>
+<span class="sourceLineNo">468</span><a name="line.468"></a>
+<span class="sourceLineNo">469</span>        table.addMouseListener(new MouseAdapter() {<a name="line.469"></a>
+<span class="sourceLineNo">470</span>            @Override<a name="line.470"></a>
+<span class="sourceLineNo">471</span>            public void mouseClicked(MouseEvent e) {<a name="line.471"></a>
+<span class="sourceLineNo">472</span>                if (e.getClickCount() == 2) {<a name="line.472"></a>
+<span class="sourceLineNo">473</span>                    Point p = e.getPoint();<a name="line.473"></a>
+<span class="sourceLineNo">474</span>                    int row = table.rowAtPoint(p);<a name="line.474"></a>
+<span class="sourceLineNo">475</span>                    int col = table.columnAtPoint(p);<a name="line.475"></a>
+<span class="sourceLineNo">476</span>                    // support double-click:<a name="line.476"></a>
+<span class="sourceLineNo">477</span>                    Component component = table.getSelectedControl();<a name="line.477"></a>
+<span class="sourceLineNo">478</span>                    if (component == null) {<a name="line.478"></a>
+<span class="sourceLineNo">479</span>                        return;<a name="line.479"></a>
+<span class="sourceLineNo">480</span>                    }<a name="line.480"></a>
+<span class="sourceLineNo">481</span><a name="line.481"></a>
+<span class="sourceLineNo">482</span>                    /* invoke componentDef editor on double-clicked control */<a name="line.482"></a>
+<span class="sourceLineNo">483</span>                    String name = getComponentName(component);<a name="line.483"></a>
+<span class="sourceLineNo">484</span>                    ComponentDef componentDef = containerLayout<a name="line.484"></a>
+<span class="sourceLineNo">485</span>                            .getComponentDef(name);<a name="line.485"></a>
+<span class="sourceLineNo">486</span>                    if (componentDef != null) {<a name="line.486"></a>
+<span class="sourceLineNo">487</span>                        editComponent(componentDef, component,<a name="line.487"></a>
+<span class="sourceLineNo">488</span>                                new CellConstraints(col, row));<a name="line.488"></a>
+<span class="sourceLineNo">489</span>                    }<a name="line.489"></a>
+<span class="sourceLineNo">490</span>                }<a name="line.490"></a>
+<span class="sourceLineNo">491</span>            }<a name="line.491"></a>
+<span class="sourceLineNo">492</span>        });<a name="line.492"></a>
+<span class="sourceLineNo">493</span>        componentList.addListSelectionListener(new ListSelectionListener() {<a name="line.493"></a>
+<span class="sourceLineNo">494</span>            @Override<a name="line.494"></a>
+<span class="sourceLineNo">495</span>            public void valueChanged(ListSelectionEvent e) {<a name="line.495"></a>
+<span class="sourceLineNo">496</span>                if (!e.getValueIsAdjusting()) {<a name="line.496"></a>
+<span class="sourceLineNo">497</span>                    /* set selected component as selected, which causes a<a name="line.497"></a>
+<span class="sourceLineNo">498</span>                     * scroll-to-visible in the table */<a name="line.498"></a>
+<span class="sourceLineNo">499</span>                    Component thisComponent = (Component) componentList<a name="line.499"></a>
+<span class="sourceLineNo">500</span>                            .getSelectedValue();<a name="line.500"></a>
+<span class="sourceLineNo">501</span><a name="line.501"></a>
+<span class="sourceLineNo">502</span>                    CellConstraints constraints = getComponentConstraints(<a name="line.502"></a>
+<span class="sourceLineNo">503</span>                            thisComponent);<a name="line.503"></a>
+<span class="sourceLineNo">504</span>                    if (constraints == null) {<a name="line.504"></a>
+<span class="sourceLineNo">505</span>                        throw new RuntimeException(<a name="line.505"></a>
+<span class="sourceLineNo">506</span>                                "Unable to find constraints for component "<a name="line.506"></a>
+<span class="sourceLineNo">507</span>                                        + thisComponent + " in layout "<a name="line.507"></a>
+<span class="sourceLineNo">508</span>                                        + containerLayout.getName());<a name="line.508"></a>
+<span class="sourceLineNo">509</span>                    }<a name="line.509"></a>
+<span class="sourceLineNo">510</span>                    int col = constraints.gridX;<a name="line.510"></a>
+<span class="sourceLineNo">511</span>                    int row = constraints.gridY;<a name="line.511"></a>
+<span class="sourceLineNo">512</span><a name="line.512"></a>
+<span class="sourceLineNo">513</span>                    table.changeSelection(row, col, false, false);<a name="line.513"></a>
+<span class="sourceLineNo">514</span>                    topComponent = thisComponent;<a name="line.514"></a>
+<span class="sourceLineNo">515</span>                }<a name="line.515"></a>
+<span class="sourceLineNo">516</span>            }<a name="line.516"></a>
+<span class="sourceLineNo">517</span>        });<a name="line.517"></a>
+<span class="sourceLineNo">518</span><a name="line.518"></a>
+<span class="sourceLineNo">519</span>        componentList.addMouseListener(new MouseAdapter() {<a name="line.519"></a>
+<span class="sourceLineNo">520</span>            @Override<a name="line.520"></a>
+<span class="sourceLineNo">521</span>            public void mouseClicked(MouseEvent e) {<a name="line.521"></a>
+<span class="sourceLineNo">522</span>                if (e.getClickCount() == 2) {<a name="line.522"></a>
+<span class="sourceLineNo">523</span>                    int index = componentList.locationToIndex(e.getPoint());<a name="line.523"></a>
+<span class="sourceLineNo">524</span>                    if (index == -1) {<a name="line.524"></a>
+<span class="sourceLineNo">525</span>                        return;<a name="line.525"></a>
+<span class="sourceLineNo">526</span>                    }<a name="line.526"></a>
+<span class="sourceLineNo">527</span><a name="line.527"></a>
+<span class="sourceLineNo">528</span>                    // Get item<a name="line.528"></a>
+<span class="sourceLineNo">529</span>                    ListModel lm = ((DndList) e.getSource()).getModel();<a name="line.529"></a>
+<span class="sourceLineNo">530</span>                    Component thisComponent = (Component) lm<a name="line.530"></a>
+<span class="sourceLineNo">531</span>                            .getElementAt(index);<a name="line.531"></a>
+<span class="sourceLineNo">532</span><a name="line.532"></a>
+<span class="sourceLineNo">533</span>                    String name = getComponentName(thisComponent);<a name="line.533"></a>
+<span class="sourceLineNo">534</span>                    ComponentDef compDef = containerLayout<a name="line.534"></a>
+<span class="sourceLineNo">535</span>                            .getComponentDef(name);<a name="line.535"></a>
+<span class="sourceLineNo">536</span>                    CellConstraints constraints = getComponentConstraints(<a name="line.536"></a>
+<span class="sourceLineNo">537</span>                            thisComponent);<a name="line.537"></a>
+<span class="sourceLineNo">538</span>                    if (constraints == null) {<a name="line.538"></a>
+<span class="sourceLineNo">539</span>                        throw new RuntimeException(<a name="line.539"></a>
+<span class="sourceLineNo">540</span>                                "Unable to find constraints for component "<a name="line.540"></a>
+<span class="sourceLineNo">541</span>                                        + thisComponent + " in layout "<a name="line.541"></a>
+<span class="sourceLineNo">542</span>                                        + containerLayout.getName());<a name="line.542"></a>
+<span class="sourceLineNo">543</span>                    }<a name="line.543"></a>
+<span class="sourceLineNo">544</span>                    editComponent(compDef, thisComponent, constraints);<a name="line.544"></a>
+<span class="sourceLineNo">545</span>                }<a name="line.545"></a>
+<span class="sourceLineNo">546</span>            }<a name="line.546"></a>
+<span class="sourceLineNo">547</span>        });<a name="line.547"></a>
+<span class="sourceLineNo">548</span>    }<a name="line.548"></a>
+<span class="sourceLineNo">549</span><a name="line.549"></a>
+<span class="sourceLineNo">550</span>    String getComponentName(Component control) {<a name="line.550"></a>
+<span class="sourceLineNo">551</span>        return containerLayout.getComponentName(control);<a name="line.551"></a>
+<span class="sourceLineNo">552</span>    }<a name="line.552"></a>
+<span class="sourceLineNo">553</span><a name="line.553"></a>
+<span class="sourceLineNo">554</span>    CellConstraints getComponentConstraints(Component component) {<a name="line.554"></a>
+<span class="sourceLineNo">555</span>        return containerLayout.getComponentConstraints(component);<a name="line.555"></a>
+<span class="sourceLineNo">556</span>    }<a name="line.556"></a>
+<span class="sourceLineNo">557</span><a name="line.557"></a>
+<span class="sourceLineNo">558</span>    private void specsChanged() {<a name="line.558"></a>
+<span class="sourceLineNo">559</span>        updateLayouts();<a name="line.559"></a>
+<span class="sourceLineNo">560</span><a name="line.560"></a>
+<span class="sourceLineNo">561</span>        // lets go down the tree<a name="line.561"></a>
+<span class="sourceLineNo">562</span>        Component[] children = container.getComponents();<a name="line.562"></a>
+<span class="sourceLineNo">563</span>        for (Component component : children) {<a name="line.563"></a>
+<span class="sourceLineNo">564</span>            if (component instanceof Container) {<a name="line.564"></a>
+<span class="sourceLineNo">565</span>                ((Container) component).doLayout();<a name="line.565"></a>
+<span class="sourceLineNo">566</span>            }<a name="line.566"></a>
+<span class="sourceLineNo">567</span>        }<a name="line.567"></a>
+<span class="sourceLineNo">568</span>    }<a name="line.568"></a>
+<span class="sourceLineNo">569</span><a name="line.569"></a>
+<span class="sourceLineNo">570</span>    void updateLayouts() {<a name="line.570"></a>
+<span class="sourceLineNo">571</span>        container.validate();<a name="line.571"></a>
+<span class="sourceLineNo">572</span>        container.doLayout();<a name="line.572"></a>
+<span class="sourceLineNo">573</span><a name="line.573"></a>
+<span class="sourceLineNo">574</span>        Container parent = container;<a name="line.574"></a>
+<span class="sourceLineNo">575</span><a name="line.575"></a>
+<span class="sourceLineNo">576</span>        while (parent != null) {<a name="line.576"></a>
+<span class="sourceLineNo">577</span>            parent.validate();<a name="line.577"></a>
+<span class="sourceLineNo">578</span>            parent = parent.getParent();<a name="line.578"></a>
+<span class="sourceLineNo">579</span>        }<a name="line.579"></a>
+<span class="sourceLineNo">580</span>    }<a name="line.580"></a>
+<span class="sourceLineNo">581</span><a name="line.581"></a>
+<span class="sourceLineNo">582</span>    private void setSelectedCell(int columnIndex, int rowIndex,<a name="line.582"></a>
+<span class="sourceLineNo">583</span>            boolean forceVisible) {<a name="line.583"></a>
+<span class="sourceLineNo">584</span>        // we don't want to update the selection interval if nothing changed...<a name="line.584"></a>
+<span class="sourceLineNo">585</span>        table.getSelectionModel().setSelectionInterval(rowIndex, rowIndex);<a name="line.585"></a>
+<span class="sourceLineNo">586</span>        table.getColumnModel().getSelectionModel()<a name="line.586"></a>
+<span class="sourceLineNo">587</span>                .setSelectionInterval(columnIndex, columnIndex);<a name="line.587"></a>
+<span class="sourceLineNo">588</span><a name="line.588"></a>
+<span class="sourceLineNo">589</span>        if (forceVisible) {<a name="line.589"></a>
+<span class="sourceLineNo">590</span>            // let's make sure the cell is in the visible range...<a name="line.590"></a>
+<span class="sourceLineNo">591</span>            JViewport viewport = (JViewport) table.getParent();<a name="line.591"></a>
+<span class="sourceLineNo">592</span>            Rectangle rect = table.getCellRect(rowIndex, columnIndex, true);<a name="line.592"></a>
+<span class="sourceLineNo">593</span>            Point pt = viewport.getViewPosition();<a name="line.593"></a>
+<span class="sourceLineNo">594</span>            rect.setLocation(rect.x - pt.x, rect.y - pt.y);<a name="line.594"></a>
+<span class="sourceLineNo">595</span>            viewport.scrollRectToVisible(rect);<a name="line.595"></a>
+<span class="sourceLineNo">596</span>        }<a name="line.596"></a>
+<span class="sourceLineNo">597</span>    }<a name="line.597"></a>
+<span class="sourceLineNo">598</span><a name="line.598"></a>
+<span class="sourceLineNo">599</span>    private class ComponentSelectionListModel<a name="line.599"></a>
+<span class="sourceLineNo">600</span>            extends javax.swing.AbstractListModel {<a name="line.600"></a>
+<span class="sourceLineNo">601</span>        //    private String selectedName = null;<a name="line.601"></a>
+<span class="sourceLineNo">602</span><a name="line.602"></a>
+<span class="sourceLineNo">603</span>        List&lt;Component&gt; sortedComponents = new ArrayList&lt;Component&gt;();<a name="line.603"></a>
+<span class="sourceLineNo">604</span><a name="line.604"></a>
+<span class="sourceLineNo">605</span>        public ComponentSelectionListModel() {<a name="line.605"></a>
+<span class="sourceLineNo">606</span>            super();<a name="line.606"></a>
+<span class="sourceLineNo">607</span>        }<a name="line.607"></a>
+<span class="sourceLineNo">608</span><a name="line.608"></a>
+<span class="sourceLineNo">609</span>        // Bug: when the user does the following:<a name="line.609"></a>
+<span class="sourceLineNo">610</span>        // 1) drags a new control into place<a name="line.610"></a>
+<span class="sourceLineNo">611</span>        // 2) drags a 2nd new control into place<a name="line.611"></a>
+<span class="sourceLineNo">612</span>        // 3) deletes the 2nd control<a name="line.612"></a>
+<span class="sourceLineNo">613</span>        // 4) drags a new 2nd control into place<a name="line.613"></a>
+<span class="sourceLineNo">614</span>        // we get an array out of bounds exception in getElementAt. The<a name="line.614"></a>
+<span class="sourceLineNo">615</span>        // delete probably failed to update our list.<a name="line.615"></a>
+<span class="sourceLineNo">616</span>        @Override<a name="line.616"></a>
+<span class="sourceLineNo">617</span>        public Object getElementAt(int index) {<a name="line.617"></a>
+<span class="sourceLineNo">618</span>            Component component = sortedComponents.get(index);<a name="line.618"></a>
+<span class="sourceLineNo">619</span>            return component;<a name="line.619"></a>
+<span class="sourceLineNo">620</span>        }<a name="line.620"></a>
+<span class="sourceLineNo">621</span><a name="line.621"></a>
+<span class="sourceLineNo">622</span>        @Override<a name="line.622"></a>
+<span class="sourceLineNo">623</span>        public int getSize() {<a name="line.623"></a>
+<span class="sourceLineNo">624</span>            sortedComponents = new ArrayList&lt;Component&gt;();<a name="line.624"></a>
+<span class="sourceLineNo">625</span><a name="line.625"></a>
+<span class="sourceLineNo">626</span>            if (container != null) {<a name="line.626"></a>
+<span class="sourceLineNo">627</span>                Component[] containerComponents = container.getComponents();<a name="line.627"></a>
+<span class="sourceLineNo">628</span>                for (Component insertComponent : containerComponents) {<a name="line.628"></a>
+<span class="sourceLineNo">629</span>                    String insertComponentName = getComponentName(<a name="line.629"></a>
+<span class="sourceLineNo">630</span>                            insertComponent);<a name="line.630"></a>
+<span class="sourceLineNo">631</span><a name="line.631"></a>
+<span class="sourceLineNo">632</span>                    int insertIndex = 0;<a name="line.632"></a>
+<span class="sourceLineNo">633</span>                    while (insertIndex &lt; sortedComponents.size()<a name="line.633"></a>
+<span class="sourceLineNo">634</span>                            &amp;&amp; insertComponentName != null) {<a name="line.634"></a>
+<span class="sourceLineNo">635</span>                        Component testComponent = sortedComponents<a name="line.635"></a>
+<span class="sourceLineNo">636</span>                                .get(insertIndex);<a name="line.636"></a>
+<span class="sourceLineNo">637</span>                        String testName = getComponentName(testComponent);<a name="line.637"></a>
+<span class="sourceLineNo">638</span>                        if (testName != null) {<a name="line.638"></a>
+<span class="sourceLineNo">639</span>                            testName = testName<a name="line.639"></a>
+<span class="sourceLineNo">640</span>                                    .toUpperCase(Locale.getDefault());<a name="line.640"></a>
+<span class="sourceLineNo">641</span>                        }<a name="line.641"></a>
+<span class="sourceLineNo">642</span>                        if (insertComponentName.toUpperCase(Locale.getDefault())<a name="line.642"></a>
+<span class="sourceLineNo">643</span>                                .compareTo(testName) &lt;= 0) {<a name="line.643"></a>
+<span class="sourceLineNo">644</span>                            break;<a name="line.644"></a>
+<span class="sourceLineNo">645</span>                        } else {<a name="line.645"></a>
+<span class="sourceLineNo">646</span>                            insertIndex++;<a name="line.646"></a>
+<span class="sourceLineNo">647</span>                        }<a name="line.647"></a>
+<span class="sourceLineNo">648</span>                    }<a name="line.648"></a>
+<span class="sourceLineNo">649</span>                    sortedComponents.add(insertIndex, insertComponent);<a name="line.649"></a>
+<span class="sourceLineNo">650</span>                }<a name="line.650"></a>
+<span class="sourceLineNo">651</span>            }<a name="line.651"></a>
+<span class="sourceLineNo">652</span><a name="line.652"></a>
+<span class="sourceLineNo">653</span>            return container != null ? container.getComponentCount() : 0;<a name="line.653"></a>
+<span class="sourceLineNo">654</span>        }<a name="line.654"></a>
+<span class="sourceLineNo">655</span><a name="line.655"></a>
+<span class="sourceLineNo">656</span>        public void fireDelete() {<a name="line.656"></a>
+<span class="sourceLineNo">657</span>            super.fireContentsChanged(this, 0,<a name="line.657"></a>
+<span class="sourceLineNo">658</span>                    Math.max(0, container.getComponents().length - 1));<a name="line.658"></a>
+<span class="sourceLineNo">659</span>        }<a name="line.659"></a>
+<span class="sourceLineNo">660</span><a name="line.660"></a>
+<span class="sourceLineNo">661</span>        public void fireInsert() {<a name="line.661"></a>
+<span class="sourceLineNo">662</span>            super.fireContentsChanged(this, 0,<a name="line.662"></a>
+<span class="sourceLineNo">663</span>                    Math.max(0, container.getComponents().length - 1));<a name="line.663"></a>
+<span class="sourceLineNo">664</span>        }<a name="line.664"></a>
+<span class="sourceLineNo">665</span>    }<a name="line.665"></a>
+<span class="sourceLineNo">666</span><a name="line.666"></a>
+<span class="sourceLineNo">667</span>    class ComponentListCellRenderer extends JLabel implements ListCellRenderer {<a name="line.667"></a>
+<span class="sourceLineNo">668</span>        private static final long serialVersionUID = 1L;<a name="line.668"></a>
+<span class="sourceLineNo">669</span>        Border noFocusBorder = new EmptyBorder(1, 1, 1, 1);<a name="line.669"></a>
+<span class="sourceLineNo">670</span><a name="line.670"></a>
+<span class="sourceLineNo">671</span>        public ComponentListCellRenderer() {<a name="line.671"></a>
+<span class="sourceLineNo">672</span>            super();<a name="line.672"></a>
+<span class="sourceLineNo">673</span>            setOpaque(true);<a name="line.673"></a>
+<span class="sourceLineNo">674</span>        }<a name="line.674"></a>
+<span class="sourceLineNo">675</span><a name="line.675"></a>
+<span class="sourceLineNo">676</span>        @Override<a name="line.676"></a>
+<span class="sourceLineNo">677</span>        public Component getListCellRendererComponent(JList list, Object value,<a name="line.677"></a>
+<span class="sourceLineNo">678</span>                int index, boolean isSelected, boolean cellHasFocus) {<a name="line.678"></a>
+<span class="sourceLineNo">679</span>            Component component = (Component) value;<a name="line.679"></a>
+<span class="sourceLineNo">680</span>            String name = getComponentName(component);<a name="line.680"></a>
+<span class="sourceLineNo">681</span><a name="line.681"></a>
+<span class="sourceLineNo">682</span>            setComponentOrientation(list.getComponentOrientation());<a name="line.682"></a>
+<span class="sourceLineNo">683</span>            if (isSelected) {<a name="line.683"></a>
+<span class="sourceLineNo">684</span>                setBackground(list.getSelectionBackground());<a name="line.684"></a>
+<span class="sourceLineNo">685</span>                setForeground(list.getSelectionForeground());<a name="line.685"></a>
+<span class="sourceLineNo">686</span>            } else {<a name="line.686"></a>
+<span class="sourceLineNo">687</span>                setBackground(list.getBackground());<a name="line.687"></a>
+<span class="sourceLineNo">688</span>                setForeground(list.getForeground());<a name="line.688"></a>
+<span class="sourceLineNo">689</span>            }<a name="line.689"></a>
+<span class="sourceLineNo">690</span><a name="line.690"></a>
+<span class="sourceLineNo">691</span>            setText(name != null ? name : "(Untitled)");<a name="line.691"></a>
+<span class="sourceLineNo">692</span><a name="line.692"></a>
+<span class="sourceLineNo">693</span>            setEnabled(list.isEnabled());<a name="line.693"></a>
+<span class="sourceLineNo">694</span>            Font font = list.getFont();<a name="line.694"></a>
+<span class="sourceLineNo">695</span>            setFont(font.deriveFont(<a name="line.695"></a>
+<span class="sourceLineNo">696</span>                    component.isVisible() ? Font.PLAIN : Font.BOLD));<a name="line.696"></a>
+<span class="sourceLineNo">697</span>            setBorder(cellHasFocus<a name="line.697"></a>
+<span class="sourceLineNo">698</span>                    ? UIManager.getBorder("List.focusCellHighlightBorder")<a name="line.698"></a>
+<span class="sourceLineNo">699</span>                    : noFocusBorder);<a name="line.699"></a>
+<span class="sourceLineNo">700</span><a name="line.700"></a>
+<span class="sourceLineNo">701</span>            return this;<a name="line.701"></a>
+<span class="sourceLineNo">702</span>        }<a name="line.702"></a>
+<span class="sourceLineNo">703</span>    }<a name="line.703"></a>
+<span class="sourceLineNo">704</span><a name="line.704"></a>
+<span class="sourceLineNo">705</span>    private void insertColumn(int column) {<a name="line.705"></a>
+<span class="sourceLineNo">706</span>        for (int index = 0; index &lt; container.getComponentCount(); index++) {<a name="line.706"></a>
+<span class="sourceLineNo">707</span>            Component component = container.getComponent(index);<a name="line.707"></a>
+<span class="sourceLineNo">708</span>            CellConstraints constraints = getComponentConstraints(component);<a name="line.708"></a>
+<span class="sourceLineNo">709</span>            if (constraints.gridX &gt; column) {<a name="line.709"></a>
+<span class="sourceLineNo">710</span>                constraints.gridX++;<a name="line.710"></a>
+<span class="sourceLineNo">711</span>            }<a name="line.711"></a>
+<span class="sourceLineNo">712</span>        }<a name="line.712"></a>
+<span class="sourceLineNo">713</span><a name="line.713"></a>
+<span class="sourceLineNo">714</span>        try {<a name="line.714"></a>
+<span class="sourceLineNo">715</span>            containerLayout.addColumnSpec(column, "pref");<a name="line.715"></a>
+<span class="sourceLineNo">716</span>            tableModel.fireTableStructureChanged();<a name="line.716"></a>
+<span class="sourceLineNo">717</span>            setSelectedCell(column + 1, 0, true);<a name="line.717"></a>
+<span class="sourceLineNo">718</span>            specsChanged();<a name="line.718"></a>
+<span class="sourceLineNo">719</span>        } catch (IllegalArgumentException iae) {<a name="line.719"></a>
+<span class="sourceLineNo">720</span>            JOptionPane.showMessageDialog(FormEditor.this, iae.getMessage(),<a name="line.720"></a>
+<span class="sourceLineNo">721</span>                    "Invalid Layout", JOptionPane.ERROR_MESSAGE);<a name="line.721"></a>
+<span class="sourceLineNo">722</span>        }<a name="line.722"></a>
+<span class="sourceLineNo">723</span>    }<a name="line.723"></a>
+<span class="sourceLineNo">724</span><a name="line.724"></a>
+<span class="sourceLineNo">725</span>    private void insertRow(int rowIndex) {<a name="line.725"></a>
+<span class="sourceLineNo">726</span>        for (int index = 0; index &lt; container.getComponentCount(); index++) {<a name="line.726"></a>
+<span class="sourceLineNo">727</span>            Component component = container.getComponent(index);<a name="line.727"></a>
+<span class="sourceLineNo">728</span>            CellConstraints constraints = getComponentConstraints(component);<a name="line.728"></a>
+<span class="sourceLineNo">729</span>            if (constraints.gridY &gt; rowIndex) {<a name="line.729"></a>
+<span class="sourceLineNo">730</span>                constraints.gridY++;<a name="line.730"></a>
+<span class="sourceLineNo">731</span>            }<a name="line.731"></a>
+<span class="sourceLineNo">732</span>        }<a name="line.732"></a>
+<span class="sourceLineNo">733</span><a name="line.733"></a>
+<span class="sourceLineNo">734</span>        try {<a name="line.734"></a>
+<span class="sourceLineNo">735</span>            containerLayout.addRowSpec(rowIndex, "pref");<a name="line.735"></a>
+<span class="sourceLineNo">736</span>            tableModel.fireTableStructureChanged();<a name="line.736"></a>
+<span class="sourceLineNo">737</span>            setSelectedCell(0, rowIndex + 1, true);<a name="line.737"></a>
+<span class="sourceLineNo">738</span>            specsChanged();<a name="line.738"></a>
+<span class="sourceLineNo">739</span>        } catch (IllegalArgumentException iae) {<a name="line.739"></a>
+<span class="sourceLineNo">740</span>            JOptionPane.showMessageDialog(FormEditor.this, iae.getMessage(),<a name="line.740"></a>
+<span class="sourceLineNo">741</span>                    "Invalid Layout", JOptionPane.ERROR_MESSAGE);<a name="line.741"></a>
+<span class="sourceLineNo">742</span>        }<a name="line.742"></a>
+<span class="sourceLineNo">743</span>    }<a name="line.743"></a>
+<span class="sourceLineNo">744</span><a name="line.744"></a>
+<span class="sourceLineNo">745</span>    Component formComponent = null;<a name="line.745"></a>
+<span class="sourceLineNo">746</span><a name="line.746"></a>
+<span class="sourceLineNo">747</span>    // this method will act as the controller for the buttons<a name="line.747"></a>
+<span class="sourceLineNo">748</span>    // and the cell constraints form<a name="line.748"></a>
+<span class="sourceLineNo">749</span>    public void setFormComponent(Component component) {<a name="line.749"></a>
+<span class="sourceLineNo">750</span>        // KBR with this, selecting header row then table body row, doesn't enable<a name="line.750"></a>
+<span class="sourceLineNo">751</span>        // 'add'<a name="line.751"></a>
+<span class="sourceLineNo">752</span>        // if ( component == formComponent )<a name="line.752"></a>
+<span class="sourceLineNo">753</span>        // return;<a name="line.753"></a>
+<span class="sourceLineNo">754</span>        formComponent = component;<a name="line.754"></a>
+<span class="sourceLineNo">755</span><a name="line.755"></a>
+<span class="sourceLineNo">756</span>        CellConstraints constraints = formComponent != null<a name="line.756"></a>
+<span class="sourceLineNo">757</span>                ? getComponentConstraints(formComponent)<a name="line.757"></a>
+<span class="sourceLineNo">758</span>                : null;<a name="line.758"></a>
+<span class="sourceLineNo">759</span><a name="line.759"></a>
+<span class="sourceLineNo">760</span>        suspendConstraintControlUpdates = true;<a name="line.760"></a>
+<span class="sourceLineNo">761</span><a name="line.761"></a>
+<span class="sourceLineNo">762</span>        if (formComponent != null) {<a name="line.762"></a>
+<span class="sourceLineNo">763</span>            rowSpinnerModel.setComponent(formComponent);<a name="line.763"></a>
+<span class="sourceLineNo">764</span>            colSpinnerModel.setComponent(formComponent);<a name="line.764"></a>
+<span class="sourceLineNo">765</span>            verticalAlignmentCombo.setSelectedItem(<a name="line.765"></a>
+<span class="sourceLineNo">766</span>                    LayoutConstraintsManager.getAlignment(constraints.vAlign));<a name="line.766"></a>
+<span class="sourceLineNo">767</span>            horizontalAlignmentCombo.setSelectedItem(<a name="line.767"></a>
+<span class="sourceLineNo">768</span>                    LayoutConstraintsManager.getAlignment(constraints.hAlign));<a name="line.768"></a>
+<span class="sourceLineNo">769</span>            topInsetSpinnerModel<a name="line.769"></a>
+<span class="sourceLineNo">770</span>                    .setValue(Integer.valueOf(constraints.insets.top));<a name="line.770"></a>
+<span class="sourceLineNo">771</span>            bottomInsetSpinnerModel<a name="line.771"></a>
+<span class="sourceLineNo">772</span>                    .setValue(Integer.valueOf(constraints.insets.bottom));<a name="line.772"></a>
+<span class="sourceLineNo">773</span>            rightInsetSpinnerModel<a name="line.773"></a>
+<span class="sourceLineNo">774</span>                    .setValue(Integer.valueOf(constraints.insets.right));<a name="line.774"></a>
+<span class="sourceLineNo">775</span>            leftInsetSpinnerModel<a name="line.775"></a>
+<span class="sourceLineNo">776</span>                    .setValue(Integer.valueOf(constraints.insets.left));<a name="line.776"></a>
+<span class="sourceLineNo">777</span>        }<a name="line.777"></a>
+<span class="sourceLineNo">778</span><a name="line.778"></a>
+<span class="sourceLineNo">779</span>        verticalAlignmentCombo.setEnabled(constraints != null);<a name="line.779"></a>
+<span class="sourceLineNo">780</span>        horizontalAlignmentCombo.setEnabled(constraints != null);<a name="line.780"></a>
+<span class="sourceLineNo">781</span>        rightInsetSpinner.setEnabled(constraints != null);<a name="line.781"></a>
+<span class="sourceLineNo">782</span>        leftInsetSpinner.setEnabled(constraints != null);<a name="line.782"></a>
+<span class="sourceLineNo">783</span>        topInsetSpinner.setEnabled(constraints != null);<a name="line.783"></a>
+<span class="sourceLineNo">784</span>        bottomInsetSpinner.setEnabled(constraints != null);<a name="line.784"></a>
+<span class="sourceLineNo">785</span>        rowSpanSpinner.setEnabled(constraints != null);<a name="line.785"></a>
+<span class="sourceLineNo">786</span>        columnSpanSpinner.setEnabled(constraints != null);<a name="line.786"></a>
+<span class="sourceLineNo">787</span><a name="line.787"></a>
+<span class="sourceLineNo">788</span>        int col = table.getSelectedColumn();<a name="line.788"></a>
+<span class="sourceLineNo">789</span>        int row = table.getSelectedRow();<a name="line.789"></a>
+<span class="sourceLineNo">790</span><a name="line.790"></a>
+<span class="sourceLineNo">791</span>        // Don't allow 'add' on top of existing component<a name="line.791"></a>
+<span class="sourceLineNo">792</span>        newComponentAction<a name="line.792"></a>
+<span class="sourceLineNo">793</span>                .setEnabled(col &gt; 0 &amp;&amp; row &gt; 0 &amp;&amp; formComponent == null);<a name="line.793"></a>
+<span class="sourceLineNo">794</span>        removeComponentAction.setEnabled(constraints != null);<a name="line.794"></a>
+<span class="sourceLineNo">795</span>        columnDeleteButton.setEnabled(<a name="line.795"></a>
+<span class="sourceLineNo">796</span>                row == 0 &amp;&amp; col &gt; 0 &amp;&amp; containerLayout.getColumnCount() &gt; 1);<a name="line.796"></a>
+<span class="sourceLineNo">797</span>        columnInsertAfterButton.setEnabled(col &gt; -1);<a name="line.797"></a>
+<span class="sourceLineNo">798</span>        columnInsertBeforeButton.setEnabled(col &gt; 0);<a name="line.798"></a>
+<span class="sourceLineNo">799</span>        rowDeleteButton.setEnabled(<a name="line.799"></a>
+<span class="sourceLineNo">800</span>                col == 0 &amp;&amp; row &gt; 0 &amp;&amp; containerLayout.getRowCount() &gt; 1);<a name="line.800"></a>
+<span class="sourceLineNo">801</span>        rowInsertBeforeButton.setEnabled(row &gt; 0);<a name="line.801"></a>
+<span class="sourceLineNo">802</span>        rowInsertAfterButton.setEnabled(row &gt; -1);<a name="line.802"></a>
+<span class="sourceLineNo">803</span><a name="line.803"></a>
+<span class="sourceLineNo">804</span>        suspendConstraintControlUpdates = false;<a name="line.804"></a>
+<span class="sourceLineNo">805</span>    }<a name="line.805"></a>
+<span class="sourceLineNo">806</span><a name="line.806"></a>
+<span class="sourceLineNo">807</span>    public void updateLayout(Component component) {<a name="line.807"></a>
+<span class="sourceLineNo">808</span>        if (suspendConstraintControlUpdates) {<a name="line.808"></a>
+<span class="sourceLineNo">809</span>            return;<a name="line.809"></a>
+<span class="sourceLineNo">810</span>        }<a name="line.810"></a>
+<span class="sourceLineNo">811</span><a name="line.811"></a>
+<span class="sourceLineNo">812</span>        CellConstraints constraints = getComponentConstraints(component);<a name="line.812"></a>
+<span class="sourceLineNo">813</span><a name="line.813"></a>
+<span class="sourceLineNo">814</span>        // we have to update the containerLayout which is the keeper of all<a name="line.814"></a>
+<span class="sourceLineNo">815</span>        // constraints. if we didn't do this then we wouldn't notice any changes<a name="line.815"></a>
+<span class="sourceLineNo">816</span>        // when we went to print everything out.<a name="line.816"></a>
+<span class="sourceLineNo">817</span>        String name = getComponentName(component);<a name="line.817"></a>
+<span class="sourceLineNo">818</span>        // i don't like this direct access thing. this should be changed...<a name="line.818"></a>
+<span class="sourceLineNo">819</span>        containerLayout.setCellConstraints(name, constraints);<a name="line.819"></a>
+<span class="sourceLineNo">820</span>        // updateForm();<a name="line.820"></a>
+<span class="sourceLineNo">821</span><a name="line.821"></a>
+<span class="sourceLineNo">822</span>        // be careful when modifying the next few lines of code. this<a name="line.822"></a>
+<span class="sourceLineNo">823</span>        // is tricky to get right. this seems to work.<a name="line.823"></a>
+<span class="sourceLineNo">824</span>        container.invalidate();<a name="line.824"></a>
+<span class="sourceLineNo">825</span>        container.doLayout();<a name="line.825"></a>
+<span class="sourceLineNo">826</span><a name="line.826"></a>
+<span class="sourceLineNo">827</span>        // KBR list (for example) doesn't seem to re-layout properly on drag&amp;drop<a name="line.827"></a>
+<span class="sourceLineNo">828</span>        // without these<a name="line.828"></a>
+<span class="sourceLineNo">829</span>        container.validate();<a name="line.829"></a>
+<span class="sourceLineNo">830</span>        container.repaint();<a name="line.830"></a>
+<span class="sourceLineNo">831</span><a name="line.831"></a>
+<span class="sourceLineNo">832</span>        if (component instanceof Container) {<a name="line.832"></a>
+<span class="sourceLineNo">833</span>            Container cContainer = (Container) component;<a name="line.833"></a>
+<span class="sourceLineNo">834</span>            cContainer.invalidate();<a name="line.834"></a>
+<span class="sourceLineNo">835</span>            cContainer.doLayout();<a name="line.835"></a>
+<span class="sourceLineNo">836</span>        }<a name="line.836"></a>
+<span class="sourceLineNo">837</span>    }<a name="line.837"></a>
+<span class="sourceLineNo">838</span><a name="line.838"></a>
+<span class="sourceLineNo">839</span>    private class ColSpanSpinnerModel extends AbstractSpinnerModel {<a name="line.839"></a>
+<span class="sourceLineNo">840</span>        CellConstraints constraints;<a name="line.840"></a>
+<span class="sourceLineNo">841</span><a name="line.841"></a>
+<span class="sourceLineNo">842</span>        Component component;<a name="line.842"></a>
+<span class="sourceLineNo">843</span><a name="line.843"></a>
+<span class="sourceLineNo">844</span>        public ColSpanSpinnerModel() {<a name="line.844"></a>
+<span class="sourceLineNo">845</span>        }<a name="line.845"></a>
+<span class="sourceLineNo">846</span><a name="line.846"></a>
+<span class="sourceLineNo">847</span>        public void setComponent(Component component) {<a name="line.847"></a>
+<span class="sourceLineNo">848</span>            this.component = component;<a name="line.848"></a>
+<span class="sourceLineNo">849</span>            if (component != null) {<a name="line.849"></a>
+<span class="sourceLineNo">850</span>                constraints = getComponentConstraints(component);<a name="line.850"></a>
+<span class="sourceLineNo">851</span>                fireStateChanged();<a name="line.851"></a>
+<span class="sourceLineNo">852</span>            } else {<a name="line.852"></a>
+<span class="sourceLineNo">853</span>                constraints = null;<a name="line.853"></a>
+<span class="sourceLineNo">854</span>            }<a name="line.854"></a>
+<span class="sourceLineNo">855</span>        }<a name="line.855"></a>
+<span class="sourceLineNo">856</span><a name="line.856"></a>
+<span class="sourceLineNo">857</span>        @Override<a name="line.857"></a>
+<span class="sourceLineNo">858</span>        public Object getNextValue() {<a name="line.858"></a>
+<span class="sourceLineNo">859</span>            if (constraints == null) {<a name="line.859"></a>
+<span class="sourceLineNo">860</span>                return null;<a name="line.860"></a>
+<span class="sourceLineNo">861</span>            }<a name="line.861"></a>
+<span class="sourceLineNo">862</span>            Integer next = constraints.gridX + constraints.gridWidth<a name="line.862"></a>
+<span class="sourceLineNo">863</span>                    - 1 &lt; containerLayout.getColumnCount()<a name="line.863"></a>
+<span class="sourceLineNo">864</span>                            ? Integer.valueOf(constraints.gridWidth + 1)<a name="line.864"></a>
+<span class="sourceLineNo">865</span>                            : null;<a name="line.865"></a>
+<span class="sourceLineNo">866</span>            return next;<a name="line.866"></a>
+<span class="sourceLineNo">867</span>        }<a name="line.867"></a>
+<span class="sourceLineNo">868</span><a name="line.868"></a>
+<span class="sourceLineNo">869</span>        @Override<a name="line.869"></a>
+<span class="sourceLineNo">870</span>        public Object getPreviousValue() {<a name="line.870"></a>
+<span class="sourceLineNo">871</span>            if (constraints == null) {<a name="line.871"></a>
+<span class="sourceLineNo">872</span>                return null;<a name="line.872"></a>
+<span class="sourceLineNo">873</span>            } else {<a name="line.873"></a>
+<span class="sourceLineNo">874</span>                Integer previous = constraints.gridWidth &gt; 1<a name="line.874"></a>
+<span class="sourceLineNo">875</span>                        ? Integer.valueOf(constraints.gridWidth - 1)<a name="line.875"></a>
+<span class="sourceLineNo">876</span>                        : null;<a name="line.876"></a>
+<span class="sourceLineNo">877</span>                return previous;<a name="line.877"></a>
+<span class="sourceLineNo">878</span>            }<a name="line.878"></a>
+<span class="sourceLineNo">879</span>        }<a name="line.879"></a>
+<span class="sourceLineNo">880</span><a name="line.880"></a>
+<span class="sourceLineNo">881</span>        @Override<a name="line.881"></a>
+<span class="sourceLineNo">882</span>        public Object getValue() {<a name="line.882"></a>
+<span class="sourceLineNo">883</span>            if (constraints == null) {<a name="line.883"></a>
+<span class="sourceLineNo">884</span>                return "";<a name="line.884"></a>
+<span class="sourceLineNo">885</span>            } else {<a name="line.885"></a>
+<span class="sourceLineNo">886</span>                return Integer.valueOf(constraints.gridWidth);<a name="line.886"></a>
+<span class="sourceLineNo">887</span>            }<a name="line.887"></a>
+<span class="sourceLineNo">888</span>        }<a name="line.888"></a>
+<span class="sourceLineNo">889</span><a name="line.889"></a>
+<span class="sourceLineNo">890</span>        @Override<a name="line.890"></a>
+<span class="sourceLineNo">891</span>        public void setValue(Object value) {<a name="line.891"></a>
+<span class="sourceLineNo">892</span>            if (constraints == null || value == null) {<a name="line.892"></a>
+<span class="sourceLineNo">893</span>                return;<a name="line.893"></a>
+<span class="sourceLineNo">894</span>            }<a name="line.894"></a>
+<span class="sourceLineNo">895</span><a name="line.895"></a>
+<span class="sourceLineNo">896</span>            //      Number val = (Number) value;<a name="line.896"></a>
+<span class="sourceLineNo">897</span>            constraints.gridWidth = ((Number) value).intValue();<a name="line.897"></a>
+<span class="sourceLineNo">898</span>            super.fireStateChanged();<a name="line.898"></a>
+<span class="sourceLineNo">899</span>            updateLayout(component);<a name="line.899"></a>
+<span class="sourceLineNo">900</span><a name="line.900"></a>
+<span class="sourceLineNo">901</span>            // firing table data changed messes up the<a name="line.901"></a>
+<span class="sourceLineNo">902</span>            // selection so we'll get it and then restore it...<a name="line.902"></a>
+<span class="sourceLineNo">903</span>            int col = table.getSelectedColumn();<a name="line.903"></a>
+<span class="sourceLineNo">904</span>            int row = table.getSelectedRow();<a name="line.904"></a>
+<span class="sourceLineNo">905</span>            tableModel.fireTableDataChanged();<a name="line.905"></a>
+<span class="sourceLineNo">906</span>            setSelectedCell(col, row, true);<a name="line.906"></a>
+<span class="sourceLineNo">907</span>        }<a name="line.907"></a>
+<span class="sourceLineNo">908</span>    }<a name="line.908"></a>
+<span class="sourceLineNo">909</span><a name="line.909"></a>
+<span class="sourceLineNo">910</span>    private class RowSpanSpinnerModel extends AbstractSpinnerModel {<a name="line.910"></a>
+<span class="sourceLineNo">911</span>        CellConstraints constraints;<a name="line.911"></a>
+<span class="sourceLineNo">912</span><a name="line.912"></a>
+<span class="sourceLineNo">913</span>        Component component;<a name="line.913"></a>
+<span class="sourceLineNo">914</span><a name="line.914"></a>
+<span class="sourceLineNo">915</span>        public RowSpanSpinnerModel() {<a name="line.915"></a>
+<span class="sourceLineNo">916</span>        }<a name="line.916"></a>
+<span class="sourceLineNo">917</span><a name="line.917"></a>
+<span class="sourceLineNo">918</span>        public void setComponent(Component component) {<a name="line.918"></a>
+<span class="sourceLineNo">919</span>            this.component = component;<a name="line.919"></a>
+<span class="sourceLineNo">920</span>            if (component != null) {<a name="line.920"></a>
+<span class="sourceLineNo">921</span>                constraints = getComponentConstraints(component);<a name="line.921"></a>
+<span class="sourceLineNo">922</span>                fireStateChanged();<a name="line.922"></a>
+<span class="sourceLineNo">923</span>            } else {<a name="line.923"></a>
+<span class="sourceLineNo">924</span>                constraints = null;<a name="line.924"></a>
+<span class="sourceLineNo">925</span>            }<a name="line.925"></a>
+<span class="sourceLineNo">926</span>        }<a name="line.926"></a>
+<span class="sourceLineNo">927</span><a name="line.927"></a>
+<span class="sourceLineNo">928</span>        @Override<a name="line.928"></a>
+<span class="sourceLineNo">929</span>        public Object getNextValue() {<a name="line.929"></a>
+<span class="sourceLineNo">930</span>            if (constraints == null) {<a name="line.930"></a>
+<span class="sourceLineNo">931</span>                return null;<a name="line.931"></a>
+<span class="sourceLineNo">932</span>            } else {<a name="line.932"></a>
+<span class="sourceLineNo">933</span>                Integer next = constraints.gridY + constraints.gridHeight<a name="line.933"></a>
+<span class="sourceLineNo">934</span>                        - 1 &lt; containerLayout.getRowCount()<a name="line.934"></a>
+<span class="sourceLineNo">935</span>                                ? Integer.valueOf(constraints.gridHeight + 1)<a name="line.935"></a>
+<span class="sourceLineNo">936</span>                                : null;<a name="line.936"></a>
+<span class="sourceLineNo">937</span>                return next;<a name="line.937"></a>
+<span class="sourceLineNo">938</span>            }<a name="line.938"></a>
+<span class="sourceLineNo">939</span>        }<a name="line.939"></a>
+<span class="sourceLineNo">940</span><a name="line.940"></a>
+<span class="sourceLineNo">941</span>        @Override<a name="line.941"></a>
+<span class="sourceLineNo">942</span>        public Object getPreviousValue() {<a name="line.942"></a>
+<span class="sourceLineNo">943</span>            if (constraints == null) {<a name="line.943"></a>
+<span class="sourceLineNo">944</span>                return null;<a name="line.944"></a>
+<span class="sourceLineNo">945</span>            } else {<a name="line.945"></a>
+<span class="sourceLineNo">946</span>                Integer previous = constraints.gridHeight &gt; 1<a name="line.946"></a>
+<span class="sourceLineNo">947</span>                        ? Integer.valueOf(constraints.gridHeight - 1)<a name="line.947"></a>
+<span class="sourceLineNo">948</span>                        : null;<a name="line.948"></a>
+<span class="sourceLineNo">949</span>                return previous;<a name="line.949"></a>
+<span class="sourceLineNo">950</span>            }<a name="line.950"></a>
+<span class="sourceLineNo">951</span>        }<a name="line.951"></a>
+<span class="sourceLineNo">952</span><a name="line.952"></a>
+<span class="sourceLineNo">953</span>        @Override<a name="line.953"></a>
+<span class="sourceLineNo">954</span>        public Object getValue() {<a name="line.954"></a>
+<span class="sourceLineNo">955</span>            if (constraints == null) {<a name="line.955"></a>
+<span class="sourceLineNo">956</span>                return "";<a name="line.956"></a>
+<span class="sourceLineNo">957</span>            } else {<a name="line.957"></a>
+<span class="sourceLineNo">958</span>                return Integer.valueOf(constraints.gridHeight);<a name="line.958"></a>
+<span class="sourceLineNo">959</span>            }<a name="line.959"></a>
+<span class="sourceLineNo">960</span>        }<a name="line.960"></a>
+<span class="sourceLineNo">961</span><a name="line.961"></a>
+<span class="sourceLineNo">962</span>        @Override<a name="line.962"></a>
+<span class="sourceLineNo">963</span>        public void setValue(Object value) {<a name="line.963"></a>
+<span class="sourceLineNo">964</span>            if (constraints == null || value == null) {<a name="line.964"></a>
+<span class="sourceLineNo">965</span>                return;<a name="line.965"></a>
+<span class="sourceLineNo">966</span>            }<a name="line.966"></a>
+<span class="sourceLineNo">967</span>            //      Number val = (Number) value;<a name="line.967"></a>
+<span class="sourceLineNo">968</span>            constraints.gridHeight = ((Number) value).intValue();<a name="line.968"></a>
+<span class="sourceLineNo">969</span>            super.fireStateChanged();<a name="line.969"></a>
+<span class="sourceLineNo">970</span>            updateLayout(component);<a name="line.970"></a>
+<span class="sourceLineNo">971</span><a name="line.971"></a>
+<span class="sourceLineNo">972</span>            // firing table data changed messes up the<a name="line.972"></a>
+<span class="sourceLineNo">973</span>            // selection so we'll get it and then restore it...<a name="line.973"></a>
+<span class="sourceLineNo">974</span>            int col = table.getSelectedColumn();<a name="line.974"></a>
+<span class="sourceLineNo">975</span>            int row = table.getSelectedRow();<a name="line.975"></a>
+<span class="sourceLineNo">976</span>            tableModel.fireTableDataChanged();<a name="line.976"></a>
+<span class="sourceLineNo">977</span>            setSelectedCell(col, row, true);<a name="line.977"></a>
+<span class="sourceLineNo">978</span>        }<a name="line.978"></a>
+<span class="sourceLineNo">979</span>    }<a name="line.979"></a>
+<span class="sourceLineNo">980</span><a name="line.980"></a>
+<span class="sourceLineNo">981</span>    /**<a name="line.981"></a>
+<span class="sourceLineNo">982</span>     * Returns true if the named component was created by hand in this session<a name="line.982"></a>
+<span class="sourceLineNo">983</span>     */<a name="line.983"></a>
+<span class="sourceLineNo">984</span>    public boolean isNewComponent(Component component) {<a name="line.984"></a>
+<span class="sourceLineNo">985</span>        return newComponents.contains(component);<a name="line.985"></a>
+<span class="sourceLineNo">986</span>    }<a name="line.986"></a>
+<span class="sourceLineNo">987</span><a name="line.987"></a>
+<span class="sourceLineNo">988</span>    private class NewComponentDialog0 extends JDialog {<a name="line.988"></a>
+<span class="sourceLineNo">989</span>        JTextField nameField = new JTextField();<a name="line.989"></a>
+<span class="sourceLineNo">990</span><a name="line.990"></a>
+<span class="sourceLineNo">991</span>        JLabel nameLabel = new JLabel("Name");<a name="line.991"></a>
+<span class="sourceLineNo">992</span><a name="line.992"></a>
+<span class="sourceLineNo">993</span>        JLabel typeLabel = new JLabel("Type");<a name="line.993"></a>
+<span class="sourceLineNo">994</span><a name="line.994"></a>
+<span class="sourceLineNo">995</span>        JButton okButton = new JButton("OK");<a name="line.995"></a>
+<span class="sourceLineNo">996</span><a name="line.996"></a>
+<span class="sourceLineNo">997</span>        JButton cancelButton = new JButton("Cancel");<a name="line.997"></a>
+<span class="sourceLineNo">998</span><a name="line.998"></a>
+<span class="sourceLineNo">999</span>        JComboBox typeCombo = new JComboBox();<a name="line.999"></a>
+<span class="sourceLineNo">1000</span><a name="line.1000"></a>
+<span class="sourceLineNo">1001</span>        PropertyTableModel propertyTableModel = new PropertyTableModel();<a name="line.1001"></a>
+<span class="sourceLineNo">1002</span><a name="line.1002"></a>
+<span class="sourceLineNo">1003</span>        JTable propertyTable = new JTable();<a name="line.1003"></a>
+<span class="sourceLineNo">1004</span><a name="line.1004"></a>
+<span class="sourceLineNo">1005</span>        JScrollPane propertyScrollPane = new JScrollPane(propertyTable);<a name="line.1005"></a>
+<span class="sourceLineNo">1006</span><a name="line.1006"></a>
+<span class="sourceLineNo">1007</span>        boolean wasSuccessful = false;<a name="line.1007"></a>
+<span class="sourceLineNo">1008</span><a name="line.1008"></a>
+<span class="sourceLineNo">1009</span>        Component component = null;<a name="line.1009"></a>
+<span class="sourceLineNo">1010</span><a name="line.1010"></a>
+<span class="sourceLineNo">1011</span>        Map&lt;String, Object&gt; controlProperties = new HashMap&lt;String, Object&gt;();<a name="line.1011"></a>
+<span class="sourceLineNo">1012</span><a name="line.1012"></a>
+<span class="sourceLineNo">1013</span>        public NewComponentDialog0(Frame owner) throws Exception {<a name="line.1013"></a>
+<span class="sourceLineNo">1014</span>            super(owner, "Add Component", true);<a name="line.1014"></a>
+<span class="sourceLineNo">1015</span><a name="line.1015"></a>
+<span class="sourceLineNo">1016</span>            okButton.setMnemonic(KeyEvent.VK_O);<a name="line.1016"></a>
+<span class="sourceLineNo">1017</span>            cancelButton.setMnemonic(KeyEvent.VK_C);<a name="line.1017"></a>
+<span class="sourceLineNo">1018</span>            nameLabel.setDisplayedMnemonic(KeyEvent.VK_N);<a name="line.1018"></a>
+<span class="sourceLineNo">1019</span>            typeLabel.setDisplayedMnemonic(KeyEvent.VK_T);<a name="line.1019"></a>
+<span class="sourceLineNo">1020</span>            nameLabel.setLabelFor(nameField);<a name="line.1020"></a>
+<span class="sourceLineNo">1021</span>            typeLabel.setLabelFor(typeCombo);<a name="line.1021"></a>
+<span class="sourceLineNo">1022</span><a name="line.1022"></a>
+<span class="sourceLineNo">1023</span>            //      FormLayout layout = new FormLayout("right:max(40dlu;pref), 3dlu, 130dlu",<a name="line.1023"></a>
+<span class="sourceLineNo">1024</span>            //          "");<a name="line.1024"></a>
+<span class="sourceLineNo">1025</span>            JPanel content = new JPanel();<a name="line.1025"></a>
+<span class="sourceLineNo">1026</span>            content.setBorder(Borders.DIALOG_BORDER);<a name="line.1026"></a>
+<span class="sourceLineNo">1027</span>            layoutConstraintsManager.setLayout("newComponentContent", content);<a name="line.1027"></a>
+<span class="sourceLineNo">1028</span>            getContentPane().setLayout(new BorderLayout());<a name="line.1028"></a>
+<span class="sourceLineNo">1029</span>            getContentPane().add(content, BorderLayout.CENTER);<a name="line.1029"></a>
+<span class="sourceLineNo">1030</span><a name="line.1030"></a>
+<span class="sourceLineNo">1031</span>            content.add(typeCombo, "typeCombo");<a name="line.1031"></a>
+<span class="sourceLineNo">1032</span>            content.add(nameField, "nameField");<a name="line.1032"></a>
+<span class="sourceLineNo">1033</span>            content.add(typeLabel, "typeLabel");<a name="line.1033"></a>
+<span class="sourceLineNo">1034</span>            content.add(nameLabel, "nameLabel");<a name="line.1034"></a>
+<span class="sourceLineNo">1035</span>            content.add(propertyScrollPane, "propertyScrollPane");<a name="line.1035"></a>
+<span class="sourceLineNo">1036</span>            content.add(<a name="line.1036"></a>
+<span class="sourceLineNo">1037</span>                    com.jgoodies.forms.factories.ButtonBarFactory<a name="line.1037"></a>
+<span class="sourceLineNo">1038</span>                            .buildRightAlignedBar(<a name="line.1038"></a>
+<span class="sourceLineNo">1039</span>                                    new JButton[] { okButton, cancelButton }),<a name="line.1039"></a>
+<span class="sourceLineNo">1040</span>                    "buttonPanel");<a name="line.1040"></a>
+<span class="sourceLineNo">1041</span><a name="line.1041"></a>
+<span class="sourceLineNo">1042</span>            propertyTable.putClientProperty("terminateEditOnFocusLost",<a name="line.1042"></a>
+<span class="sourceLineNo">1043</span>                    Boolean.TRUE);<a name="line.1043"></a>
+<span class="sourceLineNo">1044</span>            propertyTable.setModel(propertyTableModel);<a name="line.1044"></a>
+<span class="sourceLineNo">1045</span><a name="line.1045"></a>
+<span class="sourceLineNo">1046</span>            pack();<a name="line.1046"></a>
+<span class="sourceLineNo">1047</span><a name="line.1047"></a>
+<span class="sourceLineNo">1048</span>            typeCombo.addItem(new DefaultComponentBuilder(<a name="line.1048"></a>
+<span class="sourceLineNo">1049</span>                    javax.swing.JButton.class, new String[] { "text" }));<a name="line.1049"></a>
+<span class="sourceLineNo">1050</span>            typeCombo.addItem(new DefaultComponentBuilder(<a name="line.1050"></a>
+<span class="sourceLineNo">1051</span>                    javax.swing.JCheckBox.class, new String[] { "text" }));<a name="line.1051"></a>
+<span class="sourceLineNo">1052</span>            typeCombo.addItem(<a name="line.1052"></a>
+<span class="sourceLineNo">1053</span>                    new DefaultComponentBuilder(javax.swing.JComboBox.class));<a name="line.1053"></a>
+<span class="sourceLineNo">1054</span>            typeCombo.addItem(new DefaultComponentBuilder(<a name="line.1054"></a>
+<span class="sourceLineNo">1055</span>                    javax.swing.JLabel.class, new String[] { "text" }));<a name="line.1055"></a>
+<span class="sourceLineNo">1056</span>            typeCombo.addItem(new JListComponentBuilder());<a name="line.1056"></a>
+<span class="sourceLineNo">1057</span>            typeCombo.addItem(<a name="line.1057"></a>
+<span class="sourceLineNo">1058</span>                    new DefaultComponentBuilder(javax.swing.JPanel.class));<a name="line.1058"></a>
+<span class="sourceLineNo">1059</span>            typeCombo.addItem(new DefaultComponentBuilder(<a name="line.1059"></a>
+<span class="sourceLineNo">1060</span>                    javax.swing.JPasswordField.class));<a name="line.1060"></a>
+<span class="sourceLineNo">1061</span>            typeCombo.addItem(new DefaultComponentBuilder(<a name="line.1061"></a>
+<span class="sourceLineNo">1062</span>                    javax.swing.JRadioButton.class, new String[] { "text" }));<a name="line.1062"></a>
+<span class="sourceLineNo">1063</span>            typeCombo.addItem(<a name="line.1063"></a>
+<span class="sourceLineNo">1064</span>                    new DefaultComponentBuilder(javax.swing.JScrollPane.class));<a name="line.1064"></a>
+<span class="sourceLineNo">1065</span>            typeCombo.addItem(<a name="line.1065"></a>
+<span class="sourceLineNo">1066</span>                    new DefaultComponentBuilder(javax.swing.JSpinner.class));<a name="line.1066"></a>
+<span class="sourceLineNo">1067</span>            typeCombo.addItem(new JTableComponentBuilder());<a name="line.1067"></a>
+<span class="sourceLineNo">1068</span>            typeCombo.addItem(<a name="line.1068"></a>
+<span class="sourceLineNo">1069</span>                    new DefaultComponentBuilder(javax.swing.JTextArea.class));<a name="line.1069"></a>
+<span class="sourceLineNo">1070</span>            typeCombo.addItem(<a name="line.1070"></a>
+<span class="sourceLineNo">1071</span>                    new DefaultComponentBuilder(javax.swing.JTextField.class));<a name="line.1071"></a>
+<span class="sourceLineNo">1072</span>            typeCombo.addItem(new JToolBarComponentBuilder());<a name="line.1072"></a>
+<span class="sourceLineNo">1073</span>            typeCombo.addItem(new JTreeComponentBuilder());<a name="line.1073"></a>
+<span class="sourceLineNo">1074</span>            typeCombo.addItem(new SeparatorComponentBuilder());<a name="line.1074"></a>
+<span class="sourceLineNo">1075</span>            typeCombo.addItem(new ButtonBarComponentBuilder());<a name="line.1075"></a>
+<span class="sourceLineNo">1076</span><a name="line.1076"></a>
+<span class="sourceLineNo">1077</span>            typeCombo.addActionListener(new ActionListener() {<a name="line.1077"></a>
+<span class="sourceLineNo">1078</span>                @Override<a name="line.1078"></a>
+<span class="sourceLineNo">1079</span>                public void actionPerformed(ActionEvent e) {<a name="line.1079"></a>
+<span class="sourceLineNo">1080</span>                    controlProperties = new HashMap&lt;String, Object&gt;();<a name="line.1080"></a>
+<span class="sourceLineNo">1081</span>                    propertyTableModel.fireTableDataChanged();<a name="line.1081"></a>
+<span class="sourceLineNo">1082</span>                }<a name="line.1082"></a>
+<span class="sourceLineNo">1083</span>            });<a name="line.1083"></a>
+<span class="sourceLineNo">1084</span><a name="line.1084"></a>
+<span class="sourceLineNo">1085</span>            okButton.addActionListener(new ActionListener() {<a name="line.1085"></a>
+<span class="sourceLineNo">1086</span>                @Override<a name="line.1086"></a>
+<span class="sourceLineNo">1087</span>                public void actionPerformed(ActionEvent e) {<a name="line.1087"></a>
+<span class="sourceLineNo">1088</span><a name="line.1088"></a>
+<span class="sourceLineNo">1089</span>                    try {<a name="line.1089"></a>
+<span class="sourceLineNo">1090</span>                        if (nameField.getText().trim().length() == 0) {<a name="line.1090"></a>
+<span class="sourceLineNo">1091</span>                            throw new Exception("The name field is required");<a name="line.1091"></a>
+<span class="sourceLineNo">1092</span>                        }<a name="line.1092"></a>
+<span class="sourceLineNo">1093</span><a name="line.1093"></a>
+<span class="sourceLineNo">1094</span>                        //            int currentCol = propertyTable.getSelectedColumn();<a name="line.1094"></a>
+<span class="sourceLineNo">1095</span>                        //            int currentRow = propertyTable.getSelectedRow();<a name="line.1095"></a>
+<span class="sourceLineNo">1096</span><a name="line.1096"></a>
+<span class="sourceLineNo">1097</span>                        ComponentBuilder builder = (ComponentBuilder) typeCombo<a name="line.1097"></a>
+<span class="sourceLineNo">1098</span>                                .getSelectedItem();<a name="line.1098"></a>
+<span class="sourceLineNo">1099</span>                        component = builder.getInstance(controlProperties);<a name="line.1099"></a>
+<span class="sourceLineNo">1100</span><a name="line.1100"></a>
+<span class="sourceLineNo">1101</span>                        wasSuccessful = true;<a name="line.1101"></a>
+<span class="sourceLineNo">1102</span>                        dispose();<a name="line.1102"></a>
+<span class="sourceLineNo">1103</span><a name="line.1103"></a>
+<span class="sourceLineNo">1104</span>                    } catch (Exception exception) {<a name="line.1104"></a>
+<span class="sourceLineNo">1105</span>                        exception.printStackTrace();<a name="line.1105"></a>
+<span class="sourceLineNo">1106</span>                        wasSuccessful = false;<a name="line.1106"></a>
+<span class="sourceLineNo">1107</span>                        JOptionPane.showMessageDialog(null,<a name="line.1107"></a>
+<span class="sourceLineNo">1108</span>                                exception.getMessage(),<a name="line.1108"></a>
+<span class="sourceLineNo">1109</span>                                "Error Creating Component",<a name="line.1109"></a>
+<span class="sourceLineNo">1110</span>                                JOptionPane.ERROR_MESSAGE);<a name="line.1110"></a>
+<span class="sourceLineNo">1111</span>                    }<a name="line.1111"></a>
+<span class="sourceLineNo">1112</span>                }<a name="line.1112"></a>
+<span class="sourceLineNo">1113</span>            });<a name="line.1113"></a>
+<span class="sourceLineNo">1114</span><a name="line.1114"></a>
+<span class="sourceLineNo">1115</span>            cancelButton.addActionListener(new ActionListener() {<a name="line.1115"></a>
+<span class="sourceLineNo">1116</span>                @Override<a name="line.1116"></a>
+<span class="sourceLineNo">1117</span>                public void actionPerformed(ActionEvent e) {<a name="line.1117"></a>
+<span class="sourceLineNo">1118</span>                    wasSuccessful = false;<a name="line.1118"></a>
+<span class="sourceLineNo">1119</span>                    dispose();<a name="line.1119"></a>
+<span class="sourceLineNo">1120</span>                }<a name="line.1120"></a>
+<span class="sourceLineNo">1121</span>            });<a name="line.1121"></a>
+<span class="sourceLineNo">1122</span>        }<a name="line.1122"></a>
+<span class="sourceLineNo">1123</span><a name="line.1123"></a>
+<span class="sourceLineNo">1124</span>        public boolean wasSuccessful() {<a name="line.1124"></a>
+<span class="sourceLineNo">1125</span>            return wasSuccessful;<a name="line.1125"></a>
+<span class="sourceLineNo">1126</span>        }<a name="line.1126"></a>
+<span class="sourceLineNo">1127</span><a name="line.1127"></a>
+<span class="sourceLineNo">1128</span>        public String getComponentName() {<a name="line.1128"></a>
+<span class="sourceLineNo">1129</span>            return nameField.getText();<a name="line.1129"></a>
+<span class="sourceLineNo">1130</span>        }<a name="line.1130"></a>
+<span class="sourceLineNo">1131</span><a name="line.1131"></a>
+<span class="sourceLineNo">1132</span>        //        public String getComponentDeclaration() {<a name="line.1132"></a>
+<span class="sourceLineNo">1133</span>        //            ComponentBuilder builder = (ComponentBuilder) typeCombo<a name="line.1133"></a>
+<span class="sourceLineNo">1134</span>        //                    .getSelectedItem();<a name="line.1134"></a>
+<span class="sourceLineNo">1135</span>        //            return builder<a name="line.1135"></a>
+<span class="sourceLineNo">1136</span>        //                    .getDeclaration(getComponentName(), controlProperties);<a name="line.1136"></a>
+<span class="sourceLineNo">1137</span>        //        }<a name="line.1137"></a>
+<span class="sourceLineNo">1138</span><a name="line.1138"></a>
+<span class="sourceLineNo">1139</span>        public boolean isUsingLayoutComponent() {<a name="line.1139"></a>
+<span class="sourceLineNo">1140</span>            ComponentBuilder builder = (ComponentBuilder) typeCombo<a name="line.1140"></a>
+<span class="sourceLineNo">1141</span>                    .getSelectedItem();<a name="line.1141"></a>
+<span class="sourceLineNo">1142</span>            return builder.isComponentALayoutContainer();<a name="line.1142"></a>
+<span class="sourceLineNo">1143</span>        }<a name="line.1143"></a>
+<span class="sourceLineNo">1144</span><a name="line.1144"></a>
+<span class="sourceLineNo">1145</span>        public Component getComponent() {<a name="line.1145"></a>
+<span class="sourceLineNo">1146</span>            return component;<a name="line.1146"></a>
+<span class="sourceLineNo">1147</span>        }<a name="line.1147"></a>
+<span class="sourceLineNo">1148</span><a name="line.1148"></a>
+<span class="sourceLineNo">1149</span>        public ComponentDef getComponentDef() {<a name="line.1149"></a>
+<span class="sourceLineNo">1150</span>            ComponentBuilder builder = (ComponentBuilder) typeCombo<a name="line.1150"></a>
+<span class="sourceLineNo">1151</span>                    .getSelectedItem();<a name="line.1151"></a>
+<span class="sourceLineNo">1152</span>            return builder.getComponentDef(getComponentName(),<a name="line.1152"></a>
+<span class="sourceLineNo">1153</span>                    controlProperties);<a name="line.1153"></a>
+<span class="sourceLineNo">1154</span>        }<a name="line.1154"></a>
+<span class="sourceLineNo">1155</span><a name="line.1155"></a>
+<span class="sourceLineNo">1156</span>        private class PropertyTableModel<a name="line.1156"></a>
+<span class="sourceLineNo">1157</span>                extends javax.swing.table.AbstractTableModel {<a name="line.1157"></a>
+<span class="sourceLineNo">1158</span>            @Override<a name="line.1158"></a>
+<span class="sourceLineNo">1159</span>            public int getColumnCount() {<a name="line.1159"></a>
+<span class="sourceLineNo">1160</span>                return 2;<a name="line.1160"></a>
+<span class="sourceLineNo">1161</span>            }<a name="line.1161"></a>
+<span class="sourceLineNo">1162</span><a name="line.1162"></a>
+<span class="sourceLineNo">1163</span>            @Override<a name="line.1163"></a>
+<span class="sourceLineNo">1164</span>            public int getRowCount() {<a name="line.1164"></a>
+<span class="sourceLineNo">1165</span>                ComponentBuilder builder = (ComponentBuilder) typeCombo<a name="line.1165"></a>
+<span class="sourceLineNo">1166</span>                        .getSelectedItem();<a name="line.1166"></a>
+<span class="sourceLineNo">1167</span>                return builder != null ? builder.getProperties().size() : 0;<a name="line.1167"></a>
+<span class="sourceLineNo">1168</span>            }<a name="line.1168"></a>
+<span class="sourceLineNo">1169</span><a name="line.1169"></a>
+<span class="sourceLineNo">1170</span>            @Override<a name="line.1170"></a>
+<span class="sourceLineNo">1171</span>            public boolean isCellEditable(int row, int col) {<a name="line.1171"></a>
+<span class="sourceLineNo">1172</span>                return col == 1;<a name="line.1172"></a>
+<span class="sourceLineNo">1173</span>            }<a name="line.1173"></a>
+<span class="sourceLineNo">1174</span><a name="line.1174"></a>
+<span class="sourceLineNo">1175</span>            @Override<a name="line.1175"></a>
+<span class="sourceLineNo">1176</span>            public String getColumnName(int col) {<a name="line.1176"></a>
+<span class="sourceLineNo">1177</span>                return col == 0 ? "Property" : "Value";<a name="line.1177"></a>
+<span class="sourceLineNo">1178</span>            }<a name="line.1178"></a>
+<span class="sourceLineNo">1179</span><a name="line.1179"></a>
+<span class="sourceLineNo">1180</span>            @Override<a name="line.1180"></a>
+<span class="sourceLineNo">1181</span>            public void setValueAt(Object aValue, int row, int col) {<a name="line.1181"></a>
+<span class="sourceLineNo">1182</span>                ComponentBuilder builder = (ComponentBuilder) typeCombo<a name="line.1182"></a>
+<span class="sourceLineNo">1183</span>                        .getSelectedItem();<a name="line.1183"></a>
+<span class="sourceLineNo">1184</span>                List&lt;BeanProperty&gt; properties = builder.getProperties();<a name="line.1184"></a>
+<span class="sourceLineNo">1185</span>                BeanProperty property = properties.get(row);<a name="line.1185"></a>
+<span class="sourceLineNo">1186</span>                controlProperties.put(property.getName(), aValue);<a name="line.1186"></a>
+<span class="sourceLineNo">1187</span>            }<a name="line.1187"></a>
+<span class="sourceLineNo">1188</span><a name="line.1188"></a>
+<span class="sourceLineNo">1189</span>            @Override<a name="line.1189"></a>
+<span class="sourceLineNo">1190</span>            public Object getValueAt(int rowIndex, int columnIndex) {<a name="line.1190"></a>
+<span class="sourceLineNo">1191</span>                ComponentBuilder builder = (ComponentBuilder) typeCombo<a name="line.1191"></a>
+<span class="sourceLineNo">1192</span>                        .getSelectedItem();<a name="line.1192"></a>
+<span class="sourceLineNo">1193</span>                List&lt;BeanProperty&gt; properties = builder.getProperties();<a name="line.1193"></a>
+<span class="sourceLineNo">1194</span>                BeanProperty property = properties.get(rowIndex);<a name="line.1194"></a>
+<span class="sourceLineNo">1195</span><a name="line.1195"></a>
+<span class="sourceLineNo">1196</span>                return columnIndex == 0 ? property.getName()<a name="line.1196"></a>
+<span class="sourceLineNo">1197</span>                        : controlProperties.get(property.getName());<a name="line.1197"></a>
+<span class="sourceLineNo">1198</span>            }<a name="line.1198"></a>
+<span class="sourceLineNo">1199</span><a name="line.1199"></a>
+<span class="sourceLineNo">1200</span>            //            public Component getComponent() throws Exception {<a name="line.1200"></a>
+<span class="sourceLineNo">1201</span>            //                ComponentBuilder builder = (ComponentBuilder) typeCombo<a name="line.1201"></a>
+<span class="sourceLineNo">1202</span>            //                        .getSelectedItem();<a name="line.1202"></a>
+<span class="sourceLineNo">1203</span>            //                Component instance = builder.getInstance(controlProperties);<a name="line.1203"></a>
+<span class="sourceLineNo">1204</span>            //                return instance;<a name="line.1204"></a>
+<span class="sourceLineNo">1205</span>            //            }<a name="line.1205"></a>
+<span class="sourceLineNo">1206</span>        }<a name="line.1206"></a>
+<span class="sourceLineNo">1207</span>    }<a name="line.1207"></a>
+<span class="sourceLineNo">1208</span><a name="line.1208"></a>
+<span class="sourceLineNo">1209</span>    private class ConstraintTableCellRenderer extends DefaultTableCellRenderer {<a name="line.1209"></a>
+<span class="sourceLineNo">1210</span>        @Override<a name="line.1210"></a>
+<span class="sourceLineNo">1211</span>        public Component getTableCellRendererComponent(JTable table,<a name="line.1211"></a>
+<span class="sourceLineNo">1212</span>                Object value, boolean isSelected, boolean hasFocus, int row,<a name="line.1212"></a>
+<span class="sourceLineNo">1213</span>                int column) {<a name="line.1213"></a>
+<span class="sourceLineNo">1214</span>            String stringValue = null;<a name="line.1214"></a>
+<span class="sourceLineNo">1215</span>            if (value != null) {<a name="line.1215"></a>
+<span class="sourceLineNo">1216</span>                if (value instanceof Component) {<a name="line.1216"></a>
+<span class="sourceLineNo">1217</span>                    String name = getComponentName((Component) value);<a name="line.1217"></a>
+<span class="sourceLineNo">1218</span>                    stringValue = name == null ? "(Untitled)" : name;<a name="line.1218"></a>
+<span class="sourceLineNo">1219</span>                } else {<a name="line.1219"></a>
+<span class="sourceLineNo">1220</span>                    // in this case it's a row or col header<a name="line.1220"></a>
+<span class="sourceLineNo">1221</span>                    stringValue = (String) value;<a name="line.1221"></a>
+<span class="sourceLineNo">1222</span>                }<a name="line.1222"></a>
+<span class="sourceLineNo">1223</span>            }<a name="line.1223"></a>
+<span class="sourceLineNo">1224</span><a name="line.1224"></a>
+<span class="sourceLineNo">1225</span>            return super.getTableCellRendererComponent(table, stringValue,<a name="line.1225"></a>
+<span class="sourceLineNo">1226</span>                    isSelected, hasFocus, row, column);<a name="line.1226"></a>
+<span class="sourceLineNo">1227</span>        }<a name="line.1227"></a>
+<span class="sourceLineNo">1228</span>    }<a name="line.1228"></a>
+<span class="sourceLineNo">1229</span><a name="line.1229"></a>
+<span class="sourceLineNo">1230</span>    private class GridTableModel extends javax.swing.table.AbstractTableModel {<a name="line.1230"></a>
+<span class="sourceLineNo">1231</span><a name="line.1231"></a>
+<span class="sourceLineNo">1232</span>        @Override<a name="line.1232"></a>
+<span class="sourceLineNo">1233</span>        public int getColumnCount() {<a name="line.1233"></a>
+<span class="sourceLineNo">1234</span>            return containerLayout != null<a name="line.1234"></a>
+<span class="sourceLineNo">1235</span>                    ? containerLayout.getColumnCount() + 1<a name="line.1235"></a>
+<span class="sourceLineNo">1236</span>                    : 1;<a name="line.1236"></a>
+<span class="sourceLineNo">1237</span>        }<a name="line.1237"></a>
+<span class="sourceLineNo">1238</span><a name="line.1238"></a>
+<span class="sourceLineNo">1239</span>        @Override<a name="line.1239"></a>
+<span class="sourceLineNo">1240</span>        public int getRowCount() {<a name="line.1240"></a>
+<span class="sourceLineNo">1241</span>            return containerLayout != null ? containerLayout.getRowCount() + 1<a name="line.1241"></a>
+<span class="sourceLineNo">1242</span>                    : 1;<a name="line.1242"></a>
+<span class="sourceLineNo">1243</span>        }<a name="line.1243"></a>
+<span class="sourceLineNo">1244</span><a name="line.1244"></a>
+<span class="sourceLineNo">1245</span>        @Override<a name="line.1245"></a>
+<span class="sourceLineNo">1246</span>        public boolean isCellEditable(int row, int col) {<a name="line.1246"></a>
+<span class="sourceLineNo">1247</span>            return (row == 0 || col == 0) &amp;&amp; !(row == 0 &amp;&amp; col == 0);<a name="line.1247"></a>
+<span class="sourceLineNo">1248</span>        }<a name="line.1248"></a>
+<span class="sourceLineNo">1249</span><a name="line.1249"></a>
+<span class="sourceLineNo">1250</span>        @Override<a name="line.1250"></a>
+<span class="sourceLineNo">1251</span>        public String getColumnName(int col) {<a name="line.1251"></a>
+<span class="sourceLineNo">1252</span>            return col == 0 ? "*" : "" + col;<a name="line.1252"></a>
+<span class="sourceLineNo">1253</span>        }<a name="line.1253"></a>
+<span class="sourceLineNo">1254</span><a name="line.1254"></a>
+<span class="sourceLineNo">1255</span>        @Override<a name="line.1255"></a>
+<span class="sourceLineNo">1256</span>        public void setValueAt(Object aValue, int row, int col) {<a name="line.1256"></a>
+<span class="sourceLineNo">1257</span>            String value = (String) aValue;<a name="line.1257"></a>
+<span class="sourceLineNo">1258</span>            if (row == 0) // a column was changed<a name="line.1258"></a>
+<span class="sourceLineNo">1259</span>            {<a name="line.1259"></a>
+<span class="sourceLineNo">1260</span>                try {<a name="line.1260"></a>
+<span class="sourceLineNo">1261</span>                    containerLayout.setColumnSpec(col - 1, value);<a name="line.1261"></a>
+<span class="sourceLineNo">1262</span>                    specsChanged();<a name="line.1262"></a>
+<span class="sourceLineNo">1263</span>                } catch (IllegalArgumentException iae) {<a name="line.1263"></a>
+<span class="sourceLineNo">1264</span>                    JOptionPane.showMessageDialog(FormEditor.this,<a name="line.1264"></a>
+<span class="sourceLineNo">1265</span>                            iae.getMessage(), "Invalid Layout",<a name="line.1265"></a>
+<span class="sourceLineNo">1266</span>                            JOptionPane.ERROR_MESSAGE);<a name="line.1266"></a>
+<span class="sourceLineNo">1267</span>                }<a name="line.1267"></a>
+<span class="sourceLineNo">1268</span>            } else if (col == 0) {<a name="line.1268"></a>
+<span class="sourceLineNo">1269</span>                try {<a name="line.1269"></a>
+<span class="sourceLineNo">1270</span>                    containerLayout.setRowSpec(row - 1, value);<a name="line.1270"></a>
+<span class="sourceLineNo">1271</span>                    specsChanged();<a name="line.1271"></a>
+<span class="sourceLineNo">1272</span>                } catch (Exception e) {<a name="line.1272"></a>
+<span class="sourceLineNo">1273</span>                    JOptionPane.showMessageDialog(null, e.getMessage(),<a name="line.1273"></a>
+<span class="sourceLineNo">1274</span>                            "Invalid row specification",<a name="line.1274"></a>
+<span class="sourceLineNo">1275</span>                            JOptionPane.ERROR_MESSAGE);<a name="line.1275"></a>
+<span class="sourceLineNo">1276</span>                }<a name="line.1276"></a>
+<span class="sourceLineNo">1277</span>            }<a name="line.1277"></a>
+<span class="sourceLineNo">1278</span>        }<a name="line.1278"></a>
+<span class="sourceLineNo">1279</span><a name="line.1279"></a>
+<span class="sourceLineNo">1280</span>        @Override<a name="line.1280"></a>
+<span class="sourceLineNo">1281</span>        public Object getValueAt(int rowIndex, int columnIndex) {<a name="line.1281"></a>
+<span class="sourceLineNo">1282</span>            if (rowIndex == 0 &amp;&amp; columnIndex == 0) {<a name="line.1282"></a>
+<span class="sourceLineNo">1283</span>                return null;<a name="line.1283"></a>
+<span class="sourceLineNo">1284</span>            }<a name="line.1284"></a>
+<span class="sourceLineNo">1285</span>            if (rowIndex == 0) {<a name="line.1285"></a>
+<span class="sourceLineNo">1286</span>                return containerLayout.getColumnSpec(columnIndex - 1);<a name="line.1286"></a>
+<span class="sourceLineNo">1287</span>            }<a name="line.1287"></a>
+<span class="sourceLineNo">1288</span>            if (columnIndex == 0) {<a name="line.1288"></a>
+<span class="sourceLineNo">1289</span>                return containerLayout.getRowSpec(rowIndex - 1);<a name="line.1289"></a>
+<span class="sourceLineNo">1290</span>            }<a name="line.1290"></a>
+<span class="sourceLineNo">1291</span><a name="line.1291"></a>
+<span class="sourceLineNo">1292</span>            Component component = null;<a name="line.1292"></a>
+<span class="sourceLineNo">1293</span><a name="line.1293"></a>
+<span class="sourceLineNo">1294</span>            for (int index = 0; index &lt; container<a name="line.1294"></a>
+<span class="sourceLineNo">1295</span>                    .getComponentCount(); index++) {<a name="line.1295"></a>
+<span class="sourceLineNo">1296</span>                Component thisComponent = container.getComponent(index);<a name="line.1296"></a>
+<span class="sourceLineNo">1297</span>                // we don't want to show invisible components. we<a name="line.1297"></a>
+<span class="sourceLineNo">1298</span>                // have decided to make components that are added without<a name="line.1298"></a>
+<span class="sourceLineNo">1299</span>                // constraints invisible until they are dropped onto the form.<a name="line.1299"></a>
+<span class="sourceLineNo">1300</span>                // this is our way of hiding them.<a name="line.1300"></a>
+<span class="sourceLineNo">1301</span>                if (thisComponent.isVisible()) {<a name="line.1301"></a>
+<span class="sourceLineNo">1302</span>                    CellConstraints constraints = getComponentConstraints(<a name="line.1302"></a>
+<span class="sourceLineNo">1303</span>                            thisComponent);<a name="line.1303"></a>
+<span class="sourceLineNo">1304</span>                    if (constraints == null) {<a name="line.1304"></a>
+<span class="sourceLineNo">1305</span>                        throw new RuntimeException(<a name="line.1305"></a>
+<span class="sourceLineNo">1306</span>                                "Unable to find constraints for component "<a name="line.1306"></a>
+<span class="sourceLineNo">1307</span>                                        + thisComponent + " in layout "<a name="line.1307"></a>
+<span class="sourceLineNo">1308</span>                                        + containerLayout.getName());<a name="line.1308"></a>
+<span class="sourceLineNo">1309</span>                    }<a name="line.1309"></a>
+<span class="sourceLineNo">1310</span>                    if (columnIndex &gt;= constraints.gridX<a name="line.1310"></a>
+<span class="sourceLineNo">1311</span>                            &amp;&amp; columnIndex &lt; constraints.gridX<a name="line.1311"></a>
+<span class="sourceLineNo">1312</span>                                    + constraints.gridWidth<a name="line.1312"></a>
+<span class="sourceLineNo">1313</span>                            &amp;&amp; rowIndex &gt;= constraints.gridY<a name="line.1313"></a>
+<span class="sourceLineNo">1314</span>                            &amp;&amp; rowIndex &lt; constraints.gridY<a name="line.1314"></a>
+<span class="sourceLineNo">1315</span>                                    + constraints.gridHeight) {<a name="line.1315"></a>
+<span class="sourceLineNo">1316</span>                        component = thisComponent;<a name="line.1316"></a>
+<span class="sourceLineNo">1317</span>                        if (component == topComponent) {<a name="line.1317"></a>
+<span class="sourceLineNo">1318</span>                            break;<a name="line.1318"></a>
+<span class="sourceLineNo">1319</span>                        }<a name="line.1319"></a>
+<span class="sourceLineNo">1320</span>                    }<a name="line.1320"></a>
+<span class="sourceLineNo">1321</span>                }<a name="line.1321"></a>
+<span class="sourceLineNo">1322</span>            }<a name="line.1322"></a>
+<span class="sourceLineNo">1323</span><a name="line.1323"></a>
+<span class="sourceLineNo">1324</span>            return component;<a name="line.1324"></a>
+<span class="sourceLineNo">1325</span>        }<a name="line.1325"></a>
+<span class="sourceLineNo">1326</span>    }<a name="line.1326"></a>
+<span class="sourceLineNo">1327</span><a name="line.1327"></a>
+<span class="sourceLineNo">1328</span>    private class RemoveComponentAction extends AbstractAction {<a name="line.1328"></a>
+<span class="sourceLineNo">1329</span>        public RemoveComponentAction() {<a name="line.1329"></a>
+<span class="sourceLineNo">1330</span>            super();<a name="line.1330"></a>
+<span class="sourceLineNo">1331</span>            putValue(Action.SHORT_DESCRIPTION, "Remove the component (Alt+D)");<a name="line.1331"></a>
+<span class="sourceLineNo">1332</span>            putValue(Action.LONG_DESCRIPTION, "Remove the component (Alt+D)");<a name="line.1332"></a>
+<span class="sourceLineNo">1333</span>            putValue(Action.SMALL_ICON, new ImageIcon(<a name="line.1333"></a>
+<span class="sourceLineNo">1334</span>                    FormEditor.class.getResource("Remove24.gif")));<a name="line.1334"></a>
+<span class="sourceLineNo">1335</span>            putValue(Action.ACCELERATOR_KEY, KeyStroke<a name="line.1335"></a>
+<span class="sourceLineNo">1336</span>                    .getKeyStroke(KeyEvent.VK_D, InputEvent.CTRL_MASK));<a name="line.1336"></a>
+<span class="sourceLineNo">1337</span>        }<a name="line.1337"></a>
+<span class="sourceLineNo">1338</span><a name="line.1338"></a>
+<span class="sourceLineNo">1339</span>        @Override<a name="line.1339"></a>
+<span class="sourceLineNo">1340</span>        public void actionPerformed(ActionEvent e) {<a name="line.1340"></a>
+<span class="sourceLineNo">1341</span>            Component selectedControl = table.getSelectedControl();<a name="line.1341"></a>
+<span class="sourceLineNo">1342</span>            String controlName = getComponentName(selectedControl);<a name="line.1342"></a>
+<span class="sourceLineNo">1343</span>            container.remove(selectedControl);<a name="line.1343"></a>
+<span class="sourceLineNo">1344</span>            tableModel.fireTableDataChanged();<a name="line.1344"></a>
+<span class="sourceLineNo">1345</span><a name="line.1345"></a>
+<span class="sourceLineNo">1346</span>            if (selectedControl instanceof Container<a name="line.1346"></a>
+<span class="sourceLineNo">1347</span>                    &amp;&amp; layoutFrame.hasContainer(controlName)) {<a name="line.1347"></a>
+<span class="sourceLineNo">1348</span>                layoutFrame.removeContainer(controlName);<a name="line.1348"></a>
+<span class="sourceLineNo">1349</span>            }<a name="line.1349"></a>
+<span class="sourceLineNo">1350</span>            container.doLayout();<a name="line.1350"></a>
+<span class="sourceLineNo">1351</span>            container.repaint();<a name="line.1351"></a>
+<span class="sourceLineNo">1352</span>            componentSelectionListModel.fireDelete();<a name="line.1352"></a>
+<span class="sourceLineNo">1353</span><a name="line.1353"></a>
+<span class="sourceLineNo">1354</span>            setFormComponent(null);<a name="line.1354"></a>
+<span class="sourceLineNo">1355</span>            table.requestFocus();<a name="line.1355"></a>
+<span class="sourceLineNo">1356</span>        }<a name="line.1356"></a>
+<span class="sourceLineNo">1357</span>    }<a name="line.1357"></a>
+<span class="sourceLineNo">1358</span><a name="line.1358"></a>
+<span class="sourceLineNo">1359</span>    private class NewComponentAction extends AbstractAction {<a name="line.1359"></a>
+<span class="sourceLineNo">1360</span>        public NewComponentAction() {<a name="line.1360"></a>
+<span class="sourceLineNo">1361</span>            super();<a name="line.1361"></a>
+<span class="sourceLineNo">1362</span>            putValue(Action.SHORT_DESCRIPTION,<a name="line.1362"></a>
+<span class="sourceLineNo">1363</span>                    "Create a new component (Alt+N)");<a name="line.1363"></a>
+<span class="sourceLineNo">1364</span>            putValue(Action.LONG_DESCRIPTION, "Create a new component (Alt+N)");<a name="line.1364"></a>
+<span class="sourceLineNo">1365</span>            putValue(Action.SMALL_ICON,<a name="line.1365"></a>
+<span class="sourceLineNo">1366</span>                    new ImageIcon(FormEditor.class.getResource("New24.gif")));<a name="line.1366"></a>
+<span class="sourceLineNo">1367</span>            putValue(Action.MNEMONIC_KEY, Integer.valueOf(KeyEvent.VK_N));<a name="line.1367"></a>
+<span class="sourceLineNo">1368</span>        }<a name="line.1368"></a>
+<span class="sourceLineNo">1369</span><a name="line.1369"></a>
+<span class="sourceLineNo">1370</span>        @Override<a name="line.1370"></a>
+<span class="sourceLineNo">1371</span>        public void actionPerformed(ActionEvent e) {<a name="line.1371"></a>
+<span class="sourceLineNo">1372</span>            Frame frame = (Frame) SwingUtilities.getAncestorOfClass(Frame.class,<a name="line.1372"></a>
+<span class="sourceLineNo">1373</span>                    FormEditor.this);<a name="line.1373"></a>
+<span class="sourceLineNo">1374</span><a name="line.1374"></a>
+<span class="sourceLineNo">1375</span>            NewComponentDialog0 newComponentDialog = null;<a name="line.1375"></a>
+<span class="sourceLineNo">1376</span>            int columnIndex = table.getSelectedColumn();<a name="line.1376"></a>
+<span class="sourceLineNo">1377</span>            int rowIndex = table.getSelectedRow();<a name="line.1377"></a>
+<span class="sourceLineNo">1378</span><a name="line.1378"></a>
+<span class="sourceLineNo">1379</span>            try {<a name="line.1379"></a>
+<span class="sourceLineNo">1380</span>                newComponentDialog = new NewComponentDialog0(frame);<a name="line.1380"></a>
+<span class="sourceLineNo">1381</span>                newComponentDialog.setVisible(true);<a name="line.1381"></a>
+<span class="sourceLineNo">1382</span>            } catch (Exception ex) {<a name="line.1382"></a>
+<span class="sourceLineNo">1383</span>                ex.printStackTrace();<a name="line.1383"></a>
+<span class="sourceLineNo">1384</span>            }<a name="line.1384"></a>
+<span class="sourceLineNo">1385</span><a name="line.1385"></a>
+<span class="sourceLineNo">1386</span>            if (newComponentDialog.wasSuccessful()) {<a name="line.1386"></a>
+<span class="sourceLineNo">1387</span>                String controlName = newComponentDialog.getComponentName();<a name="line.1387"></a>
+<span class="sourceLineNo">1388</span>                Component newControl = newComponentDialog.getComponent();<a name="line.1388"></a>
+<span class="sourceLineNo">1389</span>                ComponentDef newCD = newComponentDialog.getComponentDef();<a name="line.1389"></a>
+<span class="sourceLineNo">1390</span><a name="line.1390"></a>
+<span class="sourceLineNo">1391</span>                if (containerLayout.getCellConstraints(controlName) != null) {<a name="line.1391"></a>
+<span class="sourceLineNo">1392</span>                    JOptionPane.showMessageDialog(FormEditor.this,<a name="line.1392"></a>
+<span class="sourceLineNo">1393</span>                            "A component named '" + controlName<a name="line.1393"></a>
+<span class="sourceLineNo">1394</span>                                    + "' already exists",<a name="line.1394"></a>
+<span class="sourceLineNo">1395</span>                            "Error", JOptionPane.ERROR_MESSAGE);<a name="line.1395"></a>
+<span class="sourceLineNo">1396</span>                } else {<a name="line.1396"></a>
+<span class="sourceLineNo">1397</span>                    // the best way to add this control is to setup the constraints<a name="line.1397"></a>
+<span class="sourceLineNo">1398</span>                    // in the map of name-&gt;constraints and then add it to the container.<a name="line.1398"></a>
+<span class="sourceLineNo">1399</span>                    // this layout manager will intercept it, find the constraints and<a name="line.1399"></a>
+<span class="sourceLineNo">1400</span>                    // then<a name="line.1400"></a>
+<span class="sourceLineNo">1401</span>                    // set it up properly in the table and assign the maps.<a name="line.1401"></a>
+<span class="sourceLineNo">1402</span>                    CellConstraints newConstraints = new CellConstraints(<a name="line.1402"></a>
+<span class="sourceLineNo">1403</span>                            columnIndex, rowIndex);<a name="line.1403"></a>
+<span class="sourceLineNo">1404</span>                    if (newCD != null) {<a name="line.1404"></a>
+<span class="sourceLineNo">1405</span>                        containerLayout.addComponent(controlName, newCD,<a name="line.1405"></a>
+<span class="sourceLineNo">1406</span>                                newConstraints);<a name="line.1406"></a>
+<span class="sourceLineNo">1407</span>                    }<a name="line.1407"></a>
+<span class="sourceLineNo">1408</span>                    containerLayout.getCellConstraints().put(controlName,<a name="line.1408"></a>
+<span class="sourceLineNo">1409</span>                            newConstraints);<a name="line.1409"></a>
+<span class="sourceLineNo">1410</span>                    container.add(newControl, controlName);<a name="line.1410"></a>
+<span class="sourceLineNo">1411</span><a name="line.1411"></a>
+<span class="sourceLineNo">1412</span>                    // we need to keep track of the new components added so we can present<a name="line.1412"></a>
+<span class="sourceLineNo">1413</span>                    // some code to the user to add back into their module.<a name="line.1413"></a>
+<span class="sourceLineNo">1414</span>                    // newComponents.put(controlName,<a name="line.1414"></a>
+<span class="sourceLineNo">1415</span>                    // newComponentDialog.getComponentDeclaration());<a name="line.1415"></a>
+<span class="sourceLineNo">1416</span><a name="line.1416"></a>
+<span class="sourceLineNo">1417</span>                    // if it's a panel, let's add it to the LayoutFrame so it can be<a name="line.1417"></a>
+<span class="sourceLineNo">1418</span>                    // manipulated too...<a name="line.1418"></a>
+<span class="sourceLineNo">1419</span>                    if (newComponentDialog.isUsingLayoutComponent()) {<a name="line.1419"></a>
+<span class="sourceLineNo">1420</span>                        Container newContainer = (Container) newControl;<a name="line.1420"></a>
+<span class="sourceLineNo">1421</span>                        layoutFrame.addContainer(controlName, newContainer);<a name="line.1421"></a>
+<span class="sourceLineNo">1422</span>                    }<a name="line.1422"></a>
+<span class="sourceLineNo">1423</span><a name="line.1423"></a>
+<span class="sourceLineNo">1424</span>                    componentSelectionListModel.fireInsert();<a name="line.1424"></a>
+<span class="sourceLineNo">1425</span><a name="line.1425"></a>
+<span class="sourceLineNo">1426</span>                    table.changeSelection(newConstraints.gridY,<a name="line.1426"></a>
+<span class="sourceLineNo">1427</span>                            newConstraints.gridX, false, false);<a name="line.1427"></a>
+<span class="sourceLineNo">1428</span>                    updateLayout(newControl); // relayout preview<a name="line.1428"></a>
+<span class="sourceLineNo">1429</span>                    updateLayouts(); // relayout all panels<a name="line.1429"></a>
+<span class="sourceLineNo">1430</span><a name="line.1430"></a>
+<span class="sourceLineNo">1431</span>                    newComponents.add(newControl); // we're not generating code unless this happens<a name="line.1431"></a>
+<span class="sourceLineNo">1432</span>                }<a name="line.1432"></a>
+<span class="sourceLineNo">1433</span>            }<a name="line.1433"></a>
+<span class="sourceLineNo">1434</span><a name="line.1434"></a>
+<span class="sourceLineNo">1435</span>            table.requestFocus();<a name="line.1435"></a>
+<span class="sourceLineNo">1436</span>        }<a name="line.1436"></a>
+<span class="sourceLineNo">1437</span>    }<a name="line.1437"></a>
+<span class="sourceLineNo">1438</span><a name="line.1438"></a>
+<span class="sourceLineNo">1439</span>    private class InsertRowBeforeAction extends AbstractAction {<a name="line.1439"></a>
+<span class="sourceLineNo">1440</span>        public InsertRowBeforeAction() {<a name="line.1440"></a>
+<span class="sourceLineNo">1441</span>            super();<a name="line.1441"></a>
+<span class="sourceLineNo">1442</span>            putValue(Action.SHORT_DESCRIPTION,<a name="line.1442"></a>
+<span class="sourceLineNo">1443</span>                    "Inserts a row before the selected row");<a name="line.1443"></a>
+<span class="sourceLineNo">1444</span>            putValue(Action.LONG_DESCRIPTION,<a name="line.1444"></a>
+<span class="sourceLineNo">1445</span>                    "Inserts a row before the selected row");<a name="line.1445"></a>
+<span class="sourceLineNo">1446</span>            putValue(Action.SMALL_ICON, new ImageIcon(<a name="line.1446"></a>
+<span class="sourceLineNo">1447</span>                    FormEditor.class.getResource("RowInsertBefore24.gif")));<a name="line.1447"></a>
+<span class="sourceLineNo">1448</span>            putValue(Action.MNEMONIC_KEY, Integer.valueOf(KeyEvent.VK_I));<a name="line.1448"></a>
+<span class="sourceLineNo">1449</span>        }<a name="line.1449"></a>
+<span class="sourceLineNo">1450</span><a name="line.1450"></a>
+<span class="sourceLineNo">1451</span>        @Override<a name="line.1451"></a>
+<span class="sourceLineNo">1452</span>        public void actionPerformed(ActionEvent e) {<a name="line.1452"></a>
+<span class="sourceLineNo">1453</span>            int row = table.getSelectedRow();<a name="line.1453"></a>
+<span class="sourceLineNo">1454</span>            insertRow(row - 1);<a name="line.1454"></a>
+<span class="sourceLineNo">1455</span>            table.requestFocus();<a name="line.1455"></a>
+<span class="sourceLineNo">1456</span>        }<a name="line.1456"></a>
+<span class="sourceLineNo">1457</span>    }<a name="line.1457"></a>
+<span class="sourceLineNo">1458</span><a name="line.1458"></a>
+<span class="sourceLineNo">1459</span>    private class InsertRowAfterAction extends AbstractAction {<a name="line.1459"></a>
+<span class="sourceLineNo">1460</span>        public InsertRowAfterAction() {<a name="line.1460"></a>
+<span class="sourceLineNo">1461</span>            super();<a name="line.1461"></a>
+<span class="sourceLineNo">1462</span>            putValue(Action.SHORT_DESCRIPTION,<a name="line.1462"></a>
+<span class="sourceLineNo">1463</span>                    "Inserts a row after the selected row");<a name="line.1463"></a>
+<span class="sourceLineNo">1464</span>            putValue(Action.LONG_DESCRIPTION,<a name="line.1464"></a>
+<span class="sourceLineNo">1465</span>                    "Inserts a row after the selected row");<a name="line.1465"></a>
+<span class="sourceLineNo">1466</span>            putValue(Action.SMALL_ICON, new ImageIcon(<a name="line.1466"></a>
+<span class="sourceLineNo">1467</span>                    FormEditor.class.getResource("RowInsertAfter24.gif")));<a name="line.1467"></a>
+<span class="sourceLineNo">1468</span>            putValue(Action.MNEMONIC_KEY, Integer.valueOf(KeyEvent.VK_O));<a name="line.1468"></a>
+<span class="sourceLineNo">1469</span>        }<a name="line.1469"></a>
+<span class="sourceLineNo">1470</span><a name="line.1470"></a>
+<span class="sourceLineNo">1471</span>        @Override<a name="line.1471"></a>
+<span class="sourceLineNo">1472</span>        public void actionPerformed(ActionEvent e) {<a name="line.1472"></a>
+<span class="sourceLineNo">1473</span>            int row = table.getSelectedRow();<a name="line.1473"></a>
+<span class="sourceLineNo">1474</span>            insertRow(row);<a name="line.1474"></a>
+<span class="sourceLineNo">1475</span>            table.requestFocus();<a name="line.1475"></a>
+<span class="sourceLineNo">1476</span>        }<a name="line.1476"></a>
+<span class="sourceLineNo">1477</span>    }<a name="line.1477"></a>
+<span class="sourceLineNo">1478</span><a name="line.1478"></a>
+<span class="sourceLineNo">1479</span>    private class InsertColumnBeforeAction extends AbstractAction {<a name="line.1479"></a>
+<span class="sourceLineNo">1480</span>        public InsertColumnBeforeAction() {<a name="line.1480"></a>
+<span class="sourceLineNo">1481</span>            super();<a name="line.1481"></a>
+<span class="sourceLineNo">1482</span>            putValue(Action.SHORT_DESCRIPTION,<a name="line.1482"></a>
+<span class="sourceLineNo">1483</span>                    "Inserts a column before the selected column");<a name="line.1483"></a>
+<span class="sourceLineNo">1484</span>            putValue(Action.LONG_DESCRIPTION,<a name="line.1484"></a>
+<span class="sourceLineNo">1485</span>                    "Inserts a column before the selected column");<a name="line.1485"></a>
+<span class="sourceLineNo">1486</span>            putValue(Action.SMALL_ICON, new ImageIcon(<a name="line.1486"></a>
+<span class="sourceLineNo">1487</span>                    FormEditor.class.getResource("ColumnInsertBefore24.gif")));<a name="line.1487"></a>
+<span class="sourceLineNo">1488</span>            putValue(Action.MNEMONIC_KEY, Integer.valueOf(KeyEvent.VK_K));<a name="line.1488"></a>
+<span class="sourceLineNo">1489</span>        }<a name="line.1489"></a>
+<span class="sourceLineNo">1490</span><a name="line.1490"></a>
+<span class="sourceLineNo">1491</span>        @Override<a name="line.1491"></a>
+<span class="sourceLineNo">1492</span>        public void actionPerformed(ActionEvent e) {<a name="line.1492"></a>
+<span class="sourceLineNo">1493</span>            int column = table.getSelectedColumn();<a name="line.1493"></a>
+<span class="sourceLineNo">1494</span>            insertColumn(column - 1);<a name="line.1494"></a>
+<span class="sourceLineNo">1495</span>            table.requestFocus();<a name="line.1495"></a>
+<span class="sourceLineNo">1496</span>        }<a name="line.1496"></a>
+<span class="sourceLineNo">1497</span>    }<a name="line.1497"></a>
+<span class="sourceLineNo">1498</span><a name="line.1498"></a>
+<span class="sourceLineNo">1499</span>    private class InsertColumnAfterAction extends AbstractAction {<a name="line.1499"></a>
+<span class="sourceLineNo">1500</span>        public InsertColumnAfterAction() {<a name="line.1500"></a>
+<span class="sourceLineNo">1501</span>            super();<a name="line.1501"></a>
+<span class="sourceLineNo">1502</span>            putValue(Action.SHORT_DESCRIPTION,<a name="line.1502"></a>
+<span class="sourceLineNo">1503</span>                    "Inserts a column after the selected column");<a name="line.1503"></a>
+<span class="sourceLineNo">1504</span>            putValue(Action.LONG_DESCRIPTION,<a name="line.1504"></a>
+<span class="sourceLineNo">1505</span>                    "Inserts a column after the selected column");<a name="line.1505"></a>
+<span class="sourceLineNo">1506</span>            putValue(Action.SMALL_ICON, new ImageIcon(<a name="line.1506"></a>
+<span class="sourceLineNo">1507</span>                    FormEditor.class.getResource("ColumnInsertAfter24.gif")));<a name="line.1507"></a>
+<span class="sourceLineNo">1508</span>            putValue(Action.MNEMONIC_KEY, Integer.valueOf(KeyEvent.VK_L));<a name="line.1508"></a>
+<span class="sourceLineNo">1509</span>        }<a name="line.1509"></a>
+<span class="sourceLineNo">1510</span><a name="line.1510"></a>
+<span class="sourceLineNo">1511</span>        @Override<a name="line.1511"></a>
+<span class="sourceLineNo">1512</span>        public void actionPerformed(ActionEvent e) {<a name="line.1512"></a>
+<span class="sourceLineNo">1513</span>            int column = table.getSelectedColumn();<a name="line.1513"></a>
+<span class="sourceLineNo">1514</span>            insertColumn(column);<a name="line.1514"></a>
+<span class="sourceLineNo">1515</span>            table.requestFocus();<a name="line.1515"></a>
+<span class="sourceLineNo">1516</span>        }<a name="line.1516"></a>
+<span class="sourceLineNo">1517</span>    }<a name="line.1517"></a>
+<span class="sourceLineNo">1518</span><a name="line.1518"></a>
+<span class="sourceLineNo">1519</span>    private class DeleteRowAction extends AbstractAction {<a name="line.1519"></a>
+<span class="sourceLineNo">1520</span>        public DeleteRowAction() {<a name="line.1520"></a>
+<span class="sourceLineNo">1521</span>            super();<a name="line.1521"></a>
+<span class="sourceLineNo">1522</span>            putValue(Action.SHORT_DESCRIPTION, "Deletes the selected row");<a name="line.1522"></a>
+<span class="sourceLineNo">1523</span>            putValue(Action.LONG_DESCRIPTION, "Deletes the selected row");<a name="line.1523"></a>
+<span class="sourceLineNo">1524</span>            putValue(Action.SMALL_ICON, new ImageIcon(<a name="line.1524"></a>
+<span class="sourceLineNo">1525</span>                    FormEditor.class.getResource("RowDelete24.gif")));<a name="line.1525"></a>
+<span class="sourceLineNo">1526</span>            putValue(Action.MNEMONIC_KEY, Integer.valueOf(KeyEvent.VK_D));<a name="line.1526"></a>
+<span class="sourceLineNo">1527</span>        }<a name="line.1527"></a>
+<span class="sourceLineNo">1528</span><a name="line.1528"></a>
+<span class="sourceLineNo">1529</span>        @Override<a name="line.1529"></a>
+<span class="sourceLineNo">1530</span>        public void actionPerformed(ActionEvent e) {<a name="line.1530"></a>
+<span class="sourceLineNo">1531</span>            int rowIndex = table.getSelectedRow();<a name="line.1531"></a>
+<span class="sourceLineNo">1532</span><a name="line.1532"></a>
+<span class="sourceLineNo">1533</span>            // move any components that are on the deleted row or<a name="line.1533"></a>
+<span class="sourceLineNo">1534</span>            // above it down one<a name="line.1534"></a>
+<span class="sourceLineNo">1535</span>            for (int index = 0; index &lt; container<a name="line.1535"></a>
+<span class="sourceLineNo">1536</span>                    .getComponentCount(); index++) {<a name="line.1536"></a>
+<span class="sourceLineNo">1537</span>                Component component = container.getComponent(index);<a name="line.1537"></a>
+<span class="sourceLineNo">1538</span>                CellConstraints constraints = getComponentConstraints(<a name="line.1538"></a>
+<span class="sourceLineNo">1539</span>                        component);<a name="line.1539"></a>
+<span class="sourceLineNo">1540</span><a name="line.1540"></a>
+<span class="sourceLineNo">1541</span>                if (constraints.gridY &gt;= rowIndex &amp;&amp; constraints.gridY &gt; 1) {<a name="line.1541"></a>
+<span class="sourceLineNo">1542</span>                    constraints.gridY--;<a name="line.1542"></a>
+<span class="sourceLineNo">1543</span>                } else {<a name="line.1543"></a>
+<span class="sourceLineNo">1544</span>                    // if the row deleted was within the span of the component and the<a name="line.1544"></a>
+<span class="sourceLineNo">1545</span>                    // component<a name="line.1545"></a>
+<span class="sourceLineNo">1546</span>                    // is bigger than one cell...<a name="line.1546"></a>
+<span class="sourceLineNo">1547</span>                    if (constraints.gridY + constraints.gridHeight<a name="line.1547"></a>
+<span class="sourceLineNo">1548</span>                            - 1 &gt;= rowIndex &amp;&amp; constraints.gridHeight &gt; 1) {<a name="line.1548"></a>
+<span class="sourceLineNo">1549</span>                        constraints.gridHeight--;<a name="line.1549"></a>
+<span class="sourceLineNo">1550</span>                    }<a name="line.1550"></a>
+<span class="sourceLineNo">1551</span>                }<a name="line.1551"></a>
+<span class="sourceLineNo">1552</span>            }<a name="line.1552"></a>
+<span class="sourceLineNo">1553</span><a name="line.1553"></a>
+<span class="sourceLineNo">1554</span>            containerLayout.removeRowSpec(rowIndex - 1);<a name="line.1554"></a>
+<span class="sourceLineNo">1555</span><a name="line.1555"></a>
+<span class="sourceLineNo">1556</span>            tableModel.fireTableRowsDeleted(rowIndex, rowIndex);<a name="line.1556"></a>
+<span class="sourceLineNo">1557</span>            table.changeSelection(<a name="line.1557"></a>
+<span class="sourceLineNo">1558</span>                    Math.min(rowIndex, containerLayout.getRowCount()), 0, false,<a name="line.1558"></a>
+<span class="sourceLineNo">1559</span>                    false);<a name="line.1559"></a>
+<span class="sourceLineNo">1560</span>            specsChanged();<a name="line.1560"></a>
+<span class="sourceLineNo">1561</span>            table.requestFocus();<a name="line.1561"></a>
+<span class="sourceLineNo">1562</span>        }<a name="line.1562"></a>
+<span class="sourceLineNo">1563</span>    }<a name="line.1563"></a>
+<span class="sourceLineNo">1564</span><a name="line.1564"></a>
+<span class="sourceLineNo">1565</span>    private class DeleteColumnAction extends AbstractAction {<a name="line.1565"></a>
+<span class="sourceLineNo">1566</span>        public DeleteColumnAction() {<a name="line.1566"></a>
+<span class="sourceLineNo">1567</span>            super();<a name="line.1567"></a>
+<span class="sourceLineNo">1568</span>            putValue(Action.SHORT_DESCRIPTION, "Deletes the selected column");<a name="line.1568"></a>
+<span class="sourceLineNo">1569</span>            putValue(Action.LONG_DESCRIPTION, "Deletes the selected column");<a name="line.1569"></a>
+<span class="sourceLineNo">1570</span>            putValue(Action.SMALL_ICON, new ImageIcon(<a name="line.1570"></a>
+<span class="sourceLineNo">1571</span>                    FormEditor.class.getResource("ColumnDelete24.gif")));<a name="line.1571"></a>
+<span class="sourceLineNo">1572</span>            putValue(Action.MNEMONIC_KEY, Integer.valueOf(KeyEvent.VK_C));<a name="line.1572"></a>
+<span class="sourceLineNo">1573</span>        }<a name="line.1573"></a>
+<span class="sourceLineNo">1574</span><a name="line.1574"></a>
+<span class="sourceLineNo">1575</span>        @Override<a name="line.1575"></a>
+<span class="sourceLineNo">1576</span>        public void actionPerformed(ActionEvent e) {<a name="line.1576"></a>
+<span class="sourceLineNo">1577</span>            int columnIndex = table.getSelectedColumn();<a name="line.1577"></a>
+<span class="sourceLineNo">1578</span><a name="line.1578"></a>
+<span class="sourceLineNo">1579</span>            for (int index = 0; index &lt; container<a name="line.1579"></a>
+<span class="sourceLineNo">1580</span>                    .getComponentCount(); index++) {<a name="line.1580"></a>
+<span class="sourceLineNo">1581</span>                Component component = container.getComponent(index);<a name="line.1581"></a>
+<span class="sourceLineNo">1582</span>                CellConstraints constraints = getComponentConstraints(<a name="line.1582"></a>
+<span class="sourceLineNo">1583</span>                        component);<a name="line.1583"></a>
+<span class="sourceLineNo">1584</span><a name="line.1584"></a>
+<span class="sourceLineNo">1585</span>                if (constraints.gridX &gt;= columnIndex &amp;&amp; constraints.gridX &gt; 1) {<a name="line.1585"></a>
+<span class="sourceLineNo">1586</span>                    constraints.gridX--;<a name="line.1586"></a>
+<span class="sourceLineNo">1587</span>                } else {<a name="line.1587"></a>
+<span class="sourceLineNo">1588</span>                    // if the col deleted was within the span of the component and the<a name="line.1588"></a>
+<span class="sourceLineNo">1589</span>                    // component<a name="line.1589"></a>
+<span class="sourceLineNo">1590</span>                    // is bigger than one cell...<a name="line.1590"></a>
+<span class="sourceLineNo">1591</span>                    if (constraints.gridX + constraints.gridWidth<a name="line.1591"></a>
+<span class="sourceLineNo">1592</span>                            - 1 &gt;= columnIndex &amp;&amp; constraints.gridWidth &gt; 1) {<a name="line.1592"></a>
+<span class="sourceLineNo">1593</span>                        constraints.gridWidth--;<a name="line.1593"></a>
+<span class="sourceLineNo">1594</span>                    }<a name="line.1594"></a>
+<span class="sourceLineNo">1595</span>                }<a name="line.1595"></a>
+<span class="sourceLineNo">1596</span>            }<a name="line.1596"></a>
+<span class="sourceLineNo">1597</span><a name="line.1597"></a>
+<span class="sourceLineNo">1598</span>            containerLayout.removeColumnSpec(columnIndex - 1);<a name="line.1598"></a>
+<span class="sourceLineNo">1599</span>            tableModel.fireTableStructureChanged();<a name="line.1599"></a>
+<span class="sourceLineNo">1600</span>            table.changeSelection(0,<a name="line.1600"></a>
+<span class="sourceLineNo">1601</span>                    Math.min(columnIndex, containerLayout.getColumnCount()),<a name="line.1601"></a>
+<span class="sourceLineNo">1602</span>                    false, false);<a name="line.1602"></a>
+<span class="sourceLineNo">1603</span>            specsChanged();<a name="line.1603"></a>
+<span class="sourceLineNo">1604</span>            table.requestFocus();<a name="line.1604"></a>
+<span class="sourceLineNo">1605</span>        }<a name="line.1605"></a>
+<span class="sourceLineNo">1606</span>    }<a name="line.1606"></a>
+<span class="sourceLineNo">1607</span><a name="line.1607"></a>
+<span class="sourceLineNo">1608</span>    class ComponentPaletteListModel extends AbstractListModel {<a name="line.1608"></a>
+<span class="sourceLineNo">1609</span>        List&lt;ComponentDef&gt; componentDefs = ComponentDef.createComponentDefs();<a name="line.1609"></a>
+<span class="sourceLineNo">1610</span><a name="line.1610"></a>
+<span class="sourceLineNo">1611</span>        @Override<a name="line.1611"></a>
+<span class="sourceLineNo">1612</span>        public int getSize() {<a name="line.1612"></a>
+<span class="sourceLineNo">1613</span>            return componentDefs.size();<a name="line.1613"></a>
+<span class="sourceLineNo">1614</span>        }<a name="line.1614"></a>
+<span class="sourceLineNo">1615</span><a name="line.1615"></a>
+<span class="sourceLineNo">1616</span>        @Override<a name="line.1616"></a>
+<span class="sourceLineNo">1617</span>        public Object getElementAt(int index) {<a name="line.1617"></a>
+<span class="sourceLineNo">1618</span>            return componentDefs.get(index);<a name="line.1618"></a>
+<span class="sourceLineNo">1619</span>        }<a name="line.1619"></a>
+<span class="sourceLineNo">1620</span>    }<a name="line.1620"></a>
+<span class="sourceLineNo">1621</span><a name="line.1621"></a>
+<span class="sourceLineNo">1622</span>    class ComponentPaletteListRenderer extends JLabel<a name="line.1622"></a>
+<span class="sourceLineNo">1623</span>            implements ListCellRenderer {<a name="line.1623"></a>
+<span class="sourceLineNo">1624</span>        public ComponentPaletteListRenderer() {<a name="line.1624"></a>
+<span class="sourceLineNo">1625</span>            setOpaque(true);<a name="line.1625"></a>
+<span class="sourceLineNo">1626</span>        }<a name="line.1626"></a>
+<span class="sourceLineNo">1627</span><a name="line.1627"></a>
+<span class="sourceLineNo">1628</span>        /*<a name="line.1628"></a>
+<span class="sourceLineNo">1629</span>         * This method finds the image and text corresponding to the selected value<a name="line.1629"></a>
+<span class="sourceLineNo">1630</span>         * and returns the label, set up to display the text and image.<a name="line.1630"></a>
+<span class="sourceLineNo">1631</span>         */<a name="line.1631"></a>
+<span class="sourceLineNo">1632</span>        @Override<a name="line.1632"></a>
+<span class="sourceLineNo">1633</span>        public Component getListCellRendererComponent(JList list, Object value,<a name="line.1633"></a>
+<span class="sourceLineNo">1634</span>                int index, boolean isSelected, boolean cellHasFocus) {<a name="line.1634"></a>
+<span class="sourceLineNo">1635</span>            ComponentDef componentDef = (ComponentDef) value;<a name="line.1635"></a>
+<span class="sourceLineNo">1636</span>            setIcon(componentDef.icon != null ? componentDef.icon : null);<a name="line.1636"></a>
+<span class="sourceLineNo">1637</span>            setText(componentDef.name);<a name="line.1637"></a>
+<span class="sourceLineNo">1638</span>            if (isSelected) {<a name="line.1638"></a>
+<span class="sourceLineNo">1639</span>                setBackground(list.getSelectionBackground());<a name="line.1639"></a>
+<span class="sourceLineNo">1640</span>                setForeground(list.getSelectionForeground());<a name="line.1640"></a>
+<span class="sourceLineNo">1641</span>            } else {<a name="line.1641"></a>
+<span class="sourceLineNo">1642</span>                setBackground(list.getBackground());<a name="line.1642"></a>
+<span class="sourceLineNo">1643</span>                setForeground(list.getForeground());<a name="line.1643"></a>
+<span class="sourceLineNo">1644</span>            }<a name="line.1644"></a>
+<span class="sourceLineNo">1645</span>            return this;<a name="line.1645"></a>
+<span class="sourceLineNo">1646</span>        }<a name="line.1646"></a>
+<span class="sourceLineNo">1647</span>    }<a name="line.1647"></a>
+<span class="sourceLineNo">1648</span><a name="line.1648"></a>
+<span class="sourceLineNo">1649</span>    public void updateList() {<a name="line.1649"></a>
+<span class="sourceLineNo">1650</span>        componentSelectionListModel.fireInsert();<a name="line.1650"></a>
+<span class="sourceLineNo">1651</span>    }<a name="line.1651"></a>
+<span class="sourceLineNo">1652</span><a name="line.1652"></a>
+<span class="sourceLineNo">1653</span>    public String uniqueName(String name, Component comp) {<a name="line.1653"></a>
+<span class="sourceLineNo">1654</span>        // insure the component name doesn't collide<a name="line.1654"></a>
+<span class="sourceLineNo">1655</span><a name="line.1655"></a>
+<span class="sourceLineNo">1656</span>        String newname = name;<a name="line.1656"></a>
+<span class="sourceLineNo">1657</span>        int suffix = 1;<a name="line.1657"></a>
+<span class="sourceLineNo">1658</span>        for (;;) {<a name="line.1658"></a>
+<span class="sourceLineNo">1659</span>            Component temp = containerLayout.getComponentByName(newname);<a name="line.1659"></a>
+<span class="sourceLineNo">1660</span>            // no such component, or found component was ourself, stop the search<a name="line.1660"></a>
+<span class="sourceLineNo">1661</span>            if (temp == null || temp == comp) {<a name="line.1661"></a>
+<span class="sourceLineNo">1662</span>                break; // exitloop<a name="line.1662"></a>
+<span class="sourceLineNo">1663</span>            }<a name="line.1663"></a>
+<span class="sourceLineNo">1664</span><a name="line.1664"></a>
+<span class="sourceLineNo">1665</span>            newname = name + "_" + suffix;<a name="line.1665"></a>
+<span class="sourceLineNo">1666</span>            suffix++;<a name="line.1666"></a>
+<span class="sourceLineNo">1667</span>        }<a name="line.1667"></a>
+<span class="sourceLineNo">1668</span>        return newname;<a name="line.1668"></a>
+<span class="sourceLineNo">1669</span>    }<a name="line.1669"></a>
+<span class="sourceLineNo">1670</span><a name="line.1670"></a>
+<span class="sourceLineNo">1671</span>    public boolean editComponent(ComponentDef componentDef, Component component,<a name="line.1671"></a>
+<span class="sourceLineNo">1672</span>            CellConstraints cellConstraints) {<a name="line.1672"></a>
+<span class="sourceLineNo">1673</span>        if (componentDef.isContainer) {<a name="line.1673"></a>
+<span class="sourceLineNo">1674</span>            return false; //punt!<a name="line.1674"></a>
+<span class="sourceLineNo">1675</span>        }<a name="line.1675"></a>
+<span class="sourceLineNo">1676</span><a name="line.1676"></a>
+<span class="sourceLineNo">1677</span>        // get original name for remove<a name="line.1677"></a>
+<span class="sourceLineNo">1678</span>        String name = getComponentName(component);<a name="line.1678"></a>
+<span class="sourceLineNo">1679</span><a name="line.1679"></a>
+<span class="sourceLineNo">1680</span>        NewComponentDialog dlg = NewComponentDialog<a name="line.1680"></a>
+<span class="sourceLineNo">1681</span>                .editDialog((JFrame) layoutFrame, componentDef);<a name="line.1681"></a>
+<span class="sourceLineNo">1682</span>        if (!dlg.succeeded()) {<a name="line.1682"></a>
+<span class="sourceLineNo">1683</span>            return false;<a name="line.1683"></a>
+<span class="sourceLineNo">1684</span>        }<a name="line.1684"></a>
+<span class="sourceLineNo">1685</span><a name="line.1685"></a>
+<span class="sourceLineNo">1686</span>        componentDef.name = uniqueName(dlg.getComponentName(), component);<a name="line.1686"></a>
+<span class="sourceLineNo">1687</span>        String newname = componentDef.name;<a name="line.1687"></a>
+<span class="sourceLineNo">1688</span><a name="line.1688"></a>
+<span class="sourceLineNo">1689</span>        Component newcomponent = dlg.getInstance();<a name="line.1689"></a>
+<span class="sourceLineNo">1690</span>        containerLayout.removeLayoutComponent(component);<a name="line.1690"></a>
+<span class="sourceLineNo">1691</span>        containerLayout.addComponent(newname, componentDef, cellConstraints);<a name="line.1691"></a>
+<span class="sourceLineNo">1692</span><a name="line.1692"></a>
+<span class="sourceLineNo">1693</span>        container.remove(component);<a name="line.1693"></a>
+<span class="sourceLineNo">1694</span>        container.add(newcomponent, newname);<a name="line.1694"></a>
+<span class="sourceLineNo">1695</span><a name="line.1695"></a>
+<span class="sourceLineNo">1696</span>        newComponents.remove(component);<a name="line.1696"></a>
+<span class="sourceLineNo">1697</span>        newComponents.add(newcomponent);<a name="line.1697"></a>
+<span class="sourceLineNo">1698</span><a name="line.1698"></a>
+<span class="sourceLineNo">1699</span>        if (componentDef.isContainer) {<a name="line.1699"></a>
+<span class="sourceLineNo">1700</span>            /** @todo losing components INSIDE the container!! */<a name="line.1700"></a>
+<span class="sourceLineNo">1701</span>            //        layoutFrame.replaceContainer(name, newName, (Container) newcomponent);<a name="line.1701"></a>
+<span class="sourceLineNo">1702</span>            layoutFrame.removeContainer(name);<a name="line.1702"></a>
+<span class="sourceLineNo">1703</span>            layoutFrame.addContainer(newname, (Container) newcomponent);<a name="line.1703"></a>
+<span class="sourceLineNo">1704</span>        }<a name="line.1704"></a>
+<span class="sourceLineNo">1705</span><a name="line.1705"></a>
+<span class="sourceLineNo">1706</span>        updateLayout(newcomponent);<a name="line.1706"></a>
+<span class="sourceLineNo">1707</span>        updateList();<a name="line.1707"></a>
+<span class="sourceLineNo">1708</span>        updateLayouts();<a name="line.1708"></a>
+<span class="sourceLineNo">1709</span>        repaint();<a name="line.1709"></a>
+<span class="sourceLineNo">1710</span>        return true;<a name="line.1710"></a>
+<span class="sourceLineNo">1711</span>    }<a name="line.1711"></a>
+<span class="sourceLineNo">1712</span>}<a name="line.1712"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

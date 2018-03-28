@@ -1,0 +1,123 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../../../stylesheet.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>// StreamDemo.java: demonstration application showing &amp;AElig;fred's event stream.<a name="line.1"></a>
+<span class="sourceLineNo">002</span>// NO WARRANTY! See README, and copyright below.<a name="line.2"></a>
+<span class="sourceLineNo">003</span>// $Id$<a name="line.3"></a>
+<span class="sourceLineNo">004</span>// Modified 11/8/98 to add package statement.<a name="line.4"></a>
+<span class="sourceLineNo">005</span>package com.microstar.xml.demo;<a name="line.5"></a>
+<span class="sourceLineNo">006</span><a name="line.6"></a>
+<span class="sourceLineNo">007</span>import java.io.FileInputStream;<a name="line.7"></a>
+<span class="sourceLineNo">008</span>import java.io.InputStream;<a name="line.8"></a>
+<span class="sourceLineNo">009</span><a name="line.9"></a>
+<span class="sourceLineNo">010</span>import com.microstar.xml.XmlParser;<a name="line.10"></a>
+<span class="sourceLineNo">011</span><a name="line.11"></a>
+<span class="sourceLineNo">012</span>/**<a name="line.12"></a>
+<span class="sourceLineNo">013</span> * Demonstration application showing &amp;AElig;fred's event stream from a stream.<a name="line.13"></a>
+<span class="sourceLineNo">014</span> * &lt;p&gt;Usage: &lt;code&gt;java StreamDemo&lt;/code&gt;<a name="line.14"></a>
+<span class="sourceLineNo">015</span> * @author Copyright (c) 1998 by Microstar Software Ltd.;<a name="line.15"></a>
+<span class="sourceLineNo">016</span> * @author written by David Megginson &amp;lt;dmeggins@microstar.com&amp;gt;<a name="line.16"></a>
+<span class="sourceLineNo">017</span> * @version 1.1<a name="line.17"></a>
+<span class="sourceLineNo">018</span> * @since Ptolemy II 0.2<a name="line.18"></a>
+<span class="sourceLineNo">019</span> * @see com.microstar.xml.XmlParser<a name="line.19"></a>
+<span class="sourceLineNo">020</span> * @see com.microstar.xml.XmlHandler<a name="line.20"></a>
+<span class="sourceLineNo">021</span> * @see XmlApp<a name="line.21"></a>
+<span class="sourceLineNo">022</span> * @see EventDemo<a name="line.22"></a>
+<span class="sourceLineNo">023</span> */<a name="line.23"></a>
+<span class="sourceLineNo">024</span>public class StreamDemo extends EventDemo {<a name="line.24"></a>
+<span class="sourceLineNo">025</span>    public static void main(String[] args) throws Exception {<a name="line.25"></a>
+<span class="sourceLineNo">026</span>        StreamDemo handler = new StreamDemo();<a name="line.26"></a>
+<span class="sourceLineNo">027</span>        InputStream is = null;<a name="line.27"></a>
+<span class="sourceLineNo">028</span><a name="line.28"></a>
+<span class="sourceLineNo">029</span>        if (args.length != 1) {<a name="line.29"></a>
+<span class="sourceLineNo">030</span>            System.err.println("Usage: java StreamDemo &lt;file&gt;");<a name="line.30"></a>
+<span class="sourceLineNo">031</span>            System.exit(1);<a name="line.31"></a>
+<span class="sourceLineNo">032</span>        }<a name="line.32"></a>
+<span class="sourceLineNo">033</span><a name="line.33"></a>
+<span class="sourceLineNo">034</span>        try {<a name="line.34"></a>
+<span class="sourceLineNo">035</span>            is = new FileInputStream(args[0]);<a name="line.35"></a>
+<span class="sourceLineNo">036</span><a name="line.36"></a>
+<span class="sourceLineNo">037</span>            XmlParser parser = new XmlParser();<a name="line.37"></a>
+<span class="sourceLineNo">038</span>            parser.setHandler(handler);<a name="line.38"></a>
+<span class="sourceLineNo">039</span>            parser.parse(makeAbsoluteURL(args[0]), null, is, null);<a name="line.39"></a>
+<span class="sourceLineNo">040</span>        } finally {<a name="line.40"></a>
+<span class="sourceLineNo">041</span>            if (is != null) {<a name="line.41"></a>
+<span class="sourceLineNo">042</span>                try {<a name="line.42"></a>
+<span class="sourceLineNo">043</span>                    is.close();<a name="line.43"></a>
+<span class="sourceLineNo">044</span>                } catch (Throwable throwable) {<a name="line.44"></a>
+<span class="sourceLineNo">045</span>                    System.out.println("Failed to close '" + args[0] + "'");<a name="line.45"></a>
+<span class="sourceLineNo">046</span>                    throwable.printStackTrace();<a name="line.46"></a>
+<span class="sourceLineNo">047</span>                }<a name="line.47"></a>
+<span class="sourceLineNo">048</span>            }<a name="line.48"></a>
+<span class="sourceLineNo">049</span>        }<a name="line.49"></a>
+<span class="sourceLineNo">050</span>    }<a name="line.50"></a>
+<span class="sourceLineNo">051</span>}<a name="line.51"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

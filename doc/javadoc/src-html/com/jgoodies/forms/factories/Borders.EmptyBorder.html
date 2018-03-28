@@ -1,0 +1,345 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../../../stylesheet.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>/*<a name="line.1"></a>
+<span class="sourceLineNo">002</span> * Copyright (c) 2002-2007 JGoodies Karsten Lentzsch. All Rights Reserved.<a name="line.2"></a>
+<span class="sourceLineNo">003</span> *<a name="line.3"></a>
+<span class="sourceLineNo">004</span> * Redistribution and use in source and binary forms, with or without<a name="line.4"></a>
+<span class="sourceLineNo">005</span> * modification, are permitted provided that the following conditions are met:<a name="line.5"></a>
+<span class="sourceLineNo">006</span> *<a name="line.6"></a>
+<span class="sourceLineNo">007</span> *  o Redistributions of source code must retain the above copyright notice,<a name="line.7"></a>
+<span class="sourceLineNo">008</span> *    this list of conditions and the following disclaimer.<a name="line.8"></a>
+<span class="sourceLineNo">009</span> *<a name="line.9"></a>
+<span class="sourceLineNo">010</span> *  o Redistributions in binary form must reproduce the above copyright notice,<a name="line.10"></a>
+<span class="sourceLineNo">011</span> *    this list of conditions and the following disclaimer in the documentation<a name="line.11"></a>
+<span class="sourceLineNo">012</span> *    and/or other materials provided with the distribution.<a name="line.12"></a>
+<span class="sourceLineNo">013</span> *<a name="line.13"></a>
+<span class="sourceLineNo">014</span> *  o Neither the name of JGoodies Karsten Lentzsch nor the names of<a name="line.14"></a>
+<span class="sourceLineNo">015</span> *    its contributors may be used to endorse or promote products derived<a name="line.15"></a>
+<span class="sourceLineNo">016</span> *    from this software without specific prior written permission.<a name="line.16"></a>
+<span class="sourceLineNo">017</span> *<a name="line.17"></a>
+<span class="sourceLineNo">018</span> * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"<a name="line.18"></a>
+<span class="sourceLineNo">019</span> * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,<a name="line.19"></a>
+<span class="sourceLineNo">020</span> * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR<a name="line.20"></a>
+<span class="sourceLineNo">021</span> * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR<a name="line.21"></a>
+<span class="sourceLineNo">022</span> * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,<a name="line.22"></a>
+<span class="sourceLineNo">023</span> * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,<a name="line.23"></a>
+<span class="sourceLineNo">024</span> * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;<a name="line.24"></a>
+<span class="sourceLineNo">025</span> * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,<a name="line.25"></a>
+<span class="sourceLineNo">026</span> * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE<a name="line.26"></a>
+<span class="sourceLineNo">027</span> * OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,<a name="line.27"></a>
+<span class="sourceLineNo">028</span> * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.<a name="line.28"></a>
+<span class="sourceLineNo">029</span> */<a name="line.29"></a>
+<span class="sourceLineNo">030</span><a name="line.30"></a>
+<span class="sourceLineNo">031</span>package com.jgoodies.forms.factories;<a name="line.31"></a>
+<span class="sourceLineNo">032</span><a name="line.32"></a>
+<span class="sourceLineNo">033</span>import java.awt.Component;<a name="line.33"></a>
+<span class="sourceLineNo">034</span>import java.awt.Graphics;<a name="line.34"></a>
+<span class="sourceLineNo">035</span>import java.awt.Insets;<a name="line.35"></a>
+<span class="sourceLineNo">036</span>import java.util.StringTokenizer;<a name="line.36"></a>
+<span class="sourceLineNo">037</span><a name="line.37"></a>
+<span class="sourceLineNo">038</span>import javax.swing.border.Border;<a name="line.38"></a>
+<span class="sourceLineNo">039</span><a name="line.39"></a>
+<span class="sourceLineNo">040</span>import com.jgoodies.forms.layout.ConstantSize;<a name="line.40"></a>
+<span class="sourceLineNo">041</span>import com.jgoodies.forms.layout.Sizes;<a name="line.41"></a>
+<span class="sourceLineNo">042</span>import com.jgoodies.forms.util.LayoutStyle;<a name="line.42"></a>
+<span class="sourceLineNo">043</span><a name="line.43"></a>
+<span class="sourceLineNo">044</span>/**<a name="line.44"></a>
+<span class="sourceLineNo">045</span> * Provides constants and factory methods for &lt;code&gt;Border&lt;/code&gt;s that use<a name="line.45"></a>
+<span class="sourceLineNo">046</span> * instances of {@link ConstantSize} to define the margins.&lt;p&gt;<a name="line.46"></a>
+<span class="sourceLineNo">047</span> *<a name="line.47"></a>
+<span class="sourceLineNo">048</span> * &lt;strong&gt;Examples:&lt;/strong&gt;&lt;br&gt;<a name="line.48"></a>
+<span class="sourceLineNo">049</span> * &lt;pre&gt;<a name="line.49"></a>
+<span class="sourceLineNo">050</span> * Borders.DLU2_BORDER<a name="line.50"></a>
+<span class="sourceLineNo">051</span> * Borders.createEmptyBorder(Sizes.DLUY4, Sizes.DLUX2, Sizes.DLUY4, Sizes.DLUX2);<a name="line.51"></a>
+<span class="sourceLineNo">052</span> * Borders.createEmptyBorder("4dlu, 2dlu, 4dlu, 2dlu");<a name="line.52"></a>
+<span class="sourceLineNo">053</span> * &lt;/pre&gt;<a name="line.53"></a>
+<span class="sourceLineNo">054</span> *<a name="line.54"></a>
+<span class="sourceLineNo">055</span> * @author  Karsten Lentzsch<a name="line.55"></a>
+<span class="sourceLineNo">056</span> * @version $Revision$<a name="line.56"></a>
+<span class="sourceLineNo">057</span> *<a name="line.57"></a>
+<span class="sourceLineNo">058</span> * @see     Border<a name="line.58"></a>
+<span class="sourceLineNo">059</span> * @see     Sizes<a name="line.59"></a>
+<span class="sourceLineNo">060</span> */<a name="line.60"></a>
+<span class="sourceLineNo">061</span>public final class Borders {<a name="line.61"></a>
+<span class="sourceLineNo">062</span><a name="line.62"></a>
+<span class="sourceLineNo">063</span>    private Borders() {<a name="line.63"></a>
+<span class="sourceLineNo">064</span>        // Overrides default constructor; prevents instantiation.<a name="line.64"></a>
+<span class="sourceLineNo">065</span>    }<a name="line.65"></a>
+<span class="sourceLineNo">066</span><a name="line.66"></a>
+<span class="sourceLineNo">067</span>    // Constant Borders *****************************************************<a name="line.67"></a>
+<span class="sourceLineNo">068</span><a name="line.68"></a>
+<span class="sourceLineNo">069</span>    /**<a name="line.69"></a>
+<span class="sourceLineNo">070</span>     * A prepared and reusable EmptyBorder without gaps.<a name="line.70"></a>
+<span class="sourceLineNo">071</span>     */<a name="line.71"></a>
+<span class="sourceLineNo">072</span>    public static final Border EMPTY_BORDER = new javax.swing.border.EmptyBorder(<a name="line.72"></a>
+<span class="sourceLineNo">073</span>            0, 0, 0, 0);<a name="line.73"></a>
+<span class="sourceLineNo">074</span><a name="line.74"></a>
+<span class="sourceLineNo">075</span>    /**<a name="line.75"></a>
+<span class="sourceLineNo">076</span>     * A prepared and reusable Border with 2dlu on all sides.<a name="line.76"></a>
+<span class="sourceLineNo">077</span>     */<a name="line.77"></a>
+<span class="sourceLineNo">078</span>    public static final Border DLU2_BORDER = createEmptyBorder(Sizes.DLUY2,<a name="line.78"></a>
+<span class="sourceLineNo">079</span>            Sizes.DLUX2, Sizes.DLUY2, Sizes.DLUX2);<a name="line.79"></a>
+<span class="sourceLineNo">080</span><a name="line.80"></a>
+<span class="sourceLineNo">081</span>    /**<a name="line.81"></a>
+<span class="sourceLineNo">082</span>     * A prepared and reusable Border with 4dlu on all sides.<a name="line.82"></a>
+<span class="sourceLineNo">083</span>     */<a name="line.83"></a>
+<span class="sourceLineNo">084</span>    public static final Border DLU4_BORDER = createEmptyBorder(Sizes.DLUY4,<a name="line.84"></a>
+<span class="sourceLineNo">085</span>            Sizes.DLUX4, Sizes.DLUY4, Sizes.DLUX4);<a name="line.85"></a>
+<span class="sourceLineNo">086</span><a name="line.86"></a>
+<span class="sourceLineNo">087</span>    /**<a name="line.87"></a>
+<span class="sourceLineNo">088</span>     * A prepared and reusable Border with 7dlu on all sides.<a name="line.88"></a>
+<span class="sourceLineNo">089</span>     */<a name="line.89"></a>
+<span class="sourceLineNo">090</span>    public static final Border DLU7_BORDER = createEmptyBorder(Sizes.DLUY7,<a name="line.90"></a>
+<span class="sourceLineNo">091</span>            Sizes.DLUX7, Sizes.DLUY7, Sizes.DLUX7);<a name="line.91"></a>
+<span class="sourceLineNo">092</span><a name="line.92"></a>
+<span class="sourceLineNo">093</span>    /**<a name="line.93"></a>
+<span class="sourceLineNo">094</span>     * A prepared Border with 14dlu on all sides.<a name="line.94"></a>
+<span class="sourceLineNo">095</span>     */<a name="line.95"></a>
+<span class="sourceLineNo">096</span>    public static final Border DLU14_BORDER = createEmptyBorder(Sizes.DLUY14,<a name="line.96"></a>
+<span class="sourceLineNo">097</span>            Sizes.DLUX14, Sizes.DLUY14, Sizes.DLUX14);<a name="line.97"></a>
+<span class="sourceLineNo">098</span><a name="line.98"></a>
+<span class="sourceLineNo">099</span>    /**<a name="line.99"></a>
+<span class="sourceLineNo">100</span>     * A standardized Border that describes the gap between a component<a name="line.100"></a>
+<span class="sourceLineNo">101</span>     * and a button bar in its bottom.<a name="line.101"></a>
+<span class="sourceLineNo">102</span>     */<a name="line.102"></a>
+<span class="sourceLineNo">103</span>    public static final Border BUTTON_BAR_GAP_BORDER = createEmptyBorder(<a name="line.103"></a>
+<span class="sourceLineNo">104</span>            LayoutStyle.getCurrent().getButtonBarPad(), Sizes.dluX(0),<a name="line.104"></a>
+<span class="sourceLineNo">105</span>            Sizes.dluY(0), Sizes.dluX(0));<a name="line.105"></a>
+<span class="sourceLineNo">106</span><a name="line.106"></a>
+<span class="sourceLineNo">107</span>    /**<a name="line.107"></a>
+<span class="sourceLineNo">108</span>     * A standardized Border that describes the border around<a name="line.108"></a>
+<span class="sourceLineNo">109</span>     * a dialog content that has no tabs.<a name="line.109"></a>
+<span class="sourceLineNo">110</span>     *<a name="line.110"></a>
+<span class="sourceLineNo">111</span>     * @see #TABBED_DIALOG_BORDER<a name="line.111"></a>
+<span class="sourceLineNo">112</span>     */<a name="line.112"></a>
+<span class="sourceLineNo">113</span>    public static final Border DIALOG_BORDER = createEmptyBorder(<a name="line.113"></a>
+<span class="sourceLineNo">114</span>            LayoutStyle.getCurrent().getDialogMarginY(),<a name="line.114"></a>
+<span class="sourceLineNo">115</span>            LayoutStyle.getCurrent().getDialogMarginX(),<a name="line.115"></a>
+<span class="sourceLineNo">116</span>            LayoutStyle.getCurrent().getDialogMarginY(),<a name="line.116"></a>
+<span class="sourceLineNo">117</span>            LayoutStyle.getCurrent().getDialogMarginX());<a name="line.117"></a>
+<span class="sourceLineNo">118</span><a name="line.118"></a>
+<span class="sourceLineNo">119</span>    /**<a name="line.119"></a>
+<span class="sourceLineNo">120</span>     * A standardized Border that describes the border around<a name="line.120"></a>
+<span class="sourceLineNo">121</span>     * a dialog content that uses tabs.<a name="line.121"></a>
+<span class="sourceLineNo">122</span>     *<a name="line.122"></a>
+<span class="sourceLineNo">123</span>     * @see #DIALOG_BORDER<a name="line.123"></a>
+<span class="sourceLineNo">124</span>     */<a name="line.124"></a>
+<span class="sourceLineNo">125</span>    public static final Border TABBED_DIALOG_BORDER = createEmptyBorder(<a name="line.125"></a>
+<span class="sourceLineNo">126</span>            LayoutStyle.getCurrent().getTabbedDialogMarginY(),<a name="line.126"></a>
+<span class="sourceLineNo">127</span>            LayoutStyle.getCurrent().getTabbedDialogMarginX(),<a name="line.127"></a>
+<span class="sourceLineNo">128</span>            LayoutStyle.getCurrent().getTabbedDialogMarginY(),<a name="line.128"></a>
+<span class="sourceLineNo">129</span>            LayoutStyle.getCurrent().getTabbedDialogMarginX());<a name="line.129"></a>
+<span class="sourceLineNo">130</span><a name="line.130"></a>
+<span class="sourceLineNo">131</span>    // Factory Methods ******************************************************<a name="line.131"></a>
+<span class="sourceLineNo">132</span><a name="line.132"></a>
+<span class="sourceLineNo">133</span>    /**<a name="line.133"></a>
+<span class="sourceLineNo">134</span>     * Creates and returns an &lt;code&gt;EmptyBorder&lt;/code&gt; with the specified<a name="line.134"></a>
+<span class="sourceLineNo">135</span>     * gaps.<a name="line.135"></a>
+<span class="sourceLineNo">136</span>     *<a name="line.136"></a>
+<span class="sourceLineNo">137</span>     * @param top                the top gap<a name="line.137"></a>
+<span class="sourceLineNo">138</span>     * @param left                the left-hand side gap<a name="line.138"></a>
+<span class="sourceLineNo">139</span>     * @param bottom        the bottom gap<a name="line.139"></a>
+<span class="sourceLineNo">140</span>     * @param right        the right-hand side gap<a name="line.140"></a>
+<span class="sourceLineNo">141</span>     * @return an &lt;code&gt;EmptyBorder&lt;/code&gt; with the specified gaps<a name="line.141"></a>
+<span class="sourceLineNo">142</span>     *<a name="line.142"></a>
+<span class="sourceLineNo">143</span>     * @see #createEmptyBorder(String)<a name="line.143"></a>
+<span class="sourceLineNo">144</span>     */<a name="line.144"></a>
+<span class="sourceLineNo">145</span>    public static Border createEmptyBorder(ConstantSize top, ConstantSize left,<a name="line.145"></a>
+<span class="sourceLineNo">146</span>            ConstantSize bottom, ConstantSize right) {<a name="line.146"></a>
+<span class="sourceLineNo">147</span>        return new EmptyBorder(top, left, bottom, right);<a name="line.147"></a>
+<span class="sourceLineNo">148</span>    }<a name="line.148"></a>
+<span class="sourceLineNo">149</span><a name="line.149"></a>
+<span class="sourceLineNo">150</span>    /**<a name="line.150"></a>
+<span class="sourceLineNo">151</span>     * Creates and returns a &lt;code&gt;Border&lt;/code&gt; using sizes as specified by<a name="line.151"></a>
+<span class="sourceLineNo">152</span>     * the given string. This string is a comma-separated encoding of<a name="line.152"></a>
+<span class="sourceLineNo">153</span>     * 4 &lt;code&gt;ConstantSize&lt;/code&gt;s.<a name="line.153"></a>
+<span class="sourceLineNo">154</span>     *<a name="line.154"></a>
+<span class="sourceLineNo">155</span>     * @param encodedSizes         top, left, bottom, right gap encoded as String<a name="line.155"></a>
+<span class="sourceLineNo">156</span>     * @return an &lt;code&gt;EmptyBorder&lt;/code&gt; with the specified gaps<a name="line.156"></a>
+<span class="sourceLineNo">157</span>     *<a name="line.157"></a>
+<span class="sourceLineNo">158</span>     * @see #createEmptyBorder(ConstantSize, ConstantSize, ConstantSize, ConstantSize)<a name="line.158"></a>
+<span class="sourceLineNo">159</span>     */<a name="line.159"></a>
+<span class="sourceLineNo">160</span>    public static Border createEmptyBorder(String encodedSizes) {<a name="line.160"></a>
+<span class="sourceLineNo">161</span>        StringTokenizer tokenizer = new StringTokenizer(encodedSizes, ", ");<a name="line.161"></a>
+<span class="sourceLineNo">162</span>        int tokenCount = tokenizer.countTokens();<a name="line.162"></a>
+<span class="sourceLineNo">163</span>        if (tokenCount != 4) {<a name="line.163"></a>
+<span class="sourceLineNo">164</span>            throw new IllegalArgumentException(<a name="line.164"></a>
+<span class="sourceLineNo">165</span>                    "The border requires 4 sizes, but '" + encodedSizes<a name="line.165"></a>
+<span class="sourceLineNo">166</span>                            + "' has " + tokenCount + ".");<a name="line.166"></a>
+<span class="sourceLineNo">167</span>        }<a name="line.167"></a>
+<span class="sourceLineNo">168</span>        ConstantSize top = Sizes.constant(tokenizer.nextToken(), false);<a name="line.168"></a>
+<span class="sourceLineNo">169</span>        ConstantSize left = Sizes.constant(tokenizer.nextToken(), true);<a name="line.169"></a>
+<span class="sourceLineNo">170</span>        ConstantSize bottom = Sizes.constant(tokenizer.nextToken(), false);<a name="line.170"></a>
+<span class="sourceLineNo">171</span>        ConstantSize right = Sizes.constant(tokenizer.nextToken(), true);<a name="line.171"></a>
+<span class="sourceLineNo">172</span>        return createEmptyBorder(top, left, bottom, right);<a name="line.172"></a>
+<span class="sourceLineNo">173</span>    }<a name="line.173"></a>
+<span class="sourceLineNo">174</span><a name="line.174"></a>
+<span class="sourceLineNo">175</span>    /**<a name="line.175"></a>
+<span class="sourceLineNo">176</span>     * An empty border that uses 4 instances of {@link ConstantSize}<a name="line.176"></a>
+<span class="sourceLineNo">177</span>     * to define the gaps on all sides.<a name="line.177"></a>
+<span class="sourceLineNo">178</span>     */<a name="line.178"></a>
+<span class="sourceLineNo">179</span>    public static final class EmptyBorder implements Border {<a name="line.179"></a>
+<span class="sourceLineNo">180</span><a name="line.180"></a>
+<span class="sourceLineNo">181</span>        private final ConstantSize top;<a name="line.181"></a>
+<span class="sourceLineNo">182</span>        private final ConstantSize left;<a name="line.182"></a>
+<span class="sourceLineNo">183</span>        private final ConstantSize bottom;<a name="line.183"></a>
+<span class="sourceLineNo">184</span>        private final ConstantSize right;<a name="line.184"></a>
+<span class="sourceLineNo">185</span><a name="line.185"></a>
+<span class="sourceLineNo">186</span>        private EmptyBorder(ConstantSize top, ConstantSize left,<a name="line.186"></a>
+<span class="sourceLineNo">187</span>                ConstantSize bottom, ConstantSize right) {<a name="line.187"></a>
+<span class="sourceLineNo">188</span>            this.top = top;<a name="line.188"></a>
+<span class="sourceLineNo">189</span>            this.left = left;<a name="line.189"></a>
+<span class="sourceLineNo">190</span>            this.bottom = bottom;<a name="line.190"></a>
+<span class="sourceLineNo">191</span>            this.right = right;<a name="line.191"></a>
+<span class="sourceLineNo">192</span>        }<a name="line.192"></a>
+<span class="sourceLineNo">193</span><a name="line.193"></a>
+<span class="sourceLineNo">194</span>        /**<a name="line.194"></a>
+<span class="sourceLineNo">195</span>         * Returns this border's top size.<a name="line.195"></a>
+<span class="sourceLineNo">196</span>         *<a name="line.196"></a>
+<span class="sourceLineNo">197</span>         * @return this border's top size<a name="line.197"></a>
+<span class="sourceLineNo">198</span>         */<a name="line.198"></a>
+<span class="sourceLineNo">199</span>        public ConstantSize top() {<a name="line.199"></a>
+<span class="sourceLineNo">200</span>            return top;<a name="line.200"></a>
+<span class="sourceLineNo">201</span>        }<a name="line.201"></a>
+<span class="sourceLineNo">202</span><a name="line.202"></a>
+<span class="sourceLineNo">203</span>        /**<a name="line.203"></a>
+<span class="sourceLineNo">204</span>         * Returns this border's left size.<a name="line.204"></a>
+<span class="sourceLineNo">205</span>         *<a name="line.205"></a>
+<span class="sourceLineNo">206</span>         * @return this border's left size<a name="line.206"></a>
+<span class="sourceLineNo">207</span>         */<a name="line.207"></a>
+<span class="sourceLineNo">208</span>        public ConstantSize left() {<a name="line.208"></a>
+<span class="sourceLineNo">209</span>            return left;<a name="line.209"></a>
+<span class="sourceLineNo">210</span>        }<a name="line.210"></a>
+<span class="sourceLineNo">211</span><a name="line.211"></a>
+<span class="sourceLineNo">212</span>        /**<a name="line.212"></a>
+<span class="sourceLineNo">213</span>         * Returns this border's bottom size.<a name="line.213"></a>
+<span class="sourceLineNo">214</span>         *<a name="line.214"></a>
+<span class="sourceLineNo">215</span>         * @return this border's bottom size<a name="line.215"></a>
+<span class="sourceLineNo">216</span>         */<a name="line.216"></a>
+<span class="sourceLineNo">217</span>        public ConstantSize bottom() {<a name="line.217"></a>
+<span class="sourceLineNo">218</span>            return bottom;<a name="line.218"></a>
+<span class="sourceLineNo">219</span>        }<a name="line.219"></a>
+<span class="sourceLineNo">220</span><a name="line.220"></a>
+<span class="sourceLineNo">221</span>        /**<a name="line.221"></a>
+<span class="sourceLineNo">222</span>         * Returns this border's right size.<a name="line.222"></a>
+<span class="sourceLineNo">223</span>         *<a name="line.223"></a>
+<span class="sourceLineNo">224</span>         * @return this border's right size<a name="line.224"></a>
+<span class="sourceLineNo">225</span>         */<a name="line.225"></a>
+<span class="sourceLineNo">226</span>        public ConstantSize right() {<a name="line.226"></a>
+<span class="sourceLineNo">227</span>            return right;<a name="line.227"></a>
+<span class="sourceLineNo">228</span>        }<a name="line.228"></a>
+<span class="sourceLineNo">229</span><a name="line.229"></a>
+<span class="sourceLineNo">230</span>        /**<a name="line.230"></a>
+<span class="sourceLineNo">231</span>         * Paints the border for the specified component with the specified<a name="line.231"></a>
+<span class="sourceLineNo">232</span>         * position and size.<a name="line.232"></a>
+<span class="sourceLineNo">233</span>         *<a name="line.233"></a>
+<span class="sourceLineNo">234</span>         * @param c the component for which this border is being painted<a name="line.234"></a>
+<span class="sourceLineNo">235</span>         * @param g the paint graphics<a name="line.235"></a>
+<span class="sourceLineNo">236</span>         * @param x the x position of the painted border<a name="line.236"></a>
+<span class="sourceLineNo">237</span>         * @param y the y position of the painted border<a name="line.237"></a>
+<span class="sourceLineNo">238</span>         * @param width the width of the painted border<a name="line.238"></a>
+<span class="sourceLineNo">239</span>         * @param height the height of the painted border<a name="line.239"></a>
+<span class="sourceLineNo">240</span>         */<a name="line.240"></a>
+<span class="sourceLineNo">241</span>        @Override<a name="line.241"></a>
+<span class="sourceLineNo">242</span>        public void paintBorder(Component c, Graphics g, int x, int y,<a name="line.242"></a>
+<span class="sourceLineNo">243</span>                int width, int height) {<a name="line.243"></a>
+<span class="sourceLineNo">244</span>            // An empty border doesn't paint.<a name="line.244"></a>
+<span class="sourceLineNo">245</span>        }<a name="line.245"></a>
+<span class="sourceLineNo">246</span><a name="line.246"></a>
+<span class="sourceLineNo">247</span>        /**<a name="line.247"></a>
+<span class="sourceLineNo">248</span>         * Returns the insets of the border.<a name="line.248"></a>
+<span class="sourceLineNo">249</span>         *<a name="line.249"></a>
+<span class="sourceLineNo">250</span>         * @param c the component for which this border insets value applies<a name="line.250"></a>
+<span class="sourceLineNo">251</span>         * @return the border's Insets<a name="line.251"></a>
+<span class="sourceLineNo">252</span>         */<a name="line.252"></a>
+<span class="sourceLineNo">253</span>        @Override<a name="line.253"></a>
+<span class="sourceLineNo">254</span>        public Insets getBorderInsets(Component c) {<a name="line.254"></a>
+<span class="sourceLineNo">255</span>            return new Insets(top.getPixelSize(c), left.getPixelSize(c),<a name="line.255"></a>
+<span class="sourceLineNo">256</span>                    bottom.getPixelSize(c), right.getPixelSize(c));<a name="line.256"></a>
+<span class="sourceLineNo">257</span>        }<a name="line.257"></a>
+<span class="sourceLineNo">258</span><a name="line.258"></a>
+<span class="sourceLineNo">259</span>        /**<a name="line.259"></a>
+<span class="sourceLineNo">260</span>         * Returns whether or not the border is opaque.  If the border<a name="line.260"></a>
+<span class="sourceLineNo">261</span>         * is opaque, it is responsible for filling in it's own<a name="line.261"></a>
+<span class="sourceLineNo">262</span>         * background when painting.<a name="line.262"></a>
+<span class="sourceLineNo">263</span>         *<a name="line.263"></a>
+<span class="sourceLineNo">264</span>         * @return false - because the empty border is not opaque<a name="line.264"></a>
+<span class="sourceLineNo">265</span>         */<a name="line.265"></a>
+<span class="sourceLineNo">266</span>        @Override<a name="line.266"></a>
+<span class="sourceLineNo">267</span>        public boolean isBorderOpaque() {<a name="line.267"></a>
+<span class="sourceLineNo">268</span>            return false;<a name="line.268"></a>
+<span class="sourceLineNo">269</span>        }<a name="line.269"></a>
+<span class="sourceLineNo">270</span><a name="line.270"></a>
+<span class="sourceLineNo">271</span>    }<a name="line.271"></a>
+<span class="sourceLineNo">272</span><a name="line.272"></a>
+<span class="sourceLineNo">273</span>}<a name="line.273"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

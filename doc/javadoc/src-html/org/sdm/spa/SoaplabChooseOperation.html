@@ -1,0 +1,474 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../../stylesheet.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>/*<a name="line.1"></a>
+<span class="sourceLineNo">002</span> * Copyright (c) 1998-2010 The Regents of the University of California.<a name="line.2"></a>
+<span class="sourceLineNo">003</span> * All rights reserved.<a name="line.3"></a>
+<span class="sourceLineNo">004</span> *<a name="line.4"></a>
+<span class="sourceLineNo">005</span> * '$Author: crawl $'<a name="line.5"></a>
+<span class="sourceLineNo">006</span> * '$Date: 2012-11-26 14:19:36 -0800 (Mon, 26 Nov 2012) $' <a name="line.6"></a>
+<span class="sourceLineNo">007</span> * '$Revision: 31113 $'<a name="line.7"></a>
+<span class="sourceLineNo">008</span> * <a name="line.8"></a>
+<span class="sourceLineNo">009</span> * Permission is hereby granted, without written agreement and without<a name="line.9"></a>
+<span class="sourceLineNo">010</span> * license or royalty fees, to use, copy, modify, and distribute this<a name="line.10"></a>
+<span class="sourceLineNo">011</span> * software and its documentation for any purpose, provided that the above<a name="line.11"></a>
+<span class="sourceLineNo">012</span> * copyright notice and the following two paragraphs appear in all copies<a name="line.12"></a>
+<span class="sourceLineNo">013</span> * of this software.<a name="line.13"></a>
+<span class="sourceLineNo">014</span> *<a name="line.14"></a>
+<span class="sourceLineNo">015</span> * IN NO EVENT SHALL THE UNIVERSITY OF CALIFORNIA BE LIABLE TO ANY PARTY<a name="line.15"></a>
+<span class="sourceLineNo">016</span> * FOR DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES<a name="line.16"></a>
+<span class="sourceLineNo">017</span> * ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION, EVEN IF<a name="line.17"></a>
+<span class="sourceLineNo">018</span> * THE UNIVERSITY OF CALIFORNIA HAS BEEN ADVISED OF THE POSSIBILITY OF<a name="line.18"></a>
+<span class="sourceLineNo">019</span> * SUCH DAMAGE.<a name="line.19"></a>
+<span class="sourceLineNo">020</span> *<a name="line.20"></a>
+<span class="sourceLineNo">021</span> * THE UNIVERSITY OF CALIFORNIA SPECIFICALLY DISCLAIMS ANY WARRANTIES,<a name="line.21"></a>
+<span class="sourceLineNo">022</span> * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF<a name="line.22"></a>
+<span class="sourceLineNo">023</span> * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE<a name="line.23"></a>
+<span class="sourceLineNo">024</span> * PROVIDED HEREUNDER IS ON AN "AS IS" BASIS, AND THE UNIVERSITY OF<a name="line.24"></a>
+<span class="sourceLineNo">025</span> * CALIFORNIA HAS NO OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT, UPDATES,<a name="line.25"></a>
+<span class="sourceLineNo">026</span> * ENHANCEMENTS, OR MODIFICATIONS.<a name="line.26"></a>
+<span class="sourceLineNo">027</span> *<a name="line.27"></a>
+<span class="sourceLineNo">028</span> */<a name="line.28"></a>
+<span class="sourceLineNo">029</span><a name="line.29"></a>
+<span class="sourceLineNo">030</span>package org.sdm.spa;<a name="line.30"></a>
+<span class="sourceLineNo">031</span><a name="line.31"></a>
+<span class="sourceLineNo">032</span>import java.util.Iterator;<a name="line.32"></a>
+<span class="sourceLineNo">033</span>import java.util.List;<a name="line.33"></a>
+<span class="sourceLineNo">034</span>import java.util.Vector;<a name="line.34"></a>
+<span class="sourceLineNo">035</span><a name="line.35"></a>
+<span class="sourceLineNo">036</span>import ptolemy.actor.IOPort;<a name="line.36"></a>
+<span class="sourceLineNo">037</span>import ptolemy.actor.TypedAtomicActor;<a name="line.37"></a>
+<span class="sourceLineNo">038</span>import ptolemy.actor.TypedIOPort;<a name="line.38"></a>
+<span class="sourceLineNo">039</span>import ptolemy.data.ArrayToken;<a name="line.39"></a>
+<span class="sourceLineNo">040</span>import ptolemy.data.ObjectToken;<a name="line.40"></a>
+<span class="sourceLineNo">041</span>import ptolemy.data.Token;<a name="line.41"></a>
+<span class="sourceLineNo">042</span>import ptolemy.data.expr.StringParameter;<a name="line.42"></a>
+<span class="sourceLineNo">043</span>import ptolemy.data.type.ArrayType;<a name="line.43"></a>
+<span class="sourceLineNo">044</span>import ptolemy.data.type.BaseType;<a name="line.44"></a>
+<span class="sourceLineNo">045</span>import ptolemy.data.type.BaseType.BooleanType;<a name="line.45"></a>
+<span class="sourceLineNo">046</span>import ptolemy.data.type.BaseType.DoubleType;<a name="line.46"></a>
+<span class="sourceLineNo">047</span>import ptolemy.data.type.BaseType.IntType;<a name="line.47"></a>
+<span class="sourceLineNo">048</span>import ptolemy.data.type.BaseType.LongType;<a name="line.48"></a>
+<span class="sourceLineNo">049</span>import ptolemy.data.type.BaseType.StringType;<a name="line.49"></a>
+<span class="sourceLineNo">050</span>import ptolemy.data.type.BaseType.UnsignedByteType;<a name="line.50"></a>
+<span class="sourceLineNo">051</span>import ptolemy.data.type.Type;<a name="line.51"></a>
+<span class="sourceLineNo">052</span>import ptolemy.gui.GraphicalMessageHandler;<a name="line.52"></a>
+<span class="sourceLineNo">053</span>import ptolemy.kernel.CompositeEntity;<a name="line.53"></a>
+<span class="sourceLineNo">054</span>import ptolemy.kernel.util.Attribute;<a name="line.54"></a>
+<span class="sourceLineNo">055</span>import ptolemy.kernel.util.IllegalActionException;<a name="line.55"></a>
+<span class="sourceLineNo">056</span>import ptolemy.kernel.util.NameDuplicationException;<a name="line.56"></a>
+<span class="sourceLineNo">057</span><a name="line.57"></a>
+<span class="sourceLineNo">058</span>///////////////////////////////////////////////////////////////<a name="line.58"></a>
+<span class="sourceLineNo">059</span>////SoaplabChooseOperation<a name="line.59"></a>
+<span class="sourceLineNo">060</span>/**<a name="line.60"></a>
+<span class="sourceLineNo">061</span> * &lt;p&gt;<a name="line.61"></a>
+<span class="sourceLineNo">062</span> * The following actor is for choosing set_&amp;lt;name&amp;gt; operations for executing<a name="line.62"></a>
+<span class="sourceLineNo">063</span> * any derived web service registered at EBI. The following actor takes in an<a name="line.63"></a>
+<span class="sourceLineNo">064</span> * input values to serve as parameters for the set_&amp;lt;name&amp;gt; web service<a name="line.64"></a>
+<span class="sourceLineNo">065</span> * operation. The actor asks the user to choose the desired set_&amp;lt;name&amp;gt;<a name="line.65"></a>
+<span class="sourceLineNo">066</span> * operation. The inputValues and set_&amp;lt;name&amp;gt; operation name are further<a name="line.66"></a>
+<span class="sourceLineNo">067</span> * forwarded to the next actor SoaplabServiceStarter.<a name="line.67"></a>
+<span class="sourceLineNo">068</span> * &lt;/p&gt;<a name="line.68"></a>
+<span class="sourceLineNo">069</span> * <a name="line.69"></a>
+<span class="sourceLineNo">070</span> * @author Nandita Mangal<a name="line.70"></a>
+<span class="sourceLineNo">071</span> * @version $Id: SoaplabChooseOperation.java, v 1.0 2005/19/07<a name="line.71"></a>
+<span class="sourceLineNo">072</span> * @category.name web<a name="line.72"></a>
+<span class="sourceLineNo">073</span> * @category.name external execution<a name="line.73"></a>
+<span class="sourceLineNo">074</span> */<a name="line.74"></a>
+<span class="sourceLineNo">075</span><a name="line.75"></a>
+<span class="sourceLineNo">076</span>public class SoaplabChooseOperation extends TypedAtomicActor {<a name="line.76"></a>
+<span class="sourceLineNo">077</span><a name="line.77"></a>
+<span class="sourceLineNo">078</span>        /**<a name="line.78"></a>
+<span class="sourceLineNo">079</span>         * Construct a SoaplabChooseOperation actor with given container and name.<a name="line.79"></a>
+<span class="sourceLineNo">080</span>         * <a name="line.80"></a>
+<span class="sourceLineNo">081</span>         * @param container<a name="line.81"></a>
+<span class="sourceLineNo">082</span>         *            The container.<a name="line.82"></a>
+<span class="sourceLineNo">083</span>         * @param name<a name="line.83"></a>
+<span class="sourceLineNo">084</span>         *            The name of this actor.<a name="line.84"></a>
+<span class="sourceLineNo">085</span>         * @exception NameDuplicationException<a name="line.85"></a>
+<span class="sourceLineNo">086</span>         *                If the container already has an actor with this name<a name="line.86"></a>
+<span class="sourceLineNo">087</span>         */<a name="line.87"></a>
+<span class="sourceLineNo">088</span><a name="line.88"></a>
+<span class="sourceLineNo">089</span>        public SoaplabChooseOperation(CompositeEntity container, String name)<a name="line.89"></a>
+<span class="sourceLineNo">090</span>                        throws NameDuplicationException, IllegalActionException {<a name="line.90"></a>
+<span class="sourceLineNo">091</span>                super(container, name);<a name="line.91"></a>
+<span class="sourceLineNo">092</span><a name="line.92"></a>
+<span class="sourceLineNo">093</span>                wsdlUrl = new StringParameter(this, "wsdlUrl");<a name="line.93"></a>
+<span class="sourceLineNo">094</span>                selectInputSetMethods = new StringParameter(this, "inputSetMethods");<a name="line.94"></a>
+<span class="sourceLineNo">095</span><a name="line.95"></a>
+<span class="sourceLineNo">096</span>                input = new TypedIOPort(this, "input", true, false);<a name="line.96"></a>
+<span class="sourceLineNo">097</span>                input.setTypeEquals(BaseType.UNKNOWN); // type of input value expected<a name="line.97"></a>
+<span class="sourceLineNo">098</span>                                                                                                // is not known yet<a name="line.98"></a>
+<span class="sourceLineNo">099</span><a name="line.99"></a>
+<span class="sourceLineNo">100</span>                output = new TypedIOPort(this, "output", false, true);<a name="line.100"></a>
+<span class="sourceLineNo">101</span>                output.setTypeEquals(BaseType.OBJECT);<a name="line.101"></a>
+<span class="sourceLineNo">102</span><a name="line.102"></a>
+<span class="sourceLineNo">103</span>                _attachText("_iconDescription", "&lt;svg&gt;\n" + "&lt;rect x=\"0\" y=\"0\" "<a name="line.103"></a>
+<span class="sourceLineNo">104</span>                                + "width=\"60\" height=\"30\" " + "style=\"fill:white\"/&gt;\n"<a name="line.104"></a>
+<span class="sourceLineNo">105</span>                                + "&lt;/svg&gt;\n");<a name="line.105"></a>
+<span class="sourceLineNo">106</span>        }<a name="line.106"></a>
+<span class="sourceLineNo">107</span><a name="line.107"></a>
+<span class="sourceLineNo">108</span>        // //////////////////////////////////////////////////////////////////////////////<a name="line.108"></a>
+<span class="sourceLineNo">109</span>        // // Ports and Parameters ////<a name="line.109"></a>
+<span class="sourceLineNo">110</span><a name="line.110"></a>
+<span class="sourceLineNo">111</span>        /**<a name="line.111"></a>
+<span class="sourceLineNo">112</span>         * The web service URL which is registered at EBI<a name="line.112"></a>
+<span class="sourceLineNo">113</span>         */<a name="line.113"></a>
+<span class="sourceLineNo">114</span>        public StringParameter wsdlUrl = null;<a name="line.114"></a>
+<span class="sourceLineNo">115</span><a name="line.115"></a>
+<span class="sourceLineNo">116</span>        /**<a name="line.116"></a>
+<span class="sourceLineNo">117</span>         * The standard "set_&amp;lt;name&amp;gt;" method choices for SoaplabServices<a name="line.117"></a>
+<span class="sourceLineNo">118</span>         */<a name="line.118"></a>
+<span class="sourceLineNo">119</span>        public StringParameter selectInputSetMethods = null;<a name="line.119"></a>
+<span class="sourceLineNo">120</span><a name="line.120"></a>
+<span class="sourceLineNo">121</span>        /**<a name="line.121"></a>
+<span class="sourceLineNo">122</span>         * Outputs the username and input values to next actor namely<a name="line.122"></a>
+<span class="sourceLineNo">123</span>         * "SoaplabServiceStarter"<a name="line.123"></a>
+<span class="sourceLineNo">124</span>         */<a name="line.124"></a>
+<span class="sourceLineNo">125</span>        public TypedIOPort output;<a name="line.125"></a>
+<span class="sourceLineNo">126</span><a name="line.126"></a>
+<span class="sourceLineNo">127</span>        /**<a name="line.127"></a>
+<span class="sourceLineNo">128</span>         * The parameters for the "set_&amp;lt;name&amp;gt;" operations<a name="line.128"></a>
+<span class="sourceLineNo">129</span>         */<a name="line.129"></a>
+<span class="sourceLineNo">130</span>        public TypedIOPort input;<a name="line.130"></a>
+<span class="sourceLineNo">131</span><a name="line.131"></a>
+<span class="sourceLineNo">132</span>        // //////////////////////////////////////////////////////////////////////////////<a name="line.132"></a>
+<span class="sourceLineNo">133</span>        // // public Methods ////<a name="line.133"></a>
+<span class="sourceLineNo">134</span><a name="line.134"></a>
+<span class="sourceLineNo">135</span>        /**<a name="line.135"></a>
+<span class="sourceLineNo">136</span>         * Callback for changes in attribute values Get the WSDL from the given URL.<a name="line.136"></a>
+<span class="sourceLineNo">137</span>         * <a name="line.137"></a>
+<span class="sourceLineNo">138</span>         * @param at<a name="line.138"></a>
+<span class="sourceLineNo">139</span>         *            The attribute that changed.<a name="line.139"></a>
+<span class="sourceLineNo">140</span>         * @exception IllegalActionException<a name="line.140"></a>
+<span class="sourceLineNo">141</span>         */<a name="line.141"></a>
+<span class="sourceLineNo">142</span>        public void attributeChanged(Attribute at) throws IllegalActionException {<a name="line.142"></a>
+<span class="sourceLineNo">143</span><a name="line.143"></a>
+<span class="sourceLineNo">144</span>                if (at == wsdlUrl) {<a name="line.144"></a>
+<span class="sourceLineNo">145</span><a name="line.145"></a>
+<span class="sourceLineNo">146</span>                        if (wsdlUrl.getExpression().equals("")) {<a name="line.146"></a>
+<span class="sourceLineNo">147</span>                                selectInputSetMethods.removeAllChoices();<a name="line.147"></a>
+<span class="sourceLineNo">148</span>                        } else {<a name="line.148"></a>
+<span class="sourceLineNo">149</span>                                selectInputSetMethods.removeAllChoices();<a name="line.149"></a>
+<span class="sourceLineNo">150</span>                                try {<a name="line.150"></a>
+<span class="sourceLineNo">151</span><a name="line.151"></a>
+<span class="sourceLineNo">152</span>                                        // NOTE:- The following client is just created for geting<a name="line.152"></a>
+<span class="sourceLineNo">153</span>                                        // the WSDL input methods<a name="line.153"></a>
+<span class="sourceLineNo">154</span>                                        // in the very first stage of the workflow beforehand.The<a name="line.154"></a>
+<span class="sourceLineNo">155</span>                                        // client created at this<a name="line.155"></a>
+<span class="sourceLineNo">156</span>                                        // stage is not utilized after getting the required<a name="line.156"></a>
+<span class="sourceLineNo">157</span>                                        // inputMethods.<a name="line.157"></a>
+<span class="sourceLineNo">158</span><a name="line.158"></a>
+<span class="sourceLineNo">159</span>                                        SoaplabServiceClient client = new SoaplabServiceClient(<a name="line.159"></a>
+<span class="sourceLineNo">160</span>                                                        wsdlUrl.getExpression());<a name="line.160"></a>
+<span class="sourceLineNo">161</span>                                        client.setJobId(); // create Job in order to be able to<a name="line.161"></a>
+<span class="sourceLineNo">162</span>                                                                                // generate input method names<a name="line.162"></a>
+<span class="sourceLineNo">163</span>                                        client.generateInputMethods(); // get the set_&amp;lt;name&amp;gt;<a name="line.163"></a>
+<span class="sourceLineNo">164</span>                                                                                                        // operations<a name="line.164"></a>
+<span class="sourceLineNo">165</span>                                        Vector inputMethods = client.getInputMethods();<a name="line.165"></a>
+<span class="sourceLineNo">166</span>                                        for (int i = 0; i &lt; inputMethods.size(); i++) {<a name="line.166"></a>
+<span class="sourceLineNo">167</span>                                                selectInputSetMethods.addChoice("set_"<a name="line.167"></a>
+<span class="sourceLineNo">168</span>                                                                + (String) (inputMethods.elementAt(i)));<a name="line.168"></a>
+<span class="sourceLineNo">169</span>                                        }<a name="line.169"></a>
+<span class="sourceLineNo">170</span><a name="line.170"></a>
+<span class="sourceLineNo">171</span>                                } catch (Exception ex) {<a name="line.171"></a>
+<span class="sourceLineNo">172</span>                                        _debug("&lt;EXCEPTION&gt; There was an error while parsing the WSDL. "<a name="line.172"></a>
+<span class="sourceLineNo">173</span>                                                        + ex + ". &lt;/EXCEPTION&gt;");<a name="line.173"></a>
+<span class="sourceLineNo">174</span>                                        // GraphicalMessageHandler.message(<a name="line.174"></a>
+<span class="sourceLineNo">175</span>                                        _confErrorStr += "\n"<a name="line.175"></a>
+<span class="sourceLineNo">176</span>                                                        + ex.getMessage()<a name="line.176"></a>
+<span class="sourceLineNo">177</span>                                                        + "There was an error while parsing the WSDL in the actor: "<a name="line.177"></a>
+<span class="sourceLineNo">178</span>                                                        + this.getName();// );<a name="line.178"></a>
+<span class="sourceLineNo">179</span>                                }<a name="line.179"></a>
+<span class="sourceLineNo">180</span><a name="line.180"></a>
+<span class="sourceLineNo">181</span>                                if (!(_confErrorStr.equals(""))) {<a name="line.181"></a>
+<span class="sourceLineNo">182</span>                                        GraphicalMessageHandler.message(_confErrorStr);<a name="line.182"></a>
+<span class="sourceLineNo">183</span><a name="line.183"></a>
+<span class="sourceLineNo">184</span>                                }<a name="line.184"></a>
+<span class="sourceLineNo">185</span>                        }<a name="line.185"></a>
+<span class="sourceLineNo">186</span><a name="line.186"></a>
+<span class="sourceLineNo">187</span>                }<a name="line.187"></a>
+<span class="sourceLineNo">188</span><a name="line.188"></a>
+<span class="sourceLineNo">189</span>        } // end of attributeChanged<a name="line.189"></a>
+<span class="sourceLineNo">190</span><a name="line.190"></a>
+<span class="sourceLineNo">191</span>        /**<a name="line.191"></a>
+<span class="sourceLineNo">192</span>         * Gets a list of input ports configured with the actor and finally outputs<a name="line.192"></a>
+<span class="sourceLineNo">193</span>         * an object containing all the inputValues for the set_&amp;lt;name&amp;gt;<a name="line.193"></a>
+<span class="sourceLineNo">194</span>         * operation as well as name of operation itself.<a name="line.194"></a>
+<span class="sourceLineNo">195</span>         * <a name="line.195"></a>
+<span class="sourceLineNo">196</span>         * @exception IllegalActionException<a name="line.196"></a>
+<span class="sourceLineNo">197</span>         *                If there is no director.<a name="line.197"></a>
+<span class="sourceLineNo">198</span>         */<a name="line.198"></a>
+<span class="sourceLineNo">199</span><a name="line.199"></a>
+<span class="sourceLineNo">200</span>        public void fire() throws IllegalActionException {<a name="line.200"></a>
+<span class="sourceLineNo">201</span><a name="line.201"></a>
+<span class="sourceLineNo">202</span>                super.fire();<a name="line.202"></a>
+<span class="sourceLineNo">203</span><a name="line.203"></a>
+<span class="sourceLineNo">204</span>                // a vector to contain all user input data such as operation<a name="line.204"></a>
+<span class="sourceLineNo">205</span>                // name,operation input values<a name="line.205"></a>
+<span class="sourceLineNo">206</span>                Vector userInputs = new Vector();<a name="line.206"></a>
+<span class="sourceLineNo">207</span><a name="line.207"></a>
+<span class="sourceLineNo">208</span>                List inPortList = this.inputPortList();<a name="line.208"></a>
+<span class="sourceLineNo">209</span>                Iterator ports = inPortList.iterator();<a name="line.209"></a>
+<span class="sourceLineNo">210</span><a name="line.210"></a>
+<span class="sourceLineNo">211</span>                while (ports.hasNext()) {<a name="line.211"></a>
+<span class="sourceLineNo">212</span><a name="line.212"></a>
+<span class="sourceLineNo">213</span>                        IOPort p = (IOPort) ports.next();<a name="line.213"></a>
+<span class="sourceLineNo">214</span>                        List connections = p.connectedPortList();<a name="line.214"></a>
+<span class="sourceLineNo">215</span>                        if (!(connections.isEmpty())) {<a name="line.215"></a>
+<span class="sourceLineNo">216</span><a name="line.216"></a>
+<span class="sourceLineNo">217</span>                                if (wsdlUrl.getExpression().equals(""))<a name="line.217"></a>
+<span class="sourceLineNo">218</span>                                        GraphicalMessageHandler.message("\nWSDL is empty in actor:"<a name="line.218"></a>
+<span class="sourceLineNo">219</span>                                                        + this.getName());<a name="line.219"></a>
+<span class="sourceLineNo">220</span>                                else if (selectInputSetMethods.getExpression().equals(""))<a name="line.220"></a>
+<span class="sourceLineNo">221</span>                                        GraphicalMessageHandler<a name="line.221"></a>
+<span class="sourceLineNo">222</span>                                                        .message("\nSet Method is empty in actor:"<a name="line.222"></a>
+<span class="sourceLineNo">223</span>                                                                        + this.getName());<a name="line.223"></a>
+<span class="sourceLineNo">224</span><a name="line.224"></a>
+<span class="sourceLineNo">225</span>                                Token originalToken = p.get(0); // getInputVaulue<a name="line.225"></a>
+<span class="sourceLineNo">226</span>                                Object tokenObjectForm = _getTokenConvertedObject(originalToken); // get<a name="line.226"></a>
+<span class="sourceLineNo">227</span>                                                                                                                                                                        // the<a name="line.227"></a>
+<span class="sourceLineNo">228</span>                                                                                                                                                                        // Java<a name="line.228"></a>
+<span class="sourceLineNo">229</span>                                                                                                                                                                        // object<a name="line.229"></a>
+<span class="sourceLineNo">230</span>                                                                                                                                                                        // form<a name="line.230"></a>
+<span class="sourceLineNo">231</span>                                                                                                                                                                        // of<a name="line.231"></a>
+<span class="sourceLineNo">232</span>                                                                                                                                                                        // input<a name="line.232"></a>
+<span class="sourceLineNo">233</span>                                                                                                                                                                        // Token<a name="line.233"></a>
+<span class="sourceLineNo">234</span>                                userInputs.add(tokenObjectForm);<a name="line.234"></a>
+<span class="sourceLineNo">235</span><a name="line.235"></a>
+<span class="sourceLineNo">236</span>                        }<a name="line.236"></a>
+<span class="sourceLineNo">237</span><a name="line.237"></a>
+<span class="sourceLineNo">238</span>                }<a name="line.238"></a>
+<span class="sourceLineNo">239</span>                userInputs.add(selectInputSetMethods.getExpression()); // add the<a name="line.239"></a>
+<span class="sourceLineNo">240</span>                                                                                                                                // set_&amp;lt;name&amp;gt;<a name="line.240"></a>
+<span class="sourceLineNo">241</span>                                                                                                                                // operation<a name="line.241"></a>
+<span class="sourceLineNo">242</span>                                                                                                                                // name<a name="line.242"></a>
+<span class="sourceLineNo">243</span>                output.broadcast(new ObjectToken(userInputs)); // braodcast the object<a name="line.243"></a>
+<span class="sourceLineNo">244</span>                                                                                                                // consisting of input<a name="line.244"></a>
+<span class="sourceLineNo">245</span>                                                                                                                // values + operation<a name="line.245"></a>
+<span class="sourceLineNo">246</span>                                                                                                                // name.<a name="line.246"></a>
+<span class="sourceLineNo">247</span><a name="line.247"></a>
+<span class="sourceLineNo">248</span>        }// end of fire<a name="line.248"></a>
+<span class="sourceLineNo">249</span><a name="line.249"></a>
+<span class="sourceLineNo">250</span>        /**<a name="line.250"></a>
+<span class="sourceLineNo">251</span>         * Before executing the actor, delete any unconnected input ports to the<a name="line.251"></a>
+<span class="sourceLineNo">252</span>         * actor done in order to prevent possible SDF disconnected graphs problem<a name="line.252"></a>
+<span class="sourceLineNo">253</span>         * for users.<a name="line.253"></a>
+<span class="sourceLineNo">254</span>         */<a name="line.254"></a>
+<span class="sourceLineNo">255</span>        public boolean prefire() throws IllegalActionException {<a name="line.255"></a>
+<span class="sourceLineNo">256</span><a name="line.256"></a>
+<span class="sourceLineNo">257</span>                List inPortList = this.inputPortList();<a name="line.257"></a>
+<span class="sourceLineNo">258</span>                Iterator ports = inPortList.iterator();<a name="line.258"></a>
+<span class="sourceLineNo">259</span><a name="line.259"></a>
+<span class="sourceLineNo">260</span>                while (ports.hasNext()) {<a name="line.260"></a>
+<span class="sourceLineNo">261</span><a name="line.261"></a>
+<span class="sourceLineNo">262</span>                        IOPort p = (IOPort) ports.next();<a name="line.262"></a>
+<span class="sourceLineNo">263</span>                        List connections = p.connectedPortList();<a name="line.263"></a>
+<span class="sourceLineNo">264</span>                        if (connections.isEmpty()) {<a name="line.264"></a>
+<span class="sourceLineNo">265</span>                                // delete the empty/unconnected port<a name="line.265"></a>
+<span class="sourceLineNo">266</span>                                try {<a name="line.266"></a>
+<span class="sourceLineNo">267</span>                                        p.setContainer(null);<a name="line.267"></a>
+<span class="sourceLineNo">268</span>                                } catch (Exception ex) {<a name="line.268"></a>
+<span class="sourceLineNo">269</span>                                        // Exceptions: IllegalAction or NameDuplicationException<a name="line.269"></a>
+<span class="sourceLineNo">270</span>                                        _debug("&lt;EXCEPTION&gt; There was an error while attempting to delete unused ports "<a name="line.270"></a>
+<span class="sourceLineNo">271</span>                                                        + ex + ". &lt;/EXCEPTION&gt;");<a name="line.271"></a>
+<span class="sourceLineNo">272</span>                                        _confErrorStr += "\n"<a name="line.272"></a>
+<span class="sourceLineNo">273</span>                                                        + ex.getMessage()<a name="line.273"></a>
+<span class="sourceLineNo">274</span>                                                        + "There was an error while deleting the unused input ports of the actor."<a name="line.274"></a>
+<span class="sourceLineNo">275</span>                                                        + this.getName();// );<a name="line.275"></a>
+<span class="sourceLineNo">276</span>                                }<a name="line.276"></a>
+<span class="sourceLineNo">277</span>                        }<a name="line.277"></a>
+<span class="sourceLineNo">278</span>                }<a name="line.278"></a>
+<span class="sourceLineNo">279</span><a name="line.279"></a>
+<span class="sourceLineNo">280</span>                return super.prefire();<a name="line.280"></a>
+<span class="sourceLineNo">281</span><a name="line.281"></a>
+<span class="sourceLineNo">282</span>        } // end of prefire<a name="line.282"></a>
+<span class="sourceLineNo">283</span><a name="line.283"></a>
+<span class="sourceLineNo">284</span>        // //////////////////////////////////////////////////////////////////<a name="line.284"></a>
+<span class="sourceLineNo">285</span>        // // private Methods ///<a name="line.285"></a>
+<span class="sourceLineNo">286</span><a name="line.286"></a>
+<span class="sourceLineNo">287</span>        /**<a name="line.287"></a>
+<span class="sourceLineNo">288</span>         * Given a token recieved from the input ports, the following attempts to<a name="line.288"></a>
+<span class="sourceLineNo">289</span>         * get the token Value and convert it to a java Object form.<a name="line.289"></a>
+<span class="sourceLineNo">290</span>         * <a name="line.290"></a>
+<span class="sourceLineNo">291</span>         * @param portToken<a name="line.291"></a>
+<span class="sourceLineNo">292</span>         *            The input Token retrieved from the input port<a name="line.292"></a>
+<span class="sourceLineNo">293</span>         */<a name="line.293"></a>
+<span class="sourceLineNo">294</span><a name="line.294"></a>
+<span class="sourceLineNo">295</span>        private Object _getTokenConvertedObject(Token portToken) {<a name="line.295"></a>
+<span class="sourceLineNo">296</span><a name="line.296"></a>
+<span class="sourceLineNo">297</span>                if (portToken.getType() instanceof BooleanType) {<a name="line.297"></a>
+<span class="sourceLineNo">298</span>                        return new Boolean(portToken.toString());<a name="line.298"></a>
+<span class="sourceLineNo">299</span>                } else if (portToken.getType() instanceof IntType) {<a name="line.299"></a>
+<span class="sourceLineNo">300</span>                        return new Integer(portToken.toString());<a name="line.300"></a>
+<span class="sourceLineNo">301</span>                } else if (portToken.getType() instanceof LongType) {<a name="line.301"></a>
+<span class="sourceLineNo">302</span>                        return new Long(portToken.toString());<a name="line.302"></a>
+<span class="sourceLineNo">303</span>                } else if (portToken.getType() instanceof StringType) {<a name="line.303"></a>
+<span class="sourceLineNo">304</span>                        String returnValueStr = portToken.toString();<a name="line.304"></a>
+<span class="sourceLineNo">305</span>                        String suffix = "\"";<a name="line.305"></a>
+<span class="sourceLineNo">306</span>                        // extra step to delete the "" quotation prefixes around the string<a name="line.306"></a>
+<span class="sourceLineNo">307</span>                        if (returnValueStr.endsWith(suffix)<a name="line.307"></a>
+<span class="sourceLineNo">308</span>                                        &amp;&amp; returnValueStr.startsWith(suffix)) {<a name="line.308"></a>
+<span class="sourceLineNo">309</span>                                return returnValueStr.substring(1,<a name="line.309"></a>
+<span class="sourceLineNo">310</span>                                                (returnValueStr.length()) - 1);<a name="line.310"></a>
+<span class="sourceLineNo">311</span>                        }<a name="line.311"></a>
+<span class="sourceLineNo">312</span>                } else if (portToken.getType() instanceof DoubleType) {<a name="line.312"></a>
+<span class="sourceLineNo">313</span>                        return new Double(portToken.toString());<a name="line.313"></a>
+<span class="sourceLineNo">314</span>                } else if (portToken.getType() instanceof UnsignedByteType) {<a name="line.314"></a>
+<span class="sourceLineNo">315</span>                        // -&gt;There is no byte in Ptolemy type sys. cast the byte to INT.<a name="line.315"></a>
+<span class="sourceLineNo">316</span>                        return new Integer(portToken.toString());<a name="line.316"></a>
+<span class="sourceLineNo">317</span>                } else if (portToken.getType() instanceof ArrayType) {<a name="line.317"></a>
+<span class="sourceLineNo">318</span><a name="line.318"></a>
+<span class="sourceLineNo">319</span>                        // get the type of elements inside the ArrayToken<a name="line.319"></a>
+<span class="sourceLineNo">320</span>                        Type tokenType = ((ArrayToken) portToken).getElementType();<a name="line.320"></a>
+<span class="sourceLineNo">321</span><a name="line.321"></a>
+<span class="sourceLineNo">322</span>                        if (tokenType instanceof BooleanType) {<a name="line.322"></a>
+<span class="sourceLineNo">323</span><a name="line.323"></a>
+<span class="sourceLineNo">324</span>                                Boolean arrayBool[] = new Boolean[((ArrayToken) portToken)<a name="line.324"></a>
+<span class="sourceLineNo">325</span>                                                .length()];<a name="line.325"></a>
+<span class="sourceLineNo">326</span>                                for (int i = 0; i &lt; ((ArrayToken) portToken).length(); i++) {<a name="line.326"></a>
+<span class="sourceLineNo">327</span>                                        arrayBool[i] = new Boolean((((ArrayToken) portToken)<a name="line.327"></a>
+<span class="sourceLineNo">328</span>                                                        .getElement(i)).toString());<a name="line.328"></a>
+<span class="sourceLineNo">329</span>                                }<a name="line.329"></a>
+<span class="sourceLineNo">330</span>                                return arrayBool;<a name="line.330"></a>
+<span class="sourceLineNo">331</span>                        } else if (tokenType instanceof IntType) {<a name="line.331"></a>
+<span class="sourceLineNo">332</span><a name="line.332"></a>
+<span class="sourceLineNo">333</span>                                Integer arrayInt[] = new Integer[((ArrayToken) portToken)<a name="line.333"></a>
+<span class="sourceLineNo">334</span>                                                .length()];<a name="line.334"></a>
+<span class="sourceLineNo">335</span>                                for (int i = 0; i &lt; ((ArrayToken) portToken).length(); i++) {<a name="line.335"></a>
+<span class="sourceLineNo">336</span>                                        arrayInt[i] = new Integer((((ArrayToken) portToken)<a name="line.336"></a>
+<span class="sourceLineNo">337</span>                                                        .getElement(i)).toString());<a name="line.337"></a>
+<span class="sourceLineNo">338</span>                                }<a name="line.338"></a>
+<span class="sourceLineNo">339</span>                                return arrayInt;<a name="line.339"></a>
+<span class="sourceLineNo">340</span><a name="line.340"></a>
+<span class="sourceLineNo">341</span>                        } else if (tokenType instanceof LongType) {<a name="line.341"></a>
+<span class="sourceLineNo">342</span><a name="line.342"></a>
+<span class="sourceLineNo">343</span>                                Long arrayLong[] = new Long[((ArrayToken) portToken).length()];<a name="line.343"></a>
+<span class="sourceLineNo">344</span>                                for (int i = 0; i &lt; ((ArrayToken) portToken).length(); i++) {<a name="line.344"></a>
+<span class="sourceLineNo">345</span>                                        arrayLong[i] = new Long((((ArrayToken) portToken)<a name="line.345"></a>
+<span class="sourceLineNo">346</span>                                                        .getElement(i)).toString());<a name="line.346"></a>
+<span class="sourceLineNo">347</span>                                }<a name="line.347"></a>
+<span class="sourceLineNo">348</span>                                return arrayLong;<a name="line.348"></a>
+<span class="sourceLineNo">349</span><a name="line.349"></a>
+<span class="sourceLineNo">350</span>                        } else if (tokenType instanceof StringType) {<a name="line.350"></a>
+<span class="sourceLineNo">351</span><a name="line.351"></a>
+<span class="sourceLineNo">352</span>                                String arrayString[] = new String[((ArrayToken) portToken)<a name="line.352"></a>
+<span class="sourceLineNo">353</span>                                                .length()];<a name="line.353"></a>
+<span class="sourceLineNo">354</span>                                for (int i = 0; i &lt; ((ArrayToken) portToken).length(); i++) {<a name="line.354"></a>
+<span class="sourceLineNo">355</span>                                        // extra step to delete the "" quotation prefixes around the<a name="line.355"></a>
+<span class="sourceLineNo">356</span>                                        // string<a name="line.356"></a>
+<span class="sourceLineNo">357</span>                                        String returnValueStr = (((ArrayToken) portToken)<a name="line.357"></a>
+<span class="sourceLineNo">358</span>                                                        .getElement(i)).toString();<a name="line.358"></a>
+<span class="sourceLineNo">359</span>                                        String suffix = "\"";<a name="line.359"></a>
+<span class="sourceLineNo">360</span>                                        if (returnValueStr.endsWith(suffix)<a name="line.360"></a>
+<span class="sourceLineNo">361</span>                                                        &amp;&amp; returnValueStr.startsWith(suffix)) {<a name="line.361"></a>
+<span class="sourceLineNo">362</span>                                                arrayString[i] = returnValueStr.substring(1,<a name="line.362"></a>
+<span class="sourceLineNo">363</span>                                                                (returnValueStr.length()) - 1);<a name="line.363"></a>
+<span class="sourceLineNo">364</span>                                        }<a name="line.364"></a>
+<span class="sourceLineNo">365</span>                                }<a name="line.365"></a>
+<span class="sourceLineNo">366</span>                                return arrayString;<a name="line.366"></a>
+<span class="sourceLineNo">367</span><a name="line.367"></a>
+<span class="sourceLineNo">368</span>                        } else if (tokenType instanceof DoubleType) {<a name="line.368"></a>
+<span class="sourceLineNo">369</span><a name="line.369"></a>
+<span class="sourceLineNo">370</span>                                Double arrayDouble[] = new Double[((ArrayToken) portToken)<a name="line.370"></a>
+<span class="sourceLineNo">371</span>                                                .length()];<a name="line.371"></a>
+<span class="sourceLineNo">372</span>                                for (int i = 0; i &lt; ((ArrayToken) portToken).length(); i++) {<a name="line.372"></a>
+<span class="sourceLineNo">373</span>                                        arrayDouble[i] = new Double((((ArrayToken) portToken)<a name="line.373"></a>
+<span class="sourceLineNo">374</span>                                                        .getElement(i)).toString());<a name="line.374"></a>
+<span class="sourceLineNo">375</span>                                }<a name="line.375"></a>
+<span class="sourceLineNo">376</span>                                return arrayDouble;<a name="line.376"></a>
+<span class="sourceLineNo">377</span><a name="line.377"></a>
+<span class="sourceLineNo">378</span>                        } else if (tokenType instanceof UnsignedByteType) {<a name="line.378"></a>
+<span class="sourceLineNo">379</span><a name="line.379"></a>
+<span class="sourceLineNo">380</span>                                // -&gt;There is no byte in Ptolemy type sys. cast the byte to INT.<a name="line.380"></a>
+<span class="sourceLineNo">381</span>                                Integer arrayInt[] = new Integer[((ArrayToken) portToken)<a name="line.381"></a>
+<span class="sourceLineNo">382</span>                                                .length()];<a name="line.382"></a>
+<span class="sourceLineNo">383</span>                                for (int i = 0; i &lt; ((ArrayToken) portToken).length(); i++) {<a name="line.383"></a>
+<span class="sourceLineNo">384</span>                                        arrayInt[i] = new Integer((((ArrayToken) portToken)<a name="line.384"></a>
+<span class="sourceLineNo">385</span>                                                        .getElement(i)).toString());<a name="line.385"></a>
+<span class="sourceLineNo">386</span>                                }<a name="line.386"></a>
+<span class="sourceLineNo">387</span>                                return arrayInt;<a name="line.387"></a>
+<span class="sourceLineNo">388</span><a name="line.388"></a>
+<span class="sourceLineNo">389</span>                        }<a name="line.389"></a>
+<span class="sourceLineNo">390</span>                } else {<a name="line.390"></a>
+<span class="sourceLineNo">391</span>                        _debug("&lt;WARNING&gt;Could not convert the token to appropriate java Object.Setting it to string. &lt;/WARNING&gt;");<a name="line.391"></a>
+<span class="sourceLineNo">392</span>                }<a name="line.392"></a>
+<span class="sourceLineNo">393</span><a name="line.393"></a>
+<span class="sourceLineNo">394</span>                return new String(portToken.toString());<a name="line.394"></a>
+<span class="sourceLineNo">395</span>        } // end of _getTokenConvertedObject<a name="line.395"></a>
+<span class="sourceLineNo">396</span><a name="line.396"></a>
+<span class="sourceLineNo">397</span>        // ////////////////////////////////////////////////////////////////////////////<a name="line.397"></a>
+<span class="sourceLineNo">398</span>        // // private variables ////<a name="line.398"></a>
+<span class="sourceLineNo">399</span><a name="line.399"></a>
+<span class="sourceLineNo">400</span>        protected String _confErrorStr = "";<a name="line.400"></a>
+<span class="sourceLineNo">401</span><a name="line.401"></a>
+<span class="sourceLineNo">402</span>}// end of SoaplabChooseOperation<a name="line.402"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

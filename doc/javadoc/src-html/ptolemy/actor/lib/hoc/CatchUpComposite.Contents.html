@@ -1,0 +1,785 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../../../stylesheet.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>/* A composite where events can occur inside between the times when<a name="line.1"></a>
+<span class="sourceLineNo">002</span>   the outside model invokes the composite.<a name="line.2"></a>
+<span class="sourceLineNo">003</span><a name="line.3"></a>
+<span class="sourceLineNo">004</span> Copyright (c) 2004-2015 The Regents of the University of California.<a name="line.4"></a>
+<span class="sourceLineNo">005</span> All rights reserved.<a name="line.5"></a>
+<span class="sourceLineNo">006</span> Permission is hereby granted, without written agreement and without<a name="line.6"></a>
+<span class="sourceLineNo">007</span> license or royalty fees, to use, copy, modify, and distribute this<a name="line.7"></a>
+<span class="sourceLineNo">008</span> software and its documentation for any purpose, provided that the above<a name="line.8"></a>
+<span class="sourceLineNo">009</span> copyright notice and the following two paragraphs appear in all copies<a name="line.9"></a>
+<span class="sourceLineNo">010</span> of this software.<a name="line.10"></a>
+<span class="sourceLineNo">011</span><a name="line.11"></a>
+<span class="sourceLineNo">012</span> IN NO EVENT SHALL THE UNIVERSITY OF CALIFORNIA BE LIABLE TO ANY PARTY<a name="line.12"></a>
+<span class="sourceLineNo">013</span> FOR DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES<a name="line.13"></a>
+<span class="sourceLineNo">014</span> ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION, EVEN IF<a name="line.14"></a>
+<span class="sourceLineNo">015</span> THE UNIVERSITY OF CALIFORNIA HAS BEEN ADVISED OF THE POSSIBILITY OF<a name="line.15"></a>
+<span class="sourceLineNo">016</span> SUCH DAMAGE.<a name="line.16"></a>
+<span class="sourceLineNo">017</span><a name="line.17"></a>
+<span class="sourceLineNo">018</span> THE UNIVERSITY OF CALIFORNIA SPECIFICALLY DISCLAIMS ANY WARRANTIES,<a name="line.18"></a>
+<span class="sourceLineNo">019</span> INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF<a name="line.19"></a>
+<span class="sourceLineNo">020</span> MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE<a name="line.20"></a>
+<span class="sourceLineNo">021</span> PROVIDED HEREUNDER IS ON AN "AS IS" BASIS, AND THE UNIVERSITY OF<a name="line.21"></a>
+<span class="sourceLineNo">022</span> CALIFORNIA HAS NO OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT, UPDATES,<a name="line.22"></a>
+<span class="sourceLineNo">023</span> ENHANCEMENTS, OR MODIFICATIONS.<a name="line.23"></a>
+<span class="sourceLineNo">024</span><a name="line.24"></a>
+<span class="sourceLineNo">025</span> PT_COPYRIGHT_VERSION_2<a name="line.25"></a>
+<span class="sourceLineNo">026</span> COPYRIGHTENDKEY<a name="line.26"></a>
+<span class="sourceLineNo">027</span><a name="line.27"></a>
+<span class="sourceLineNo">028</span> */<a name="line.28"></a>
+<span class="sourceLineNo">029</span>package ptolemy.actor.lib.hoc;<a name="line.29"></a>
+<span class="sourceLineNo">030</span><a name="line.30"></a>
+<span class="sourceLineNo">031</span>import java.io.Writer;<a name="line.31"></a>
+<span class="sourceLineNo">032</span>import java.util.Iterator;<a name="line.32"></a>
+<span class="sourceLineNo">033</span>import java.util.List;<a name="line.33"></a>
+<span class="sourceLineNo">034</span>import java.util.PriorityQueue;<a name="line.34"></a>
+<span class="sourceLineNo">035</span><a name="line.35"></a>
+<span class="sourceLineNo">036</span>import ptolemy.actor.Actor;<a name="line.36"></a>
+<span class="sourceLineNo">037</span>import ptolemy.actor.CompositeActor;<a name="line.37"></a>
+<span class="sourceLineNo">038</span>import ptolemy.actor.Director;<a name="line.38"></a>
+<span class="sourceLineNo">039</span>import ptolemy.actor.Executable;<a name="line.39"></a>
+<span class="sourceLineNo">040</span>import ptolemy.actor.FiringEvent;<a name="line.40"></a>
+<span class="sourceLineNo">041</span>import ptolemy.actor.IOPort;<a name="line.41"></a>
+<span class="sourceLineNo">042</span>import ptolemy.actor.QueueReceiver;<a name="line.42"></a>
+<span class="sourceLineNo">043</span>import ptolemy.actor.Receiver;<a name="line.43"></a>
+<span class="sourceLineNo">044</span>import ptolemy.actor.SuperdenseTimeDirector;<a name="line.44"></a>
+<span class="sourceLineNo">045</span>import ptolemy.actor.parameters.ParameterPort;<a name="line.45"></a>
+<span class="sourceLineNo">046</span>import ptolemy.actor.util.SuperdenseTime;<a name="line.46"></a>
+<span class="sourceLineNo">047</span>import ptolemy.actor.util.Time;<a name="line.47"></a>
+<span class="sourceLineNo">048</span>import ptolemy.data.BooleanToken;<a name="line.48"></a>
+<span class="sourceLineNo">049</span>import ptolemy.data.expr.Parameter;<a name="line.49"></a>
+<span class="sourceLineNo">050</span>import ptolemy.data.type.BaseType;<a name="line.50"></a>
+<span class="sourceLineNo">051</span>import ptolemy.kernel.CompositeEntity;<a name="line.51"></a>
+<span class="sourceLineNo">052</span>import ptolemy.kernel.util.IllegalActionException;<a name="line.52"></a>
+<span class="sourceLineNo">053</span>import ptolemy.kernel.util.NameDuplicationException;<a name="line.53"></a>
+<span class="sourceLineNo">054</span>import ptolemy.kernel.util.Workspace;<a name="line.54"></a>
+<span class="sourceLineNo">055</span><a name="line.55"></a>
+<span class="sourceLineNo">056</span>///////////////////////////////////////////////////////////////////<a name="line.56"></a>
+<span class="sourceLineNo">057</span>//// CatchUpComposite<a name="line.57"></a>
+<span class="sourceLineNo">058</span><a name="line.58"></a>
+<span class="sourceLineNo">059</span>/**<a name="line.59"></a>
+<span class="sourceLineNo">060</span>This composite allows events to occur in the inside model<a name="line.60"></a>
+<span class="sourceLineNo">061</span>between the times when the outside model invokes this composite.<a name="line.61"></a>
+<span class="sourceLineNo">062</span>The inside model is required to have a director.<a name="line.62"></a>
+<span class="sourceLineNo">063</span>&lt;p&gt;<a name="line.63"></a>
+<span class="sourceLineNo">064</span>When this composite actor is fired, it fires the<a name="line.64"></a>
+<span class="sourceLineNo">065</span>inside model to process any unprocessed events it may have<a name="line.65"></a>
+<span class="sourceLineNo">066</span>at earlier times than the environment time of the firing.<a name="line.66"></a>
+<span class="sourceLineNo">067</span>If in any of these "catch up" firings the inside model<a name="line.67"></a>
+<span class="sourceLineNo">068</span>attempts to produce outputs, this director will throw an<a name="line.68"></a>
+<span class="sourceLineNo">069</span>exception. This director then transfers any available<a name="line.69"></a>
+<span class="sourceLineNo">070</span>inputs to the inside model and fires the inside model<a name="line.70"></a>
+<span class="sourceLineNo">071</span>one more time. On this "caught up" firing, the inside<a name="line.71"></a>
+<span class="sourceLineNo">072</span>model is permitted to produce outputs.<a name="line.72"></a>
+<span class="sourceLineNo">073</span>&lt;p&gt;<a name="line.73"></a>
+<span class="sourceLineNo">074</span>By default, if an actor contained by this composite requests<a name="line.74"></a>
+<span class="sourceLineNo">075</span>a firing at a future time, then that request is passed up to<a name="line.75"></a>
+<span class="sourceLineNo">076</span>the containing director. If &lt;i&gt;fireOnlyWhenTriggered&lt;/i&gt; is set<a name="line.76"></a>
+<span class="sourceLineNo">077</span>to &lt;i&gt;true&lt;/i&gt;, however, then such requests are not passed up.<a name="line.77"></a>
+<span class="sourceLineNo">078</span>In this case, the next firing will occur whenever the container<a name="line.78"></a>
+<span class="sourceLineNo">079</span>has an input to provide to this composite, and catching up will<a name="line.79"></a>
+<span class="sourceLineNo">080</span>occur only at that time. Note that if this composite produces<a name="line.80"></a>
+<span class="sourceLineNo">081</span>outputs, you have to be very careful to ensure that those outputs<a name="line.81"></a>
+<span class="sourceLineNo">082</span>are produced only at times when an input trigger is provided.<a name="line.82"></a>
+<span class="sourceLineNo">083</span>&lt;p&gt;<a name="line.83"></a>
+<span class="sourceLineNo">084</span>Note that a firing of this composite results in one<a name="line.84"></a>
+<span class="sourceLineNo">085</span>or more complete iterations of the inside model, including<a name="line.85"></a>
+<span class="sourceLineNo">086</span>invocations of postfire. Thus, this actor changes state<a name="line.86"></a>
+<span class="sourceLineNo">087</span>in the fire() method, and hence only implements the<a name="line.87"></a>
+<span class="sourceLineNo">088</span>weak actor semantics. Therefore, it should not be used<a name="line.88"></a>
+<span class="sourceLineNo">089</span>inside domains that require a strict actor semantics,<a name="line.89"></a>
+<span class="sourceLineNo">090</span>such as Continuous, which requires that fire() not<a name="line.90"></a>
+<span class="sourceLineNo">091</span>change state (so that backtracking can occur).<a name="line.91"></a>
+<span class="sourceLineNo">092</span>This composite probably can be used in SR, where it<a name="line.92"></a>
+<span class="sourceLineNo">093</span>will be treated as a strict as actor and hence will be<a name="line.93"></a>
+<span class="sourceLineNo">094</span>fired only once per iteration, and only when all inputs<a name="line.94"></a>
+<span class="sourceLineNo">095</span>are known.<a name="line.95"></a>
+<span class="sourceLineNo">096</span><a name="line.96"></a>
+<span class="sourceLineNo">097</span> @author Edward A. Lee<a name="line.97"></a>
+<span class="sourceLineNo">098</span> @version $Id$<a name="line.98"></a>
+<span class="sourceLineNo">099</span> @since Ptolemy II 11.0<a name="line.99"></a>
+<span class="sourceLineNo">100</span> @Pt.ProposedRating Yellow (eal)<a name="line.100"></a>
+<span class="sourceLineNo">101</span> @Pt.AcceptedRating Red (neuendor)<a name="line.101"></a>
+<span class="sourceLineNo">102</span> */<a name="line.102"></a>
+<span class="sourceLineNo">103</span>public class CatchUpComposite extends MirrorComposite {<a name="line.103"></a>
+<span class="sourceLineNo">104</span><a name="line.104"></a>
+<span class="sourceLineNo">105</span>    /** Create an actor with a name and a container.<a name="line.105"></a>
+<span class="sourceLineNo">106</span>     *  The container argument must not be null, or a<a name="line.106"></a>
+<span class="sourceLineNo">107</span>     *  NullPointerException will be thrown.  This actor will use the<a name="line.107"></a>
+<span class="sourceLineNo">108</span>     *  workspace of the container for synchronization and version counts.<a name="line.108"></a>
+<span class="sourceLineNo">109</span>     *  If the name argument is null, then the name is set to the empty string.<a name="line.109"></a>
+<span class="sourceLineNo">110</span>     *  Increment the version of the workspace.<a name="line.110"></a>
+<span class="sourceLineNo">111</span>     *  @param container The container actor.<a name="line.111"></a>
+<span class="sourceLineNo">112</span>     *  @param name The name of this actor.<a name="line.112"></a>
+<span class="sourceLineNo">113</span>     *  @exception IllegalActionException If the container is incompatible<a name="line.113"></a>
+<span class="sourceLineNo">114</span>     *   with this actor.<a name="line.114"></a>
+<span class="sourceLineNo">115</span>     *  @exception NameDuplicationException If the name coincides with<a name="line.115"></a>
+<span class="sourceLineNo">116</span>     *   an actor already in the container.<a name="line.116"></a>
+<span class="sourceLineNo">117</span>     */<a name="line.117"></a>
+<span class="sourceLineNo">118</span>    public CatchUpComposite(CompositeEntity container, String name)<a name="line.118"></a>
+<span class="sourceLineNo">119</span>            throws IllegalActionException, NameDuplicationException {<a name="line.119"></a>
+<span class="sourceLineNo">120</span>        super(container, name);<a name="line.120"></a>
+<span class="sourceLineNo">121</span>        _init(container);<a name="line.121"></a>
+<span class="sourceLineNo">122</span>    }<a name="line.122"></a>
+<span class="sourceLineNo">123</span><a name="line.123"></a>
+<span class="sourceLineNo">124</span>    /** Construct a CatchUpComposite in the specified workspace with<a name="line.124"></a>
+<span class="sourceLineNo">125</span>     *  no container and an empty string as a name. You can then change<a name="line.125"></a>
+<span class="sourceLineNo">126</span>     *  the name with setName(). If the workspace argument is null, then<a name="line.126"></a>
+<span class="sourceLineNo">127</span>     *  use the default workspace.<a name="line.127"></a>
+<span class="sourceLineNo">128</span>     *  @param workspace The workspace that will list the actor.<a name="line.128"></a>
+<span class="sourceLineNo">129</span>     *  @exception IllegalActionException If the container is incompatible<a name="line.129"></a>
+<span class="sourceLineNo">130</span>     *   with this actor.<a name="line.130"></a>
+<span class="sourceLineNo">131</span>     *  @exception NameDuplicationException If the name of the<a name="line.131"></a>
+<span class="sourceLineNo">132</span>     *   director coincides with an actor already in the container.<a name="line.132"></a>
+<span class="sourceLineNo">133</span>     */<a name="line.133"></a>
+<span class="sourceLineNo">134</span>    public CatchUpComposite(Workspace workspace)<a name="line.134"></a>
+<span class="sourceLineNo">135</span>            throws IllegalActionException, NameDuplicationException {<a name="line.135"></a>
+<span class="sourceLineNo">136</span>        // This constructor is needed if CatchUpComposite is used as an<a name="line.136"></a>
+<span class="sourceLineNo">137</span>        // actor-oriented class.<a name="line.137"></a>
+<span class="sourceLineNo">138</span>        super(workspace);<a name="line.138"></a>
+<span class="sourceLineNo">139</span>        // FIXME: The null argument will be a problem!<a name="line.139"></a>
+<span class="sourceLineNo">140</span>        _init(null);<a name="line.140"></a>
+<span class="sourceLineNo">141</span>    }<a name="line.141"></a>
+<span class="sourceLineNo">142</span><a name="line.142"></a>
+<span class="sourceLineNo">143</span>    ///////////////////////////////////////////////////////////////////<a name="line.143"></a>
+<span class="sourceLineNo">144</span>    ////                         public methods                    ////<a name="line.144"></a>
+<span class="sourceLineNo">145</span><a name="line.145"></a>
+<span class="sourceLineNo">146</span>    /** Clone the object into the specified workspace. This overrides<a name="line.146"></a>
+<span class="sourceLineNo">147</span>     *  the base class to instantiate a new CatchUpDirector.<a name="line.147"></a>
+<span class="sourceLineNo">148</span>     *  @param workspace The workspace for the new object.<a name="line.148"></a>
+<span class="sourceLineNo">149</span>     *  @return A new NamedObj.<a name="line.149"></a>
+<span class="sourceLineNo">150</span>     *  @exception CloneNotSupportedException If any of the attributes<a name="line.150"></a>
+<span class="sourceLineNo">151</span>     *   cannot be cloned.<a name="line.151"></a>
+<span class="sourceLineNo">152</span>     *  @see #exportMoML(Writer, int, String)<a name="line.152"></a>
+<span class="sourceLineNo">153</span>     */<a name="line.153"></a>
+<span class="sourceLineNo">154</span>    @Override<a name="line.154"></a>
+<span class="sourceLineNo">155</span>    public Object clone(Workspace workspace) throws CloneNotSupportedException {<a name="line.155"></a>
+<span class="sourceLineNo">156</span>        CatchUpComposite result = (CatchUpComposite) super.clone(workspace);<a name="line.156"></a>
+<span class="sourceLineNo">157</span>        try {<a name="line.157"></a>
+<span class="sourceLineNo">158</span>            // Remove the old inner CatchUpDirector(s) that is(are) in the wrong workspace.<a name="line.158"></a>
+<span class="sourceLineNo">159</span>            // FIXME: Is this really needed? Following IterateOverArray.<a name="line.159"></a>
+<span class="sourceLineNo">160</span>            String catchUpDirectorName = null;<a name="line.160"></a>
+<span class="sourceLineNo">161</span>            Iterator catchUpDirectors = result<a name="line.161"></a>
+<span class="sourceLineNo">162</span>                    .attributeList(CatchUpDirector.class).iterator();<a name="line.162"></a>
+<span class="sourceLineNo">163</span>            while (catchUpDirectors.hasNext()) {<a name="line.163"></a>
+<span class="sourceLineNo">164</span>                CatchUpDirector oldCatchUpDirector = (CatchUpDirector) catchUpDirectors<a name="line.164"></a>
+<span class="sourceLineNo">165</span>                        .next();<a name="line.165"></a>
+<span class="sourceLineNo">166</span>                if (catchUpDirectorName == null) {<a name="line.166"></a>
+<span class="sourceLineNo">167</span>                    catchUpDirectorName = oldCatchUpDirector.getName();<a name="line.167"></a>
+<span class="sourceLineNo">168</span>                }<a name="line.168"></a>
+<span class="sourceLineNo">169</span>                oldCatchUpDirector.setContainer(null);<a name="line.169"></a>
+<span class="sourceLineNo">170</span>            }<a name="line.170"></a>
+<span class="sourceLineNo">171</span><a name="line.171"></a>
+<span class="sourceLineNo">172</span>            // Create a new CatchUpDirector that is in the right workspace.<a name="line.172"></a>
+<span class="sourceLineNo">173</span>            CatchUpDirector catchUpDirector = result.new CatchUpDirector(<a name="line.173"></a>
+<span class="sourceLineNo">174</span>                    workspace);<a name="line.174"></a>
+<span class="sourceLineNo">175</span>            catchUpDirector.setContainer(result);<a name="line.175"></a>
+<span class="sourceLineNo">176</span>            catchUpDirector.setName(catchUpDirectorName);<a name="line.176"></a>
+<span class="sourceLineNo">177</span>        } catch (Throwable throwable) {<a name="line.177"></a>
+<span class="sourceLineNo">178</span>            throw new CloneNotSupportedException(<a name="line.178"></a>
+<span class="sourceLineNo">179</span>                    "Could not clone: " + throwable);<a name="line.179"></a>
+<span class="sourceLineNo">180</span>        }<a name="line.180"></a>
+<span class="sourceLineNo">181</span>        return result;<a name="line.181"></a>
+<span class="sourceLineNo">182</span>    }<a name="line.182"></a>
+<span class="sourceLineNo">183</span><a name="line.183"></a>
+<span class="sourceLineNo">184</span>    /** Fire any piggybacked actors and then delegate the firing to the director.<a name="line.184"></a>
+<span class="sourceLineNo">185</span>     *  This overrides the base class to not transfer inputs or outputs.<a name="line.185"></a>
+<span class="sourceLineNo">186</span>     *  Those operations are handled by the director.<a name="line.186"></a>
+<span class="sourceLineNo">187</span>     *  @exception IllegalActionException If there is no director, or if<a name="line.187"></a>
+<span class="sourceLineNo">188</span>     *   the director's fire() method throws it, or if the actor is not<a name="line.188"></a>
+<span class="sourceLineNo">189</span>     *   opaque.<a name="line.189"></a>
+<span class="sourceLineNo">190</span>     */<a name="line.190"></a>
+<span class="sourceLineNo">191</span>    @Override<a name="line.191"></a>
+<span class="sourceLineNo">192</span>    public void fire() throws IllegalActionException {<a name="line.192"></a>
+<span class="sourceLineNo">193</span>        if (_debugging) {<a name="line.193"></a>
+<span class="sourceLineNo">194</span>            _debug("Calling fire()");<a name="line.194"></a>
+<span class="sourceLineNo">195</span>        }<a name="line.195"></a>
+<span class="sourceLineNo">196</span><a name="line.196"></a>
+<span class="sourceLineNo">197</span>        try {<a name="line.197"></a>
+<span class="sourceLineNo">198</span>            _workspace.getReadAccess();<a name="line.198"></a>
+<span class="sourceLineNo">199</span><a name="line.199"></a>
+<span class="sourceLineNo">200</span>            // First invoke piggybacked methods.<a name="line.200"></a>
+<span class="sourceLineNo">201</span>            if (_piggybacks != null) {<a name="line.201"></a>
+<span class="sourceLineNo">202</span>                // Invoke the fire() method of each piggyback.<a name="line.202"></a>
+<span class="sourceLineNo">203</span>                for (Executable piggyback : _piggybacks) {<a name="line.203"></a>
+<span class="sourceLineNo">204</span>                    piggyback.fire();<a name="line.204"></a>
+<span class="sourceLineNo">205</span>                }<a name="line.205"></a>
+<span class="sourceLineNo">206</span>            }<a name="line.206"></a>
+<span class="sourceLineNo">207</span>            if (_derivedPiggybacks != null) {<a name="line.207"></a>
+<span class="sourceLineNo">208</span>                // Invoke the fire() method of each piggyback.<a name="line.208"></a>
+<span class="sourceLineNo">209</span>                for (Executable piggyback : _derivedPiggybacks) {<a name="line.209"></a>
+<span class="sourceLineNo">210</span>                    piggyback.fire();<a name="line.210"></a>
+<span class="sourceLineNo">211</span>                }<a name="line.211"></a>
+<span class="sourceLineNo">212</span>            }<a name="line.212"></a>
+<span class="sourceLineNo">213</span>            _director.fire();<a name="line.213"></a>
+<span class="sourceLineNo">214</span>        } finally {<a name="line.214"></a>
+<span class="sourceLineNo">215</span>            _workspace.doneReading();<a name="line.215"></a>
+<span class="sourceLineNo">216</span>        }<a name="line.216"></a>
+<span class="sourceLineNo">217</span><a name="line.217"></a>
+<span class="sourceLineNo">218</span>        if (_debugging) {<a name="line.218"></a>
+<span class="sourceLineNo">219</span>            _debug("Called fire()");<a name="line.219"></a>
+<span class="sourceLineNo">220</span>        }<a name="line.220"></a>
+<span class="sourceLineNo">221</span>    }<a name="line.221"></a>
+<span class="sourceLineNo">222</span><a name="line.222"></a>
+<span class="sourceLineNo">223</span>    ///////////////////////////////////////////////////////////////////<a name="line.223"></a>
+<span class="sourceLineNo">224</span>    ////                         private variables                 ////<a name="line.224"></a>
+<span class="sourceLineNo">225</span><a name="line.225"></a>
+<span class="sourceLineNo">226</span>    /** The contained composite actor. */<a name="line.226"></a>
+<span class="sourceLineNo">227</span>    private Contents _contents;<a name="line.227"></a>
+<span class="sourceLineNo">228</span><a name="line.228"></a>
+<span class="sourceLineNo">229</span>    /** The default value icon.  This is static so that we avoid doing<a name="line.229"></a>
+<span class="sourceLineNo">230</span>     *  string concatenation each time we construct this object.<a name="line.230"></a>
+<span class="sourceLineNo">231</span>     */<a name="line.231"></a>
+<span class="sourceLineNo">232</span>    private static String _defaultIcon = "&lt;svg&gt;\n"<a name="line.232"></a>
+<span class="sourceLineNo">233</span>            + "&lt;rect x=\"-30\" y=\"-20\" width=\"60\" "<a name="line.233"></a>
+<span class="sourceLineNo">234</span>            + "height=\"40\" style=\"fill:cyan\"/&gt;\n"<a name="line.234"></a>
+<span class="sourceLineNo">235</span>            + "&lt;rect x=\"-28\" y=\"-18\" width=\"56\" "<a name="line.235"></a>
+<span class="sourceLineNo">236</span>            + "height=\"36\" style=\"fill:lightgrey\"/&gt;\n"<a name="line.236"></a>
+<span class="sourceLineNo">237</span>            + "&lt;rect x=\"-15\" y=\"-10\" width=\"10\" height=\"8\" "<a name="line.237"></a>
+<span class="sourceLineNo">238</span>            + "style=\"fill:white\"/&gt;\n"<a name="line.238"></a>
+<span class="sourceLineNo">239</span>            + "&lt;rect x=\"-15\" y=\"2\" width=\"10\" height=\"8\" "<a name="line.239"></a>
+<span class="sourceLineNo">240</span>            + "style=\"fill:white\"/&gt;\n"<a name="line.240"></a>
+<span class="sourceLineNo">241</span>            + "&lt;rect x=\"5\" y=\"-4\" width=\"10\" height=\"8\" "<a name="line.241"></a>
+<span class="sourceLineNo">242</span>            + "style=\"fill:white\"/&gt;\n"<a name="line.242"></a>
+<span class="sourceLineNo">243</span>            + "&lt;line x1=\"-5\" y1=\"-6\" x2=\"0\" y2=\"-6\"/&gt;"<a name="line.243"></a>
+<span class="sourceLineNo">244</span>            + "&lt;line x1=\"-5\" y1=\"6\" x2=\"0\" y2=\"6\"/&gt;"<a name="line.244"></a>
+<span class="sourceLineNo">245</span>            + "&lt;line x1=\"0\" y1=\"-6\" x2=\"0\" y2=\"6\"/&gt;"<a name="line.245"></a>
+<span class="sourceLineNo">246</span>            + "&lt;line x1=\"0\" y1=\"0\" x2=\"5\" y2=\"0\"/&gt;" + "&lt;/svg&gt;\n";<a name="line.246"></a>
+<span class="sourceLineNo">247</span><a name="line.247"></a>
+<span class="sourceLineNo">248</span>    /** The director. */<a name="line.248"></a>
+<span class="sourceLineNo">249</span>    private CatchUpDirector _director;<a name="line.249"></a>
+<span class="sourceLineNo">250</span><a name="line.250"></a>
+<span class="sourceLineNo">251</span>    ///////////////////////////////////////////////////////////////////<a name="line.251"></a>
+<span class="sourceLineNo">252</span>    ////                         private methods                   ////<a name="line.252"></a>
+<span class="sourceLineNo">253</span><a name="line.253"></a>
+<span class="sourceLineNo">254</span>    /** Initialize the actor.<a name="line.254"></a>
+<span class="sourceLineNo">255</span>     *  @param container The container.<a name="line.255"></a>
+<span class="sourceLineNo">256</span>     *  @exception IllegalActionException If the container is incompatible<a name="line.256"></a>
+<span class="sourceLineNo">257</span>     *   with this actor.<a name="line.257"></a>
+<span class="sourceLineNo">258</span>     *  @exception NameDuplicationException If the name coincides with<a name="line.258"></a>
+<span class="sourceLineNo">259</span>     *   an actor already in the container.<a name="line.259"></a>
+<span class="sourceLineNo">260</span>     */<a name="line.260"></a>
+<span class="sourceLineNo">261</span>    private void _init(CompositeEntity container)<a name="line.261"></a>
+<span class="sourceLineNo">262</span>            throws IllegalActionException, NameDuplicationException {<a name="line.262"></a>
+<span class="sourceLineNo">263</span>        setClassName("ptolemy.actor.lib.hoc.CatchUpComposite");<a name="line.263"></a>
+<span class="sourceLineNo">264</span><a name="line.264"></a>
+<span class="sourceLineNo">265</span>        // Create the CatchUpDirector in the proper workspace.<a name="line.265"></a>
+<span class="sourceLineNo">266</span>        _director = new CatchUpDirector(workspace());<a name="line.266"></a>
+<span class="sourceLineNo">267</span>        _director.setContainer(this);<a name="line.267"></a>
+<span class="sourceLineNo">268</span>        _director.setName("CatchUpDirector");<a name="line.268"></a>
+<span class="sourceLineNo">269</span><a name="line.269"></a>
+<span class="sourceLineNo">270</span>        // Create the composite actor for the contents.<a name="line.270"></a>
+<span class="sourceLineNo">271</span>        _contents = new Contents(this, "Contents");<a name="line.271"></a>
+<span class="sourceLineNo">272</span><a name="line.272"></a>
+<span class="sourceLineNo">273</span>        // Override the default icon.<a name="line.273"></a>
+<span class="sourceLineNo">274</span>        _attachText("_iconDescription", _defaultIcon);<a name="line.274"></a>
+<span class="sourceLineNo">275</span>    }<a name="line.275"></a>
+<span class="sourceLineNo">276</span><a name="line.276"></a>
+<span class="sourceLineNo">277</span>    ///////////////////////////////////////////////////////////////////<a name="line.277"></a>
+<span class="sourceLineNo">278</span>    ////                         inner classes                     ////<a name="line.278"></a>
+<span class="sourceLineNo">279</span><a name="line.279"></a>
+<span class="sourceLineNo">280</span>    ///////////////////////////////////////////////////////////////////<a name="line.280"></a>
+<span class="sourceLineNo">281</span>    //// CatchUpDirector<a name="line.281"></a>
+<span class="sourceLineNo">282</span><a name="line.282"></a>
+<span class="sourceLineNo">283</span>    /** This is a specialized director that, when fired, fires the<a name="line.283"></a>
+<span class="sourceLineNo">284</span>     *  inside model to process any unprocessed events it may have<a name="line.284"></a>
+<span class="sourceLineNo">285</span>     *  at earlier times than the environment time of the firing.<a name="line.285"></a>
+<span class="sourceLineNo">286</span>     *  If in any of these "catch up" firings the inside model<a name="line.286"></a>
+<span class="sourceLineNo">287</span>     *  attempts to produce outputs, this director will throw an<a name="line.287"></a>
+<span class="sourceLineNo">288</span>     *  exception. This director then transfers any available<a name="line.288"></a>
+<span class="sourceLineNo">289</span>     *  inputs to the inside model and fires the inside model<a name="line.289"></a>
+<span class="sourceLineNo">290</span>     *  one more time. On this "caught up" firing, the inside<a name="line.290"></a>
+<span class="sourceLineNo">291</span>     *  model is permitted to produce outputs.<a name="line.291"></a>
+<span class="sourceLineNo">292</span>     */<a name="line.292"></a>
+<span class="sourceLineNo">293</span>    private class CatchUpDirector extends Director<a name="line.293"></a>
+<span class="sourceLineNo">294</span>            implements SuperdenseTimeDirector {<a name="line.294"></a>
+<span class="sourceLineNo">295</span><a name="line.295"></a>
+<span class="sourceLineNo">296</span>        /** Construct an CatchUpDirector in the specified workspace with<a name="line.296"></a>
+<span class="sourceLineNo">297</span>         *  no container and an empty string as a name.<a name="line.297"></a>
+<span class="sourceLineNo">298</span>         *  @param workspace The workspace.<a name="line.298"></a>
+<span class="sourceLineNo">299</span>         *  @exception IllegalActionException If the container is incompatible<a name="line.299"></a>
+<span class="sourceLineNo">300</span>         *   with this actor.<a name="line.300"></a>
+<span class="sourceLineNo">301</span>         *  @exception NameDuplicationException If the name coincides with<a name="line.301"></a>
+<span class="sourceLineNo">302</span>         *   an actor already in the container.<a name="line.302"></a>
+<span class="sourceLineNo">303</span>         */<a name="line.303"></a>
+<span class="sourceLineNo">304</span>        public CatchUpDirector(Workspace workspace)<a name="line.304"></a>
+<span class="sourceLineNo">305</span>                throws IllegalActionException, NameDuplicationException {<a name="line.305"></a>
+<span class="sourceLineNo">306</span>            super(workspace);<a name="line.306"></a>
+<span class="sourceLineNo">307</span>            setPersistent(false);<a name="line.307"></a>
+<span class="sourceLineNo">308</span>        }<a name="line.308"></a>
+<span class="sourceLineNo">309</span><a name="line.309"></a>
+<span class="sourceLineNo">310</span>        /** Clone the object into the specified workspace.<a name="line.310"></a>
+<span class="sourceLineNo">311</span>         *  @param workspace The workspace for the new object.<a name="line.311"></a>
+<span class="sourceLineNo">312</span>         *  @return A new NamedObj.<a name="line.312"></a>
+<span class="sourceLineNo">313</span>         *  @exception CloneNotSupportedException If any of the attributes<a name="line.313"></a>
+<span class="sourceLineNo">314</span>         *   cannot be cloned.<a name="line.314"></a>
+<span class="sourceLineNo">315</span>         *  @see #exportMoML(Writer, int, String)<a name="line.315"></a>
+<span class="sourceLineNo">316</span>         */<a name="line.316"></a>
+<span class="sourceLineNo">317</span>        @Override<a name="line.317"></a>
+<span class="sourceLineNo">318</span>        public Object clone(Workspace workspace)<a name="line.318"></a>
+<span class="sourceLineNo">319</span>                throws CloneNotSupportedException {<a name="line.319"></a>
+<span class="sourceLineNo">320</span>            CatchUpDirector result = (CatchUpDirector) super.clone(workspace);<a name="line.320"></a>
+<span class="sourceLineNo">321</span>            result._pendingFiringTimes = null;<a name="line.321"></a>
+<span class="sourceLineNo">322</span>            return result;<a name="line.322"></a>
+<span class="sourceLineNo">323</span>        }<a name="line.323"></a>
+<span class="sourceLineNo">324</span><a name="line.324"></a>
+<span class="sourceLineNo">325</span>        /** Invoke one or more iterations of the contained actor of the<a name="line.325"></a>
+<span class="sourceLineNo">326</span>         *  container of this director, allowing it to process any internal<a name="line.326"></a>
+<span class="sourceLineNo">327</span>         *  events that it may have at earlier times than the current time<a name="line.327"></a>
+<span class="sourceLineNo">328</span>         *  of the enclosing model.  That is, perform zero or more<a name="line.328"></a>
+<span class="sourceLineNo">329</span>         *  "catch up" iterations of the contained actor, where the contained<a name="line.329"></a>
+<span class="sourceLineNo">330</span>         *  actor will see an earlier time than the current time of<a name="line.330"></a>
+<span class="sourceLineNo">331</span>         *  the enclosing model, followed by exactly one "caught up"<a name="line.331"></a>
+<span class="sourceLineNo">332</span>         *  iteration.  The inputs of this composite will be visible to<a name="line.332"></a>
+<span class="sourceLineNo">333</span>         *  the inside model only on the "caught up" iteration.<a name="line.333"></a>
+<span class="sourceLineNo">334</span>         *  @exception IllegalActionException If any called method of<a name="line.334"></a>
+<span class="sourceLineNo">335</span>         *   of the contained actor throws it, or if the contained<a name="line.335"></a>
+<span class="sourceLineNo">336</span>         *   actor is not opaque.<a name="line.336"></a>
+<span class="sourceLineNo">337</span>         */<a name="line.337"></a>
+<span class="sourceLineNo">338</span>        @Override<a name="line.338"></a>
+<span class="sourceLineNo">339</span>        public void fire() throws IllegalActionException {<a name="line.339"></a>
+<span class="sourceLineNo">340</span>            // Don't call "super.fire();" here, this actor contains its<a name="line.340"></a>
+<span class="sourceLineNo">341</span>            // own director.<a name="line.341"></a>
+<span class="sourceLineNo">342</span>            CompositeActor container = (CompositeActor) getContainer();<a name="line.342"></a>
+<span class="sourceLineNo">343</span>            _postfireReturns = true;<a name="line.343"></a>
+<span class="sourceLineNo">344</span><a name="line.344"></a>
+<span class="sourceLineNo">345</span>            Director enclosingDirector = container.getExecutiveDirector();<a name="line.345"></a>
+<span class="sourceLineNo">346</span>            if (enclosingDirector == null) {<a name="line.346"></a>
+<span class="sourceLineNo">347</span>                throw new IllegalActionException(container,<a name="line.347"></a>
+<span class="sourceLineNo">348</span>                        "No enclosing director!");<a name="line.348"></a>
+<span class="sourceLineNo">349</span>            }<a name="line.349"></a>
+<span class="sourceLineNo">350</span>            int microstep = 1;<a name="line.350"></a>
+<span class="sourceLineNo">351</span>            if (enclosingDirector instanceof SuperdenseTimeDirector) {<a name="line.351"></a>
+<span class="sourceLineNo">352</span>                microstep = ((SuperdenseTimeDirector) enclosingDirector)<a name="line.352"></a>
+<span class="sourceLineNo">353</span>                        .getIndex();<a name="line.353"></a>
+<span class="sourceLineNo">354</span>            }<a name="line.354"></a>
+<span class="sourceLineNo">355</span>            SuperdenseTime environmentTime = new SuperdenseTime(getModelTime(),<a name="line.355"></a>
+<span class="sourceLineNo">356</span>                    microstep);<a name="line.356"></a>
+<span class="sourceLineNo">357</span><a name="line.357"></a>
+<span class="sourceLineNo">358</span>            // Perform catch up iterations, if necessary.<a name="line.358"></a>
+<span class="sourceLineNo">359</span>            if (_pendingFiringTimes != null) {<a name="line.359"></a>
+<span class="sourceLineNo">360</span>                SuperdenseTime firstPendingFiringTime = _pendingFiringTimes<a name="line.360"></a>
+<span class="sourceLineNo">361</span>                        .peek();<a name="line.361"></a>
+<span class="sourceLineNo">362</span>                while (firstPendingFiringTime != null) {<a name="line.362"></a>
+<span class="sourceLineNo">363</span>                    int comparison = firstPendingFiringTime<a name="line.363"></a>
+<span class="sourceLineNo">364</span>                            .compareTo(environmentTime);<a name="line.364"></a>
+<span class="sourceLineNo">365</span>                    if (comparison &lt; 0) {<a name="line.365"></a>
+<span class="sourceLineNo">366</span>                        // Catch up iteration is needed.<a name="line.366"></a>
+<span class="sourceLineNo">367</span>                        _pendingFiringTimes.poll();<a name="line.367"></a>
+<span class="sourceLineNo">368</span><a name="line.368"></a>
+<span class="sourceLineNo">369</span>                        // Perform catch up firing.<a name="line.369"></a>
+<span class="sourceLineNo">370</span>                        try {<a name="line.370"></a>
+<span class="sourceLineNo">371</span>                            _catchUpTime = firstPendingFiringTime.timestamp();<a name="line.371"></a>
+<span class="sourceLineNo">372</span>                            _microstep = firstPendingFiringTime.index();<a name="line.372"></a>
+<span class="sourceLineNo">373</span><a name="line.373"></a>
+<span class="sourceLineNo">374</span>                            if (!_fireContents()) {<a name="line.374"></a>
+<span class="sourceLineNo">375</span>                                // Postfire returned false.<a name="line.375"></a>
+<span class="sourceLineNo">376</span>                                break;<a name="line.376"></a>
+<span class="sourceLineNo">377</span>                            }<a name="line.377"></a>
+<span class="sourceLineNo">378</span>                            // If any output port has tokens, this is an error.<a name="line.378"></a>
+<span class="sourceLineNo">379</span>                            List&lt;IOPort&gt; ports = outputPortList();<a name="line.379"></a>
+<span class="sourceLineNo">380</span>                            for (IOPort port : ports) {<a name="line.380"></a>
+<span class="sourceLineNo">381</span>                                for (int i = 0; i &lt; port.getWidth(); i++) {<a name="line.381"></a>
+<span class="sourceLineNo">382</span>                                    if (port.hasTokenInside(i)) {<a name="line.382"></a>
+<span class="sourceLineNo">383</span>                                        throw new IllegalActionException(port,<a name="line.383"></a>
+<span class="sourceLineNo">384</span>                                                "Illegal output during catch up iteration. "<a name="line.384"></a>
+<span class="sourceLineNo">385</span>                                                        + "Composite actor is attempting to produce an output at time "<a name="line.385"></a>
+<span class="sourceLineNo">386</span>                                                        + _catchUpTime<a name="line.386"></a>
+<span class="sourceLineNo">387</span>                                                        + ", but environment time is past that at "<a name="line.387"></a>
+<span class="sourceLineNo">388</span>                                                        + environmentTime<a name="line.388"></a>
+<span class="sourceLineNo">389</span>                                                                .timestamp());<a name="line.389"></a>
+<span class="sourceLineNo">390</span>                                    }<a name="line.390"></a>
+<span class="sourceLineNo">391</span>                                }<a name="line.391"></a>
+<span class="sourceLineNo">392</span>                            }<a name="line.392"></a>
+<span class="sourceLineNo">393</span>                        } finally {<a name="line.393"></a>
+<span class="sourceLineNo">394</span>                            _catchUpTime = null;<a name="line.394"></a>
+<span class="sourceLineNo">395</span>                        }<a name="line.395"></a>
+<span class="sourceLineNo">396</span><a name="line.396"></a>
+<span class="sourceLineNo">397</span>                        // In case another catch up iteration is needed:<a name="line.397"></a>
+<span class="sourceLineNo">398</span>                        firstPendingFiringTime = _pendingFiringTimes.peek();<a name="line.398"></a>
+<span class="sourceLineNo">399</span>                    } else if (comparison == 0) {<a name="line.399"></a>
+<span class="sourceLineNo">400</span>                        // Caught up firing will satisfy the request.<a name="line.400"></a>
+<span class="sourceLineNo">401</span>                        _pendingFiringTimes.poll();<a name="line.401"></a>
+<span class="sourceLineNo">402</span>                        break;<a name="line.402"></a>
+<span class="sourceLineNo">403</span>                    } else {<a name="line.403"></a>
+<span class="sourceLineNo">404</span>                        // Pending request is in the future.<a name="line.404"></a>
+<span class="sourceLineNo">405</span>                        // Proceed directly to caught up firing.<a name="line.405"></a>
+<span class="sourceLineNo">406</span>                        break;<a name="line.406"></a>
+<span class="sourceLineNo">407</span>                    }<a name="line.407"></a>
+<span class="sourceLineNo">408</span>                }<a name="line.408"></a>
+<span class="sourceLineNo">409</span>            }<a name="line.409"></a>
+<span class="sourceLineNo">410</span><a name="line.410"></a>
+<span class="sourceLineNo">411</span>            // Perform caught up iteration only if no catch iteration has returned<a name="line.411"></a>
+<span class="sourceLineNo">412</span>            // false from postfire().<a name="line.412"></a>
+<span class="sourceLineNo">413</span>            if (_postfireReturns == true) {<a name="line.413"></a>
+<span class="sourceLineNo">414</span>                _microstep = microstep;<a name="line.414"></a>
+<span class="sourceLineNo">415</span>                // Transfer inputs.<a name="line.415"></a>
+<span class="sourceLineNo">416</span>                for (Iterator&lt;?&gt; inputPorts = inputPortList()<a name="line.416"></a>
+<span class="sourceLineNo">417</span>                        .iterator(); inputPorts.hasNext() &amp;&amp; !_stopRequested;) {<a name="line.417"></a>
+<span class="sourceLineNo">418</span>                    IOPort p = (IOPort) inputPorts.next();<a name="line.418"></a>
+<span class="sourceLineNo">419</span>                    if (p instanceof ParameterPort) {<a name="line.419"></a>
+<span class="sourceLineNo">420</span>                        ((ParameterPort) p).getParameter().update();<a name="line.420"></a>
+<span class="sourceLineNo">421</span>                    } else {<a name="line.421"></a>
+<span class="sourceLineNo">422</span>                        transferInputs(p);<a name="line.422"></a>
+<span class="sourceLineNo">423</span>                    }<a name="line.423"></a>
+<span class="sourceLineNo">424</span>                }<a name="line.424"></a>
+<span class="sourceLineNo">425</span><a name="line.425"></a>
+<span class="sourceLineNo">426</span>                if (!_stopRequested) {<a name="line.426"></a>
+<span class="sourceLineNo">427</span>                    _fireContents();<a name="line.427"></a>
+<span class="sourceLineNo">428</span><a name="line.428"></a>
+<span class="sourceLineNo">429</span>                    // Transfer outputs.<a name="line.429"></a>
+<span class="sourceLineNo">430</span>                    if (!_stopRequested) {<a name="line.430"></a>
+<span class="sourceLineNo">431</span>                        transferOutputs();<a name="line.431"></a>
+<span class="sourceLineNo">432</span>                    }<a name="line.432"></a>
+<span class="sourceLineNo">433</span>                }<a name="line.433"></a>
+<span class="sourceLineNo">434</span><a name="line.434"></a>
+<span class="sourceLineNo">435</span>                // If there is a pending request in the future, delegate<a name="line.435"></a>
+<span class="sourceLineNo">436</span>                // a fireAt() request.<a name="line.436"></a>
+<span class="sourceLineNo">437</span>                if (_pendingFiringTimes != null) {<a name="line.437"></a>
+<span class="sourceLineNo">438</span>                    SuperdenseTime firstPendingFiringTime = _pendingFiringTimes<a name="line.438"></a>
+<span class="sourceLineNo">439</span>                            .peek();<a name="line.439"></a>
+<span class="sourceLineNo">440</span>                    if (firstPendingFiringTime != null &amp;&amp; firstPendingFiringTime<a name="line.440"></a>
+<span class="sourceLineNo">441</span>                            .compareTo(environmentTime) &gt; 0) {<a name="line.441"></a>
+<span class="sourceLineNo">442</span>                        // First argument is ignored, so it can be null.<a name="line.442"></a>
+<span class="sourceLineNo">443</span>                        fireAt(null, firstPendingFiringTime.timestamp(),<a name="line.443"></a>
+<span class="sourceLineNo">444</span>                                firstPendingFiringTime.index());<a name="line.444"></a>
+<span class="sourceLineNo">445</span>                    }<a name="line.445"></a>
+<span class="sourceLineNo">446</span>                }<a name="line.446"></a>
+<span class="sourceLineNo">447</span>            }<a name="line.447"></a>
+<span class="sourceLineNo">448</span>        }<a name="line.448"></a>
+<span class="sourceLineNo">449</span><a name="line.449"></a>
+<span class="sourceLineNo">450</span>        /** Request a firing of the given actor at the given model<a name="line.450"></a>
+<span class="sourceLineNo">451</span>         *  time.  This class delegates the request to the enclosing<a name="line.451"></a>
+<span class="sourceLineNo">452</span>         *  director. If the enclosing director returns the same<a name="line.452"></a>
+<span class="sourceLineNo">453</span>         *  requested time, then nothing further happens. If the<a name="line.453"></a>
+<span class="sourceLineNo">454</span>         *  enclosing director returns a later time, then this method<a name="line.454"></a>
+<span class="sourceLineNo">455</span>         *  records the requested time so that on the next firing<a name="line.455"></a>
+<span class="sourceLineNo">456</span>         *  a "catch up" iteration will be performed at that time.<a name="line.456"></a>
+<span class="sourceLineNo">457</span>         *  If the enclosing director returns an earlier time,<a name="line.457"></a>
+<span class="sourceLineNo">458</span>         *  then this method also records the requested time,<a name="line.458"></a>
+<span class="sourceLineNo">459</span>         *  and on the next firing, will again attempt to delegate<a name="line.459"></a>
+<span class="sourceLineNo">460</span>         *  to the container.<a name="line.460"></a>
+<span class="sourceLineNo">461</span>         *  @param actor The actor scheduled to be fired.<a name="line.461"></a>
+<span class="sourceLineNo">462</span>         *  @param time The requested time.<a name="line.462"></a>
+<span class="sourceLineNo">463</span>         *  @return An instance of Time with the current time value, or<a name="line.463"></a>
+<span class="sourceLineNo">464</span>         *   if there is an executive director, the time at which the<a name="line.464"></a>
+<span class="sourceLineNo">465</span>         *   container of this director will next be fired<a name="line.465"></a>
+<span class="sourceLineNo">466</span>         *   in response to this request.<a name="line.466"></a>
+<span class="sourceLineNo">467</span>         *  @see #fireAtCurrentTime(Actor)<a name="line.467"></a>
+<span class="sourceLineNo">468</span>         *  @exception IllegalActionException If there is an executive director<a name="line.468"></a>
+<span class="sourceLineNo">469</span>         *   and it throws it. Derived classes may choose to throw this<a name="line.469"></a>
+<span class="sourceLineNo">470</span>         *   exception for other reasons.<a name="line.470"></a>
+<span class="sourceLineNo">471</span>         */<a name="line.471"></a>
+<span class="sourceLineNo">472</span>        @Override<a name="line.472"></a>
+<span class="sourceLineNo">473</span>        public Time fireAt(Actor actor, Time time)<a name="line.473"></a>
+<span class="sourceLineNo">474</span>                throws IllegalActionException {<a name="line.474"></a>
+<span class="sourceLineNo">475</span>            // Unless the actor specifically requests a particular microstep,<a name="line.475"></a>
+<span class="sourceLineNo">476</span>            // we assume it knows nothing about microsteps. We use microstep 1<a name="line.476"></a>
+<span class="sourceLineNo">477</span>            // as the default, since this is the default for discrete events.<a name="line.477"></a>
+<span class="sourceLineNo">478</span>            // The Continuous domain will specifically request a firing at<a name="line.478"></a>
+<span class="sourceLineNo">479</span>            // microstep 0.<a name="line.479"></a>
+<span class="sourceLineNo">480</span>            return fireAt(actor, time, 1);<a name="line.480"></a>
+<span class="sourceLineNo">481</span>        }<a name="line.481"></a>
+<span class="sourceLineNo">482</span><a name="line.482"></a>
+<span class="sourceLineNo">483</span>        /** Request a firing of the given actor at the given model<a name="line.483"></a>
+<span class="sourceLineNo">484</span>         *  time with the given microstep. This method behaves exactly<a name="line.484"></a>
+<span class="sourceLineNo">485</span>         *  like {@link #fireAt(Actor, Time)}, except that it also<a name="line.485"></a>
+<span class="sourceLineNo">486</span>         *  passes up to the executive director the microstep, if there<a name="line.486"></a>
+<span class="sourceLineNo">487</span>         *  is one.<a name="line.487"></a>
+<span class="sourceLineNo">488</span>         *  @param actor The actor scheduled to be fired.<a name="line.488"></a>
+<span class="sourceLineNo">489</span>         *  @param time The requested time.<a name="line.489"></a>
+<span class="sourceLineNo">490</span>         *  @param microstep The requested microstep.<a name="line.490"></a>
+<span class="sourceLineNo">491</span>         *  @return An instance of Time with the current time value, or<a name="line.491"></a>
+<span class="sourceLineNo">492</span>         *   if there is an executive director, the time at which the<a name="line.492"></a>
+<span class="sourceLineNo">493</span>         *   container of this director will next be fired<a name="line.493"></a>
+<span class="sourceLineNo">494</span>         *   in response to this request.<a name="line.494"></a>
+<span class="sourceLineNo">495</span>         *  @see #fireAtCurrentTime(Actor)<a name="line.495"></a>
+<span class="sourceLineNo">496</span>         *  @see #fireContainerAt(Time)<a name="line.496"></a>
+<span class="sourceLineNo">497</span>         *  @exception IllegalActionException If there is an executive director<a name="line.497"></a>
+<span class="sourceLineNo">498</span>         *   and it throws it. Derived classes may choose to throw this<a name="line.498"></a>
+<span class="sourceLineNo">499</span>         *   exception for other reasons.<a name="line.499"></a>
+<span class="sourceLineNo">500</span>         */<a name="line.500"></a>
+<span class="sourceLineNo">501</span>        @Override<a name="line.501"></a>
+<span class="sourceLineNo">502</span>        public Time fireAt(Actor actor, Time time, int microstep)<a name="line.502"></a>
+<span class="sourceLineNo">503</span>                throws IllegalActionException {<a name="line.503"></a>
+<span class="sourceLineNo">504</span>            if (_debugging) {<a name="line.504"></a>
+<span class="sourceLineNo">505</span>                _debug("**** Requesting that enclosing director refire me at "<a name="line.505"></a>
+<span class="sourceLineNo">506</span>                        + time + " with microstep " + microstep);<a name="line.506"></a>
+<span class="sourceLineNo">507</span>            }<a name="line.507"></a>
+<span class="sourceLineNo">508</span>            // Translate the local time into an environment time.<a name="line.508"></a>
+<span class="sourceLineNo">509</span>            Time environmentTime = localClock<a name="line.509"></a>
+<span class="sourceLineNo">510</span>                    .getEnvironmentTimeForLocalTime(time);<a name="line.510"></a>
+<span class="sourceLineNo">511</span>            Director director = getExecutiveDirector();<a name="line.511"></a>
+<span class="sourceLineNo">512</span>            if (director instanceof SuperdenseTimeDirector) {<a name="line.512"></a>
+<span class="sourceLineNo">513</span>                int environmentMicrostep = ((SuperdenseTimeDirector)director).getIndex();<a name="line.513"></a>
+<span class="sourceLineNo">514</span>                // Microstep should be greater than that of the enclosing director<a name="line.514"></a>
+<span class="sourceLineNo">515</span>                // if the time matches current time.<a name="line.515"></a>
+<span class="sourceLineNo">516</span>                if (getModelTime().equals(time) &amp;&amp; microstep &lt; environmentMicrostep) {<a name="line.516"></a>
+<span class="sourceLineNo">517</span>                    microstep = environmentMicrostep + 1;<a name="line.517"></a>
+<span class="sourceLineNo">518</span>                }<a name="line.518"></a>
+<span class="sourceLineNo">519</span>            }<a name="line.519"></a>
+<span class="sourceLineNo">520</span><a name="line.520"></a>
+<span class="sourceLineNo">521</span>            if (((BooleanToken)_contents.fireOnlyWhenTriggered.getToken()).booleanValue()) {<a name="line.521"></a>
+<span class="sourceLineNo">522</span>                // Do not pass the request up the hierarchy.<a name="line.522"></a>
+<span class="sourceLineNo">523</span>                if (_pendingFiringTimes == null) {<a name="line.523"></a>
+<span class="sourceLineNo">524</span>                    _pendingFiringTimes = new PriorityQueue&lt;SuperdenseTime&gt;();<a name="line.524"></a>
+<span class="sourceLineNo">525</span>                }<a name="line.525"></a>
+<span class="sourceLineNo">526</span>                _pendingFiringTimes.add(new SuperdenseTime(time, microstep));<a name="line.526"></a>
+<span class="sourceLineNo">527</span>                // Do as below and return time anyway since the inside<a name="line.527"></a>
+<span class="sourceLineNo">528</span>                // actor will think its time matches the requested firing time.<a name="line.528"></a>
+<span class="sourceLineNo">529</span>                return time;<a name="line.529"></a>
+<span class="sourceLineNo">530</span>            } else {<a name="line.530"></a>
+<span class="sourceLineNo">531</span>                Time response = director.fireAt(CatchUpComposite.this,<a name="line.531"></a>
+<span class="sourceLineNo">532</span>                        environmentTime, microstep);<a name="line.532"></a>
+<span class="sourceLineNo">533</span>                int comparison = response.compareTo(time);<a name="line.533"></a>
+<span class="sourceLineNo">534</span>                if (comparison == 0) {<a name="line.534"></a>
+<span class="sourceLineNo">535</span>                    return time;<a name="line.535"></a>
+<span class="sourceLineNo">536</span>                } else {<a name="line.536"></a>
+<span class="sourceLineNo">537</span>                    if (_pendingFiringTimes == null) {<a name="line.537"></a>
+<span class="sourceLineNo">538</span>                        _pendingFiringTimes = new PriorityQueue&lt;SuperdenseTime&gt;();<a name="line.538"></a>
+<span class="sourceLineNo">539</span>                    }<a name="line.539"></a>
+<span class="sourceLineNo">540</span>                    _pendingFiringTimes.add(new SuperdenseTime(time, microstep));<a name="line.540"></a>
+<span class="sourceLineNo">541</span>                    return time;<a name="line.541"></a>
+<span class="sourceLineNo">542</span>                }<a name="line.542"></a>
+<span class="sourceLineNo">543</span>            }<a name="line.543"></a>
+<span class="sourceLineNo">544</span>        }<a name="line.544"></a>
+<span class="sourceLineNo">545</span><a name="line.545"></a>
+<span class="sourceLineNo">546</span>        /** Return a superdense time index for the current time,<a name="line.546"></a>
+<span class="sourceLineNo">547</span>         *  where the index is equal to the microstep.<a name="line.547"></a>
+<span class="sourceLineNo">548</span>         *  @return A superdense time index.<a name="line.548"></a>
+<span class="sourceLineNo">549</span>         *  @see #setIndex(int)<a name="line.549"></a>
+<span class="sourceLineNo">550</span>         *  @see ptolemy.actor.SuperdenseTimeDirector<a name="line.550"></a>
+<span class="sourceLineNo">551</span>         */<a name="line.551"></a>
+<span class="sourceLineNo">552</span>        @Override<a name="line.552"></a>
+<span class="sourceLineNo">553</span>        public int getIndex() {<a name="line.553"></a>
+<span class="sourceLineNo">554</span>            return _microstep;<a name="line.554"></a>
+<span class="sourceLineNo">555</span>        }<a name="line.555"></a>
+<span class="sourceLineNo">556</span><a name="line.556"></a>
+<span class="sourceLineNo">557</span>        /** If a "catch up" iteration is in progress, then return the<a name="line.557"></a>
+<span class="sourceLineNo">558</span>         *  time that the inside model should see. Otherwise, return<a name="line.558"></a>
+<span class="sourceLineNo">559</span>         *  the environment time.<a name="line.559"></a>
+<span class="sourceLineNo">560</span>         *  @return The current time.<a name="line.560"></a>
+<span class="sourceLineNo">561</span>         *  @see #setModelTime(Time)<a name="line.561"></a>
+<span class="sourceLineNo">562</span>         */<a name="line.562"></a>
+<span class="sourceLineNo">563</span>        @Override<a name="line.563"></a>
+<span class="sourceLineNo">564</span>        public Time getModelTime() {<a name="line.564"></a>
+<span class="sourceLineNo">565</span>            if (_catchUpTime == null) {<a name="line.565"></a>
+<span class="sourceLineNo">566</span>                return super.getModelTime();<a name="line.566"></a>
+<span class="sourceLineNo">567</span>            }<a name="line.567"></a>
+<span class="sourceLineNo">568</span>            return _catchUpTime;<a name="line.568"></a>
+<span class="sourceLineNo">569</span>        }<a name="line.569"></a>
+<span class="sourceLineNo">570</span><a name="line.570"></a>
+<span class="sourceLineNo">571</span>        /** Initialize contained actors<a name="line.571"></a>
+<span class="sourceLineNo">572</span>         *  @exception IllegalActionException If the initialize() method of<a name="line.572"></a>
+<span class="sourceLineNo">573</span>         *   the super class throws it.<a name="line.573"></a>
+<span class="sourceLineNo">574</span>         */<a name="line.574"></a>
+<span class="sourceLineNo">575</span>        @Override<a name="line.575"></a>
+<span class="sourceLineNo">576</span>        public void initialize() throws IllegalActionException {<a name="line.576"></a>
+<span class="sourceLineNo">577</span>            // Initialize the microstep to zero, even though<a name="line.577"></a>
+<span class="sourceLineNo">578</span>            // discrete models normally want to run with microstep 1 or higher.<a name="line.578"></a>
+<span class="sourceLineNo">579</span>            // During initialization, some contained actors will request<a name="line.579"></a>
+<span class="sourceLineNo">580</span>            // firings. One of those might be a Continuous subsystem,<a name="line.580"></a>
+<span class="sourceLineNo">581</span>            // which will explicitly request a firing at microstep 0.<a name="line.581"></a>
+<span class="sourceLineNo">582</span>            // Others will have their requests automatically set<a name="line.582"></a>
+<span class="sourceLineNo">583</span>            // to microstep 1. Thus, with normal discrete models,<a name="line.583"></a>
+<span class="sourceLineNo">584</span>            // the only events in the event queue after initialization<a name="line.584"></a>
+<span class="sourceLineNo">585</span>            // will all have microstep 1, and hence that is where the<a name="line.585"></a>
+<span class="sourceLineNo">586</span>            // simulation will start.<a name="line.586"></a>
+<span class="sourceLineNo">587</span>            _microstep = 0;<a name="line.587"></a>
+<span class="sourceLineNo">588</span>            // This could be getting re-initialized during execution<a name="line.588"></a>
+<span class="sourceLineNo">589</span>            // (e.g., if we are inside a modal model), in which case,<a name="line.589"></a>
+<span class="sourceLineNo">590</span>            // if the enclosing director is a superdense time director,<a name="line.590"></a>
+<span class="sourceLineNo">591</span>            // we should initialize to its microstep, not to our own.<a name="line.591"></a>
+<span class="sourceLineNo">592</span>            // NOTE: Some (weird) directors pretend they are not embedded even<a name="line.592"></a>
+<span class="sourceLineNo">593</span>            // if they are (e.g. in Ptides), so we call _isEmbedded() to give<a name="line.593"></a>
+<span class="sourceLineNo">594</span>            // the subclass the option of pretending it is not embedded.<a name="line.594"></a>
+<span class="sourceLineNo">595</span>            if (isEmbedded()) {<a name="line.595"></a>
+<span class="sourceLineNo">596</span>                Director executiveDirector = getExecutiveDirector();<a name="line.596"></a>
+<span class="sourceLineNo">597</span>                if (executiveDirector instanceof SuperdenseTimeDirector) {<a name="line.597"></a>
+<span class="sourceLineNo">598</span>                    _microstep = ((SuperdenseTimeDirector) executiveDirector)<a name="line.598"></a>
+<span class="sourceLineNo">599</span>                            .getIndex();<a name="line.599"></a>
+<span class="sourceLineNo">600</span>                }<a name="line.600"></a>
+<span class="sourceLineNo">601</span>            }<a name="line.601"></a>
+<span class="sourceLineNo">602</span>            super.initialize();<a name="line.602"></a>
+<span class="sourceLineNo">603</span>        }<a name="line.603"></a>
+<span class="sourceLineNo">604</span><a name="line.604"></a>
+<span class="sourceLineNo">605</span>        /** Return a new instance of QueueReceiver.<a name="line.605"></a>
+<span class="sourceLineNo">606</span>         *  We use a QueueReceiver rather than the base class's MailboxReceiver<a name="line.606"></a>
+<span class="sourceLineNo">607</span>         *  so that more than one token can be transferred to the inside<a name="line.607"></a>
+<span class="sourceLineNo">608</span>         *  model on each firing.<a name="line.608"></a>
+<span class="sourceLineNo">609</span>         *  @return A new instance of QueueReceiver.<a name="line.609"></a>
+<span class="sourceLineNo">610</span>         *  @see QueueReceiver<a name="line.610"></a>
+<span class="sourceLineNo">611</span>         */<a name="line.611"></a>
+<span class="sourceLineNo">612</span>        @Override<a name="line.612"></a>
+<span class="sourceLineNo">613</span>        public Receiver newReceiver() {<a name="line.613"></a>
+<span class="sourceLineNo">614</span>            return new QueueReceiver();<a name="line.614"></a>
+<span class="sourceLineNo">615</span>        }<a name="line.615"></a>
+<span class="sourceLineNo">616</span><a name="line.616"></a>
+<span class="sourceLineNo">617</span>        /** Override the base class to return the logical AND of<a name="line.617"></a>
+<span class="sourceLineNo">618</span>         *  what the base class postfire() method returns and the<a name="line.618"></a>
+<span class="sourceLineNo">619</span>         *  flag set in fire().<a name="line.619"></a>
+<span class="sourceLineNo">620</span>         */<a name="line.620"></a>
+<span class="sourceLineNo">621</span>        @Override<a name="line.621"></a>
+<span class="sourceLineNo">622</span>        public boolean postfire() throws IllegalActionException {<a name="line.622"></a>
+<span class="sourceLineNo">623</span>            boolean superReturns = super.postfire();<a name="line.623"></a>
+<span class="sourceLineNo">624</span>            return superReturns &amp;&amp; _postfireReturns;<a name="line.624"></a>
+<span class="sourceLineNo">625</span>        }<a name="line.625"></a>
+<span class="sourceLineNo">626</span><a name="line.626"></a>
+<span class="sourceLineNo">627</span>        /** Set the superdense time index. This should only be<a name="line.627"></a>
+<span class="sourceLineNo">628</span>         *  called by an enclosing director.<a name="line.628"></a>
+<span class="sourceLineNo">629</span>         *  @exception IllegalActionException Not thrown in this base class.<a name="line.629"></a>
+<span class="sourceLineNo">630</span>         *  @see #getIndex()<a name="line.630"></a>
+<span class="sourceLineNo">631</span>         *  @see ptolemy.actor.SuperdenseTimeDirector<a name="line.631"></a>
+<span class="sourceLineNo">632</span>         */<a name="line.632"></a>
+<span class="sourceLineNo">633</span>        @Override<a name="line.633"></a>
+<span class="sourceLineNo">634</span>        public void setIndex(int index) throws IllegalActionException {<a name="line.634"></a>
+<span class="sourceLineNo">635</span>            if (_debugging) {<a name="line.635"></a>
+<span class="sourceLineNo">636</span>                _debug("Setting superdense time index to " + index);<a name="line.636"></a>
+<span class="sourceLineNo">637</span>            }<a name="line.637"></a>
+<span class="sourceLineNo">638</span>            _microstep = index;<a name="line.638"></a>
+<span class="sourceLineNo">639</span>        }<a name="line.639"></a>
+<span class="sourceLineNo">640</span><a name="line.640"></a>
+<span class="sourceLineNo">641</span>        //////////////////////////////////////////////////////////////<a name="line.641"></a>
+<span class="sourceLineNo">642</span>        ////                   private methods                    ////<a name="line.642"></a>
+<span class="sourceLineNo">643</span><a name="line.643"></a>
+<span class="sourceLineNo">644</span>        /** Iterate the contents composite.<a name="line.644"></a>
+<span class="sourceLineNo">645</span>         *  @exception IllegalActionException If the composite throws it.<a name="line.645"></a>
+<span class="sourceLineNo">646</span>         *  @return false if postfire() returns false.<a name="line.646"></a>
+<span class="sourceLineNo">647</span>         */<a name="line.647"></a>
+<span class="sourceLineNo">648</span>        private boolean _fireContents() throws IllegalActionException {<a name="line.648"></a>
+<span class="sourceLineNo">649</span>            if (_debugging) {<a name="line.649"></a>
+<span class="sourceLineNo">650</span>                _debug(new FiringEvent(this, _contents,<a name="line.650"></a>
+<span class="sourceLineNo">651</span>                        FiringEvent.BEFORE_ITERATE, 1));<a name="line.651"></a>
+<span class="sourceLineNo">652</span>            }<a name="line.652"></a>
+<span class="sourceLineNo">653</span>            if (_contents.iterate(1) == Executable.STOP_ITERATING) {<a name="line.653"></a>
+<span class="sourceLineNo">654</span>                _postfireReturns = false;<a name="line.654"></a>
+<span class="sourceLineNo">655</span>            }<a name="line.655"></a>
+<span class="sourceLineNo">656</span>            if (_debugging) {<a name="line.656"></a>
+<span class="sourceLineNo">657</span>                _debug(new FiringEvent(this, _contents,<a name="line.657"></a>
+<span class="sourceLineNo">658</span>                        FiringEvent.AFTER_ITERATE, 1));<a name="line.658"></a>
+<span class="sourceLineNo">659</span>            }<a name="line.659"></a>
+<span class="sourceLineNo">660</span>            return _postfireReturns;<a name="line.660"></a>
+<span class="sourceLineNo">661</span>        }<a name="line.661"></a>
+<span class="sourceLineNo">662</span><a name="line.662"></a>
+<span class="sourceLineNo">663</span>        //////////////////////////////////////////////////////////////<a name="line.663"></a>
+<span class="sourceLineNo">664</span>        ////                   private variables                  ////<a name="line.664"></a>
+<span class="sourceLineNo">665</span><a name="line.665"></a>
+<span class="sourceLineNo">666</span>        /** The time that the inside model should see as the current time<a name="line.666"></a>
+<span class="sourceLineNo">667</span>         *  during a "catch up" iteration, or null if there is no catch<a name="line.667"></a>
+<span class="sourceLineNo">668</span>         *  up iteration in progress.<a name="line.668"></a>
+<span class="sourceLineNo">669</span>         */<a name="line.669"></a>
+<span class="sourceLineNo">670</span>        private Time _catchUpTime;<a name="line.670"></a>
+<span class="sourceLineNo">671</span><a name="line.671"></a>
+<span class="sourceLineNo">672</span>        /** The current microstep. */<a name="line.672"></a>
+<span class="sourceLineNo">673</span>        protected int _microstep = 1;<a name="line.673"></a>
+<span class="sourceLineNo">674</span><a name="line.674"></a>
+<span class="sourceLineNo">675</span>        /** A sorted list of times of pending fireAt() requests. */<a name="line.675"></a>
+<span class="sourceLineNo">676</span>        private PriorityQueue&lt;SuperdenseTime&gt; _pendingFiringTimes;<a name="line.676"></a>
+<span class="sourceLineNo">677</span><a name="line.677"></a>
+<span class="sourceLineNo">678</span>        /** Indicator that the inside model returned false in postfire. */<a name="line.678"></a>
+<span class="sourceLineNo">679</span>        private boolean _postfireReturns = true;<a name="line.679"></a>
+<span class="sourceLineNo">680</span>    }<a name="line.680"></a>
+<span class="sourceLineNo">681</span>    <a name="line.681"></a>
+<span class="sourceLineNo">682</span>    //////////////////////////////////////////////////////////////////////////<a name="line.682"></a>
+<span class="sourceLineNo">683</span>    //// Contents<a name="line.683"></a>
+<span class="sourceLineNo">684</span>    <a name="line.684"></a>
+<span class="sourceLineNo">685</span>    /** Contents composite that overrides the base class to have a parameter<a name="line.685"></a>
+<span class="sourceLineNo">686</span>     *  indicating whether to fire only when triggered.<a name="line.686"></a>
+<span class="sourceLineNo">687</span>     */<a name="line.687"></a>
+<span class="sourceLineNo">688</span>    public class Contents extends MirrorComposite.MirrorCompositeContents {<a name="line.688"></a>
+<span class="sourceLineNo">689</span><a name="line.689"></a>
+<span class="sourceLineNo">690</span>        // The Contents class should be public so that cloning works.<a name="line.690"></a>
+<span class="sourceLineNo">691</span>        // To test: (cd $PTII/ptolemy/configs/test/; $PTII/bin/ptjacl allConfigs.tcl) <a name="line.691"></a>
+<span class="sourceLineNo">692</span><a name="line.692"></a>
+<span class="sourceLineNo">693</span>        public Contents(CompositeEntity container, String name)<a name="line.693"></a>
+<span class="sourceLineNo">694</span>                throws IllegalActionException, NameDuplicationException {<a name="line.694"></a>
+<span class="sourceLineNo">695</span>            super(container, name);<a name="line.695"></a>
+<span class="sourceLineNo">696</span>            <a name="line.696"></a>
+<span class="sourceLineNo">697</span>            fireOnlyWhenTriggered = new Parameter(this, "fireOnlyWhenTriggered");<a name="line.697"></a>
+<span class="sourceLineNo">698</span>            fireOnlyWhenTriggered.setTypeEquals(BaseType.BOOLEAN);<a name="line.698"></a>
+<span class="sourceLineNo">699</span>            fireOnlyWhenTriggered.setExpression("false");<a name="line.699"></a>
+<span class="sourceLineNo">700</span>        }<a name="line.700"></a>
+<span class="sourceLineNo">701</span>        <a name="line.701"></a>
+<span class="sourceLineNo">702</span>        /** If false (the default), then whenever any contained actor<a name="line.702"></a>
+<span class="sourceLineNo">703</span>         *  makes a fireAt() request, that request is passed up to the container,<a name="line.703"></a>
+<span class="sourceLineNo">704</span>         *  and hence this composite will be fired at the requested time.<a name="line.704"></a>
+<span class="sourceLineNo">705</span>         *  If set to true, then the request will not be passed up,<a name="line.705"></a>
+<span class="sourceLineNo">706</span>         *  and this composite will be fired only when the container<a name="line.706"></a>
+<span class="sourceLineNo">707</span>         *  chooses to fire it. If the containing director is DE, for example,<a name="line.707"></a>
+<span class="sourceLineNo">708</span>         *  that will occur only when there is an input event to provide to<a name="line.708"></a>
+<span class="sourceLineNo">709</span>         *  this composite.<a name="line.709"></a>
+<span class="sourceLineNo">710</span>         */<a name="line.710"></a>
+<span class="sourceLineNo">711</span>        public Parameter fireOnlyWhenTriggered;<a name="line.711"></a>
+<span class="sourceLineNo">712</span>    }<a name="line.712"></a>
+<span class="sourceLineNo">713</span>}<a name="line.713"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

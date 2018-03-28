@@ -1,0 +1,478 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../../stylesheet.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>/* An actor that validates fasta file.<a name="line.1"></a>
+<span class="sourceLineNo">002</span><a name="line.2"></a>
+<span class="sourceLineNo">003</span> Copyright (c) 2003-2010 The Regents of the University of California.<a name="line.3"></a>
+<span class="sourceLineNo">004</span> All rights reserved.<a name="line.4"></a>
+<span class="sourceLineNo">005</span> Permission is hereby granted, without written agreement and without<a name="line.5"></a>
+<span class="sourceLineNo">006</span> license or royalty fees, to use, copy, modify, and distribute this<a name="line.6"></a>
+<span class="sourceLineNo">007</span> software and its documentation for any purpose, provided that the above<a name="line.7"></a>
+<span class="sourceLineNo">008</span> copyright notice and the following two paragraphs appear in all copies<a name="line.8"></a>
+<span class="sourceLineNo">009</span> of this software.<a name="line.9"></a>
+<span class="sourceLineNo">010</span><a name="line.10"></a>
+<span class="sourceLineNo">011</span> IN NO EVENT SHALL THE UNIVERSITY OF CALIFORNIA BE LIABLE TO ANY PARTY<a name="line.11"></a>
+<span class="sourceLineNo">012</span> FOR DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES<a name="line.12"></a>
+<span class="sourceLineNo">013</span> ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION, EVEN IF<a name="line.13"></a>
+<span class="sourceLineNo">014</span> THE UNIVERSITY OF CALIFORNIA HAS BEEN ADVISED OF THE POSSIBILITY OF<a name="line.14"></a>
+<span class="sourceLineNo">015</span> SUCH DAMAGE.<a name="line.15"></a>
+<span class="sourceLineNo">016</span><a name="line.16"></a>
+<span class="sourceLineNo">017</span> THE UNIVERSITY OF CALIFORNIA SPECIFICALLY DISCLAIMS ANY WARRANTIES,<a name="line.17"></a>
+<span class="sourceLineNo">018</span> INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF<a name="line.18"></a>
+<span class="sourceLineNo">019</span> MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE<a name="line.19"></a>
+<span class="sourceLineNo">020</span> PROVIDED HEREUNDER IS ON AN "AS IS" BASIS, AND THE UNIVERSITY OF<a name="line.20"></a>
+<span class="sourceLineNo">021</span> CALIFORNIA HAS NO OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT, UPDATES,<a name="line.21"></a>
+<span class="sourceLineNo">022</span> ENHANCEMENTS, OR MODIFICATIONS.<a name="line.22"></a>
+<span class="sourceLineNo">023</span><a name="line.23"></a>
+<span class="sourceLineNo">024</span> PT_COPYRIGHT_VERSION_2<a name="line.24"></a>
+<span class="sourceLineNo">025</span> COPYRIGHTENDKEY<a name="line.25"></a>
+<span class="sourceLineNo">026</span> */<a name="line.26"></a>
+<span class="sourceLineNo">027</span>package org.camera.service;<a name="line.27"></a>
+<span class="sourceLineNo">028</span><a name="line.28"></a>
+<span class="sourceLineNo">029</span>import java.io.BufferedReader;<a name="line.29"></a>
+<span class="sourceLineNo">030</span>import java.io.FileNotFoundException;<a name="line.30"></a>
+<span class="sourceLineNo">031</span>import java.io.FileReader;<a name="line.31"></a>
+<span class="sourceLineNo">032</span>import java.io.PrintWriter;<a name="line.32"></a>
+<span class="sourceLineNo">033</span>import java.io.StringWriter;<a name="line.33"></a>
+<span class="sourceLineNo">034</span>import java.util.ArrayList;<a name="line.34"></a>
+<span class="sourceLineNo">035</span>import java.util.List;<a name="line.35"></a>
+<span class="sourceLineNo">036</span><a name="line.36"></a>
+<span class="sourceLineNo">037</span>import org.apache.commons.logging.Log;<a name="line.37"></a>
+<span class="sourceLineNo">038</span>import org.apache.commons.logging.LogFactory;<a name="line.38"></a>
+<span class="sourceLineNo">039</span>import org.biojava.bio.BioException;<a name="line.39"></a>
+<span class="sourceLineNo">040</span>import org.biojava.bio.seq.io.ParseException;<a name="line.40"></a>
+<span class="sourceLineNo">041</span>import org.biojavax.Namespace;<a name="line.41"></a>
+<span class="sourceLineNo">042</span>import org.biojavax.SimpleNamespace;<a name="line.42"></a>
+<span class="sourceLineNo">043</span>import org.biojavax.bio.seq.RichSequence;<a name="line.43"></a>
+<span class="sourceLineNo">044</span>import org.biojavax.bio.seq.RichSequenceIterator;<a name="line.44"></a>
+<span class="sourceLineNo">045</span><a name="line.45"></a>
+<span class="sourceLineNo">046</span>import ptolemy.actor.TypedAtomicActor;<a name="line.46"></a>
+<span class="sourceLineNo">047</span>import ptolemy.actor.TypedIOPort;<a name="line.47"></a>
+<span class="sourceLineNo">048</span>import ptolemy.actor.parameters.PortParameter;<a name="line.48"></a>
+<span class="sourceLineNo">049</span>import ptolemy.data.BooleanToken;<a name="line.49"></a>
+<span class="sourceLineNo">050</span>import ptolemy.data.StringToken;<a name="line.50"></a>
+<span class="sourceLineNo">051</span>import ptolemy.data.expr.FileParameter;<a name="line.51"></a>
+<span class="sourceLineNo">052</span>import ptolemy.data.expr.StringParameter;<a name="line.52"></a>
+<span class="sourceLineNo">053</span>import ptolemy.data.type.BaseType;<a name="line.53"></a>
+<span class="sourceLineNo">054</span>import ptolemy.kernel.CompositeEntity;<a name="line.54"></a>
+<span class="sourceLineNo">055</span>import ptolemy.kernel.util.IllegalActionException;<a name="line.55"></a>
+<span class="sourceLineNo">056</span>import ptolemy.kernel.util.NameDuplicationException;<a name="line.56"></a>
+<span class="sourceLineNo">057</span><a name="line.57"></a>
+<span class="sourceLineNo">058</span><a name="line.58"></a>
+<span class="sourceLineNo">059</span>//////////////////////////////////////////////////////////////////////////<a name="line.59"></a>
+<span class="sourceLineNo">060</span>//// FastaValidation<a name="line.60"></a>
+<span class="sourceLineNo">061</span><a name="line.61"></a>
+<span class="sourceLineNo">062</span>/**<a name="line.62"></a>
+<span class="sourceLineNo">063</span> *<a name="line.63"></a>
+<span class="sourceLineNo">064</span> * This actor reads a fasta file and user can select whether it<a name="line.64"></a>
+<span class="sourceLineNo">065</span> * contains 'PROTEIN', 'DNA', or 'RNA' sequences. Actor informs user if file<a name="line.65"></a>
+<span class="sourceLineNo">066</span> * is valid or not or there are any parsing issues through a boolean variable.<a name="line.66"></a>
+<span class="sourceLineNo">067</span> * It makes use of biojava library and bytecode jar file.<a name="line.67"></a>
+<span class="sourceLineNo">068</span> * User can provide information how many sequences they need to be parsed.<a name="line.68"></a>
+<span class="sourceLineNo">069</span> * If user does not specify the number or provides a negative, or zero, or provides<a name="line.69"></a>
+<span class="sourceLineNo">070</span> * a string instead then actor will parse the entire file.<a name="line.70"></a>
+<span class="sourceLineNo">071</span> * <a name="line.71"></a>
+<span class="sourceLineNo">072</span> * Here if there is incorrect file format or there is problem with the first sequence<a name="line.72"></a>
+<span class="sourceLineNo">073</span> * then all the errors are not listed. However, it is an irrelevant matter when <a name="line.73"></a>
+<span class="sourceLineNo">074</span> * there is a file format problem. However, the two error conditions are coupled in<a name="line.74"></a>
+<span class="sourceLineNo">075</span> * biojava exception.<a name="line.75"></a>
+<span class="sourceLineNo">076</span> * <a name="line.76"></a>
+<span class="sourceLineNo">077</span> * @author Madhu, SDSC <a name="line.77"></a>
+<span class="sourceLineNo">078</span> * @version $Id: FastaValidation.java 31113 2012-11-26 22:19:36Z crawl $<a name="line.78"></a>
+<span class="sourceLineNo">079</span> */<a name="line.79"></a>
+<span class="sourceLineNo">080</span>public class FastaValidation extends TypedAtomicActor {<a name="line.80"></a>
+<span class="sourceLineNo">081</span>    /** Construct an actor with a name and a container.<a name="line.81"></a>
+<span class="sourceLineNo">082</span>     *  The container argument must not be null, or a<a name="line.82"></a>
+<span class="sourceLineNo">083</span>     *  NullPointerException will be thrown.<a name="line.83"></a>
+<span class="sourceLineNo">084</span>     *  @param container The container.<a name="line.84"></a>
+<span class="sourceLineNo">085</span>     *  @param name The name of this actor.<a name="line.85"></a>
+<span class="sourceLineNo">086</span>     *  @exception IllegalActionException If the container is incompatible<a name="line.86"></a>
+<span class="sourceLineNo">087</span>     *   with this actor.<a name="line.87"></a>
+<span class="sourceLineNo">088</span>     *  @exception NameDuplicationException If the name coincides with<a name="line.88"></a>
+<span class="sourceLineNo">089</span>     *   an actor already in the container.<a name="line.89"></a>
+<span class="sourceLineNo">090</span>     */<a name="line.90"></a>
+<span class="sourceLineNo">091</span>        <a name="line.91"></a>
+<span class="sourceLineNo">092</span>        private static final long serialVersionUID = 1L;<a name="line.92"></a>
+<span class="sourceLineNo">093</span>        private static Log log = LogFactory.getLog(FastaValidation.class);<a name="line.93"></a>
+<span class="sourceLineNo">094</span>        <a name="line.94"></a>
+<span class="sourceLineNo">095</span>        /* drop down value*/    <a name="line.95"></a>
+<span class="sourceLineNo">096</span>        private static final String PROTEIN = "Protein";<a name="line.96"></a>
+<span class="sourceLineNo">097</span>        private static final String RNA = "RNA";<a name="line.97"></a>
+<span class="sourceLineNo">098</span>        private static final String DNA = "DNA";<a name="line.98"></a>
+<span class="sourceLineNo">099</span>        private static final int MAXNOOFALLOWEDPROBLEMS = 25;<a name="line.99"></a>
+<span class="sourceLineNo">100</span>                <a name="line.100"></a>
+<span class="sourceLineNo">101</span>    <a name="line.101"></a>
+<span class="sourceLineNo">102</span>    /** The  Number of sequence to be parsed, if no positive integer is provided<a name="line.102"></a>
+<span class="sourceLineNo">103</span>     * then all the sequences in file will be parsed.<a name="line.103"></a>
+<span class="sourceLineNo">104</span>     */<a name="line.104"></a>
+<span class="sourceLineNo">105</span>        public PortParameter parseNumSequence;<a name="line.105"></a>
+<span class="sourceLineNo">106</span>        <a name="line.106"></a>
+<span class="sourceLineNo">107</span>        /** Input file. */<a name="line.107"></a>
+<span class="sourceLineNo">108</span>        public TypedIOPort inputPortFilePath;<a name="line.108"></a>
+<span class="sourceLineNo">109</span>        <a name="line.109"></a>
+<span class="sourceLineNo">110</span>        /** Input sequence type */<a name="line.110"></a>
+<span class="sourceLineNo">111</span>        public TypedIOPort inputPortType;<a name="line.111"></a>
+<span class="sourceLineNo">112</span>        <a name="line.112"></a>
+<span class="sourceLineNo">113</span>        /** Output sequence */<a name="line.113"></a>
+<span class="sourceLineNo">114</span>        public TypedIOPort outputPortStatus;<a name="line.114"></a>
+<span class="sourceLineNo">115</span>        <a name="line.115"></a>
+<span class="sourceLineNo">116</span>        /** Output message */<a name="line.116"></a>
+<span class="sourceLineNo">117</span>        public TypedIOPort outputPortMessage;<a name="line.117"></a>
+<span class="sourceLineNo">118</span>        <a name="line.118"></a>
+<span class="sourceLineNo">119</span>        public FastaValidation(CompositeEntity container,  String name) <a name="line.119"></a>
+<span class="sourceLineNo">120</span>                throws NameDuplicationException, IllegalActionException  {<a name="line.120"></a>
+<span class="sourceLineNo">121</span>                <a name="line.121"></a>
+<span class="sourceLineNo">122</span>        super(container, name);<a name="line.122"></a>
+<span class="sourceLineNo">123</span><a name="line.123"></a>
+<span class="sourceLineNo">124</span>        inputPortFilePath = new TypedIOPort(this, "inputPortFilePath", true, false);<a name="line.124"></a>
+<span class="sourceLineNo">125</span>        inputPortType = new TypedIOPort(this, "inputPortType", true, false);            <a name="line.125"></a>
+<span class="sourceLineNo">126</span>                outputPortMessage = new TypedIOPort(this, "outputPortMessage", false, true);<a name="line.126"></a>
+<span class="sourceLineNo">127</span>                outputPortStatus = new TypedIOPort(this, "outputPortStatus", false, true);<a name="line.127"></a>
+<span class="sourceLineNo">128</span>                <a name="line.128"></a>
+<span class="sourceLineNo">129</span>                inputPortFilePath.setTypeEquals(BaseType.STRING);<a name="line.129"></a>
+<span class="sourceLineNo">130</span>                inputPortType.setTypeEquals(BaseType.STRING);<a name="line.130"></a>
+<span class="sourceLineNo">131</span>                outputPortStatus.setTypeEquals(BaseType.BOOLEAN);<a name="line.131"></a>
+<span class="sourceLineNo">132</span>                outputPortMessage.setTypeEquals(BaseType.STRING);<a name="line.132"></a>
+<span class="sourceLineNo">133</span>                <a name="line.133"></a>
+<span class="sourceLineNo">134</span>                fileParameter = new FileParameter(this, "fileOrURL");<a name="line.134"></a>
+<span class="sourceLineNo">135</span>                <a name="line.135"></a>
+<span class="sourceLineNo">136</span>                dropDownValue = new StringParameter(this, "dropDownValue");<a name="line.136"></a>
+<span class="sourceLineNo">137</span>        dropDownValue.addChoice(DNA);<a name="line.137"></a>
+<span class="sourceLineNo">138</span>        dropDownValue.addChoice(RNA); <a name="line.138"></a>
+<span class="sourceLineNo">139</span>        dropDownValue.addChoice(PROTEIN); <a name="line.139"></a>
+<span class="sourceLineNo">140</span>        <a name="line.140"></a>
+<span class="sourceLineNo">141</span>        parseNumSequence = new PortParameter(this, "parseNumSequence");<a name="line.141"></a>
+<span class="sourceLineNo">142</span>                parseNumSequence.setExpression("");<a name="line.142"></a>
+<span class="sourceLineNo">143</span>                parseNumSequence.setStringMode(true);<a name="line.143"></a>
+<span class="sourceLineNo">144</span>        <a name="line.144"></a>
+<span class="sourceLineNo">145</span><a name="line.145"></a>
+<span class="sourceLineNo">146</span>        _attachText("_iconDescription", "&lt;svg&gt;\n"<a name="line.146"></a>
+<span class="sourceLineNo">147</span>                + "&lt;rect x=\"-25\" y=\"-20\" " + "width=\"50\" height=\"40\" "<a name="line.147"></a>
+<span class="sourceLineNo">148</span>                + "style=\"fill:white\"/&gt;\n"<a name="line.148"></a>
+<span class="sourceLineNo">149</span>                + "&lt;polygon points=\"-15,-10 -12,-10 -8,-14 -1,-14 3,-10"<a name="line.149"></a>
+<span class="sourceLineNo">150</span>                + " 15,-10 15,10, -15,10\" " + "style=\"fill:red\"/&gt;\n"<a name="line.150"></a>
+<span class="sourceLineNo">151</span>                + "&lt;/svg&gt;\n");<a name="line.151"></a>
+<span class="sourceLineNo">152</span>    }<a name="line.152"></a>
+<span class="sourceLineNo">153</span><a name="line.153"></a>
+<span class="sourceLineNo">154</span>    ///////////////////////////////////////////////////////////////////<a name="line.154"></a>
+<span class="sourceLineNo">155</span>    ////                         public variables                  ////<a name="line.155"></a>
+<span class="sourceLineNo">156</span><a name="line.156"></a>
+<span class="sourceLineNo">157</span>    /** The file's full path.<a name="line.157"></a>
+<span class="sourceLineNo">158</span>     *  @see FileParameter<a name="line.158"></a>
+<span class="sourceLineNo">159</span>     */<a name="line.159"></a>
+<span class="sourceLineNo">160</span>    public FileParameter fileParameter;<a name="line.160"></a>
+<span class="sourceLineNo">161</span><a name="line.161"></a>
+<span class="sourceLineNo">162</span>    /** Drop down values for choices to be selected. <a name="line.162"></a>
+<span class="sourceLineNo">163</span>         *  If user does not make a selection then <a name="line.163"></a>
+<span class="sourceLineNo">164</span>         *  default value of 'DNA' is used.<a name="line.164"></a>
+<span class="sourceLineNo">165</span>         */<a name="line.165"></a>
+<span class="sourceLineNo">166</span>    public StringParameter dropDownValue;<a name="line.166"></a>
+<span class="sourceLineNo">167</span>   <a name="line.167"></a>
+<span class="sourceLineNo">168</span><a name="line.168"></a>
+<span class="sourceLineNo">169</span>    private String getPortParamValue() throws IllegalActionException {<a name="line.169"></a>
+<span class="sourceLineNo">170</span><a name="line.170"></a>
+<span class="sourceLineNo">171</span>                return ((StringToken) parseNumSequence.getToken()).stringValue()<a name="line.171"></a>
+<span class="sourceLineNo">172</span>                                        .trim();<a name="line.172"></a>
+<span class="sourceLineNo">173</span><a name="line.173"></a>
+<span class="sourceLineNo">174</span>        }// end-method getPortParamValue()<a name="line.174"></a>
+<span class="sourceLineNo">175</span>    <a name="line.175"></a>
+<span class="sourceLineNo">176</span>    ///////////////////////////////////////////////////////////////////<a name="line.176"></a>
+<span class="sourceLineNo">177</span>    ////                         public methods                    ////<a name="line.177"></a>
+<span class="sourceLineNo">178</span><a name="line.178"></a>
+<span class="sourceLineNo">179</span>    /** Output the data read from the file or URL as a string.<a name="line.179"></a>
+<span class="sourceLineNo">180</span>     *  @exception IllegalActionException If there is no director or<a name="line.180"></a>
+<span class="sourceLineNo">181</span>     *   if reading the file triggers an exception.<a name="line.181"></a>
+<span class="sourceLineNo">182</span>     */<a name="line.182"></a>
+<span class="sourceLineNo">183</span>    public void fire() throws IllegalActionException {<a name="line.183"></a>
+<span class="sourceLineNo">184</span>        super.fire();<a name="line.184"></a>
+<span class="sourceLineNo">185</span>        parseNumSequence.update();<a name="line.185"></a>
+<span class="sourceLineNo">186</span>        <a name="line.186"></a>
+<span class="sourceLineNo">187</span>        boolean monitor = true;<a name="line.187"></a>
+<span class="sourceLineNo">188</span>        boolean parseAllSequences = true;<a name="line.188"></a>
+<span class="sourceLineNo">189</span>        <a name="line.189"></a>
+<span class="sourceLineNo">190</span>        String filePath = null;<a name="line.190"></a>
+<span class="sourceLineNo">191</span>        StringBuilder message = new StringBuilder();<a name="line.191"></a>
+<span class="sourceLineNo">192</span><a name="line.192"></a>
+<span class="sourceLineNo">193</span>        // If the fileOrURL input port is connected and has data, then<a name="line.193"></a>
+<span class="sourceLineNo">194</span>        // get the file name from there.<a name="line.194"></a>
+<span class="sourceLineNo">195</span>               <a name="line.195"></a>
+<span class="sourceLineNo">196</span>        <a name="line.196"></a>
+<span class="sourceLineNo">197</span>        String numOfSeqBeParsedValue = getPortParamValue();<a name="line.197"></a>
+<span class="sourceLineNo">198</span>        int numOfSeqBeParsed = -1;<a name="line.198"></a>
+<span class="sourceLineNo">199</span>        if(!ServiceUtils.checkEmptyString(numOfSeqBeParsedValue)){<a name="line.199"></a>
+<span class="sourceLineNo">200</span>                     <a name="line.200"></a>
+<span class="sourceLineNo">201</span>                try{<a name="line.201"></a>
+<span class="sourceLineNo">202</span>                        numOfSeqBeParsed = Integer.parseInt(numOfSeqBeParsedValue);<a name="line.202"></a>
+<span class="sourceLineNo">203</span>                        if(numOfSeqBeParsed &gt; 0){<a name="line.203"></a>
+<span class="sourceLineNo">204</span>                                parseAllSequences = false;<a name="line.204"></a>
+<span class="sourceLineNo">205</span>                        }<a name="line.205"></a>
+<span class="sourceLineNo">206</span>                }catch(NumberFormatException nfe){<a name="line.206"></a>
+<span class="sourceLineNo">207</span>                        nfe.printStackTrace();<a name="line.207"></a>
+<span class="sourceLineNo">208</span>                }<a name="line.208"></a>
+<span class="sourceLineNo">209</span>                <a name="line.209"></a>
+<span class="sourceLineNo">210</span>        }<a name="line.210"></a>
+<span class="sourceLineNo">211</span>                                   <a name="line.211"></a>
+<span class="sourceLineNo">212</span>                <a name="line.212"></a>
+<span class="sourceLineNo">213</span>        if (inputPortFilePath.isOutsideConnected()) {<a name="line.213"></a>
+<span class="sourceLineNo">214</span>            if (inputPortFilePath.hasToken(0)) {<a name="line.214"></a>
+<span class="sourceLineNo">215</span>                String name = ((StringToken) inputPortFilePath.get(0))<a name="line.215"></a>
+<span class="sourceLineNo">216</span>                        .stringValue();<a name="line.216"></a>
+<span class="sourceLineNo">217</span><a name="line.217"></a>
+<span class="sourceLineNo">218</span>                // Using setExpression() rather than setToken() allows<a name="line.218"></a>
+<span class="sourceLineNo">219</span>                // the string to refer to variables defined in the<a name="line.219"></a>
+<span class="sourceLineNo">220</span>                // scope of this actor.<a name="line.220"></a>
+<span class="sourceLineNo">221</span>                fileParameter.setExpression(name);<a name="line.221"></a>
+<span class="sourceLineNo">222</span>                <a name="line.222"></a>
+<span class="sourceLineNo">223</span>            }<a name="line.223"></a>
+<span class="sourceLineNo">224</span>        }<a name="line.224"></a>
+<span class="sourceLineNo">225</span>        filePath = fileParameter.getExpression();       <a name="line.225"></a>
+<span class="sourceLineNo">226</span>        <a name="line.226"></a>
+<span class="sourceLineNo">227</span>        if(ServiceUtils.checkEmptyString(filePath)){<a name="line.227"></a>
+<span class="sourceLineNo">228</span>                message.append("NO FILE NAME PROVIDED");<a name="line.228"></a>
+<span class="sourceLineNo">229</span>                outputPortStatus.send(0, new BooleanToken(monitor));<a name="line.229"></a>
+<span class="sourceLineNo">230</span>                outputPortMessage.send(0, new StringToken(String.valueOf(message.toString())));<a name="line.230"></a>
+<span class="sourceLineNo">231</span>                <a name="line.231"></a>
+<span class="sourceLineNo">232</span>                log.debug("FILE PATH IS EMPTY");<a name="line.232"></a>
+<span class="sourceLineNo">233</span>            message = null;           <a name="line.233"></a>
+<span class="sourceLineNo">234</span>                return;         <a name="line.234"></a>
+<span class="sourceLineNo">235</span>        }<a name="line.235"></a>
+<span class="sourceLineNo">236</span>        <a name="line.236"></a>
+<span class="sourceLineNo">237</span>        log.debug("FILE NAME: " + filePath);<a name="line.237"></a>
+<span class="sourceLineNo">238</span>        <a name="line.238"></a>
+<span class="sourceLineNo">239</span>        String type = null;<a name="line.239"></a>
+<span class="sourceLineNo">240</span>        if (inputPortType.isOutsideConnected()) {<a name="line.240"></a>
+<span class="sourceLineNo">241</span>                if (inputPortType.hasToken(0)) {<a name="line.241"></a>
+<span class="sourceLineNo">242</span>                type = ((StringToken) inputPortType.get(0)).stringValue();<a name="line.242"></a>
+<span class="sourceLineNo">243</span>                if(type.equalsIgnoreCase(PROTEIN)){<a name="line.243"></a>
+<span class="sourceLineNo">244</span>                        dropDownValue.setExpression(PROTEIN);<a name="line.244"></a>
+<span class="sourceLineNo">245</span>                }else if(type.equalsIgnoreCase(DNA)){<a name="line.245"></a>
+<span class="sourceLineNo">246</span>                        dropDownValue.setExpression(DNA);<a name="line.246"></a>
+<span class="sourceLineNo">247</span>                }else if(type.equalsIgnoreCase(RNA)){<a name="line.247"></a>
+<span class="sourceLineNo">248</span>                        dropDownValue.setExpression(RNA);<a name="line.248"></a>
+<span class="sourceLineNo">249</span>                }<a name="line.249"></a>
+<span class="sourceLineNo">250</span>                }<a name="line.250"></a>
+<span class="sourceLineNo">251</span>        }<a name="line.251"></a>
+<span class="sourceLineNo">252</span>        <a name="line.252"></a>
+<span class="sourceLineNo">253</span>        if(ServiceUtils.checkEmptyString(dropDownValue.getExpression())){<a name="line.253"></a>
+<span class="sourceLineNo">254</span>                dropDownValue.setExpression(DNA);<a name="line.254"></a>
+<span class="sourceLineNo">255</span>                message.append("NO SELECTION MADE FOR TYPE: DEFAULT VALUE IS SET TO DNA");<a name="line.255"></a>
+<span class="sourceLineNo">256</span>        }else{<a name="line.256"></a>
+<span class="sourceLineNo">257</span>                message.append("SELECTION MADE BY USER FOR TYPE: ").append(dropDownValue.getExpression());<a name="line.257"></a>
+<span class="sourceLineNo">258</span>        }<a name="line.258"></a>
+<span class="sourceLineNo">259</span>        message.append(ServiceUtils.LINESEP);<a name="line.259"></a>
+<span class="sourceLineNo">260</span>        <a name="line.260"></a>
+<span class="sourceLineNo">261</span>        type = dropDownValue.getExpression();<a name="line.261"></a>
+<span class="sourceLineNo">262</span>        <a name="line.262"></a>
+<span class="sourceLineNo">263</span>        log.debug("SELECTED VALUE FROM DROP DOWN: " + type);<a name="line.263"></a>
+<span class="sourceLineNo">264</span>        <a name="line.264"></a>
+<span class="sourceLineNo">265</span>        BufferedReader br = null;<a name="line.265"></a>
+<span class="sourceLineNo">266</span>                try{<a name="line.266"></a>
+<span class="sourceLineNo">267</span>                        br = new BufferedReader(new FileReader(filePath));<a name="line.267"></a>
+<span class="sourceLineNo">268</span>                }catch (FileNotFoundException ex) {<a name="line.268"></a>
+<span class="sourceLineNo">269</span>                        //problem reading file<a name="line.269"></a>
+<span class="sourceLineNo">270</span>                        System.out.println("FILE NOT FOUND");<a name="line.270"></a>
+<span class="sourceLineNo">271</span>                        ex.printStackTrace();<a name="line.271"></a>
+<span class="sourceLineNo">272</span>                        System.exit(1);<a name="line.272"></a>
+<span class="sourceLineNo">273</span>                }<a name="line.273"></a>
+<span class="sourceLineNo">274</span>                                        <a name="line.274"></a>
+<span class="sourceLineNo">275</span>        Namespace nm = new SimpleNamespace("CAMERA");<a name="line.275"></a>
+<span class="sourceLineNo">276</span>//get a SequenceDB of all sequences in the file<a name="line.276"></a>
+<span class="sourceLineNo">277</span>        RichSequenceIterator db = null;<a name="line.277"></a>
+<span class="sourceLineNo">278</span>        if(type.equals(DNA)){<a name="line.278"></a>
+<span class="sourceLineNo">279</span>                db = RichSequence.IOTools.readFastaDNA(br, nm); //readFasta(is, alpha);<a name="line.279"></a>
+<span class="sourceLineNo">280</span>        }else if(type.equals(RNA)){<a name="line.280"></a>
+<span class="sourceLineNo">281</span>                db = RichSequence.IOTools.readFastaRNA(br, nm); //readFasta(is, alpha);<a name="line.281"></a>
+<span class="sourceLineNo">282</span>        }else if(type.equals(PROTEIN)){<a name="line.282"></a>
+<span class="sourceLineNo">283</span>                db = RichSequence.IOTools.readFastaProtein(br, nm); //readFasta(is, alpha);<a name="line.283"></a>
+<span class="sourceLineNo">284</span>        }<a name="line.284"></a>
+<span class="sourceLineNo">285</span>                <a name="line.285"></a>
+<span class="sourceLineNo">286</span>        int number_of_sequences = 0;<a name="line.286"></a>
+<span class="sourceLineNo">287</span>        <a name="line.287"></a>
+<span class="sourceLineNo">288</span>        int icheck = 0;<a name="line.288"></a>
+<span class="sourceLineNo">289</span>        int problems = 0;<a name="line.289"></a>
+<span class="sourceLineNo">290</span>        List&lt;String&gt; allM = new ArrayList&lt;String&gt;();<a name="line.290"></a>
+<span class="sourceLineNo">291</span>        RichSequence rseq = null;<a name="line.291"></a>
+<span class="sourceLineNo">292</span>        boolean fileStatus = true;<a name="line.292"></a>
+<span class="sourceLineNo">293</span>        <a name="line.293"></a>
+<span class="sourceLineNo">294</span>        <a name="line.294"></a>
+<span class="sourceLineNo">295</span>        /**<a name="line.295"></a>
+<span class="sourceLineNo">296</span>         * Here, I am attempting to read first sequence to check file status<a name="line.296"></a>
+<span class="sourceLineNo">297</span>         * before proceeding forward. I have to do this because of<a name="line.297"></a>
+<span class="sourceLineNo">298</span>         * clunky behavior or biojava.<a name="line.298"></a>
+<span class="sourceLineNo">299</span>         */<a name="line.299"></a>
+<span class="sourceLineNo">300</span>        if( db.hasNext() ){<a name="line.300"></a>
+<span class="sourceLineNo">301</span>                try{<a name="line.301"></a>
+<span class="sourceLineNo">302</span>                        rseq = db.nextRichSequence();<a name="line.302"></a>
+<span class="sourceLineNo">303</span>                        number_of_sequences++;<a name="line.303"></a>
+<span class="sourceLineNo">304</span>                }catch(BioException bioexcep){<a name="line.304"></a>
+<span class="sourceLineNo">305</span>                        fileStatus = false;<a name="line.305"></a>
+<span class="sourceLineNo">306</span>                        System.out.println("FILE STATUS: " + fileStatus);<a name="line.306"></a>
+<span class="sourceLineNo">307</span>                        message.append("INCORRECT FILE FORMAT OR FILE EMPTY OR FIRST SEQ HAS PROBLEM");<a name="line.307"></a>
+<span class="sourceLineNo">308</span>                        monitor = false;<a name="line.308"></a>
+<span class="sourceLineNo">309</span>                }<a name="line.309"></a>
+<span class="sourceLineNo">310</span>        }<a name="line.310"></a>
+<span class="sourceLineNo">311</span>     <a name="line.311"></a>
+<span class="sourceLineNo">312</span>       <a name="line.312"></a>
+<span class="sourceLineNo">313</span>        while( db.hasNext() &amp;&amp; fileStatus ){<a name="line.313"></a>
+<span class="sourceLineNo">314</span>                number_of_sequences++;<a name="line.314"></a>
+<span class="sourceLineNo">315</span>                try{<a name="line.315"></a>
+<span class="sourceLineNo">316</span>//                      Sequence seq = db.nextSequence();<a name="line.316"></a>
+<span class="sourceLineNo">317</span>                        rseq = db.nextRichSequence();<a name="line.317"></a>
+<span class="sourceLineNo">318</span>//                      log.debug("ACCESSION: " + rseq.getAccession()); //NAME, URN, &amp; ACCESSION COULD BE VERY SIMILAR<a name="line.318"></a>
+<span class="sourceLineNo">319</span>//                      log.debug("SEQUENCE-NAME: " + rseq.getURN());<a name="line.319"></a>
+<span class="sourceLineNo">320</span>//                      log.debug("SEQUENCE-ENGTH: " + rseq.length());<a name="line.320"></a>
+<span class="sourceLineNo">321</span>//                      log.debug("SEQUENCE: " + rseq.seqString());<a name="line.321"></a>
+<span class="sourceLineNo">322</span>                        <a name="line.322"></a>
+<span class="sourceLineNo">323</span>/*                                              <a name="line.323"></a>
+<span class="sourceLineNo">324</span>                        Annotation seqAn = rseq.getAnnotation();<a name="line.324"></a>
+<span class="sourceLineNo">325</span>                        for (Iterator i = seqAn.keys().iterator(); i.hasNext(); ) {<a name="line.325"></a>
+<span class="sourceLineNo">326</span>                                Object key = i.next();<a name="line.326"></a>
+<span class="sourceLineNo">327</span>                                Object value = seqAn.getProperty(key);<a name="line.327"></a>
+<span class="sourceLineNo">328</span>                                log.debug(key.toString() + ": " + value.toString());<a name="line.328"></a>
+<span class="sourceLineNo">329</span>                        }<a name="line.329"></a>
+<span class="sourceLineNo">330</span>*/                      <a name="line.330"></a>
+<span class="sourceLineNo">331</span>                         <a name="line.331"></a>
+<span class="sourceLineNo">332</span>                        //user controls how many sequences need o be parsed.<a name="line.332"></a>
+<span class="sourceLineNo">333</span>                        if(!parseAllSequences &amp;&amp; number_of_sequences &gt;=  numOfSeqBeParsed){<a name="line.333"></a>
+<span class="sourceLineNo">334</span>                                break;<a name="line.334"></a>
+<span class="sourceLineNo">335</span>                        }<a name="line.335"></a>
+<span class="sourceLineNo">336</span>                        <a name="line.336"></a>
+<span class="sourceLineNo">337</span>                }catch (ParseException parex) {<a name="line.337"></a>
+<span class="sourceLineNo">338</span>                        monitor = false;<a name="line.338"></a>
+<span class="sourceLineNo">339</span>                message.append("INCORRECT FILE FORMAT OR FILE NOT PARSEABLE OR PROBLEM WITH SEQUENCES")<a name="line.339"></a>
+<span class="sourceLineNo">340</span>                .append(ServiceUtils.LINESEP);<a name="line.340"></a>
+<span class="sourceLineNo">341</span>                message.append("PROBLEM WITH SEQUENCE #: " + (number_of_sequences + 1));<a name="line.341"></a>
+<span class="sourceLineNo">342</span>//              .append(ex.getMessage());<a name="line.342"></a>
+<span class="sourceLineNo">343</span>                //not in fasta format or wrong alphabet<a name="line.343"></a>
+<span class="sourceLineNo">344</span>                parex.printStackTrace();<a name="line.344"></a>
+<span class="sourceLineNo">345</span>                        <a name="line.345"></a>
+<span class="sourceLineNo">346</span>            }catch (BioException ex) {<a name="line.346"></a>
+<span class="sourceLineNo">347</span>//              message.append(ex.getMessage() + "\n");<a name="line.347"></a>
+<span class="sourceLineNo">348</span>                monitor = false;<a name="line.348"></a>
+<span class="sourceLineNo">349</span>//              message.append("HI");<a name="line.349"></a>
+<span class="sourceLineNo">350</span>                //no fasta sequences in the file<a name="line.350"></a>
+<span class="sourceLineNo">351</span>                ex.printStackTrace();<a name="line.351"></a>
+<span class="sourceLineNo">352</span>                <a name="line.352"></a>
+<span class="sourceLineNo">353</span>                StringWriter writer = new StringWriter();<a name="line.353"></a>
+<span class="sourceLineNo">354</span>                ex.printStackTrace(new PrintWriter(writer));<a name="line.354"></a>
+<span class="sourceLineNo">355</span>                String trace = writer.toString();<a name="line.355"></a>
+<span class="sourceLineNo">356</span>                <a name="line.356"></a>
+<span class="sourceLineNo">357</span>                    <a name="line.357"></a>
+<span class="sourceLineNo">358</span>                // The following line may give impression that the catching<a name="line.358"></a>
+<span class="sourceLineNo">359</span>                // IOException should obviate the need for if block. But do<a name="line.359"></a>
+<span class="sourceLineNo">360</span>                // not waste time trying because it does not work. The<a name="line.360"></a>
+<span class="sourceLineNo">361</span>                // version 1.7.1 of Biojava currently available now is quirky.<a name="line.361"></a>
+<span class="sourceLineNo">362</span>                if(trace.contains("IOException")){<a name="line.362"></a>
+<span class="sourceLineNo">363</span>                        ++icheck;<a name="line.363"></a>
+<span class="sourceLineNo">364</span>                        if(icheck % 2 == 0){<a name="line.364"></a>
+<span class="sourceLineNo">365</span>                                ++problems;<a name="line.365"></a>
+<span class="sourceLineNo">366</span>                                allM.add("Problem at sequence :: " + --number_of_sequences );<a name="line.366"></a>
+<span class="sourceLineNo">367</span>                        }                               <a name="line.367"></a>
+<span class="sourceLineNo">368</span>                }else{<a name="line.368"></a>
+<span class="sourceLineNo">369</span>                        ++problems;<a name="line.369"></a>
+<span class="sourceLineNo">370</span>                        allM.add("Problem at sequence : " + number_of_sequences );<a name="line.370"></a>
+<span class="sourceLineNo">371</span>                }<a name="line.371"></a>
+<span class="sourceLineNo">372</span>                if(problems &gt; MAXNOOFALLOWEDPROBLEMS){<a name="line.372"></a>
+<span class="sourceLineNo">373</span>                        message.append("Number of problems exceeded :" + MAXNOOFALLOWEDPROBLEMS);<a name="line.373"></a>
+<span class="sourceLineNo">374</span>                        break;<a name="line.374"></a>
+<span class="sourceLineNo">375</span>                }<a name="line.375"></a>
+<span class="sourceLineNo">376</span><a name="line.376"></a>
+<span class="sourceLineNo">377</span>            }catch (Throwable throwable) {<a name="line.377"></a>
+<span class="sourceLineNo">378</span>                monitor = false;<a name="line.378"></a>
+<span class="sourceLineNo">379</span>                message.append("IN THROWABLE\n");<a name="line.379"></a>
+<span class="sourceLineNo">380</span>                        throwable.printStackTrace();            <a name="line.380"></a>
+<span class="sourceLineNo">381</span>            } finally {<a name="line.381"></a>
+<span class="sourceLineNo">382</span>                if (fileParameter != null) {<a name="line.382"></a>
+<span class="sourceLineNo">383</span>                    fileParameter.close();<a name="line.383"></a>
+<span class="sourceLineNo">384</span>                }<a name="line.384"></a>
+<span class="sourceLineNo">385</span>            }//end try block<a name="line.385"></a>
+<span class="sourceLineNo">386</span>                        <a name="line.386"></a>
+<span class="sourceLineNo">387</span>        }//end while<a name="line.387"></a>
+<span class="sourceLineNo">388</span>        <a name="line.388"></a>
+<span class="sourceLineNo">389</span>        if(allM.size() &gt; 0){<a name="line.389"></a>
+<span class="sourceLineNo">390</span>                for(String m: allM){<a name="line.390"></a>
+<span class="sourceLineNo">391</span>                        message.append(m + "\n");                               <a name="line.391"></a>
+<span class="sourceLineNo">392</span>                }<a name="line.392"></a>
+<span class="sourceLineNo">393</span>        }  <a name="line.393"></a>
+<span class="sourceLineNo">394</span>        <a name="line.394"></a>
+<span class="sourceLineNo">395</span>        message.append("Number of sequences parsed from the file: ")<a name="line.395"></a>
+<span class="sourceLineNo">396</span>                .append(String.valueOf(number_of_sequences))<a name="line.396"></a>
+<span class="sourceLineNo">397</span>                .append(ServiceUtils.LINESEP);<a name="line.397"></a>
+<span class="sourceLineNo">398</span>        <a name="line.398"></a>
+<span class="sourceLineNo">399</span>        outputPortMessage.send(0, new StringToken(String.valueOf(message.toString())));<a name="line.399"></a>
+<span class="sourceLineNo">400</span>        outputPortStatus.send(0, new BooleanToken(monitor));<a name="line.400"></a>
+<span class="sourceLineNo">401</span>        <a name="line.401"></a>
+<span class="sourceLineNo">402</span>        log.debug("MESSAGE: " + message.toString());<a name="line.402"></a>
+<span class="sourceLineNo">403</span>        message = null;<a name="line.403"></a>
+<span class="sourceLineNo">404</span>        <a name="line.404"></a>
+<span class="sourceLineNo">405</span>    }// end-method fire()<a name="line.405"></a>
+<span class="sourceLineNo">406</span>}<a name="line.406"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

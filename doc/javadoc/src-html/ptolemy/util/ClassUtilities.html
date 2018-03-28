@@ -1,0 +1,419 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../stylesheet.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>/* Utilities used to manipulate classes<a name="line.1"></a>
+<span class="sourceLineNo">002</span><a name="line.2"></a>
+<span class="sourceLineNo">003</span> Copyright (c) 2003-2014 The Regents of the University of California.<a name="line.3"></a>
+<span class="sourceLineNo">004</span> All rights reserved.<a name="line.4"></a>
+<span class="sourceLineNo">005</span> Permission is hereby granted, without written agreement and without<a name="line.5"></a>
+<span class="sourceLineNo">006</span> license or royalty fees, to use, copy, modify, and distribute this<a name="line.6"></a>
+<span class="sourceLineNo">007</span> software and its documentation for any purpose, provided that the above<a name="line.7"></a>
+<span class="sourceLineNo">008</span> copyright notice and the following two paragraphs appear in all copies<a name="line.8"></a>
+<span class="sourceLineNo">009</span> of this software.<a name="line.9"></a>
+<span class="sourceLineNo">010</span><a name="line.10"></a>
+<span class="sourceLineNo">011</span> IN NO EVENT SHALL THE UNIVERSITY OF CALIFORNIA BE LIABLE TO ANY PARTY<a name="line.11"></a>
+<span class="sourceLineNo">012</span> FOR DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES<a name="line.12"></a>
+<span class="sourceLineNo">013</span> ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION, EVEN IF<a name="line.13"></a>
+<span class="sourceLineNo">014</span> THE UNIVERSITY OF CALIFORNIA HAS BEEN ADVISED OF THE POSSIBILITY OF<a name="line.14"></a>
+<span class="sourceLineNo">015</span> SUCH DAMAGE.<a name="line.15"></a>
+<span class="sourceLineNo">016</span><a name="line.16"></a>
+<span class="sourceLineNo">017</span> THE UNIVERSITY OF CALIFORNIA SPECIFICALLY DISCLAIMS ANY WARRANTIES,<a name="line.17"></a>
+<span class="sourceLineNo">018</span> INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF<a name="line.18"></a>
+<span class="sourceLineNo">019</span> MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE<a name="line.19"></a>
+<span class="sourceLineNo">020</span> PROVIDED HEREUNDER IS ON AN "AS IS" BASIS, AND THE UNIVERSITY OF<a name="line.20"></a>
+<span class="sourceLineNo">021</span> CALIFORNIA HAS NO OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT, UPDATES,<a name="line.21"></a>
+<span class="sourceLineNo">022</span> ENHANCEMENTS, OR MODIFICATIONS.<a name="line.22"></a>
+<span class="sourceLineNo">023</span><a name="line.23"></a>
+<span class="sourceLineNo">024</span> PT_COPYRIGHT_VERSION_2<a name="line.24"></a>
+<span class="sourceLineNo">025</span> COPYRIGHTENDKEY<a name="line.25"></a>
+<span class="sourceLineNo">026</span><a name="line.26"></a>
+<span class="sourceLineNo">027</span> */<a name="line.27"></a>
+<span class="sourceLineNo">028</span>package ptolemy.util;<a name="line.28"></a>
+<span class="sourceLineNo">029</span><a name="line.29"></a>
+<span class="sourceLineNo">030</span>import java.io.File;<a name="line.30"></a>
+<span class="sourceLineNo">031</span>import java.io.IOException;<a name="line.31"></a>
+<span class="sourceLineNo">032</span>import java.net.JarURLConnection;<a name="line.32"></a>
+<span class="sourceLineNo">033</span>import java.net.URL;<a name="line.33"></a>
+<span class="sourceLineNo">034</span>import java.util.Enumeration;<a name="line.34"></a>
+<span class="sourceLineNo">035</span>import java.util.LinkedList;<a name="line.35"></a>
+<span class="sourceLineNo">036</span>import java.util.List;<a name="line.36"></a>
+<span class="sourceLineNo">037</span>import java.util.jar.JarEntry;<a name="line.37"></a>
+<span class="sourceLineNo">038</span>import java.util.jar.JarFile;<a name="line.38"></a>
+<span class="sourceLineNo">039</span><a name="line.39"></a>
+<span class="sourceLineNo">040</span>///////////////////////////////////////////////////////////////////<a name="line.40"></a>
+<span class="sourceLineNo">041</span>//// ClassUtilities<a name="line.41"></a>
+<span class="sourceLineNo">042</span><a name="line.42"></a>
+<span class="sourceLineNo">043</span>/**<a name="line.43"></a>
+<span class="sourceLineNo">044</span> A collection of utilities for manipulating classes.<a name="line.44"></a>
+<span class="sourceLineNo">045</span> These utilities do not depend on any other ptolemy.* packages.<a name="line.45"></a>
+<span class="sourceLineNo">046</span><a name="line.46"></a>
+<span class="sourceLineNo">047</span><a name="line.47"></a>
+<span class="sourceLineNo">048</span> @author Christopher Hylands<a name="line.48"></a>
+<span class="sourceLineNo">049</span> @version $Id$<a name="line.49"></a>
+<span class="sourceLineNo">050</span> @since Ptolemy II 4.0<a name="line.50"></a>
+<span class="sourceLineNo">051</span> @Pt.ProposedRating Green (cxh)<a name="line.51"></a>
+<span class="sourceLineNo">052</span> @Pt.AcceptedRating Green (cxh)<a name="line.52"></a>
+<span class="sourceLineNo">053</span> */<a name="line.53"></a>
+<span class="sourceLineNo">054</span>public class ClassUtilities {<a name="line.54"></a>
+<span class="sourceLineNo">055</span>    /** Instances of this class cannot be created.<a name="line.55"></a>
+<span class="sourceLineNo">056</span>     */<a name="line.56"></a>
+<span class="sourceLineNo">057</span>    private ClassUtilities() {<a name="line.57"></a>
+<span class="sourceLineNo">058</span>    }<a name="line.58"></a>
+<span class="sourceLineNo">059</span><a name="line.59"></a>
+<span class="sourceLineNo">060</span>    ///////////////////////////////////////////////////////////////////<a name="line.60"></a>
+<span class="sourceLineNo">061</span>    ////                         public methods                    ////<a name="line.61"></a>
+<span class="sourceLineNo">062</span><a name="line.62"></a>
+<span class="sourceLineNo">063</span>    /** Return the directories in a jar URI, relative to the jar entry,<a name="line.63"></a>
+<span class="sourceLineNo">064</span>     *  if any.   .<a name="line.64"></a>
+<span class="sourceLineNo">065</span>     *  Jar URLS have several forms, the most common being:<a name="line.65"></a>
+<span class="sourceLineNo">066</span>     *  &lt;code&gt;jar:file:///foo/bar.jar/!/bif/baz&lt;/code&gt;, which means that<a name="line.66"></a>
+<span class="sourceLineNo">067</span>     *  the jar file /foo/bar.jar has a directory or file name bif/baz.<a name="line.67"></a>
+<span class="sourceLineNo">068</span>     *  If such a file is passed to this method, then any directories<a name="line.68"></a>
+<span class="sourceLineNo">069</span>     *  in the jar file directory bif/baz will be returned.<a name="line.69"></a>
+<span class="sourceLineNo">070</span>     *  @param jarURL The Jar URL for which we are to look for directories.<a name="line.70"></a>
+<span class="sourceLineNo">071</span>     *  @return An list of Strings that name the directories<a name="line.71"></a>
+<span class="sourceLineNo">072</span>     *  @exception IOException If opening the connection fails or if<a name="line.72"></a>
+<span class="sourceLineNo">073</span>     *  getting the jar file from the connection fails<a name="line.73"></a>
+<span class="sourceLineNo">074</span>     */<a name="line.74"></a>
+<span class="sourceLineNo">075</span>    public static List jarURLDirectories(URL jarURL) throws IOException {<a name="line.75"></a>
+<span class="sourceLineNo">076</span>        List directories = new LinkedList();<a name="line.76"></a>
+<span class="sourceLineNo">077</span>        JarURLConnection connection = (JarURLConnection) jarURL<a name="line.77"></a>
+<span class="sourceLineNo">078</span>                .openConnection();<a name="line.78"></a>
+<span class="sourceLineNo">079</span>        String jarEntryName = connection.getEntryName();<a name="line.79"></a>
+<span class="sourceLineNo">080</span>        if (jarEntryName.endsWith("/")) {<a name="line.80"></a>
+<span class="sourceLineNo">081</span>            jarEntryName = jarEntryName.substring(0, jarEntryName.length() - 1);<a name="line.81"></a>
+<span class="sourceLineNo">082</span>        }<a name="line.82"></a>
+<span class="sourceLineNo">083</span>        JarFile jarFile = connection.getJarFile();<a name="line.83"></a>
+<span class="sourceLineNo">084</span>        Enumeration entries = jarFile.entries();<a name="line.84"></a>
+<span class="sourceLineNo">085</span>        while (entries.hasMoreElements()) {<a name="line.85"></a>
+<span class="sourceLineNo">086</span>            JarEntry entry = (JarEntry) entries.nextElement();<a name="line.86"></a>
+<span class="sourceLineNo">087</span>            String name = entry.getName();<a name="line.87"></a>
+<span class="sourceLineNo">088</span>            int jarEntryIndex = name.indexOf(jarEntryName + "/");<a name="line.88"></a>
+<span class="sourceLineNo">089</span>            int jarEntrySlashIndex = jarEntryIndex + jarEntryName.length() + 1;<a name="line.89"></a>
+<span class="sourceLineNo">090</span><a name="line.90"></a>
+<span class="sourceLineNo">091</span>            int nextSlashIndex = name.indexOf("/", jarEntrySlashIndex);<a name="line.91"></a>
+<span class="sourceLineNo">092</span>            int lastSlashIndex = name.indexOf("/", jarEntrySlashIndex);<a name="line.92"></a>
+<span class="sourceLineNo">093</span><a name="line.93"></a>
+<span class="sourceLineNo">094</span>            if (jarEntryIndex &gt; -1 &amp;&amp; jarEntrySlashIndex &gt; -1<a name="line.94"></a>
+<span class="sourceLineNo">095</span>                    &amp;&amp; nextSlashIndex &gt; -1 &amp;&amp; nextSlashIndex == lastSlashIndex<a name="line.95"></a>
+<span class="sourceLineNo">096</span>                    &amp;&amp; nextSlashIndex == name.length() - 1<a name="line.96"></a>
+<span class="sourceLineNo">097</span>                    &amp;&amp; entry.isDirectory()) {<a name="line.97"></a>
+<span class="sourceLineNo">098</span>                directories.add(name);<a name="line.98"></a>
+<span class="sourceLineNo">099</span>            }<a name="line.99"></a>
+<span class="sourceLineNo">100</span>        }<a name="line.100"></a>
+<span class="sourceLineNo">101</span>        return directories;<a name="line.101"></a>
+<span class="sourceLineNo">102</span>    }<a name="line.102"></a>
+<span class="sourceLineNo">103</span><a name="line.103"></a>
+<span class="sourceLineNo">104</span>    /** Lookup a jar URL and return the resource.<a name="line.104"></a>
+<span class="sourceLineNo">105</span>    <a name="line.105"></a>
+<span class="sourceLineNo">106</span>     *  A resource is a file such as a class file or image file that<a name="line.106"></a>
+<span class="sourceLineNo">107</span>     *  is found in the classpath.  A jar URL is a URL that refers to<a name="line.107"></a>
+<span class="sourceLineNo">108</span>     *  a resource in a jar file.  For example,<a name="line.108"></a>
+<span class="sourceLineNo">109</span>     *  &lt;code&gt;file://./foo.jar!/a/b/c.class&lt;/code&gt; is a jar URL that<a name="line.109"></a>
+<span class="sourceLineNo">110</span>     *  refers to the &lt;code&gt;a/b/c.class&lt;/code&gt; resource in<a name="line.110"></a>
+<span class="sourceLineNo">111</span>     *  &lt;code&gt;foo.jar&lt;/code&gt;.  If this method is called with<a name="line.111"></a>
+<span class="sourceLineNo">112</span>     *  &lt;code&gt;file://./foo.jar!/a/b/c.class&lt;/code&gt; then it will return<a name="line.112"></a>
+<span class="sourceLineNo">113</span>     *  &lt;code&gt;a/b/c.class&lt;/code&gt; if &lt;code&gt;a/b/c.class&lt;/code&gt; can be<a name="line.113"></a>
+<span class="sourceLineNo">114</span>     *  found as a resource in the class loader that loaded this class<a name="line.114"></a>
+<span class="sourceLineNo">115</span>     *  (ptolemy.util.ClassUtilities).  If the resource cannot be found,<a name="line.115"></a>
+<span class="sourceLineNo">116</span>     *  then an IOException is thrown. If the jarURLString parameter<a name="line.116"></a>
+<span class="sourceLineNo">117</span>     *  does not contain &lt;code&gt;!/&lt;/code&gt;, then return null.<a name="line.117"></a>
+<span class="sourceLineNo">118</span>     *  Note that everything before the &lt;code&gt;!/&lt;/code&gt; is removed before<a name="line.118"></a>
+<span class="sourceLineNo">119</span>     *  searching the classpath.<a name="line.119"></a>
+<span class="sourceLineNo">120</span>     *<a name="line.120"></a>
+<span class="sourceLineNo">121</span>     *  &lt;p&gt;This method is necessary because Web Start uses jar URL, and<a name="line.121"></a>
+<span class="sourceLineNo">122</span>     *  there are some cases where if we have a jar URL, then we may<a name="line.122"></a>
+<span class="sourceLineNo">123</span>     *  need to strip off the jar:&lt;i&gt;url&lt;/i&gt;!/ part so that we can<a name="line.123"></a>
+<span class="sourceLineNo">124</span>     *  search for the {entry} as a resource.<a name="line.124"></a>
+<span class="sourceLineNo">125</span>     *<a name="line.125"></a>
+<span class="sourceLineNo">126</span>     *  @param jarURLString The string containing the jar URL.<a name="line.126"></a>
+<span class="sourceLineNo">127</span>     *  If no resource is found and the string contains a "#" then the text<a name="line.127"></a>
+<span class="sourceLineNo">128</span>     *  consisting of the # and the remaining text is removed and the shorter<a name="line.128"></a>
+<span class="sourceLineNo">129</span>     *  string is used as a search pattern.<a name="line.129"></a>
+<span class="sourceLineNo">130</span>     *  @return The resource, if any.  If the spec string does not<a name="line.130"></a>
+<span class="sourceLineNo">131</span>     *  contain &lt;code&gt;!/&lt;/code&gt;, then return null.<a name="line.131"></a>
+<span class="sourceLineNo">132</span>     *  @exception IOException If this method cannot convert the specification<a name="line.132"></a>
+<span class="sourceLineNo">133</span>     *  to a URL.<a name="line.133"></a>
+<span class="sourceLineNo">134</span>     *  @see java.net.JarURLConnection<a name="line.134"></a>
+<span class="sourceLineNo">135</span>     */<a name="line.135"></a>
+<span class="sourceLineNo">136</span>    public static URL jarURLEntryResource(String jarURLString)<a name="line.136"></a>
+<span class="sourceLineNo">137</span>            throws IOException {<a name="line.137"></a>
+<span class="sourceLineNo">138</span>        // At first glance, it would appear that this method could appear<a name="line.138"></a>
+<span class="sourceLineNo">139</span>        // in specToURL(), but the problem is that specToURL() creates<a name="line.139"></a>
+<span class="sourceLineNo">140</span>        // a new URL with the spec, so it only does further checks if<a name="line.140"></a>
+<span class="sourceLineNo">141</span>        // the URL is malformed.  Unfortunately, in Web Start applications<a name="line.141"></a>
+<span class="sourceLineNo">142</span>        // the URL will often refer to a resource in another jar file,<a name="line.142"></a>
+<span class="sourceLineNo">143</span>        // which means that the jar url is not malformed, but there is<a name="line.143"></a>
+<span class="sourceLineNo">144</span>        // no resource by that name.  Probably specToURL() should return<a name="line.144"></a>
+<span class="sourceLineNo">145</span>        // the resource after calling new URL().<a name="line.145"></a>
+<span class="sourceLineNo">146</span>        int jarEntry = jarURLString.indexOf("!/");<a name="line.146"></a>
+<span class="sourceLineNo">147</span><a name="line.147"></a>
+<span class="sourceLineNo">148</span>        if (jarEntry == -1) {<a name="line.148"></a>
+<span class="sourceLineNo">149</span>            jarEntry = jarURLString.indexOf("!\\");<a name="line.149"></a>
+<span class="sourceLineNo">150</span><a name="line.150"></a>
+<span class="sourceLineNo">151</span>            if (jarEntry == -1) {<a name="line.151"></a>
+<span class="sourceLineNo">152</span>                return null;<a name="line.152"></a>
+<span class="sourceLineNo">153</span>            }<a name="line.153"></a>
+<span class="sourceLineNo">154</span>        }<a name="line.154"></a>
+<span class="sourceLineNo">155</span><a name="line.155"></a>
+<span class="sourceLineNo">156</span>        try {<a name="line.156"></a>
+<span class="sourceLineNo">157</span>            // !/ means that this could be in a jar file.<a name="line.157"></a>
+<span class="sourceLineNo">158</span>            String entry = jarURLString.substring(jarEntry + 2);<a name="line.158"></a>
+<span class="sourceLineNo">159</span><a name="line.159"></a>
+<span class="sourceLineNo">160</span>            // We might be in the Swing Event thread, so<a name="line.160"></a>
+<span class="sourceLineNo">161</span>            // Thread.currentThread().getContextClassLoader()<a name="line.161"></a>
+<span class="sourceLineNo">162</span>            // .getResource(entry) probably will not work.<a name="line.162"></a>
+<span class="sourceLineNo">163</span>            Class refClass = Class.forName("ptolemy.util.ClassUtilities");<a name="line.163"></a>
+<span class="sourceLineNo">164</span>            URL entryURL = refClass.getClassLoader().getResource(entry);<a name="line.164"></a>
+<span class="sourceLineNo">165</span>            if (entryURL == null &amp;&amp; entry.indexOf("#") != -1) {<a name="line.165"></a>
+<span class="sourceLineNo">166</span>                // If entry contains a #, then strip it off and try again.<a name="line.166"></a>
+<span class="sourceLineNo">167</span>                entryURL = refClass.getClassLoader()<a name="line.167"></a>
+<span class="sourceLineNo">168</span>                        .getResource(entry.substring(0, entry.indexOf("#")));<a name="line.168"></a>
+<span class="sourceLineNo">169</span>            }<a name="line.169"></a>
+<span class="sourceLineNo">170</span>            return entryURL;<a name="line.170"></a>
+<span class="sourceLineNo">171</span>        } catch (Exception ex) {<a name="line.171"></a>
+<span class="sourceLineNo">172</span>            // IOException constructor does not take a cause, so we add it.<a name="line.172"></a>
+<span class="sourceLineNo">173</span>            IOException ioException = new IOException(<a name="line.173"></a>
+<span class="sourceLineNo">174</span>                    "Cannot find \"" + jarURLString + "\".");<a name="line.174"></a>
+<span class="sourceLineNo">175</span>            ioException.initCause(ex);<a name="line.175"></a>
+<span class="sourceLineNo">176</span>            throw ioException;<a name="line.176"></a>
+<span class="sourceLineNo">177</span>        }<a name="line.177"></a>
+<span class="sourceLineNo">178</span>    }<a name="line.178"></a>
+<span class="sourceLineNo">179</span><a name="line.179"></a>
+<span class="sourceLineNo">180</span>    /** Lookup a URL in the classpath, but search up the classpath<a name="line.180"></a>
+<span class="sourceLineNo">181</span>     *  for directories named src.<a name="line.181"></a>
+<span class="sourceLineNo">182</span>     *  This method is useful for IDEs such as Eclipse where<a name="line.182"></a>
+<span class="sourceLineNo">183</span>     *  the default is to place .class files in a separate directory<a name="line.183"></a>
+<span class="sourceLineNo">184</span>     *  from the .java files.<a name="line.184"></a>
+<span class="sourceLineNo">185</span>     *<a name="line.185"></a>
+<span class="sourceLineNo">186</span>     *  &lt;p&gt;Before calling this method, call ClassLoader.getResource()<a name="line.186"></a>
+<span class="sourceLineNo">187</span>     *  because ClassLoader.getResource() is presumably faster.&lt;/p&gt;<a name="line.187"></a>
+<span class="sourceLineNo">188</span>     *<a name="line.188"></a>
+<span class="sourceLineNo">189</span>     *  @param sourceURLString The string containing the URL.<a name="line.189"></a>
+<span class="sourceLineNo">190</span>     *  @return The resource, if any.  If the spec string does not<a name="line.190"></a>
+<span class="sourceLineNo">191</span>     *  contain &lt;code&gt;!/&lt;/code&gt;, then return null.<a name="line.191"></a>
+<span class="sourceLineNo">192</span>     *  @exception IOException If this method cannot convert the specification<a name="line.192"></a>
+<span class="sourceLineNo">193</span>     *  to a URL.<a name="line.193"></a>
+<span class="sourceLineNo">194</span>     *  @see java.net.JarURLConnection<a name="line.194"></a>
+<span class="sourceLineNo">195</span>     */<a name="line.195"></a>
+<span class="sourceLineNo">196</span>    public static URL sourceResource(String sourceURLString)<a name="line.196"></a>
+<span class="sourceLineNo">197</span>            throws IOException {<a name="line.197"></a>
+<span class="sourceLineNo">198</span>        // FIXME: Maybe only allow relative paths?<a name="line.198"></a>
+<span class="sourceLineNo">199</span><a name="line.199"></a>
+<span class="sourceLineNo">200</span>        // Hmm.  Might be Eclipse, where sadly the<a name="line.200"></a>
+<span class="sourceLineNo">201</span>        // .class files are often in a separate directory<a name="line.201"></a>
+<span class="sourceLineNo">202</span>        // than the .java files.  So, we look at the CLASSPATH<a name="line.202"></a>
+<span class="sourceLineNo">203</span>        // and for each element that names a directory, traverse<a name="line.203"></a>
+<span class="sourceLineNo">204</span>        // the parents directories and look for adjacent directories<a name="line.204"></a>
+<span class="sourceLineNo">205</span>        // that contain a "src" directory.  For example if<a name="line.205"></a>
+<span class="sourceLineNo">206</span>        // the classpath contains "kepler/ptolemy/target/classes/",<a name="line.206"></a>
+<span class="sourceLineNo">207</span>        // then we will find kepler/ptolemy/src and return it<a name="line.207"></a>
+<span class="sourceLineNo">208</span>        // as a URL.<a name="line.208"></a>
+<span class="sourceLineNo">209</span><a name="line.209"></a>
+<span class="sourceLineNo">210</span>        // First time through, search each element of the CLASSPATH that names<a name="line.210"></a>
+<span class="sourceLineNo">211</span>        // a directory<a name="line.211"></a>
+<span class="sourceLineNo">212</span>        if (_sourceDirectories == null) {<a name="line.212"></a>
+<span class="sourceLineNo">213</span>            List&lt;File&gt; sourceDirectories = new LinkedList&lt;File&gt;();<a name="line.213"></a>
+<span class="sourceLineNo">214</span>            String classPath[] = StringUtilities.getProperty("java.class.path")<a name="line.214"></a>
+<span class="sourceLineNo">215</span>                    .split(StringUtilities.getProperty("path.separator"));<a name="line.215"></a>
+<span class="sourceLineNo">216</span>            for (String element : classPath) {<a name="line.216"></a>
+<span class="sourceLineNo">217</span>                File directory = new File(element);<a name="line.217"></a>
+<span class="sourceLineNo">218</span>                if (directory.isDirectory()) {<a name="line.218"></a>
+<span class="sourceLineNo">219</span>                    // We have a potential winner.<a name="line.219"></a>
+<span class="sourceLineNo">220</span>                    while (directory != null) {<a name="line.220"></a>
+<span class="sourceLineNo">221</span>                        File sourceDirectory = new File(directory, "src");<a name="line.221"></a>
+<span class="sourceLineNo">222</span>                        if (sourceDirectory.isDirectory()) {<a name="line.222"></a>
+<span class="sourceLineNo">223</span>                            sourceDirectories.add(sourceDirectory);<a name="line.223"></a>
+<span class="sourceLineNo">224</span>                            break;<a name="line.224"></a>
+<span class="sourceLineNo">225</span>                        }<a name="line.225"></a>
+<span class="sourceLineNo">226</span>                        directory = directory.getParentFile();<a name="line.226"></a>
+<span class="sourceLineNo">227</span>                    }<a name="line.227"></a>
+<span class="sourceLineNo">228</span>                }<a name="line.228"></a>
+<span class="sourceLineNo">229</span>            }<a name="line.229"></a>
+<span class="sourceLineNo">230</span>            // Avoid FindBugs: LI: Incorrect lazy initialization and update of static field.<a name="line.230"></a>
+<span class="sourceLineNo">231</span>            _sourceDirectories = sourceDirectories;<a name="line.231"></a>
+<span class="sourceLineNo">232</span>        }<a name="line.232"></a>
+<span class="sourceLineNo">233</span><a name="line.233"></a>
+<span class="sourceLineNo">234</span>        // Search _sourceDirectories for sourceURLString<a name="line.234"></a>
+<span class="sourceLineNo">235</span>        for (File sourceDirectory : _sourceDirectories) {<a name="line.235"></a>
+<span class="sourceLineNo">236</span>            File sourceFile = new File(sourceDirectory, sourceURLString);<a name="line.236"></a>
+<span class="sourceLineNo">237</span>            if (sourceFile.exists()) {<a name="line.237"></a>
+<span class="sourceLineNo">238</span>                return sourceFile.getCanonicalFile().toURI().toURL();<a name="line.238"></a>
+<span class="sourceLineNo">239</span>            }<a name="line.239"></a>
+<span class="sourceLineNo">240</span>        }<a name="line.240"></a>
+<span class="sourceLineNo">241</span>        return null;<a name="line.241"></a>
+<span class="sourceLineNo">242</span>    }<a name="line.242"></a>
+<span class="sourceLineNo">243</span><a name="line.243"></a>
+<span class="sourceLineNo">244</span>    /** Get the resource.<a name="line.244"></a>
+<span class="sourceLineNo">245</span>     *  If the current thread has a non-null context class loader,<a name="line.245"></a>
+<span class="sourceLineNo">246</span>     *  then use it to get the resource.  Othewise, get the<a name="line.246"></a>
+<span class="sourceLineNo">247</span>     *  NamedObj class and use that to get the resource.<a name="line.247"></a>
+<span class="sourceLineNo">248</span>     *  This is necessary because Thread.currentThread() can return null.<a name="line.248"></a>
+<span class="sourceLineNo">249</span>     *  @param spec The string to be found as a resource.<a name="line.249"></a>
+<span class="sourceLineNo">250</span>     *  @return The URL<a name="line.250"></a>
+<span class="sourceLineNo">251</span>     */<a name="line.251"></a>
+<span class="sourceLineNo">252</span>    public static URL getResource(String spec) {<a name="line.252"></a>
+<span class="sourceLineNo">253</span>        URL url = null;<a name="line.253"></a>
+<span class="sourceLineNo">254</span>        // Unfortunately, Thread.currentThread().getContextClassLoader() can<a name="line.254"></a>
+<span class="sourceLineNo">255</span>        // return null.  This happened when<a name="line.255"></a>
+<span class="sourceLineNo">256</span>        // $CLASSPATH/ptolemy/actor/lib/vertx/demo/TokenTransmissionTime/Sender.xml<a name="line.256"></a>
+<span class="sourceLineNo">257</span>        // failed and subsequent calls to ConfigurationApplication.openModelOrEntity() would<a name="line.257"></a>
+<span class="sourceLineNo">258</span>        // fail because the configuration could not be found.<a name="line.258"></a>
+<span class="sourceLineNo">259</span>        // So, we have our own getResource() that handles this.<a name="line.259"></a>
+<span class="sourceLineNo">260</span><a name="line.260"></a>
+<span class="sourceLineNo">261</span>        ClassLoader classLoader = Thread.currentThread()<a name="line.261"></a>
+<span class="sourceLineNo">262</span>                .getContextClassLoader();<a name="line.262"></a>
+<span class="sourceLineNo">263</span>        if (classLoader != null) {<a name="line.263"></a>
+<span class="sourceLineNo">264</span>            url = classLoader.getResource(spec);<a name="line.264"></a>
+<span class="sourceLineNo">265</span>        } else {<a name="line.265"></a>
+<span class="sourceLineNo">266</span>            classLoader = ClassLoader.getSystemClassLoader();<a name="line.266"></a>
+<span class="sourceLineNo">267</span>            if (classLoader != null) {<a name="line.267"></a>
+<span class="sourceLineNo">268</span>                url = classLoader.getResource(spec);<a name="line.268"></a>
+<span class="sourceLineNo">269</span>            } else {<a name="line.269"></a>
+<span class="sourceLineNo">270</span>                try {<a name="line.270"></a>
+<span class="sourceLineNo">271</span>                    Class refClass = Class<a name="line.271"></a>
+<span class="sourceLineNo">272</span>                            .forName("ptolemy.util.ClassUtilities");<a name="line.272"></a>
+<span class="sourceLineNo">273</span>                    url = refClass.getClassLoader().getResource(spec);<a name="line.273"></a>
+<span class="sourceLineNo">274</span>                } catch (Exception ex) {<a name="line.274"></a>
+<span class="sourceLineNo">275</span>                    throw new RuntimeException(<a name="line.275"></a>
+<span class="sourceLineNo">276</span>                            "Failed to get system class loader"<a name="line.276"></a>
+<span class="sourceLineNo">277</span>                                    + " and failed to get the Class for ClassUtilities",<a name="line.277"></a>
+<span class="sourceLineNo">278</span>                            ex);<a name="line.278"></a>
+<span class="sourceLineNo">279</span>                }<a name="line.279"></a>
+<span class="sourceLineNo">280</span>            }<a name="line.280"></a>
+<span class="sourceLineNo">281</span>        }<a name="line.281"></a>
+<span class="sourceLineNo">282</span>        return url;<a name="line.282"></a>
+<span class="sourceLineNo">283</span>    }<a name="line.283"></a>
+<span class="sourceLineNo">284</span><a name="line.284"></a>
+<span class="sourceLineNo">285</span>    /** Given a dot separated classname, return the jar file or directory<a name="line.285"></a>
+<span class="sourceLineNo">286</span>     *  where the class can be found.<a name="line.286"></a>
+<span class="sourceLineNo">287</span>     *  @param necessaryClass  The dot separated class name, for example<a name="line.287"></a>
+<span class="sourceLineNo">288</span>     *  "ptolemy.util.ClassUtilities"<a name="line.288"></a>
+<span class="sourceLineNo">289</span>     *  @return If the class can be found as a resource, return the<a name="line.289"></a>
+<span class="sourceLineNo">290</span>     *  directory or jar file where the necessary class can be found.<a name="line.290"></a>
+<span class="sourceLineNo">291</span>     *  otherwise, return null.  If the resource is found in a directory,<a name="line.291"></a>
+<span class="sourceLineNo">292</span>     *  then the return value will always have forward slashes, it will<a name="line.292"></a>
+<span class="sourceLineNo">293</span>     *  never use backslashes.<a name="line.293"></a>
+<span class="sourceLineNo">294</span>     */<a name="line.294"></a>
+<span class="sourceLineNo">295</span>    public static String lookupClassAsResource(String necessaryClass) {<a name="line.295"></a>
+<span class="sourceLineNo">296</span>        // This method is called from copernicus.kernel.GeneratorAttribute<a name="line.296"></a>
+<span class="sourceLineNo">297</span>        // and actor.lib.python.PythonScript.  We moved it here<a name="line.297"></a>
+<span class="sourceLineNo">298</span>        // to avoid dependencies.<a name="line.298"></a>
+<span class="sourceLineNo">299</span>        String necessaryResource = StringUtilities.substitute(necessaryClass,<a name="line.299"></a>
+<span class="sourceLineNo">300</span>                ".", "/") + ".class";<a name="line.300"></a>
+<span class="sourceLineNo">301</span><a name="line.301"></a>
+<span class="sourceLineNo">302</span>        URL necessaryURL = ClassUtilities.getResource(necessaryResource);<a name="line.302"></a>
+<span class="sourceLineNo">303</span><a name="line.303"></a>
+<span class="sourceLineNo">304</span>        if (necessaryURL == null) {<a name="line.304"></a>
+<span class="sourceLineNo">305</span>            necessaryResource = StringUtilities.substitute(necessaryClass, ".",<a name="line.305"></a>
+<span class="sourceLineNo">306</span>                    "/") + ".xml";<a name="line.306"></a>
+<span class="sourceLineNo">307</span>            necessaryURL = ClassUtilities.getResource(necessaryResource);<a name="line.307"></a>
+<span class="sourceLineNo">308</span>        }<a name="line.308"></a>
+<span class="sourceLineNo">309</span>        if (necessaryURL != null) {<a name="line.309"></a>
+<span class="sourceLineNo">310</span>            String resourceResults = necessaryURL.getFile();<a name="line.310"></a>
+<span class="sourceLineNo">311</span><a name="line.311"></a>
+<span class="sourceLineNo">312</span>            // Strip off the file:/ and the necessaryResource.<a name="line.312"></a>
+<span class="sourceLineNo">313</span>            if (resourceResults.startsWith("file:/")) {<a name="line.313"></a>
+<span class="sourceLineNo">314</span>                resourceResults = resourceResults.substring(6);<a name="line.314"></a>
+<span class="sourceLineNo">315</span>            }<a name="line.315"></a>
+<span class="sourceLineNo">316</span><a name="line.316"></a>
+<span class="sourceLineNo">317</span>            // Strip off the name of the resource we were looking for<a name="line.317"></a>
+<span class="sourceLineNo">318</span>            // so that we are left with the directory or jar file<a name="line.318"></a>
+<span class="sourceLineNo">319</span>            // it is in<a name="line.319"></a>
+<span class="sourceLineNo">320</span>            resourceResults = resourceResults.substring(0,<a name="line.320"></a>
+<span class="sourceLineNo">321</span>                    resourceResults.length() - necessaryResource.length());<a name="line.321"></a>
+<span class="sourceLineNo">322</span><a name="line.322"></a>
+<span class="sourceLineNo">323</span>            // Strip off the trailing !/<a name="line.323"></a>
+<span class="sourceLineNo">324</span>            if (resourceResults.endsWith("!/")) {<a name="line.324"></a>
+<span class="sourceLineNo">325</span>                resourceResults = resourceResults.substring(0,<a name="line.325"></a>
+<span class="sourceLineNo">326</span>                        resourceResults.length() - 2);<a name="line.326"></a>
+<span class="sourceLineNo">327</span>            }<a name="line.327"></a>
+<span class="sourceLineNo">328</span><a name="line.328"></a>
+<span class="sourceLineNo">329</span>            // Unfortunately, under Windows, URL.getFile() may<a name="line.329"></a>
+<span class="sourceLineNo">330</span>            // return things like /c:/ptII, so we create a new<a name="line.330"></a>
+<span class="sourceLineNo">331</span>            // File and get its path, which will return c:\ptII<a name="line.331"></a>
+<span class="sourceLineNo">332</span>            File resourceFile = new File(resourceResults);<a name="line.332"></a>
+<span class="sourceLineNo">333</span><a name="line.333"></a>
+<span class="sourceLineNo">334</span>            // Convert backslashes<a name="line.334"></a>
+<span class="sourceLineNo">335</span>            String sanitizedResourceName = StringUtilities<a name="line.335"></a>
+<span class="sourceLineNo">336</span>                    .substitute(resourceFile.getPath(), "\\", "/");<a name="line.336"></a>
+<span class="sourceLineNo">337</span>            return sanitizedResourceName;<a name="line.337"></a>
+<span class="sourceLineNo">338</span>        }<a name="line.338"></a>
+<span class="sourceLineNo">339</span><a name="line.339"></a>
+<span class="sourceLineNo">340</span>        return null;<a name="line.340"></a>
+<span class="sourceLineNo">341</span>    }<a name="line.341"></a>
+<span class="sourceLineNo">342</span><a name="line.342"></a>
+<span class="sourceLineNo">343</span>    /** A list of directories that end with "src" that are found in<a name="line.343"></a>
+<span class="sourceLineNo">344</span>     *  in the paths of individual elements in the classpath.<a name="line.344"></a>
+<span class="sourceLineNo">345</span>     */<a name="line.345"></a>
+<span class="sourceLineNo">346</span>    private static List&lt;File&gt; _sourceDirectories = null;<a name="line.346"></a>
+<span class="sourceLineNo">347</span>}<a name="line.347"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

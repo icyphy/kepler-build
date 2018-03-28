@@ -1,0 +1,303 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../../../stylesheet.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>/*<a name="line.1"></a>
+<span class="sourceLineNo">002</span> * Copyright (c) 2003-2010 The Regents of the University of California.<a name="line.2"></a>
+<span class="sourceLineNo">003</span> * All rights reserved.<a name="line.3"></a>
+<span class="sourceLineNo">004</span> *<a name="line.4"></a>
+<span class="sourceLineNo">005</span> * '$Author: welker $'<a name="line.5"></a>
+<span class="sourceLineNo">006</span> * '$Date: 2010-05-05 22:21:26 -0700 (Wed, 05 May 2010) $' <a name="line.6"></a>
+<span class="sourceLineNo">007</span> * '$Revision: 24234 $'<a name="line.7"></a>
+<span class="sourceLineNo">008</span> * <a name="line.8"></a>
+<span class="sourceLineNo">009</span> * Permission is hereby granted, without written agreement and without<a name="line.9"></a>
+<span class="sourceLineNo">010</span> * license or royalty fees, to use, copy, modify, and distribute this<a name="line.10"></a>
+<span class="sourceLineNo">011</span> * software and its documentation for any purpose, provided that the above<a name="line.11"></a>
+<span class="sourceLineNo">012</span> * copyright notice and the following two paragraphs appear in all copies<a name="line.12"></a>
+<span class="sourceLineNo">013</span> * of this software.<a name="line.13"></a>
+<span class="sourceLineNo">014</span> *<a name="line.14"></a>
+<span class="sourceLineNo">015</span> * IN NO EVENT SHALL THE UNIVERSITY OF CALIFORNIA BE LIABLE TO ANY PARTY<a name="line.15"></a>
+<span class="sourceLineNo">016</span> * FOR DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES<a name="line.16"></a>
+<span class="sourceLineNo">017</span> * ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION, EVEN IF<a name="line.17"></a>
+<span class="sourceLineNo">018</span> * THE UNIVERSITY OF CALIFORNIA HAS BEEN ADVISED OF THE POSSIBILITY OF<a name="line.18"></a>
+<span class="sourceLineNo">019</span> * SUCH DAMAGE.<a name="line.19"></a>
+<span class="sourceLineNo">020</span> *<a name="line.20"></a>
+<span class="sourceLineNo">021</span> * THE UNIVERSITY OF CALIFORNIA SPECIFICALLY DISCLAIMS ANY WARRANTIES,<a name="line.21"></a>
+<span class="sourceLineNo">022</span> * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF<a name="line.22"></a>
+<span class="sourceLineNo">023</span> * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE<a name="line.23"></a>
+<span class="sourceLineNo">024</span> * PROVIDED HEREUNDER IS ON AN "AS IS" BASIS, AND THE UNIVERSITY OF<a name="line.24"></a>
+<span class="sourceLineNo">025</span> * CALIFORNIA HAS NO OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT, UPDATES,<a name="line.25"></a>
+<span class="sourceLineNo">026</span> * ENHANCEMENTS, OR MODIFICATIONS.<a name="line.26"></a>
+<span class="sourceLineNo">027</span> *<a name="line.27"></a>
+<span class="sourceLineNo">028</span> */<a name="line.28"></a>
+<span class="sourceLineNo">029</span><a name="line.29"></a>
+<span class="sourceLineNo">030</span>package org.ecoinformatics.seek.querybuilder;<a name="line.30"></a>
+<span class="sourceLineNo">031</span><a name="line.31"></a>
+<span class="sourceLineNo">032</span>import java.util.Enumeration;<a name="line.32"></a>
+<span class="sourceLineNo">033</span>import java.util.Vector;<a name="line.33"></a>
+<span class="sourceLineNo">034</span><a name="line.34"></a>
+<span class="sourceLineNo">035</span>import javax.swing.AbstractListModel;<a name="line.35"></a>
+<span class="sourceLineNo">036</span><a name="line.36"></a>
+<span class="sourceLineNo">037</span>/**<a name="line.37"></a>
+<span class="sourceLineNo">038</span> * This class represents the model for the JList class. The complexity here is<a name="line.38"></a>
+<span class="sourceLineNo">039</span> * that the model want to view everything as a a vector, but the items are<a name="line.39"></a>
+<span class="sourceLineNo">040</span> * actually an object tree. So the options where to:&lt;br&gt;<a name="line.40"></a>
+<span class="sourceLineNo">041</span> * 1) Use a vecotr as the model and add the complexity to the add and remove<a name="line.41"></a>
+<span class="sourceLineNo">042</span> * methods (this is what was done) 2) Use the "real" data model and then when an<a name="line.42"></a>
+<span class="sourceLineNo">043</span> * item was asked for by index we traverse the tree to figure out the index each<a name="line.43"></a>
+<span class="sourceLineNo">044</span> * time.&lt;br&gt;<a name="line.44"></a>
+<span class="sourceLineNo">045</span> * &lt;br&gt;<a name="line.45"></a>
+<span class="sourceLineNo">046</span> * Assuming painting occurs more often than model updates I went with approach<a name="line.46"></a>
+<span class="sourceLineNo">047</span> * number one<a name="line.47"></a>
+<span class="sourceLineNo">048</span> */<a name="line.48"></a>
+<span class="sourceLineNo">049</span>public class DBWhereModel extends AbstractListModel {<a name="line.49"></a>
+<span class="sourceLineNo">050</span>        protected Vector mItems = new Vector();<a name="line.50"></a>
+<span class="sourceLineNo">051</span>        protected DBWhereIFace mRootObj = null;<a name="line.51"></a>
+<span class="sourceLineNo">052</span><a name="line.52"></a>
+<span class="sourceLineNo">053</span>        /**<a name="line.53"></a>
+<span class="sourceLineNo">054</span>         * Default Constructor<a name="line.54"></a>
+<span class="sourceLineNo">055</span>         */<a name="line.55"></a>
+<span class="sourceLineNo">056</span>        public DBWhereModel() {<a name="line.56"></a>
+<span class="sourceLineNo">057</span>        }<a name="line.57"></a>
+<span class="sourceLineNo">058</span><a name="line.58"></a>
+<span class="sourceLineNo">059</span>        /**<a name="line.59"></a>
+<span class="sourceLineNo">060</span>         * Initialize it by clearing everything and building it from the root where<a name="line.60"></a>
+<span class="sourceLineNo">061</span>         * object<a name="line.61"></a>
+<span class="sourceLineNo">062</span>         * <a name="line.62"></a>
+<span class="sourceLineNo">063</span>         * @param aWhereObj<a name="line.63"></a>
+<span class="sourceLineNo">064</span>         */<a name="line.64"></a>
+<span class="sourceLineNo">065</span>        public void initialize(DBWhereIFace aWhereObj) {<a name="line.65"></a>
+<span class="sourceLineNo">066</span>                mItems.clear();<a name="line.66"></a>
+<span class="sourceLineNo">067</span>                mRootObj = aWhereObj;<a name="line.67"></a>
+<span class="sourceLineNo">068</span>                buildFromWhereObj(mRootObj);<a name="line.68"></a>
+<span class="sourceLineNo">069</span>                fireContentsChanged();<a name="line.69"></a>
+<span class="sourceLineNo">070</span>        }<a name="line.70"></a>
+<span class="sourceLineNo">071</span><a name="line.71"></a>
+<span class="sourceLineNo">072</span>        /**<a name="line.72"></a>
+<span class="sourceLineNo">073</span>         * Build it from the where object<a name="line.73"></a>
+<span class="sourceLineNo">074</span>         * <a name="line.74"></a>
+<span class="sourceLineNo">075</span>         * @param aWhereObj<a name="line.75"></a>
+<span class="sourceLineNo">076</span>         *            the new object<a name="line.76"></a>
+<span class="sourceLineNo">077</span>         */<a name="line.77"></a>
+<span class="sourceLineNo">078</span>        protected void buildFromWhereObj(DBWhereIFace aWhereObj) {<a name="line.78"></a>
+<span class="sourceLineNo">079</span>                if (aWhereObj != null) {<a name="line.79"></a>
+<span class="sourceLineNo">080</span>                        mItems.add(aWhereObj);<a name="line.80"></a>
+<span class="sourceLineNo">081</span>                        if (aWhereObj.isOperator() &amp;&amp; aWhereObj instanceof DBWhereOperator) {<a name="line.81"></a>
+<span class="sourceLineNo">082</span>                                DBWhereOperator whereObj = (DBWhereOperator) aWhereObj;<a name="line.82"></a>
+<span class="sourceLineNo">083</span>                                for (Enumeration et = whereObj.getEnumeration(); et<a name="line.83"></a>
+<span class="sourceLineNo">084</span>                                                .hasMoreElements();) {<a name="line.84"></a>
+<span class="sourceLineNo">085</span>                                        buildFromWhereObj((DBWhereIFace) et.nextElement());<a name="line.85"></a>
+<span class="sourceLineNo">086</span>                                }<a name="line.86"></a>
+<span class="sourceLineNo">087</span>                                mItems.add(whereObj.getClosure());<a name="line.87"></a>
+<span class="sourceLineNo">088</span>                        }<a name="line.88"></a>
+<span class="sourceLineNo">089</span>                }<a name="line.89"></a>
+<span class="sourceLineNo">090</span>        }<a name="line.90"></a>
+<span class="sourceLineNo">091</span><a name="line.91"></a>
+<span class="sourceLineNo">092</span>        /**<a name="line.92"></a>
+<span class="sourceLineNo">093</span>         * Returns the size of the model<a name="line.93"></a>
+<span class="sourceLineNo">094</span>         */<a name="line.94"></a>
+<span class="sourceLineNo">095</span>        public int getSize() {<a name="line.95"></a>
+<span class="sourceLineNo">096</span>                return mItems.size();<a name="line.96"></a>
+<span class="sourceLineNo">097</span>        }<a name="line.97"></a>
+<span class="sourceLineNo">098</span><a name="line.98"></a>
+<span class="sourceLineNo">099</span>        /**<a name="line.99"></a>
+<span class="sourceLineNo">100</span>         * Gets an element in the model at a specified index<a name="line.100"></a>
+<span class="sourceLineNo">101</span>         */<a name="line.101"></a>
+<span class="sourceLineNo">102</span>        public Object getElementAt(int index) {<a name="line.102"></a>
+<span class="sourceLineNo">103</span>                return mItems.elementAt(index);<a name="line.103"></a>
+<span class="sourceLineNo">104</span>        }<a name="line.104"></a>
+<span class="sourceLineNo">105</span><a name="line.105"></a>
+<span class="sourceLineNo">106</span>        /**<a name="line.106"></a>
+<span class="sourceLineNo">107</span>         * Returns the current insertion index depending on the current drag over<a name="line.107"></a>
+<span class="sourceLineNo">108</span>         * item<a name="line.108"></a>
+<span class="sourceLineNo">109</span>         * <a name="line.109"></a>
+<span class="sourceLineNo">110</span>         * @return the index<a name="line.110"></a>
+<span class="sourceLineNo">111</span>         */<a name="line.111"></a>
+<span class="sourceLineNo">112</span>        protected int getInsertionIndexFromDrag() {<a name="line.112"></a>
+<span class="sourceLineNo">113</span>                int inx = 0;<a name="line.113"></a>
+<span class="sourceLineNo">114</span><a name="line.114"></a>
+<span class="sourceLineNo">115</span>                for (Enumeration e = mItems.elements(); e.hasMoreElements();) {<a name="line.115"></a>
+<span class="sourceLineNo">116</span>                        DBWhereIFace item = (DBWhereIFace) e.nextElement();<a name="line.116"></a>
+<span class="sourceLineNo">117</span>                        if (item.isDragOver()) {<a name="line.117"></a>
+<span class="sourceLineNo">118</span>                                return inx + 1;<a name="line.118"></a>
+<span class="sourceLineNo">119</span>                        }<a name="line.119"></a>
+<span class="sourceLineNo">120</span>                        inx++;<a name="line.120"></a>
+<span class="sourceLineNo">121</span>                }<a name="line.121"></a>
+<span class="sourceLineNo">122</span>                return -1;<a name="line.122"></a>
+<span class="sourceLineNo">123</span>        }<a name="line.123"></a>
+<span class="sourceLineNo">124</span><a name="line.124"></a>
+<span class="sourceLineNo">125</span>        /**<a name="line.125"></a>
+<span class="sourceLineNo">126</span>         * Adds an item to the model, the parent attr MUST be set before adding item<a name="line.126"></a>
+<span class="sourceLineNo">127</span>         * <a name="line.127"></a>
+<span class="sourceLineNo">128</span>         * @param aItem<a name="line.128"></a>
+<span class="sourceLineNo">129</span>         *            item to be added, it finds the insert point via the lasted<a name="line.129"></a>
+<span class="sourceLineNo">130</span>         *            dragged object if that can't be found then it adds it as the<a name="line.130"></a>
+<span class="sourceLineNo">131</span>         *            last child of the parent.<a name="line.131"></a>
+<span class="sourceLineNo">132</span>         * @return the index it was added at<a name="line.132"></a>
+<span class="sourceLineNo">133</span>         */<a name="line.133"></a>
+<span class="sourceLineNo">134</span>        public int add(DBWhereIFace aItem) {<a name="line.134"></a>
+<span class="sourceLineNo">135</span>                int inx;<a name="line.135"></a>
+<span class="sourceLineNo">136</span>                if (mItems.size() == 0) {<a name="line.136"></a>
+<span class="sourceLineNo">137</span>                        inx = 0;<a name="line.137"></a>
+<span class="sourceLineNo">138</span>                } else {<a name="line.138"></a>
+<span class="sourceLineNo">139</span>                        // check to make the parent is set<a name="line.139"></a>
+<span class="sourceLineNo">140</span>                        DBWhereOperator parent = aItem.getParent();<a name="line.140"></a>
+<span class="sourceLineNo">141</span>                        if (parent == null)<a name="line.141"></a>
+<span class="sourceLineNo">142</span>                                return -1;<a name="line.142"></a>
+<span class="sourceLineNo">143</span><a name="line.143"></a>
+<span class="sourceLineNo">144</span>                        inx = getInsertionIndexFromDrag();<a name="line.144"></a>
+<span class="sourceLineNo">145</span>                        if (inx == -1) {<a name="line.145"></a>
+<span class="sourceLineNo">146</span>                                inx = mItems.indexOf(parent.getClosure());<a name="line.146"></a>
+<span class="sourceLineNo">147</span>                                if (inx == -1)<a name="line.147"></a>
+<span class="sourceLineNo">148</span>                                        return -1;<a name="line.148"></a>
+<span class="sourceLineNo">149</span>                                inx--; // back up one slot from the closure<a name="line.149"></a>
+<span class="sourceLineNo">150</span>                        }<a name="line.150"></a>
+<span class="sourceLineNo">151</span>                }<a name="line.151"></a>
+<span class="sourceLineNo">152</span>                add(aItem, inx);<a name="line.152"></a>
+<span class="sourceLineNo">153</span>                return inx;<a name="line.153"></a>
+<span class="sourceLineNo">154</span>        }<a name="line.154"></a>
+<span class="sourceLineNo">155</span><a name="line.155"></a>
+<span class="sourceLineNo">156</span>        /**<a name="line.156"></a>
+<span class="sourceLineNo">157</span>         * Adds an item to the model at a specified index, the parent attr MUST be<a name="line.157"></a>
+<span class="sourceLineNo">158</span>         * set before adding item<a name="line.158"></a>
+<span class="sourceLineNo">159</span>         * <a name="line.159"></a>
+<span class="sourceLineNo">160</span>         * @param aItem<a name="line.160"></a>
+<span class="sourceLineNo">161</span>         *            item to be added, it finds the insert point via the lasted<a name="line.161"></a>
+<span class="sourceLineNo">162</span>         *            dragged object if that can't be found then it adds it as the<a name="line.162"></a>
+<span class="sourceLineNo">163</span>         *            last child of the parent.<a name="line.163"></a>
+<span class="sourceLineNo">164</span>         * @param aInx<a name="line.164"></a>
+<span class="sourceLineNo">165</span>         *            index as to where it will be added<a name="line.165"></a>
+<span class="sourceLineNo">166</span>         */<a name="line.166"></a>
+<span class="sourceLineNo">167</span>        public void add(DBWhereIFace aItem, int aInx) {<a name="line.167"></a>
+<span class="sourceLineNo">168</span>                mItems.add(aInx, aItem);<a name="line.168"></a>
+<span class="sourceLineNo">169</span>                if (aItem instanceof DBWhereOperator) {<a name="line.169"></a>
+<span class="sourceLineNo">170</span>                        mItems.add(aInx + 1, ((DBWhereOperator) aItem).getClosure());<a name="line.170"></a>
+<span class="sourceLineNo">171</span>                }<a name="line.171"></a>
+<span class="sourceLineNo">172</span>                if (mRootObj == null &amp;&amp; aItem.getParent() == null) {<a name="line.172"></a>
+<span class="sourceLineNo">173</span>                        mRootObj = aItem;<a name="line.173"></a>
+<span class="sourceLineNo">174</span>                }<a name="line.174"></a>
+<span class="sourceLineNo">175</span>                fireContentsChanged(this, 0, mItems.size() - 1);<a name="line.175"></a>
+<span class="sourceLineNo">176</span>        }<a name="line.176"></a>
+<span class="sourceLineNo">177</span><a name="line.177"></a>
+<span class="sourceLineNo">178</span>        /**<a name="line.178"></a>
+<span class="sourceLineNo">179</span>         * Remove item from list, if operator, remove its closure and all the<a name="line.179"></a>
+<span class="sourceLineNo">180</span>         * children too<a name="line.180"></a>
+<span class="sourceLineNo">181</span>         * <a name="line.181"></a>
+<span class="sourceLineNo">182</span>         * @param aObj<a name="line.182"></a>
+<span class="sourceLineNo">183</span>         *            item to be removed<a name="line.183"></a>
+<span class="sourceLineNo">184</span>         */<a name="line.184"></a>
+<span class="sourceLineNo">185</span>        public void remove(DBWhereIFace aObj) {<a name="line.185"></a>
+<span class="sourceLineNo">186</span>                int startInx = mItems.indexOf(aObj);<a name="line.186"></a>
+<span class="sourceLineNo">187</span>                if (aObj instanceof DBWhereOperator) {<a name="line.187"></a>
+<span class="sourceLineNo">188</span>                        DBWhereIFace closureItem = ((DBWhereOperator) aObj).getClosure();<a name="line.188"></a>
+<span class="sourceLineNo">189</span>                        DBWhereIFace delItem = null;<a name="line.189"></a>
+<span class="sourceLineNo">190</span>                        while (delItem != closureItem) {<a name="line.190"></a>
+<span class="sourceLineNo">191</span>                                delItem = (DBWhereIFace) mItems.elementAt(startInx);<a name="line.191"></a>
+<span class="sourceLineNo">192</span>                                mItems.remove(delItem);<a name="line.192"></a>
+<span class="sourceLineNo">193</span>                        }<a name="line.193"></a>
+<span class="sourceLineNo">194</span>                } else {<a name="line.194"></a>
+<span class="sourceLineNo">195</span>                        mItems.remove(aObj);<a name="line.195"></a>
+<span class="sourceLineNo">196</span>                }<a name="line.196"></a>
+<span class="sourceLineNo">197</span><a name="line.197"></a>
+<span class="sourceLineNo">198</span>                if (mItems.size() == 0) {<a name="line.198"></a>
+<span class="sourceLineNo">199</span>                        mRootObj = null;<a name="line.199"></a>
+<span class="sourceLineNo">200</span>                }<a name="line.200"></a>
+<span class="sourceLineNo">201</span><a name="line.201"></a>
+<span class="sourceLineNo">202</span>                fireContentsChanged();<a name="line.202"></a>
+<span class="sourceLineNo">203</span>        }<a name="line.203"></a>
+<span class="sourceLineNo">204</span><a name="line.204"></a>
+<span class="sourceLineNo">205</span>        /**<a name="line.205"></a>
+<span class="sourceLineNo">206</span>         * Expose the ability to send the UI a notification the model has been<a name="line.206"></a>
+<span class="sourceLineNo">207</span>         * updated<a name="line.207"></a>
+<span class="sourceLineNo">208</span>         * <a name="line.208"></a>
+<span class="sourceLineNo">209</span>         */<a name="line.209"></a>
+<span class="sourceLineNo">210</span>        public void fireContentsChanged() {<a name="line.210"></a>
+<span class="sourceLineNo">211</span>                fireContentsChanged(this, 0, mItems.size() - 1);<a name="line.211"></a>
+<span class="sourceLineNo">212</span>        }<a name="line.212"></a>
+<span class="sourceLineNo">213</span><a name="line.213"></a>
+<span class="sourceLineNo">214</span>        /**<a name="line.214"></a>
+<span class="sourceLineNo">215</span>         * Fills QueryDef from Model<a name="line.215"></a>
+<span class="sourceLineNo">216</span>         */<a name="line.216"></a>
+<span class="sourceLineNo">217</span>        public void fillQueryDef(DBQueryDef aQueryDef) {<a name="line.217"></a>
+<span class="sourceLineNo">218</span>                DBWhereIFace whereObj = null;<a name="line.218"></a>
+<span class="sourceLineNo">219</span>                if (mRootObj != null) {<a name="line.219"></a>
+<span class="sourceLineNo">220</span>                        if (mRootObj instanceof DBWhereOperator) {<a name="line.220"></a>
+<span class="sourceLineNo">221</span>                                if (((DBWhereOperator) mRootObj).getNumChildern() &gt; 0) {<a name="line.221"></a>
+<span class="sourceLineNo">222</span>                                        whereObj = mRootObj;<a name="line.222"></a>
+<span class="sourceLineNo">223</span>                                }<a name="line.223"></a>
+<span class="sourceLineNo">224</span>                        } else {<a name="line.224"></a>
+<span class="sourceLineNo">225</span>                                whereObj = mRootObj;<a name="line.225"></a>
+<span class="sourceLineNo">226</span>                        }<a name="line.226"></a>
+<span class="sourceLineNo">227</span>                }<a name="line.227"></a>
+<span class="sourceLineNo">228</span>                aQueryDef.setWhere(whereObj);<a name="line.228"></a>
+<span class="sourceLineNo">229</span>        }<a name="line.229"></a>
+<span class="sourceLineNo">230</span><a name="line.230"></a>
+<span class="sourceLineNo">231</span>}<a name="line.231"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

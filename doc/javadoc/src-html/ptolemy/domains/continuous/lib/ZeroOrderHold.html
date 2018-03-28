@@ -1,0 +1,265 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../../../stylesheet.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>/* An actor that hold the last event and outputs a constant signal.<a name="line.1"></a>
+<span class="sourceLineNo">002</span><a name="line.2"></a>
+<span class="sourceLineNo">003</span> Copyright (c) 1998-2014 The Regents of the University of California.<a name="line.3"></a>
+<span class="sourceLineNo">004</span> All rights reserved.<a name="line.4"></a>
+<span class="sourceLineNo">005</span> Permission is hereby granted, without written agreement and without<a name="line.5"></a>
+<span class="sourceLineNo">006</span> license or royalty fees, to use, copy, modify, and distribute this<a name="line.6"></a>
+<span class="sourceLineNo">007</span> software and its documentation for any purpose, provided that the above<a name="line.7"></a>
+<span class="sourceLineNo">008</span> copyright notice and the following two paragraphs appear in all copies<a name="line.8"></a>
+<span class="sourceLineNo">009</span> of this software.<a name="line.9"></a>
+<span class="sourceLineNo">010</span><a name="line.10"></a>
+<span class="sourceLineNo">011</span> IN NO EVENT SHALL THE UNIVERSITY OF CALIFORNIA BE LIABLE TO ANY PARTY<a name="line.11"></a>
+<span class="sourceLineNo">012</span> FOR DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES<a name="line.12"></a>
+<span class="sourceLineNo">013</span> ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION, EVEN IF<a name="line.13"></a>
+<span class="sourceLineNo">014</span> THE UNIVERSITY OF CALIFORNIA HAS BEEN ADVISED OF THE POSSIBILITY OF<a name="line.14"></a>
+<span class="sourceLineNo">015</span> SUCH DAMAGE.<a name="line.15"></a>
+<span class="sourceLineNo">016</span><a name="line.16"></a>
+<span class="sourceLineNo">017</span> THE UNIVERSITY OF CALIFORNIA SPECIFICALLY DISCLAIMS ANY WARRANTIES,<a name="line.17"></a>
+<span class="sourceLineNo">018</span> INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF<a name="line.18"></a>
+<span class="sourceLineNo">019</span> MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE<a name="line.19"></a>
+<span class="sourceLineNo">020</span> PROVIDED HEREUNDER IS ON AN "AS IS" BASIS, AND THE UNIVERSITY OF<a name="line.20"></a>
+<span class="sourceLineNo">021</span> CALIFORNIA HAS NO OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT, UPDATES,<a name="line.21"></a>
+<span class="sourceLineNo">022</span> ENHANCEMENTS, OR MODIFICATIONS.<a name="line.22"></a>
+<span class="sourceLineNo">023</span><a name="line.23"></a>
+<span class="sourceLineNo">024</span> PT_COPYRIGHT_VERSION_2<a name="line.24"></a>
+<span class="sourceLineNo">025</span> COPYRIGHTENDKEY<a name="line.25"></a>
+<span class="sourceLineNo">026</span><a name="line.26"></a>
+<span class="sourceLineNo">027</span> */<a name="line.27"></a>
+<span class="sourceLineNo">028</span>package ptolemy.domains.continuous.lib;<a name="line.28"></a>
+<span class="sourceLineNo">029</span><a name="line.29"></a>
+<span class="sourceLineNo">030</span>import java.util.HashSet;<a name="line.30"></a>
+<span class="sourceLineNo">031</span>import java.util.Set;<a name="line.31"></a>
+<span class="sourceLineNo">032</span><a name="line.32"></a>
+<span class="sourceLineNo">033</span>import ptolemy.actor.lib.Transformer;<a name="line.33"></a>
+<span class="sourceLineNo">034</span>import ptolemy.data.Token;<a name="line.34"></a>
+<span class="sourceLineNo">035</span>import ptolemy.data.expr.Parameter;<a name="line.35"></a>
+<span class="sourceLineNo">036</span>import ptolemy.domains.continuous.kernel.ContinuousDirector;<a name="line.36"></a>
+<span class="sourceLineNo">037</span>import ptolemy.graph.Inequality;<a name="line.37"></a>
+<span class="sourceLineNo">038</span>import ptolemy.kernel.CompositeEntity;<a name="line.38"></a>
+<span class="sourceLineNo">039</span>import ptolemy.kernel.util.IllegalActionException;<a name="line.39"></a>
+<span class="sourceLineNo">040</span>import ptolemy.kernel.util.InternalErrorException;<a name="line.40"></a>
+<span class="sourceLineNo">041</span>import ptolemy.kernel.util.NameDuplicationException;<a name="line.41"></a>
+<span class="sourceLineNo">042</span><a name="line.42"></a>
+<span class="sourceLineNo">043</span>///////////////////////////////////////////////////////////////////<a name="line.43"></a>
+<span class="sourceLineNo">044</span>//// ZeroOrderHold<a name="line.44"></a>
+<span class="sourceLineNo">045</span><a name="line.45"></a>
+<span class="sourceLineNo">046</span>/**<a name="line.46"></a>
+<span class="sourceLineNo">047</span> Convert discrete events at the input to a continuous-time<a name="line.47"></a>
+<span class="sourceLineNo">048</span> signal at the output by holding the value of the discrete<a name="line.48"></a>
+<span class="sourceLineNo">049</span> event until the next discrete event arrives. Specifically,<a name="line.49"></a>
+<span class="sourceLineNo">050</span> on each firing, if an input is present, then record the<a name="line.50"></a>
+<span class="sourceLineNo">051</span> value of the input. Then produce the recorded value.<a name="line.51"></a>
+<span class="sourceLineNo">052</span> Prior to receipt of the first input, output the token<a name="line.52"></a>
+<span class="sourceLineNo">053</span> given by &lt;i&gt;defaultValue&lt;/i&gt;, if one is given.<a name="line.53"></a>
+<span class="sourceLineNo">054</span> This actor will throw an exception if the input is not<a name="line.54"></a>
+<span class="sourceLineNo">055</span> purely discrete. Specifically, this means that when the input<a name="line.55"></a>
+<span class="sourceLineNo">056</span> is present, the step size of the solver has to be 0.0.<a name="line.56"></a>
+<span class="sourceLineNo">057</span><a name="line.57"></a>
+<span class="sourceLineNo">058</span> @author Edward A. Lee, Haiyang Zheng<a name="line.58"></a>
+<span class="sourceLineNo">059</span> @version $Id$<a name="line.59"></a>
+<span class="sourceLineNo">060</span> @since Ptolemy II 6.0<a name="line.60"></a>
+<span class="sourceLineNo">061</span> @Pt.ProposedRating Green (hyzheng)<a name="line.61"></a>
+<span class="sourceLineNo">062</span> @Pt.AcceptedRating Red (hyzheng)<a name="line.62"></a>
+<span class="sourceLineNo">063</span> */<a name="line.63"></a>
+<span class="sourceLineNo">064</span>public class ZeroOrderHold extends Transformer {<a name="line.64"></a>
+<span class="sourceLineNo">065</span>    /** Construct an actor in the specified container with the specified<a name="line.65"></a>
+<span class="sourceLineNo">066</span>     *  name.  The name must be unique within the container or an exception<a name="line.66"></a>
+<span class="sourceLineNo">067</span>     *  is thrown. The container argument must not be null, or a<a name="line.67"></a>
+<span class="sourceLineNo">068</span>     *  NullPointerException will be thrown.<a name="line.68"></a>
+<span class="sourceLineNo">069</span>     *<a name="line.69"></a>
+<span class="sourceLineNo">070</span>     *  @param container The subsystem that this actor is lived in<a name="line.70"></a>
+<span class="sourceLineNo">071</span>     *  @param name The actor's name<a name="line.71"></a>
+<span class="sourceLineNo">072</span>     *  @exception IllegalActionException If the entity cannot be contained<a name="line.72"></a>
+<span class="sourceLineNo">073</span>     *   by the proposed container.<a name="line.73"></a>
+<span class="sourceLineNo">074</span>     *  @exception NameDuplicationException If name coincides with<a name="line.74"></a>
+<span class="sourceLineNo">075</span>     *   an entity already in the container.<a name="line.75"></a>
+<span class="sourceLineNo">076</span>     */<a name="line.76"></a>
+<span class="sourceLineNo">077</span>    public ZeroOrderHold(CompositeEntity container, String name)<a name="line.77"></a>
+<span class="sourceLineNo">078</span>            throws IllegalActionException, NameDuplicationException {<a name="line.78"></a>
+<span class="sourceLineNo">079</span>        super(container, name);<a name="line.79"></a>
+<span class="sourceLineNo">080</span>        defaultValue = new Parameter(this, "defaultValue");<a name="line.80"></a>
+<span class="sourceLineNo">081</span><a name="line.81"></a>
+<span class="sourceLineNo">082</span>        _attachText("_iconDescription", "&lt;svg&gt;\n" + "&lt;rect x=\"-30\" y=\"-20\" "<a name="line.82"></a>
+<span class="sourceLineNo">083</span>                + "width=\"60\" height=\"40\" " + "style=\"fill:white\"/&gt;\n"<a name="line.83"></a>
+<span class="sourceLineNo">084</span>                + "&lt;polyline points=\"-25,10 -15,10 -15,-10 5,-10\"/&gt;\n"<a name="line.84"></a>
+<span class="sourceLineNo">085</span>                + "&lt;polyline points=\"5,-10 5,0 15,0 15,10 25,10\"/&gt;\n"<a name="line.85"></a>
+<span class="sourceLineNo">086</span>                + "&lt;/svg&gt;\n");<a name="line.86"></a>
+<span class="sourceLineNo">087</span>    }<a name="line.87"></a>
+<span class="sourceLineNo">088</span><a name="line.88"></a>
+<span class="sourceLineNo">089</span>    ///////////////////////////////////////////////////////////////////<a name="line.89"></a>
+<span class="sourceLineNo">090</span>    ////                     ports and parameters                       ////<a name="line.90"></a>
+<span class="sourceLineNo">091</span><a name="line.91"></a>
+<span class="sourceLineNo">092</span>    /** Default output before any input has received.<a name="line.92"></a>
+<span class="sourceLineNo">093</span>     *  The default is empty, indicating<a name="line.93"></a>
+<span class="sourceLineNo">094</span>     *  that no output is produced until an input is received.<a name="line.94"></a>
+<span class="sourceLineNo">095</span>     *  The type of the output is set to at least the type of<a name="line.95"></a>
+<span class="sourceLineNo">096</span>     *  this parameter (and also at least the type of the input).<a name="line.96"></a>
+<span class="sourceLineNo">097</span>     */<a name="line.97"></a>
+<span class="sourceLineNo">098</span>    public Parameter defaultValue;<a name="line.98"></a>
+<span class="sourceLineNo">099</span><a name="line.99"></a>
+<span class="sourceLineNo">100</span>    ///////////////////////////////////////////////////////////////////<a name="line.100"></a>
+<span class="sourceLineNo">101</span>    ////                         public methods                    ////<a name="line.101"></a>
+<span class="sourceLineNo">102</span><a name="line.102"></a>
+<span class="sourceLineNo">103</span>    /** Output the latest token consumed from the consumeCurrentEvents()<a name="line.103"></a>
+<span class="sourceLineNo">104</span>     *  call.<a name="line.104"></a>
+<span class="sourceLineNo">105</span>     *  @exception IllegalActionException If the token cannot be sent.<a name="line.105"></a>
+<span class="sourceLineNo">106</span>     */<a name="line.106"></a>
+<span class="sourceLineNo">107</span>    @Override<a name="line.107"></a>
+<span class="sourceLineNo">108</span>    public void fire() throws IllegalActionException {<a name="line.108"></a>
+<span class="sourceLineNo">109</span>        super.fire();<a name="line.109"></a>
+<span class="sourceLineNo">110</span><a name="line.110"></a>
+<span class="sourceLineNo">111</span>        if (input.hasToken(0)) {<a name="line.111"></a>
+<span class="sourceLineNo">112</span>            ContinuousDirector dir = (ContinuousDirector) getDirector();<a name="line.112"></a>
+<span class="sourceLineNo">113</span>            double stepSize = dir.getCurrentStepSize();<a name="line.113"></a>
+<span class="sourceLineNo">114</span>            if (stepSize != 0.0 &amp;&amp; !_firstFiring) {<a name="line.114"></a>
+<span class="sourceLineNo">115</span>                throw new IllegalActionException(this,<a name="line.115"></a>
+<span class="sourceLineNo">116</span>                        "Signal at the input port is not purely discrete.");<a name="line.116"></a>
+<span class="sourceLineNo">117</span>            }<a name="line.117"></a>
+<span class="sourceLineNo">118</span>            _lastToken = input.get(0);<a name="line.118"></a>
+<span class="sourceLineNo">119</span>            if (_debugging) {<a name="line.119"></a>
+<span class="sourceLineNo">120</span>                _debug("Input value " + _lastToken + " read at time "<a name="line.120"></a>
+<span class="sourceLineNo">121</span>                        + dir.getModelTime() + " and microstep "<a name="line.121"></a>
+<span class="sourceLineNo">122</span>                        + dir.getIndex());<a name="line.122"></a>
+<span class="sourceLineNo">123</span>            }<a name="line.123"></a>
+<span class="sourceLineNo">124</span>        }<a name="line.124"></a>
+<span class="sourceLineNo">125</span>        if (_lastToken != null) {<a name="line.125"></a>
+<span class="sourceLineNo">126</span>            output.send(0, _lastToken);<a name="line.126"></a>
+<span class="sourceLineNo">127</span>            if (_debugging) {<a name="line.127"></a>
+<span class="sourceLineNo">128</span>                ContinuousDirector dir = (ContinuousDirector) getDirector();<a name="line.128"></a>
+<span class="sourceLineNo">129</span>                _debug("Output value " + _lastToken + " sent at time "<a name="line.129"></a>
+<span class="sourceLineNo">130</span>                        + dir.getModelTime() + " and microstep "<a name="line.130"></a>
+<span class="sourceLineNo">131</span>                        + dir.getIndex());<a name="line.131"></a>
+<span class="sourceLineNo">132</span>            }<a name="line.132"></a>
+<span class="sourceLineNo">133</span>        }<a name="line.133"></a>
+<span class="sourceLineNo">134</span>    }<a name="line.134"></a>
+<span class="sourceLineNo">135</span><a name="line.135"></a>
+<span class="sourceLineNo">136</span>    /** Initialize token. If there is no input, the initial token is<a name="line.136"></a>
+<span class="sourceLineNo">137</span>     *  a Double Token with the value specified by the defaultValue parameter.<a name="line.137"></a>
+<span class="sourceLineNo">138</span>     *  @exception IllegalActionException If thrown by the super class.<a name="line.138"></a>
+<span class="sourceLineNo">139</span>     */<a name="line.139"></a>
+<span class="sourceLineNo">140</span>    @Override<a name="line.140"></a>
+<span class="sourceLineNo">141</span>    public void initialize() throws IllegalActionException {<a name="line.141"></a>
+<span class="sourceLineNo">142</span>        super.initialize();<a name="line.142"></a>
+<span class="sourceLineNo">143</span>        _lastToken = defaultValue.getToken();<a name="line.143"></a>
+<span class="sourceLineNo">144</span>        _firstFiring = true;<a name="line.144"></a>
+<span class="sourceLineNo">145</span>    }<a name="line.145"></a>
+<span class="sourceLineNo">146</span><a name="line.146"></a>
+<span class="sourceLineNo">147</span>    /** Override the base class to record that the first firing<a name="line.147"></a>
+<span class="sourceLineNo">148</span>     *  has completed.<a name="line.148"></a>
+<span class="sourceLineNo">149</span>     *  @return True if execution can continue into the next iteration.<a name="line.149"></a>
+<span class="sourceLineNo">150</span>     *  @exception IllegalActionException If the base class throws it.<a name="line.150"></a>
+<span class="sourceLineNo">151</span>     */<a name="line.151"></a>
+<span class="sourceLineNo">152</span>    @Override<a name="line.152"></a>
+<span class="sourceLineNo">153</span>    public boolean postfire() throws IllegalActionException {<a name="line.153"></a>
+<span class="sourceLineNo">154</span>        _firstFiring = false;<a name="line.154"></a>
+<span class="sourceLineNo">155</span>        return super.postfire();<a name="line.155"></a>
+<span class="sourceLineNo">156</span>    }<a name="line.156"></a>
+<span class="sourceLineNo">157</span><a name="line.157"></a>
+<span class="sourceLineNo">158</span>    ///////////////////////////////////////////////////////////////////<a name="line.158"></a>
+<span class="sourceLineNo">159</span>    ////                         protected methods                 ////<a name="line.159"></a>
+<span class="sourceLineNo">160</span><a name="line.160"></a>
+<span class="sourceLineNo">161</span>    /**<a name="line.161"></a>
+<span class="sourceLineNo">162</span>     * Return a constraint that requires the type of the &lt;i&gt;defaultValue&lt;/i&gt;<a name="line.162"></a>
+<span class="sourceLineNo">163</span>     * parameter to be less than or equal to the type of the &lt;i&gt;output&lt;/i&gt;<a name="line.163"></a>
+<span class="sourceLineNo">164</span>     * port.<a name="line.164"></a>
+<span class="sourceLineNo">165</span>     */<a name="line.165"></a>
+<span class="sourceLineNo">166</span>    @Override<a name="line.166"></a>
+<span class="sourceLineNo">167</span>    protected Set&lt;Inequality&gt; _customTypeConstraints() {<a name="line.167"></a>
+<span class="sourceLineNo">168</span>        Set&lt;Inequality&gt; result = new HashSet&lt;Inequality&gt;();<a name="line.168"></a>
+<span class="sourceLineNo">169</span>        try {<a name="line.169"></a>
+<span class="sourceLineNo">170</span>            // type of initialValue &lt;= type of output<a name="line.170"></a>
+<span class="sourceLineNo">171</span>            if (defaultValue.getToken() != null) {<a name="line.171"></a>
+<span class="sourceLineNo">172</span>                result.add(new Inequality(defaultValue.getTypeTerm(),<a name="line.172"></a>
+<span class="sourceLineNo">173</span>                        output.getTypeTerm()));<a name="line.173"></a>
+<span class="sourceLineNo">174</span>            }<a name="line.174"></a>
+<span class="sourceLineNo">175</span>        } catch (IllegalActionException ex) {<a name="line.175"></a>
+<span class="sourceLineNo">176</span>            // Errors in the defaultValue parameter should already<a name="line.176"></a>
+<span class="sourceLineNo">177</span>            // have been caught in getAttribute() method of the base<a name="line.177"></a>
+<span class="sourceLineNo">178</span>            // class.<a name="line.178"></a>
+<span class="sourceLineNo">179</span>            throw new InternalErrorException("Bad defaultValue!\n" + ex);<a name="line.179"></a>
+<span class="sourceLineNo">180</span>        }<a name="line.180"></a>
+<span class="sourceLineNo">181</span><a name="line.181"></a>
+<span class="sourceLineNo">182</span>        return result;<a name="line.182"></a>
+<span class="sourceLineNo">183</span>    }<a name="line.183"></a>
+<span class="sourceLineNo">184</span><a name="line.184"></a>
+<span class="sourceLineNo">185</span>    ///////////////////////////////////////////////////////////////////<a name="line.185"></a>
+<span class="sourceLineNo">186</span>    ////                         private variables                 ////<a name="line.186"></a>
+<span class="sourceLineNo">187</span><a name="line.187"></a>
+<span class="sourceLineNo">188</span>    /** Saved token. */<a name="line.188"></a>
+<span class="sourceLineNo">189</span>    private Token _lastToken;<a name="line.189"></a>
+<span class="sourceLineNo">190</span><a name="line.190"></a>
+<span class="sourceLineNo">191</span>    /** Indicator that this is the first firing after initialize(). */<a name="line.191"></a>
+<span class="sourceLineNo">192</span>    private boolean _firstFiring;<a name="line.192"></a>
+<span class="sourceLineNo">193</span>}<a name="line.193"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

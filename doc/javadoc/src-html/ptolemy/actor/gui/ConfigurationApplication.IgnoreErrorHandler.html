@@ -1,0 +1,1950 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../../stylesheet.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>/* An application that reads one or more files specified on the command line.<a name="line.1"></a>
+<span class="sourceLineNo">002</span><a name="line.2"></a>
+<span class="sourceLineNo">003</span> Copyright (c) 1999-2016 The Regents of the University of California.<a name="line.3"></a>
+<span class="sourceLineNo">004</span> All rights reserved.<a name="line.4"></a>
+<span class="sourceLineNo">005</span> Permission is hereby granted, without written agreement and without<a name="line.5"></a>
+<span class="sourceLineNo">006</span> license or royalty fees, to use, copy, modify, and distribute this<a name="line.6"></a>
+<span class="sourceLineNo">007</span> software and its documentation for any purpose, provided that the above<a name="line.7"></a>
+<span class="sourceLineNo">008</span> copyright notice and the following two paragraphs appear in all copies<a name="line.8"></a>
+<span class="sourceLineNo">009</span> of this software.<a name="line.9"></a>
+<span class="sourceLineNo">010</span><a name="line.10"></a>
+<span class="sourceLineNo">011</span> IN NO EVENT SHALL THE UNIVERSITY OF CALIFORNIA BE LIABLE TO ANY PARTY<a name="line.11"></a>
+<span class="sourceLineNo">012</span> FOR DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES<a name="line.12"></a>
+<span class="sourceLineNo">013</span> ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION, EVEN IF<a name="line.13"></a>
+<span class="sourceLineNo">014</span> THE UNIVERSITY OF CALIFORNIA HAS BEEN ADVISED OF THE POSSIBILITY OF<a name="line.14"></a>
+<span class="sourceLineNo">015</span> SUCH DAMAGE.<a name="line.15"></a>
+<span class="sourceLineNo">016</span><a name="line.16"></a>
+<span class="sourceLineNo">017</span> THE UNIVERSITY OF CALIFORNIA SPECIFICALLY DISCLAIMS ANY WARRANTIES,<a name="line.17"></a>
+<span class="sourceLineNo">018</span> INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF<a name="line.18"></a>
+<span class="sourceLineNo">019</span> MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE<a name="line.19"></a>
+<span class="sourceLineNo">020</span> PROVIDED HEREUNDER IS ON AN "AS IS" BASIS, AND THE UNIVERSITY OF<a name="line.20"></a>
+<span class="sourceLineNo">021</span> CALIFORNIA HAS NO OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT, UPDATES,<a name="line.21"></a>
+<span class="sourceLineNo">022</span> ENHANCEMENTS, OR MODIFICATIONS.<a name="line.22"></a>
+<span class="sourceLineNo">023</span><a name="line.23"></a>
+<span class="sourceLineNo">024</span> PT_COPYRIGHT_VERSION_2<a name="line.24"></a>
+<span class="sourceLineNo">025</span> COPYRIGHTENDKEY<a name="line.25"></a>
+<span class="sourceLineNo">026</span><a name="line.26"></a>
+<span class="sourceLineNo">027</span> */<a name="line.27"></a>
+<span class="sourceLineNo">028</span>package ptolemy.actor.gui;<a name="line.28"></a>
+<span class="sourceLineNo">029</span><a name="line.29"></a>
+<span class="sourceLineNo">030</span>import java.io.File;<a name="line.30"></a>
+<span class="sourceLineNo">031</span>import java.io.FilenameFilter;<a name="line.31"></a>
+<span class="sourceLineNo">032</span>import java.io.IOException;<a name="line.32"></a>
+<span class="sourceLineNo">033</span>import java.io.InputStream;<a name="line.33"></a>
+<span class="sourceLineNo">034</span>import java.lang.reflect.Constructor;<a name="line.34"></a>
+<span class="sourceLineNo">035</span>import java.net.URI;<a name="line.35"></a>
+<span class="sourceLineNo">036</span>import java.net.URISyntaxException;<a name="line.36"></a>
+<span class="sourceLineNo">037</span>import java.net.URL;<a name="line.37"></a>
+<span class="sourceLineNo">038</span>import java.util.Iterator;<a name="line.38"></a>
+<span class="sourceLineNo">039</span>import java.util.LinkedList;<a name="line.39"></a>
+<span class="sourceLineNo">040</span>import java.util.List;<a name="line.40"></a>
+<span class="sourceLineNo">041</span><a name="line.41"></a>
+<span class="sourceLineNo">042</span>import javax.swing.JFrame;<a name="line.42"></a>
+<span class="sourceLineNo">043</span><a name="line.43"></a>
+<span class="sourceLineNo">044</span>import ptolemy.actor.CompositeActor;<a name="line.44"></a>
+<span class="sourceLineNo">045</span>import ptolemy.actor.Director;<a name="line.45"></a>
+<span class="sourceLineNo">046</span>import ptolemy.actor.ExecutionListener;<a name="line.46"></a>
+<span class="sourceLineNo">047</span>import ptolemy.actor.Manager;<a name="line.47"></a>
+<span class="sourceLineNo">048</span>import ptolemy.actor.TypedCompositeActor;<a name="line.48"></a>
+<span class="sourceLineNo">049</span>import ptolemy.actor.injection.ActorModuleInitializer;<a name="line.49"></a>
+<span class="sourceLineNo">050</span>import ptolemy.data.expr.Parameter;<a name="line.50"></a>
+<span class="sourceLineNo">051</span>import ptolemy.data.expr.StringParameter;<a name="line.51"></a>
+<span class="sourceLineNo">052</span>import ptolemy.kernel.ComponentEntity;<a name="line.52"></a>
+<span class="sourceLineNo">053</span>import ptolemy.kernel.CompositeEntity;<a name="line.53"></a>
+<span class="sourceLineNo">054</span>import ptolemy.kernel.attributes.VersionAttribute;<a name="line.54"></a>
+<span class="sourceLineNo">055</span>import ptolemy.kernel.util.Attribute;<a name="line.55"></a>
+<span class="sourceLineNo">056</span>import ptolemy.kernel.util.IllegalActionException;<a name="line.56"></a>
+<span class="sourceLineNo">057</span>import ptolemy.kernel.util.InternalErrorException;<a name="line.57"></a>
+<span class="sourceLineNo">058</span>import ptolemy.kernel.util.KernelException;<a name="line.58"></a>
+<span class="sourceLineNo">059</span>import ptolemy.kernel.util.NameDuplicationException;<a name="line.59"></a>
+<span class="sourceLineNo">060</span>import ptolemy.kernel.util.NamedObj;<a name="line.60"></a>
+<span class="sourceLineNo">061</span>import ptolemy.kernel.util.Settable;<a name="line.61"></a>
+<span class="sourceLineNo">062</span>import ptolemy.kernel.util.Workspace;<a name="line.62"></a>
+<span class="sourceLineNo">063</span>import ptolemy.moml.Documentation;<a name="line.63"></a>
+<span class="sourceLineNo">064</span>import ptolemy.moml.ErrorHandler;<a name="line.64"></a>
+<span class="sourceLineNo">065</span>import ptolemy.moml.MoMLChangeRequest;<a name="line.65"></a>
+<span class="sourceLineNo">066</span>import ptolemy.moml.MoMLParser;<a name="line.66"></a>
+<span class="sourceLineNo">067</span>import ptolemy.moml.SimpleErrorHandler;<a name="line.67"></a>
+<span class="sourceLineNo">068</span>import ptolemy.moml.filter.BackwardCompatibility;<a name="line.68"></a>
+<span class="sourceLineNo">069</span>import ptolemy.util.ClassUtilities;<a name="line.69"></a>
+<span class="sourceLineNo">070</span>import ptolemy.util.FileUtilities;<a name="line.70"></a>
+<span class="sourceLineNo">071</span>import ptolemy.util.MessageHandler;<a name="line.71"></a>
+<span class="sourceLineNo">072</span>import ptolemy.util.StringUtilities;<a name="line.72"></a>
+<span class="sourceLineNo">073</span><a name="line.73"></a>
+<span class="sourceLineNo">074</span>///////////////////////////////////////////////////////////////////<a name="line.74"></a>
+<span class="sourceLineNo">075</span>//// ConfigurationApplication<a name="line.75"></a>
+<span class="sourceLineNo">076</span><a name="line.76"></a>
+<span class="sourceLineNo">077</span>/**<a name="line.77"></a>
+<span class="sourceLineNo">078</span> An application that reads one or more<a name="line.78"></a>
+<span class="sourceLineNo">079</span> files specified on the command line, or instantiates one or<a name="line.79"></a>
+<span class="sourceLineNo">080</span> more Java classes specified by the -class option.<a name="line.80"></a>
+<span class="sourceLineNo">081</span> If one of these files is an XML file that defines a Configuration, or one<a name="line.81"></a>
+<span class="sourceLineNo">082</span> of the classes is an instance of Configuration, then<a name="line.82"></a>
+<span class="sourceLineNo">083</span> all subsequent files will be read by delegating to the Configuration,<a name="line.83"></a>
+<span class="sourceLineNo">084</span> invoking its openModel() method.  A command-line file is assumed to be<a name="line.84"></a>
+<span class="sourceLineNo">085</span> a MoML file or a file that can be opened by the specified configuration.<a name="line.85"></a>
+<span class="sourceLineNo">086</span> &lt;p&gt;For example, this command uses the HyVisual configuration to<a name="line.86"></a>
+<span class="sourceLineNo">087</span> open a model:<a name="line.87"></a>
+<span class="sourceLineNo">088</span> &lt;pre&gt;<a name="line.88"></a>
+<span class="sourceLineNo">089</span> $PTII/bin/moml $PTII/ptolemy/configs/hyvisual/configuration.xml $PTII/ptolemy/domains/ct/demo/StickyMasses/StickyMasses.xml<a name="line.89"></a>
+<span class="sourceLineNo">090</span> &lt;/pre&gt;<a name="line.90"></a>
+<span class="sourceLineNo">091</span> &lt;p&gt;<a name="line.91"></a>
+<span class="sourceLineNo">092</span> If a Ptolemy model is instantiated on the command line, either<a name="line.92"></a>
+<span class="sourceLineNo">093</span> by giving a MoML file or a -class argument, then parameters of that<a name="line.93"></a>
+<span class="sourceLineNo">094</span> model can be set on the command line.  The syntax is:<a name="line.94"></a>
+<span class="sourceLineNo">095</span> &lt;pre&gt;<a name="line.95"></a>
+<span class="sourceLineNo">096</span> $PTII/bin/ptolemy &lt;i&gt;modelFile.xml&lt;/i&gt; -&lt;i&gt;parameterName&lt;/i&gt; &lt;i&gt;value&lt;/i&gt;<a name="line.96"></a>
+<span class="sourceLineNo">097</span> &lt;/pre&gt;<a name="line.97"></a>
+<span class="sourceLineNo">098</span> where &lt;i&gt;parameterName&lt;/i&gt; is the name of a parameter relative to<a name="line.98"></a>
+<span class="sourceLineNo">099</span> the top level of a model or the director of a model.  For instance,<a name="line.99"></a>
+<span class="sourceLineNo">100</span> if foo.xml defines a toplevel entity named &lt;code&gt;x&lt;/code&gt; and<a name="line.100"></a>
+<span class="sourceLineNo">101</span> &lt;code&gt;x&lt;/code&gt; contains an entity named &lt;code&gt;y&lt;/code&gt; and a<a name="line.101"></a>
+<span class="sourceLineNo">102</span> parameter named &lt;code&gt;a&lt;/code&gt;, and &lt;code&gt;y&lt;/code&gt; contains a<a name="line.102"></a>
+<span class="sourceLineNo">103</span> parameter named &lt;code&gt;b&lt;/code&gt;, then:<a name="line.103"></a>
+<span class="sourceLineNo">104</span> &lt;pre&gt;<a name="line.104"></a>
+<span class="sourceLineNo">105</span> $PTII/bin/ptolemy foo.xml -a 5 -y.b 10<a name="line.105"></a>
+<span class="sourceLineNo">106</span> &lt;/pre&gt;<a name="line.106"></a>
+<span class="sourceLineNo">107</span> would set the values of the two parameters.<a name="line.107"></a>
+<span class="sourceLineNo">108</span><a name="line.108"></a>
+<span class="sourceLineNo">109</span> &lt;p&gt;Note that strings need to have double quotes converted to<a name="line.109"></a>
+<span class="sourceLineNo">110</span> &lt;code&gt;&amp;amp;quot;&lt;/code&gt; so to set a parameter named &lt;code&gt;c&lt;/code&gt;<a name="line.110"></a>
+<span class="sourceLineNo">111</span> to the string &lt;code&gt;"bar"&lt;/code&gt; it might be necessary to do<a name="line.111"></a>
+<span class="sourceLineNo">112</span> something like:&lt;/p&gt;<a name="line.112"></a>
+<span class="sourceLineNo">113</span> &lt;pre&gt;<a name="line.113"></a>
+<span class="sourceLineNo">114</span> $PTII/bin/ptolemy foo.xml -a 5 -y.b 10 -c "&amp;amp;quot;bar&amp;amp;quot;"<a name="line.114"></a>
+<span class="sourceLineNo">115</span> &lt;/pre&gt;<a name="line.115"></a>
+<span class="sourceLineNo">116</span> &lt;p&gt;The &lt;code&gt;&amp;amp;quot;&lt;/code&gt; is necessary to convert the double quote<a name="line.116"></a>
+<span class="sourceLineNo">117</span> to something safe to in an XML file.  The backslashes are necessary<a name="line.117"></a>
+<span class="sourceLineNo">118</span> to protect the &lt;code&gt;&amp;amp;&lt;/code&gt; and &lt;code&gt;;&lt;/code&gt; from the shell<a name="line.118"></a>
+<span class="sourceLineNo">119</span> in the shell script.&lt;/p&gt;<a name="line.119"></a>
+<span class="sourceLineNo">120</span><a name="line.120"></a>
+<span class="sourceLineNo">121</span> &lt;p&gt;Note that the ptolemy.actor.parameters.ParameterSet attribute is<a name="line.121"></a>
+<span class="sourceLineNo">122</span> a better way to set parameters at run time.  ParameterSet is<a name="line.122"></a>
+<span class="sourceLineNo">123</span> an attribute that reads multiple values from a file and sets<a name="line.123"></a>
+<span class="sourceLineNo">124</span> corresponding parameters in the container.&lt;/p&gt;<a name="line.124"></a>
+<span class="sourceLineNo">125</span><a name="line.125"></a>
+<span class="sourceLineNo">126</span> &lt;p&gt;The -class option can be used to specify a Java class to be loaded.<a name="line.126"></a>
+<span class="sourceLineNo">127</span> The named class must have a constructor that takes a Workspace<a name="line.127"></a>
+<span class="sourceLineNo">128</span> as an argument.<a name="line.128"></a>
+<span class="sourceLineNo">129</span> In the example below, $PTII/ptolemy/domains/sdf/demo/Butterfly/Butterfly.java<a name="line.129"></a>
+<span class="sourceLineNo">130</span> is a class that has a constructor Butterfly(Workspace).<a name="line.130"></a>
+<span class="sourceLineNo">131</span> &lt;pre&gt;<a name="line.131"></a>
+<span class="sourceLineNo">132</span> $PTII/bin/ptolemy -class ptolemy.domains.sdf.demo.Butterfly.Butterfly<a name="line.132"></a>
+<span class="sourceLineNo">133</span> &lt;/pre&gt;<a name="line.133"></a>
+<span class="sourceLineNo">134</span> Note that -class is very well tested now that we have use MoML<a name="line.134"></a>
+<span class="sourceLineNo">135</span> for almost all models.<a name="line.135"></a>
+<span class="sourceLineNo">136</span><a name="line.136"></a>
+<span class="sourceLineNo">137</span> &lt;p&gt;<a name="line.137"></a>
+<span class="sourceLineNo">138</span> Derived classes may provide default configurations. In particular, the<a name="line.138"></a>
+<span class="sourceLineNo">139</span> protected method _createDefaultConfiguration() is called before any<a name="line.139"></a>
+<span class="sourceLineNo">140</span> arguments are processed to provide a default configuration for those<a name="line.140"></a>
+<span class="sourceLineNo">141</span> command-line command-line arguments.  In this base class,<a name="line.141"></a>
+<span class="sourceLineNo">142</span> that method returns null, so no default configuration is provided.<a name="line.142"></a>
+<span class="sourceLineNo">143</span> &lt;p&gt;<a name="line.143"></a>
+<span class="sourceLineNo">144</span> If no arguments are given at all, then a default configuration is instead<a name="line.144"></a>
+<span class="sourceLineNo">145</span> obtained by calling the protected method _createEmptyConfiguration().<a name="line.145"></a>
+<span class="sourceLineNo">146</span> In this base class, that method also returns null,<a name="line.146"></a>
+<span class="sourceLineNo">147</span> so calling this with no arguments will not be very useful.<a name="line.147"></a>
+<span class="sourceLineNo">148</span> No configuration will be created and no models will be opened.<a name="line.148"></a>
+<span class="sourceLineNo">149</span> Derived classes can specify a configuration that opens some<a name="line.149"></a>
+<span class="sourceLineNo">150</span> welcome window, or a blank editor.<a name="line.150"></a>
+<span class="sourceLineNo">151</span><a name="line.151"></a>
+<span class="sourceLineNo">152</span> &lt;p&gt; This class read the following parameters from the configuration:<a name="line.152"></a>
+<span class="sourceLineNo">153</span> &lt;dl&gt;<a name="line.153"></a>
+<span class="sourceLineNo">154</span> &lt;dt&gt; &lt;code&gt;_applicationInitializer&lt;/code&gt;<a name="line.154"></a>
+<span class="sourceLineNo">155</span> &lt;dd&gt; A StringParameter that names a class to be instantiated.<a name="line.155"></a>
+<span class="sourceLineNo">156</span> Kepler uses this parameter to instantiate KeplerInitializer:<a name="line.156"></a>
+<span class="sourceLineNo">157</span> &lt;pre&gt;<a name="line.157"></a>
+<span class="sourceLineNo">158</span> &amp;gt;property name="_applicationInitializer"<a name="line.158"></a>
+<span class="sourceLineNo">159</span>         class="ptolemy.data.expr.StringParameter"<a name="line.159"></a>
+<span class="sourceLineNo">160</span>         value="org.kepler.gui.KeplerInitializer"/&amp;lt;<a name="line.160"></a>
+<span class="sourceLineNo">161</span>&lt;/pre&gt;<a name="line.161"></a>
+<span class="sourceLineNo">162</span><a name="line.162"></a>
+<span class="sourceLineNo">163</span> &lt;/dl&gt;<a name="line.163"></a>
+<span class="sourceLineNo">164</span><a name="line.164"></a>
+<span class="sourceLineNo">165</span> &lt;p&gt;To run this class from the command line without any of the<a name="line.165"></a>
+<span class="sourceLineNo">166</span> Ptolemy-specific scripts, try:&lt;/p&gt;<a name="line.166"></a>
+<span class="sourceLineNo">167</span>&lt;pre&gt;<a name="line.167"></a>
+<span class="sourceLineNo">168</span>java -classpath $PTII ptolemy.actor.gui.ConfigurationApplication \<a name="line.168"></a>
+<span class="sourceLineNo">169</span>   -run20x $PTII/ptolemy/configs/full/configuration.xml \<a name="line.169"></a>
+<span class="sourceLineNo">170</span>   $PTII/ptolemy/actor/lib/test/auto/Ramp1.xml<a name="line.170"></a>
+<span class="sourceLineNo">171</span>&lt;/pre&gt;<a name="line.171"></a>
+<span class="sourceLineNo">172</span><a name="line.172"></a>
+<span class="sourceLineNo">173</span> @author Edward A. Lee and Steve Neuendorffer, Contributor: Christopher Hylands<a name="line.173"></a>
+<span class="sourceLineNo">174</span> @version $Id$<a name="line.174"></a>
+<span class="sourceLineNo">175</span> @since Ptolemy II 8.0<a name="line.175"></a>
+<span class="sourceLineNo">176</span> @Pt.ProposedRating Yellow (eal)<a name="line.176"></a>
+<span class="sourceLineNo">177</span> @Pt.AcceptedRating Red (eal)<a name="line.177"></a>
+<span class="sourceLineNo">178</span> @see Configuration<a name="line.178"></a>
+<span class="sourceLineNo">179</span> */<a name="line.179"></a>
+<span class="sourceLineNo">180</span>public class ConfigurationApplication implements ExecutionListener {<a name="line.180"></a>
+<span class="sourceLineNo">181</span><a name="line.181"></a>
+<span class="sourceLineNo">182</span>    /**<a name="line.182"></a>
+<span class="sourceLineNo">183</span>     * Instantiate a ConfigurationApplication.  This constructor is probably<a name="line.183"></a>
+<span class="sourceLineNo">184</span>     * not useful by itself, it is for use by subclasses.<a name="line.184"></a>
+<span class="sourceLineNo">185</span>     *<a name="line.185"></a>
+<span class="sourceLineNo">186</span>     * &lt;p&gt;The HandSimDroid work in $PTII/ptserver uses dependency<a name="line.186"></a>
+<span class="sourceLineNo">187</span>     * injection to determine which implementation actors such as<a name="line.187"></a>
+<span class="sourceLineNo">188</span>     * Const and Display to use.  This method reads the<a name="line.188"></a>
+<span class="sourceLineNo">189</span>     * ptolemy/actor/ActorModule.properties file.&lt;/p&gt;<a name="line.189"></a>
+<span class="sourceLineNo">190</span>     */<a name="line.190"></a>
+<span class="sourceLineNo">191</span>    public ConfigurationApplication() {<a name="line.191"></a>
+<span class="sourceLineNo">192</span>        ActorModuleInitializer.initializeInjector();<a name="line.192"></a>
+<span class="sourceLineNo">193</span>    }<a name="line.193"></a>
+<span class="sourceLineNo">194</span><a name="line.194"></a>
+<span class="sourceLineNo">195</span>    /** Parse the specified command-line arguments, instantiating classes<a name="line.195"></a>
+<span class="sourceLineNo">196</span>     *  and reading files that are specified.<a name="line.196"></a>
+<span class="sourceLineNo">197</span>     *  @param args The command-line arguments.<a name="line.197"></a>
+<span class="sourceLineNo">198</span>     *  @exception Exception If command line arguments have problems.<a name="line.198"></a>
+<span class="sourceLineNo">199</span>     */<a name="line.199"></a>
+<span class="sourceLineNo">200</span>    public ConfigurationApplication(String[] args) throws Exception {<a name="line.200"></a>
+<span class="sourceLineNo">201</span>        this("ptolemy/configs", args);<a name="line.201"></a>
+<span class="sourceLineNo">202</span>    }<a name="line.202"></a>
+<span class="sourceLineNo">203</span><a name="line.203"></a>
+<span class="sourceLineNo">204</span>    /** Parse the specified command-line arguments, instantiating classes<a name="line.204"></a>
+<span class="sourceLineNo">205</span>     *  and reading files that are specified.<a name="line.205"></a>
+<span class="sourceLineNo">206</span>     *  @param basePath The basePath to look for configurations<a name="line.206"></a>
+<span class="sourceLineNo">207</span>     *  in, usually "ptolemy/configs", but other tools might<a name="line.207"></a>
+<span class="sourceLineNo">208</span>     *  have other configurations in other directories<a name="line.208"></a>
+<span class="sourceLineNo">209</span>     *  @param args The command-line arguments.<a name="line.209"></a>
+<span class="sourceLineNo">210</span>     *  @exception Exception If command line arguments have problems.<a name="line.210"></a>
+<span class="sourceLineNo">211</span>     */<a name="line.211"></a>
+<span class="sourceLineNo">212</span>    public ConfigurationApplication(String basePath, String[] args)<a name="line.212"></a>
+<span class="sourceLineNo">213</span>            throws Exception {<a name="line.213"></a>
+<span class="sourceLineNo">214</span>        this(basePath, args, MessageHandler.getMessageHandler(),<a name="line.214"></a>
+<span class="sourceLineNo">215</span>                new SimpleErrorHandler());<a name="line.215"></a>
+<span class="sourceLineNo">216</span>    }<a name="line.216"></a>
+<span class="sourceLineNo">217</span><a name="line.217"></a>
+<span class="sourceLineNo">218</span>    /** Parse the specified command-line arguments, instantiating classes<a name="line.218"></a>
+<span class="sourceLineNo">219</span>     *  and reading files that are specified.<a name="line.219"></a>
+<span class="sourceLineNo">220</span>     *  @param basePath The basePath to look for configurations<a name="line.220"></a>
+<span class="sourceLineNo">221</span>     *  in, usually "ptolemy/configs", but other tools might<a name="line.221"></a>
+<span class="sourceLineNo">222</span>     *  have other configurations in other directories<a name="line.222"></a>
+<span class="sourceLineNo">223</span>     *  @param args The command-line arguments.<a name="line.223"></a>
+<span class="sourceLineNo">224</span>     *  @param messageHandler The message handler.<a name="line.224"></a>
+<span class="sourceLineNo">225</span>     *  @param errorHandler the MoML error handler.<a name="line.225"></a>
+<span class="sourceLineNo">226</span>     *  @exception Exception If command line arguments have problems.<a name="line.226"></a>
+<span class="sourceLineNo">227</span>     */<a name="line.227"></a>
+<span class="sourceLineNo">228</span>    public ConfigurationApplication(String basePath, String[] args,<a name="line.228"></a>
+<span class="sourceLineNo">229</span>            MessageHandler messageHandler, ErrorHandler errorHandler)<a name="line.229"></a>
+<span class="sourceLineNo">230</span>            throws Exception {<a name="line.230"></a>
+<span class="sourceLineNo">231</span>        this();<a name="line.231"></a>
+<span class="sourceLineNo">232</span><a name="line.232"></a>
+<span class="sourceLineNo">233</span>        _initializeApplication();<a name="line.233"></a>
+<span class="sourceLineNo">234</span><a name="line.234"></a>
+<span class="sourceLineNo">235</span>        StringUtilities.addPtolemyLibraryDirectoryToJavaLibraryPath();<a name="line.235"></a>
+<span class="sourceLineNo">236</span><a name="line.236"></a>
+<span class="sourceLineNo">237</span>        _basePath = basePath;<a name="line.237"></a>
+<span class="sourceLineNo">238</span><a name="line.238"></a>
+<span class="sourceLineNo">239</span>        // Create a parser to use.<a name="line.239"></a>
+<span class="sourceLineNo">240</span>        _parser = new MoMLParser();<a name="line.240"></a>
+<span class="sourceLineNo">241</span><a name="line.241"></a>
+<span class="sourceLineNo">242</span>        MoMLParser.setErrorHandler(errorHandler);<a name="line.242"></a>
+<span class="sourceLineNo">243</span><a name="line.243"></a>
+<span class="sourceLineNo">244</span>        // We set the list of MoMLFilters to handle Backward Compatibility.<a name="line.244"></a>
+<span class="sourceLineNo">245</span>        MoMLParser.setMoMLFilters(BackwardCompatibility.allFilters());<a name="line.245"></a>
+<span class="sourceLineNo">246</span><a name="line.246"></a>
+<span class="sourceLineNo">247</span>        // 2/03: Moved the setMessageHandler() to before parseArgs() so<a name="line.247"></a>
+<span class="sourceLineNo">248</span>        // that if we get an error in parseArgs() we will get a graphical<a name="line.248"></a>
+<span class="sourceLineNo">249</span>        // stack trace.   Such an error could be caused by specifying a model<a name="line.249"></a>
+<span class="sourceLineNo">250</span>        // as a command line argument and the model has an invalid parameter.<a name="line.250"></a>
+<span class="sourceLineNo">251</span>        MessageHandler.setMessageHandler(messageHandler);<a name="line.251"></a>
+<span class="sourceLineNo">252</span><a name="line.252"></a>
+<span class="sourceLineNo">253</span>        // Even if the user is set up for foreign locale, use the US locale.<a name="line.253"></a>
+<span class="sourceLineNo">254</span>        // This is because certain parts of Ptolemy (like the expression<a name="line.254"></a>
+<span class="sourceLineNo">255</span>        // language) are not localized.<a name="line.255"></a>
+<span class="sourceLineNo">256</span>        // FIXME: This is a workaround for the locale problem, not a fix.<a name="line.256"></a>
+<span class="sourceLineNo">257</span>        // FIXME: In March, 2001, Johan Ecker writes<a name="line.257"></a>
+<span class="sourceLineNo">258</span>        // Ptolemy gave tons of exception when started on my laptop<a name="line.258"></a>
+<span class="sourceLineNo">259</span>        // which has Swedish settings as default. The Swedish standard<a name="line.259"></a>
+<span class="sourceLineNo">260</span>        // for floating points are "2,3", i.e. using a comma as<a name="line.260"></a>
+<span class="sourceLineNo">261</span>        // delimiter. However, I think most Swedes are adaptable and<a name="line.261"></a>
+<span class="sourceLineNo">262</span>        // do not mind using a dot instead since this more or less has<a name="line.262"></a>
+<span class="sourceLineNo">263</span>        // become the world standard, at least in engineering. The<a name="line.263"></a>
+<span class="sourceLineNo">264</span>        // problem is that I needed to change my global settings to<a name="line.264"></a>
+<span class="sourceLineNo">265</span>        // start Ptolemy and this is quite annoying. I guess that the<a name="line.265"></a>
+<span class="sourceLineNo">266</span>        // expression parser should just ignore the delimiter settings<a name="line.266"></a>
+<span class="sourceLineNo">267</span>        // on the local computer and always use dot, otherwise Ptolemy<a name="line.267"></a>
+<span class="sourceLineNo">268</span>        // will crash using its own init files.<a name="line.268"></a>
+<span class="sourceLineNo">269</span>        try {<a name="line.269"></a>
+<span class="sourceLineNo">270</span>            java.util.Locale.setDefault(java.util.Locale.US);<a name="line.270"></a>
+<span class="sourceLineNo">271</span>        } catch (java.security.AccessControlException accessControl) {<a name="line.271"></a>
+<span class="sourceLineNo">272</span>            // FIXME: If the application is run under Web Start, then this<a name="line.272"></a>
+<span class="sourceLineNo">273</span>            // exception will be thrown.<a name="line.273"></a>
+<span class="sourceLineNo">274</span>        }<a name="line.274"></a>
+<span class="sourceLineNo">275</span><a name="line.275"></a>
+<span class="sourceLineNo">276</span>        try {<a name="line.276"></a>
+<span class="sourceLineNo">277</span>            _parseArgs(args);<a name="line.277"></a>
+<span class="sourceLineNo">278</span><a name="line.278"></a>
+<span class="sourceLineNo">279</span>            if (_statistics &amp;&amp; !_run) {<a name="line.279"></a>
+<span class="sourceLineNo">280</span>                Iterator models = models().iterator();<a name="line.280"></a>
+<span class="sourceLineNo">281</span><a name="line.281"></a>
+<span class="sourceLineNo">282</span>                while (models.hasNext()) {<a name="line.282"></a>
+<span class="sourceLineNo">283</span>                    NamedObj model = (NamedObj) models.next();<a name="line.283"></a>
+<span class="sourceLineNo">284</span>                    if (model instanceof CompositeEntity) {<a name="line.284"></a>
+<span class="sourceLineNo">285</span>                        System.out.println(<a name="line.285"></a>
+<span class="sourceLineNo">286</span>                                "Statistics for " + model.getFullName());<a name="line.286"></a>
+<span class="sourceLineNo">287</span>                        System.out.println(<a name="line.287"></a>
+<span class="sourceLineNo">288</span>                                ((CompositeEntity) model).statistics(null));<a name="line.288"></a>
+<span class="sourceLineNo">289</span>                    }<a name="line.289"></a>
+<span class="sourceLineNo">290</span>                }<a name="line.290"></a>
+<span class="sourceLineNo">291</span>                if (_exit) {<a name="line.291"></a>
+<span class="sourceLineNo">292</span>                    StringUtilities.exit(0);<a name="line.292"></a>
+<span class="sourceLineNo">293</span>                }<a name="line.293"></a>
+<span class="sourceLineNo">294</span>            }<a name="line.294"></a>
+<span class="sourceLineNo">295</span><a name="line.295"></a>
+<span class="sourceLineNo">296</span>            // Run if -run argument was specified.<a name="line.296"></a>
+<span class="sourceLineNo">297</span>            if (_run) {<a name="line.297"></a>
+<span class="sourceLineNo">298</span>                if (_printPDF) {<a name="line.298"></a>
+<span class="sourceLineNo">299</span>                    // Need to set background<a name="line.299"></a>
+<span class="sourceLineNo">300</span>                    PtolemyPreferences preferences = PtolemyPreferences<a name="line.300"></a>
+<span class="sourceLineNo">301</span>                            .getPtolemyPreferencesWithinConfiguration(<a name="line.301"></a>
+<span class="sourceLineNo">302</span>                                    _configuration);<a name="line.302"></a>
+<span class="sourceLineNo">303</span>                    preferences.backgroundColor<a name="line.303"></a>
+<span class="sourceLineNo">304</span>                            .setExpression("{1.0, 1.0, 1.0, 1.0}");<a name="line.304"></a>
+<span class="sourceLineNo">305</span><a name="line.305"></a>
+<span class="sourceLineNo">306</span>                }<a name="line.306"></a>
+<span class="sourceLineNo">307</span>                if (_run20x) {<a name="line.307"></a>
+<span class="sourceLineNo">308</span>                    for (int i = 1; i &lt;= 20; i++) {<a name="line.308"></a>
+<span class="sourceLineNo">309</span>                        // Use Manager.execute()<a name="line.309"></a>
+<span class="sourceLineNo">310</span>                        _runModels(false);<a name="line.310"></a>
+<span class="sourceLineNo">311</span>                    }<a name="line.311"></a>
+<span class="sourceLineNo">312</span>                } else {<a name="line.312"></a>
+<span class="sourceLineNo">313</span>                    // Use Manager.startRun() and run the model in<a name="line.313"></a>
+<span class="sourceLineNo">314</span>                    // a new thread.<a name="line.314"></a>
+<span class="sourceLineNo">315</span>                    _runModels(true);<a name="line.315"></a>
+<span class="sourceLineNo">316</span>                }<a name="line.316"></a>
+<span class="sourceLineNo">317</span><a name="line.317"></a>
+<span class="sourceLineNo">318</span>                if (_exit) {<a name="line.318"></a>
+<span class="sourceLineNo">319</span>                    // In vergil, this gets called in the<a name="line.319"></a>
+<span class="sourceLineNo">320</span>                    // swing thread, which hangs everything<a name="line.320"></a>
+<span class="sourceLineNo">321</span>                    // if we call waitForFinish() directly.<a name="line.321"></a>
+<span class="sourceLineNo">322</span>                    // So instead, we create a new thread to<a name="line.322"></a>
+<span class="sourceLineNo">323</span>                    // do it.<a name="line.323"></a>
+<span class="sourceLineNo">324</span>                    Thread waitThread = new Thread() {<a name="line.324"></a>
+<span class="sourceLineNo">325</span>                        @Override<a name="line.325"></a>
+<span class="sourceLineNo">326</span>                        public void run() {<a name="line.326"></a>
+<span class="sourceLineNo">327</span>                            waitForFinish();<a name="line.327"></a>
+<span class="sourceLineNo">328</span>                            if (_printPDF) {<a name="line.328"></a>
+<span class="sourceLineNo">329</span>                                try {<a name="line.329"></a>
+<span class="sourceLineNo">330</span>                                    _printPDF();<a name="line.330"></a>
+<span class="sourceLineNo">331</span>                                } catch (Exception ex) {<a name="line.331"></a>
+<span class="sourceLineNo">332</span>                                    ex.printStackTrace();<a name="line.332"></a>
+<span class="sourceLineNo">333</span>                                }<a name="line.333"></a>
+<span class="sourceLineNo">334</span>                            }<a name="line.334"></a>
+<span class="sourceLineNo">335</span>                            StringUtilities.exit(0);<a name="line.335"></a>
+<span class="sourceLineNo">336</span>                        }<a name="line.336"></a>
+<span class="sourceLineNo">337</span>                    };<a name="line.337"></a>
+<span class="sourceLineNo">338</span><a name="line.338"></a>
+<span class="sourceLineNo">339</span>                    // Note that we start the thread here, which could<a name="line.339"></a>
+<span class="sourceLineNo">340</span>                    // be risky when we subclass, since the thread will be<a name="line.340"></a>
+<span class="sourceLineNo">341</span>                    // started before the subclass constructor finishes (FindBugs)<a name="line.341"></a>
+<span class="sourceLineNo">342</span>                    waitThread.start();<a name="line.342"></a>
+<span class="sourceLineNo">343</span>                }<a name="line.343"></a>
+<span class="sourceLineNo">344</span>            } else {<a name="line.344"></a>
+<span class="sourceLineNo">345</span>                if (_printPDF) {<a name="line.345"></a>
+<span class="sourceLineNo">346</span>                    _printPDF();<a name="line.346"></a>
+<span class="sourceLineNo">347</span>                }<a name="line.347"></a>
+<span class="sourceLineNo">348</span>            }<a name="line.348"></a>
+<span class="sourceLineNo">349</span><a name="line.349"></a>
+<span class="sourceLineNo">350</span>        } catch (Throwable ex) {<a name="line.350"></a>
+<span class="sourceLineNo">351</span>            // Make sure that we do not eat the exception if there are<a name="line.351"></a>
+<span class="sourceLineNo">352</span>            // problems parsing.  For example, "ptolemy -FOO bar bif.xml"<a name="line.352"></a>
+<span class="sourceLineNo">353</span>            // will crash if bar is not a variable.  Instead, use<a name="line.353"></a>
+<span class="sourceLineNo">354</span>            // "ptolemy -FOO \"bar\" bif.xml"<a name="line.354"></a>
+<span class="sourceLineNo">355</span>            throwArgsException(ex, args);<a name="line.355"></a>
+<span class="sourceLineNo">356</span>        }<a name="line.356"></a>
+<span class="sourceLineNo">357</span>    }<a name="line.357"></a>
+<span class="sourceLineNo">358</span><a name="line.358"></a>
+<span class="sourceLineNo">359</span>    ///////////////////////////////////////////////////////////////////<a name="line.359"></a>
+<span class="sourceLineNo">360</span>    ////                         public methods                    ////<a name="line.360"></a>
+<span class="sourceLineNo">361</span><a name="line.361"></a>
+<span class="sourceLineNo">362</span>    /** Close the model without saving or exiting.<a name="line.362"></a>
+<span class="sourceLineNo">363</span>     *<a name="line.363"></a>
+<span class="sourceLineNo">364</span>     *  &lt;p&gt;The caller of this method should be in the Swing Event Thread.<a name="line.364"></a>
+<span class="sourceLineNo">365</span>     *  Typically, this is done with code like:&lt;/p&gt;<a name="line.365"></a>
+<span class="sourceLineNo">366</span>     *  &lt;pre&gt;<a name="line.366"></a>
+<span class="sourceLineNo">367</span>     *   Runnable openModelAction = new Runnable() {<a name="line.367"></a>
+<span class="sourceLineNo">368</span>     *       public void run() {<a name="line.368"></a>
+<span class="sourceLineNo">369</span>     *           try {<a name="line.369"></a>
+<span class="sourceLineNo">370</span>     *               ConfigurationApplication.closeModel(model[0])<a name="line.370"></a>
+<span class="sourceLineNo">371</span>     *           } catch (Exception ex) {<a name="line.371"></a>
+<span class="sourceLineNo">372</span>     *               throw new RuntimeException(ex);<a name="line.372"></a>
+<span class="sourceLineNo">373</span>     *           }<a name="line.373"></a>
+<span class="sourceLineNo">374</span>     *       }<a name="line.374"></a>
+<span class="sourceLineNo">375</span>     *   };<a name="line.375"></a>
+<span class="sourceLineNo">376</span>     *   SwingUtilities.invokeAndWait(openModelAction);<a name="line.376"></a>
+<span class="sourceLineNo">377</span>     *  &lt;/pre&gt;<a name="line.377"></a>
+<span class="sourceLineNo">378</span>     *  &lt;p&gt;This method is primarily used for testing.&lt;/p&gt;<a name="line.378"></a>
+<span class="sourceLineNo">379</span>     *  @param model The TypedCompositeActor to be closed.<a name="line.379"></a>
+<span class="sourceLineNo">380</span>     *  Typically, this comes from {@link #openModel(String)}.<a name="line.380"></a>
+<span class="sourceLineNo">381</span>     *  @exception IllegalActionException If the model cannot be closed.<a name="line.381"></a>
+<span class="sourceLineNo">382</span>     *  @see #openModel(String)<a name="line.382"></a>
+<span class="sourceLineNo">383</span>     *  @exception NameDuplicationException If the model cannot be closed.<a name="line.383"></a>
+<span class="sourceLineNo">384</span>     *  @see #openModel(String)<a name="line.384"></a>
+<span class="sourceLineNo">385</span>     */<a name="line.385"></a>
+<span class="sourceLineNo">386</span>    public static void closeModelWithoutSavingOrExiting(CompositeEntity model)<a name="line.386"></a>
+<span class="sourceLineNo">387</span>            throws IllegalActionException, NameDuplicationException {<a name="line.387"></a>
+<span class="sourceLineNo">388</span>        Effigy effigy = Configuration.findEffigy(model.toplevel());<a name="line.388"></a>
+<span class="sourceLineNo">389</span>        // Avoid being prompted for save.<a name="line.389"></a>
+<span class="sourceLineNo">390</span>        effigy.setModified(false);<a name="line.390"></a>
+<span class="sourceLineNo">391</span><a name="line.391"></a>
+<span class="sourceLineNo">392</span>        // Avoid calling System.exit().<a name="line.392"></a>
+<span class="sourceLineNo">393</span>        String previousPropertyValue = StringUtilities<a name="line.393"></a>
+<span class="sourceLineNo">394</span>                .getProperty("ptolemy.ptII.doNotExit");<a name="line.394"></a>
+<span class="sourceLineNo">395</span>        System.setProperty("ptolemy.ptII.doNotExit", "true");<a name="line.395"></a>
+<span class="sourceLineNo">396</span>        try {<a name="line.396"></a>
+<span class="sourceLineNo">397</span>            // FIXME: are all these necessary?<a name="line.397"></a>
+<span class="sourceLineNo">398</span>            effigy.closeTableaux();<a name="line.398"></a>
+<span class="sourceLineNo">399</span><a name="line.399"></a>
+<span class="sourceLineNo">400</span>            // Avoid a leaking Configuration.<a name="line.400"></a>
+<span class="sourceLineNo">401</span>            // This might not be safe, if we had a WeakLinkedList, we<a name="line.401"></a>
+<span class="sourceLineNo">402</span>            // could use make Configuration._configuration a WeakLinkedList.<a name="line.402"></a>
+<span class="sourceLineNo">403</span>            // Or, perhaps effigy.closeTableaux() should do this.<a name="line.403"></a>
+<span class="sourceLineNo">404</span>            Configuration configuration = (Configuration) Configuration<a name="line.404"></a>
+<span class="sourceLineNo">405</span>                    .findEffigy(model.toplevel()).toplevel();<a name="line.405"></a>
+<span class="sourceLineNo">406</span>            configuration.removeConfiguration(configuration);<a name="line.406"></a>
+<span class="sourceLineNo">407</span><a name="line.407"></a>
+<span class="sourceLineNo">408</span>            model.setContainer(null);<a name="line.408"></a>
+<span class="sourceLineNo">409</span>            MoMLParser.purgeAllModelRecords();<a name="line.409"></a>
+<span class="sourceLineNo">410</span>        } finally {<a name="line.410"></a>
+<span class="sourceLineNo">411</span>            System.setProperty("ptolemy.ptII.doNotExit", previousPropertyValue);<a name="line.411"></a>
+<span class="sourceLineNo">412</span>        }<a name="line.412"></a>
+<span class="sourceLineNo">413</span>    }<a name="line.413"></a>
+<span class="sourceLineNo">414</span><a name="line.414"></a>
+<span class="sourceLineNo">415</span>    /** Return the array of possible configuration directories.<a name="line.415"></a>
+<span class="sourceLineNo">416</span>     *  in basePath.<a name="line.416"></a>
+<span class="sourceLineNo">417</span>     *  @param basePath The base path, typically "ptolemy/configs".<a name="line.417"></a>
+<span class="sourceLineNo">418</span>     *  @return the possible configuration directories.<a name="line.418"></a>
+<span class="sourceLineNo">419</span>     *  @exception IOException If the basePath cannot be found.<a name="line.419"></a>
+<span class="sourceLineNo">420</span>     *  @exception URISyntaxException If the URI of the basePath is incorrect.<a name="line.420"></a>
+<span class="sourceLineNo">421</span>     */<a name="line.421"></a>
+<span class="sourceLineNo">422</span>    public static File[] configurationDirectories(String basePath)<a name="line.422"></a>
+<span class="sourceLineNo">423</span>            throws IOException, URISyntaxException {<a name="line.423"></a>
+<span class="sourceLineNo">424</span>        URI configurationURI = new URI(<a name="line.424"></a>
+<span class="sourceLineNo">425</span>                specToURL(basePath).toExternalForm().replaceAll(" ", "%20"));<a name="line.425"></a>
+<span class="sourceLineNo">426</span>        File configurationDirectory = new File(configurationURI);<a name="line.426"></a>
+<span class="sourceLineNo">427</span>        ConfigurationFilenameFilter filter = new ConfigurationFilenameFilter();<a name="line.427"></a>
+<span class="sourceLineNo">428</span>        File[] configurationDirectories = configurationDirectory<a name="line.428"></a>
+<span class="sourceLineNo">429</span>                .listFiles(filter);<a name="line.429"></a>
+<span class="sourceLineNo">430</span>        return configurationDirectories;<a name="line.430"></a>
+<span class="sourceLineNo">431</span>    }<a name="line.431"></a>
+<span class="sourceLineNo">432</span><a name="line.432"></a>
+<span class="sourceLineNo">433</span>    /** Return the full configuration directory or, if the full configuration<a name="line.433"></a>
+<span class="sourceLineNo">434</span>     *  directory is not found, then the first configuration directory.<a name="line.434"></a>
+<span class="sourceLineNo">435</span>     *  @return the possible configuration directories.<a name="line.435"></a>
+<span class="sourceLineNo">436</span>     *  @exception IOException If the basePath cannot be found.<a name="line.436"></a>
+<span class="sourceLineNo">437</span>     *  @exception URISyntaxException If the URI of the basePath is incorrect.<a name="line.437"></a>
+<span class="sourceLineNo">438</span>     */<a name="line.438"></a>
+<span class="sourceLineNo">439</span>    public static File configurationDirectoryFullOrFirst()<a name="line.439"></a>
+<span class="sourceLineNo">440</span>            throws IOException, URISyntaxException {<a name="line.440"></a>
+<span class="sourceLineNo">441</span>        File[] configurationDirectories = configurationDirectories(<a name="line.441"></a>
+<span class="sourceLineNo">442</span>                "ptolemy/configs");<a name="line.442"></a>
+<span class="sourceLineNo">443</span>        if (configurationDirectories.length &lt; 1) {<a name="line.443"></a>
+<span class="sourceLineNo">444</span>            throw new IOException(<a name="line.444"></a>
+<span class="sourceLineNo">445</span>                    "Could not find any configurations in ptolemy/configs");<a name="line.445"></a>
+<span class="sourceLineNo">446</span>        }<a name="line.446"></a>
+<span class="sourceLineNo">447</span>        File configurationDirectory = configurationDirectories[0];<a name="line.447"></a>
+<span class="sourceLineNo">448</span>        int i;<a name="line.448"></a>
+<span class="sourceLineNo">449</span>        for (i = 0; i &lt; configurationDirectories.length; i++) {<a name="line.449"></a>
+<span class="sourceLineNo">450</span>            if (configurationDirectories[i].toString()<a name="line.450"></a>
+<span class="sourceLineNo">451</span>                    .endsWith("configs/full")) {<a name="line.451"></a>
+<span class="sourceLineNo">452</span>                configurationDirectory = configurationDirectories[i];<a name="line.452"></a>
+<span class="sourceLineNo">453</span>            }<a name="line.453"></a>
+<span class="sourceLineNo">454</span>        }<a name="line.454"></a>
+<span class="sourceLineNo">455</span>        return configurationDirectory;<a name="line.455"></a>
+<span class="sourceLineNo">456</span>    }<a name="line.456"></a>
+<span class="sourceLineNo">457</span><a name="line.457"></a>
+<span class="sourceLineNo">458</span>    /** Reduce the count of executing models by one.  If the number of<a name="line.458"></a>
+<span class="sourceLineNo">459</span>     *  executing models drops to zero, then notify threads that might<a name="line.459"></a>
+<span class="sourceLineNo">460</span>     *  be waiting for this event.<a name="line.460"></a>
+<span class="sourceLineNo">461</span>     *  @param manager The manager calling this method.<a name="line.461"></a>
+<span class="sourceLineNo">462</span>     *  @param throwable The throwable being reported.<a name="line.462"></a>
+<span class="sourceLineNo">463</span>     */<a name="line.463"></a>
+<span class="sourceLineNo">464</span>    @Override<a name="line.464"></a>
+<span class="sourceLineNo">465</span>    public synchronized void executionError(Manager manager,<a name="line.465"></a>
+<span class="sourceLineNo">466</span>            Throwable throwable) {<a name="line.466"></a>
+<span class="sourceLineNo">467</span>        _activeCount--;<a name="line.467"></a>
+<span class="sourceLineNo">468</span><a name="line.468"></a>
+<span class="sourceLineNo">469</span>        if (_activeCount == 0) {<a name="line.469"></a>
+<span class="sourceLineNo">470</span>            notifyAll();<a name="line.470"></a>
+<span class="sourceLineNo">471</span>        }<a name="line.471"></a>
+<span class="sourceLineNo">472</span>    }<a name="line.472"></a>
+<span class="sourceLineNo">473</span><a name="line.473"></a>
+<span class="sourceLineNo">474</span>    /**  Reduce the count of executing models by one.  If the number of<a name="line.474"></a>
+<span class="sourceLineNo">475</span>     *  executing models drops ot zero, then notify threads that might<a name="line.475"></a>
+<span class="sourceLineNo">476</span>     *  be waiting for this event.<a name="line.476"></a>
+<span class="sourceLineNo">477</span>     *  @param manager The manager calling this method.<a name="line.477"></a>
+<span class="sourceLineNo">478</span>     */<a name="line.478"></a>
+<span class="sourceLineNo">479</span>    @Override<a name="line.479"></a>
+<span class="sourceLineNo">480</span>    public synchronized void executionFinished(Manager manager) {<a name="line.480"></a>
+<span class="sourceLineNo">481</span>        _activeCount--;<a name="line.481"></a>
+<span class="sourceLineNo">482</span><a name="line.482"></a>
+<span class="sourceLineNo">483</span>        if (_activeCount == 0) {<a name="line.483"></a>
+<span class="sourceLineNo">484</span>            notifyAll();<a name="line.484"></a>
+<span class="sourceLineNo">485</span>        }<a name="line.485"></a>
+<span class="sourceLineNo">486</span>    }<a name="line.486"></a>
+<span class="sourceLineNo">487</span><a name="line.487"></a>
+<span class="sourceLineNo">488</span>    /** Create a new instance of this application, passing it the<a name="line.488"></a>
+<span class="sourceLineNo">489</span>     *  command-line arguments.<a name="line.489"></a>
+<span class="sourceLineNo">490</span>     *<a name="line.490"></a>
+<span class="sourceLineNo">491</span>     *  &lt;p&gt;For example to use the full configuration to open a model:&lt;/p&gt;<a name="line.491"></a>
+<span class="sourceLineNo">492</span>     *  &lt;pre&gt;<a name="line.492"></a>
+<span class="sourceLineNo">493</span>     *  java -classpath $PTII ptolemy.actor.gui.ConfigurationApplication \<a name="line.493"></a>
+<span class="sourceLineNo">494</span>     *     $PTII ptolemy/configs/full/configuration.xml \<a name="line.494"></a>
+<span class="sourceLineNo">495</span>     *     $PTII/ptolemy/moml/demo/modulation.xml<a name="line.495"></a>
+<span class="sourceLineNo">496</span>     *  &lt;/pre&gt;<a name="line.496"></a>
+<span class="sourceLineNo">497</span>     *<a name="line.497"></a>
+<span class="sourceLineNo">498</span>     *  &lt;p&gt;However, it better to use {@link ptolemy.actor.gui.MoMLApplication},<a name="line.498"></a>
+<span class="sourceLineNo">499</span>     *  which sets the native Java look and feel and uses a better error<a name="line.499"></a>
+<span class="sourceLineNo">500</span>     *  handler, or to use {@link ptolemy.moml.MoMLSimpleApplication},<a name="line.500"></a>
+<span class="sourceLineNo">501</span>     *  with non-graphical models. &lt;/p&gt;<a name="line.501"></a>
+<span class="sourceLineNo">502</span>     *<a name="line.502"></a>
+<span class="sourceLineNo">503</span>     *  @param args The command-line arguments.<a name="line.503"></a>
+<span class="sourceLineNo">504</span>     */<a name="line.504"></a>
+<span class="sourceLineNo">505</span>    public static void main(String[] args) {<a name="line.505"></a>
+<span class="sourceLineNo">506</span>        try {<a name="line.506"></a>
+<span class="sourceLineNo">507</span>            new ConfigurationApplication(args);<a name="line.507"></a>
+<span class="sourceLineNo">508</span>        } catch (Throwable throwable) {<a name="line.508"></a>
+<span class="sourceLineNo">509</span>            MessageHandler.error("Command failed", throwable);<a name="line.509"></a>
+<span class="sourceLineNo">510</span>            // Be sure to print the stack trace so that<a name="line.510"></a>
+<span class="sourceLineNo">511</span>            // "$PTII/bin/moml -foo" prints something.<a name="line.511"></a>
+<span class="sourceLineNo">512</span>            System.err.print(KernelException.stackTraceToString(throwable));<a name="line.512"></a>
+<span class="sourceLineNo">513</span>            StringUtilities.exit(1);<a name="line.513"></a>
+<span class="sourceLineNo">514</span>        }<a name="line.514"></a>
+<span class="sourceLineNo">515</span><a name="line.515"></a>
+<span class="sourceLineNo">516</span>        // If the -test arg was set, then exit after 2 seconds.<a name="line.516"></a>
+<span class="sourceLineNo">517</span>        if (_test) {<a name="line.517"></a>
+<span class="sourceLineNo">518</span>            try {<a name="line.518"></a>
+<span class="sourceLineNo">519</span>                Thread.sleep(2000);<a name="line.519"></a>
+<span class="sourceLineNo">520</span>            } catch (InterruptedException e) {<a name="line.520"></a>
+<span class="sourceLineNo">521</span>            }<a name="line.521"></a>
+<span class="sourceLineNo">522</span><a name="line.522"></a>
+<span class="sourceLineNo">523</span>            StringUtilities.exit(0);<a name="line.523"></a>
+<span class="sourceLineNo">524</span>        }<a name="line.524"></a>
+<span class="sourceLineNo">525</span>    }<a name="line.525"></a>
+<span class="sourceLineNo">526</span><a name="line.526"></a>
+<span class="sourceLineNo">527</span>    /** Do nothing.<a name="line.527"></a>
+<span class="sourceLineNo">528</span>     *  @param manager The manager calling this method.<a name="line.528"></a>
+<span class="sourceLineNo">529</span>     */<a name="line.529"></a>
+<span class="sourceLineNo">530</span>    @Override<a name="line.530"></a>
+<span class="sourceLineNo">531</span>    public void managerStateChanged(Manager manager) {<a name="line.531"></a>
+<span class="sourceLineNo">532</span>    }<a name="line.532"></a>
+<span class="sourceLineNo">533</span><a name="line.533"></a>
+<span class="sourceLineNo">534</span>    /** Return a list of the Ptolemy II models that were created by processing<a name="line.534"></a>
+<span class="sourceLineNo">535</span>     *  the command-line arguments.<a name="line.535"></a>
+<span class="sourceLineNo">536</span>     *  @return A list of instances of NamedObj.<a name="line.536"></a>
+<span class="sourceLineNo">537</span>     */<a name="line.537"></a>
+<span class="sourceLineNo">538</span>    public List&lt;NamedObj&gt; models() {<a name="line.538"></a>
+<span class="sourceLineNo">539</span>        LinkedList&lt;NamedObj&gt; result = new LinkedList&lt;NamedObj&gt;();<a name="line.539"></a>
+<span class="sourceLineNo">540</span><a name="line.540"></a>
+<span class="sourceLineNo">541</span>        if (_configuration == null) {<a name="line.541"></a>
+<span class="sourceLineNo">542</span>            return result;<a name="line.542"></a>
+<span class="sourceLineNo">543</span>        }<a name="line.543"></a>
+<span class="sourceLineNo">544</span><a name="line.544"></a>
+<span class="sourceLineNo">545</span>        ModelDirectory directory = (ModelDirectory) _configuration<a name="line.545"></a>
+<span class="sourceLineNo">546</span>                .getEntity(Configuration._DIRECTORY_NAME);<a name="line.546"></a>
+<span class="sourceLineNo">547</span>        if (directory == null) {<a name="line.547"></a>
+<span class="sourceLineNo">548</span>            throw new InternalErrorException("Failed to get the "<a name="line.548"></a>
+<span class="sourceLineNo">549</span>                    + "model directory? This can happen "<a name="line.549"></a>
+<span class="sourceLineNo">550</span>                    + "in a headless environment when the model attempts to "<a name="line.550"></a>
+<span class="sourceLineNo">551</span>                    + "interact with the graphical display.  "<a name="line.551"></a>
+<span class="sourceLineNo">552</span>                    + "It can also happen when the model fails to parse "<a name="line.552"></a>
+<span class="sourceLineNo">553</span>                    + "because of a missing class.");<a name="line.553"></a>
+<span class="sourceLineNo">554</span>        }<a name="line.554"></a>
+<span class="sourceLineNo">555</span>        Iterator effigies = directory.entityList().iterator();<a name="line.555"></a>
+<span class="sourceLineNo">556</span><a name="line.556"></a>
+<span class="sourceLineNo">557</span>        while (effigies.hasNext()) {<a name="line.557"></a>
+<span class="sourceLineNo">558</span>            Effigy effigy = (Effigy) effigies.next();<a name="line.558"></a>
+<span class="sourceLineNo">559</span><a name="line.559"></a>
+<span class="sourceLineNo">560</span>            if (effigy instanceof PtolemyEffigy) {<a name="line.560"></a>
+<span class="sourceLineNo">561</span>                NamedObj model = ((PtolemyEffigy) effigy).getModel();<a name="line.561"></a>
+<span class="sourceLineNo">562</span>                result.add(model);<a name="line.562"></a>
+<span class="sourceLineNo">563</span>            }<a name="line.563"></a>
+<span class="sourceLineNo">564</span>        }<a name="line.564"></a>
+<span class="sourceLineNo">565</span><a name="line.565"></a>
+<span class="sourceLineNo">566</span>        return result;<a name="line.566"></a>
+<span class="sourceLineNo">567</span>    }<a name="line.567"></a>
+<span class="sourceLineNo">568</span><a name="line.568"></a>
+<span class="sourceLineNo">569</span>    /** Open a model and display it.<a name="line.569"></a>
+<span class="sourceLineNo">570</span>     *<a name="line.570"></a>
+<span class="sourceLineNo">571</span>     *  &lt;p&gt;The caller of this method should be in the Swing Event Thread.<a name="line.571"></a>
+<span class="sourceLineNo">572</span>     *  Typically, this is done with code like:&lt;/p&gt;<a name="line.572"></a>
+<span class="sourceLineNo">573</span>     *  &lt;pre&gt;<a name="line.573"></a>
+<span class="sourceLineNo">574</span>     *   Runnable openModelAction = new Runnable() {<a name="line.574"></a>
+<span class="sourceLineNo">575</span>     *       public void run() {<a name="line.575"></a>
+<span class="sourceLineNo">576</span>     *           try {<a name="line.576"></a>
+<span class="sourceLineNo">577</span>     *               model[0] = ConfigurationApplication.openModel(modelFileName);<a name="line.577"></a>
+<span class="sourceLineNo">578</span>     *           } catch (Exception ex) {<a name="line.578"></a>
+<span class="sourceLineNo">579</span>     *               throw new RuntimeException(ex);<a name="line.579"></a>
+<span class="sourceLineNo">580</span>     *           }<a name="line.580"></a>
+<span class="sourceLineNo">581</span>     *       }<a name="line.581"></a>
+<span class="sourceLineNo">582</span>     *   };<a name="line.582"></a>
+<span class="sourceLineNo">583</span>     *   SwingUtilities.invokeAndWait(openModelAction);<a name="line.583"></a>
+<span class="sourceLineNo">584</span>     *  &lt;/pre&gt;<a name="line.584"></a>
+<span class="sourceLineNo">585</span>     *  &lt;p&gt;This method is primarily used for testing.  To get the<a name="line.585"></a>
+<span class="sourceLineNo">586</span>     *  ptolemy.vergil.basic.BasicGraphFrame from a model returned<a name="line.586"></a>
+<span class="sourceLineNo">587</span>     *  by this method, see<a name="line.587"></a>
+<span class="sourceLineNo">588</span>     *  ptolemy.vergil.basic.BasicGraphFrame.getBasicGraphFrame().&lt;/p&gt;<a name="line.588"></a>
+<span class="sourceLineNo">589</span>     *<a name="line.589"></a>
+<span class="sourceLineNo">590</span>     *  @param modelFileName The pathname to the model.  Usually the<a name="line.590"></a>
+<span class="sourceLineNo">591</span>     *  pathname starts with "$CLASSPATH".  The name of the top level<a name="line.591"></a>
+<span class="sourceLineNo">592</span>     *  of the model must match the base name of the modelFileName.<a name="line.592"></a>
+<span class="sourceLineNo">593</span>     *  Thus $CLASSPATH/Foo.xml should have a toplevel named "Foo".<a name="line.593"></a>
+<span class="sourceLineNo">594</span>     *  If the name of the model and the name of the top level do<a name="line.594"></a>
+<span class="sourceLineNo">595</span>     *  not match, then the last CompositeActor is returned.<a name="line.595"></a>
+<span class="sourceLineNo">596</span>     *  @see #closeModelWithoutSavingOrExiting(CompositeEntity)<a name="line.596"></a>
+<span class="sourceLineNo">597</span>     *  @return The model that was opened.<a name="line.597"></a>
+<span class="sourceLineNo">598</span>     *  @exception Throwable If the model cannot be opened.<a name="line.598"></a>
+<span class="sourceLineNo">599</span>     *  @deprecated Use #openModelOrEntity(String) instead and handle<a name="line.599"></a>
+<span class="sourceLineNo">600</span>     *  the case where the modelFileName refers to a HTML or text file<a name="line.600"></a>
+<span class="sourceLineNo">601</span>     *  or an interface diagram.<a name="line.601"></a>
+<span class="sourceLineNo">602</span>     */<a name="line.602"></a>
+<span class="sourceLineNo">603</span>    @Deprecated<a name="line.603"></a>
+<span class="sourceLineNo">604</span>    public static TypedCompositeActor openModel(String modelFileName)<a name="line.604"></a>
+<span class="sourceLineNo">605</span>            throws Throwable {<a name="line.605"></a>
+<span class="sourceLineNo">606</span>        CompositeEntity model = openModelOrEntity(modelFileName);<a name="line.606"></a>
+<span class="sourceLineNo">607</span>        if (!(model instanceof TypedCompositeActor)) {<a name="line.607"></a>
+<span class="sourceLineNo">608</span>            System.out.println("While trying to open \"" + modelFileName<a name="line.608"></a>
+<span class="sourceLineNo">609</span>                    + "\", openModelOrEntity() returned a "<a name="line.609"></a>
+<span class="sourceLineNo">610</span>                    + (model == null ? "null" : model.getClass().getName())<a name="line.610"></a>
+<span class="sourceLineNo">611</span>                    + ".  This can happen when opening a HTML or text file. ");<a name="line.611"></a>
+<span class="sourceLineNo">612</span>            return null;<a name="line.612"></a>
+<span class="sourceLineNo">613</span>        } else {<a name="line.613"></a>
+<span class="sourceLineNo">614</span>            return (TypedCompositeActor) model;<a name="line.614"></a>
+<span class="sourceLineNo">615</span>        }<a name="line.615"></a>
+<span class="sourceLineNo">616</span>    }<a name="line.616"></a>
+<span class="sourceLineNo">617</span><a name="line.617"></a>
+<span class="sourceLineNo">618</span>    /** Open a model and display it.<a name="line.618"></a>
+<span class="sourceLineNo">619</span>     *<a name="line.619"></a>
+<span class="sourceLineNo">620</span>     *  &lt;p&gt;The caller of this method should be in the Swing Event Thread.<a name="line.620"></a>
+<span class="sourceLineNo">621</span>     *  Typically, this is done with code like:&lt;/p&gt;<a name="line.621"></a>
+<span class="sourceLineNo">622</span>     *  &lt;pre&gt;<a name="line.622"></a>
+<span class="sourceLineNo">623</span>     *   Runnable openModelAction = new Runnable() {<a name="line.623"></a>
+<span class="sourceLineNo">624</span>     *       public void run() {<a name="line.624"></a>
+<span class="sourceLineNo">625</span>     *           try {<a name="line.625"></a>
+<span class="sourceLineNo">626</span>     *               model[0] = ConfigurationApplication.openModelOrEntity(modelFileName);<a name="line.626"></a>
+<span class="sourceLineNo">627</span>     *           } catch (Exception ex) {<a name="line.627"></a>
+<span class="sourceLineNo">628</span>     *               throw new RuntimeException(ex);<a name="line.628"></a>
+<span class="sourceLineNo">629</span>     *           }<a name="line.629"></a>
+<span class="sourceLineNo">630</span>     *       }<a name="line.630"></a>
+<span class="sourceLineNo">631</span>     *   };<a name="line.631"></a>
+<span class="sourceLineNo">632</span>     *   SwingUtilities.invokeAndWait(openModelAction);<a name="line.632"></a>
+<span class="sourceLineNo">633</span>     *  &lt;/pre&gt;<a name="line.633"></a>
+<span class="sourceLineNo">634</span>     *  &lt;p&gt;This method is primarily used for testing.  To get the<a name="line.634"></a>
+<span class="sourceLineNo">635</span>     *  ptolemy.vergil.basic.BasicGraphFrame from a model returned<a name="line.635"></a>
+<span class="sourceLineNo">636</span>     *  by this method, see<a name="line.636"></a>
+<span class="sourceLineNo">637</span>     *  ptolemy.vergil.basic.BasicGraphFrame.getBasicGraphFrame().&lt;/p&gt;<a name="line.637"></a>
+<span class="sourceLineNo">638</span>     *<a name="line.638"></a>
+<span class="sourceLineNo">639</span>     *  @param modelFileName The pathname to the model.  Usually the<a name="line.639"></a>
+<span class="sourceLineNo">640</span>     *  pathname starts with "$CLASSPATH".  The name of the top level<a name="line.640"></a>
+<span class="sourceLineNo">641</span>     *  of the model must match the base name of the modelFileName.<a name="line.641"></a>
+<span class="sourceLineNo">642</span>     *  Thus $CLASSPATH/Foo.xml should have a toplevel named "Foo".<a name="line.642"></a>
+<span class="sourceLineNo">643</span>     *  If the name of the model and the name of the top level do<a name="line.643"></a>
+<span class="sourceLineNo">644</span>     *  not match, then the last CompositeActor is returned.<a name="line.644"></a>
+<span class="sourceLineNo">645</span>     *  @see #closeModelWithoutSavingOrExiting(CompositeEntity)<a name="line.645"></a>
+<span class="sourceLineNo">646</span>     *  @return The model that was opened.<a name="line.646"></a>
+<span class="sourceLineNo">647</span>     *  @exception Throwable If the model cannot be opened.<a name="line.647"></a>
+<span class="sourceLineNo">648</span>     */<a name="line.648"></a>
+<span class="sourceLineNo">649</span>    public static CompositeEntity openModelOrEntity(String modelFileName)<a name="line.649"></a>
+<span class="sourceLineNo">650</span>            throws Throwable {<a name="line.650"></a>
+<span class="sourceLineNo">651</span>        CompositeEntity result = null;<a name="line.651"></a>
+<span class="sourceLineNo">652</span>        try {<a name="line.652"></a>
+<span class="sourceLineNo">653</span>            // We set the list of MoMLFilters to handle Backward Compatibility.<a name="line.653"></a>
+<span class="sourceLineNo">654</span>            MoMLParser.setMoMLFilters(BackwardCompatibility.allFilters());<a name="line.654"></a>
+<span class="sourceLineNo">655</span><a name="line.655"></a>
+<span class="sourceLineNo">656</span>            // Convert the file name to a canonical file name so that<a name="line.656"></a>
+<span class="sourceLineNo">657</span>            // this test may be run from any directory or from within Eclipse.<a name="line.657"></a>
+<span class="sourceLineNo">658</span>            File canonicalModelFile = FileUtilities.nameToFile(modelFileName,<a name="line.658"></a>
+<span class="sourceLineNo">659</span>                    null);<a name="line.659"></a>
+<span class="sourceLineNo">660</span>            if (canonicalModelFile == null) {<a name="line.660"></a>
+<span class="sourceLineNo">661</span>                throw new IOException(<a name="line.661"></a>
+<span class="sourceLineNo">662</span>                        "Could not find \"" + modelFileName + "\".");<a name="line.662"></a>
+<span class="sourceLineNo">663</span>            }<a name="line.663"></a>
+<span class="sourceLineNo">664</span>            String canonicalModelFileName = canonicalModelFile<a name="line.664"></a>
+<span class="sourceLineNo">665</span>                    .getCanonicalPath();<a name="line.665"></a>
+<span class="sourceLineNo">666</span><a name="line.666"></a>
+<span class="sourceLineNo">667</span>            // Search for the full configuration or the first configuration.<a name="line.667"></a>
+<span class="sourceLineNo">668</span><a name="line.668"></a>
+<span class="sourceLineNo">669</span>            // This is needed for the exportHTML tests under CapeCode<a name="line.669"></a>
+<span class="sourceLineNo">670</span>            // because full/configuration.xml does not exist, but<a name="line.670"></a>
+<span class="sourceLineNo">671</span>            // capecode/configuration.xml does.<a name="line.671"></a>
+<span class="sourceLineNo">672</span><a name="line.672"></a>
+<span class="sourceLineNo">673</span>            File configurationDirectory = configurationDirectoryFullOrFirst();<a name="line.673"></a>
+<span class="sourceLineNo">674</span><a name="line.674"></a>
+<span class="sourceLineNo">675</span>            // FIXME: are we in the right thread?<a name="line.675"></a>
+<span class="sourceLineNo">676</span>            ConfigurationApplication application = new ConfigurationApplication(<a name="line.676"></a>
+<span class="sourceLineNo">677</span>                    new String[] {<a name="line.677"></a>
+<span class="sourceLineNo">678</span>                            // Need to display a frame or Kieler fails.<a name="line.678"></a>
+<span class="sourceLineNo">679</span>                            //"ptolemy/actor/gui/test/testConfiguration.xml",<a name="line.679"></a>
+<span class="sourceLineNo">680</span>                            configurationDirectory.getCanonicalPath()<a name="line.680"></a>
+<span class="sourceLineNo">681</span>                                    + "/configuration.xml",<a name="line.681"></a>
+<span class="sourceLineNo">682</span>                            canonicalModelFileName });<a name="line.682"></a>
+<span class="sourceLineNo">683</span><a name="line.683"></a>
+<span class="sourceLineNo">684</span>            // Find the first CompositeEntity whos name matches<a name="line.684"></a>
+<span class="sourceLineNo">685</span>            // the basename of the file, skipping the<a name="line.685"></a>
+<span class="sourceLineNo">686</span>            // Configuration etc.<a name="line.686"></a>
+<span class="sourceLineNo">687</span><a name="line.687"></a>
+<span class="sourceLineNo">688</span>            // Not all modelFileNames have dots in them?<a name="line.688"></a>
+<span class="sourceLineNo">689</span>            int indexOfDot = modelFileName.lastIndexOf('.');<a name="line.689"></a>
+<span class="sourceLineNo">690</span>            if (indexOfDot == -1) {<a name="line.690"></a>
+<span class="sourceLineNo">691</span>                indexOfDot = modelFileName.length() - 1;<a name="line.691"></a>
+<span class="sourceLineNo">692</span>            }<a name="line.692"></a>
+<span class="sourceLineNo">693</span><a name="line.693"></a>
+<span class="sourceLineNo">694</span>            // The basename of the model.<a name="line.694"></a>
+<span class="sourceLineNo">695</span>            String baseName = modelFileName.substring(<a name="line.695"></a>
+<span class="sourceLineNo">696</span>                    modelFileName.lastIndexOf(File.separator) + 1, indexOfDot);<a name="line.696"></a>
+<span class="sourceLineNo">697</span>            NamedObj model = null;<a name="line.697"></a>
+<span class="sourceLineNo">698</span>            Iterator models = application.models().iterator();<a name="line.698"></a>
+<span class="sourceLineNo">699</span>            while (models.hasNext()) {<a name="line.699"></a>
+<span class="sourceLineNo">700</span>                model = (NamedObj) models.next();<a name="line.700"></a>
+<span class="sourceLineNo">701</span>                if (model instanceof CompositeEntity<a name="line.701"></a>
+<span class="sourceLineNo">702</span>                        &amp;&amp; !(model instanceof Configuration)) {<a name="line.702"></a>
+<span class="sourceLineNo">703</span>                    result = (CompositeEntity) model;<a name="line.703"></a>
+<span class="sourceLineNo">704</span>                    if (model.getName().equals(baseName)) {<a name="line.704"></a>
+<span class="sourceLineNo">705</span>                        break;<a name="line.705"></a>
+<span class="sourceLineNo">706</span>                    }<a name="line.706"></a>
+<span class="sourceLineNo">707</span>                }<a name="line.707"></a>
+<span class="sourceLineNo">708</span>            }<a name="line.708"></a>
+<span class="sourceLineNo">709</span>        } catch (Throwable throwable) {<a name="line.709"></a>
+<span class="sourceLineNo">710</span>            throwable.printStackTrace();<a name="line.710"></a>
+<span class="sourceLineNo">711</span>            throw throwable;<a name="line.711"></a>
+<span class="sourceLineNo">712</span>        }<a name="line.712"></a>
+<span class="sourceLineNo">713</span>        return result;<a name="line.713"></a>
+<span class="sourceLineNo">714</span>    }<a name="line.714"></a>
+<span class="sourceLineNo">715</span><a name="line.715"></a>
+<span class="sourceLineNo">716</span>    /** Read a Configuration from the URL given by the specified string.<a name="line.716"></a>
+<span class="sourceLineNo">717</span>     *  The URL may absolute, or relative to the Ptolemy II tree root,<a name="line.717"></a>
+<span class="sourceLineNo">718</span>     *  or in the classpath.  To convert a String to a URL suitable for<a name="line.718"></a>
+<span class="sourceLineNo">719</span>     *  use by this method, call specToURL(String).<a name="line.719"></a>
+<span class="sourceLineNo">720</span>     *  &lt;p&gt;If there is an _applicationInitializer parameter, then<a name="line.720"></a>
+<span class="sourceLineNo">721</span>     *  instantiate the class named by that parameter.  The<a name="line.721"></a>
+<span class="sourceLineNo">722</span>     *  _applicationInitializer parameter contains a string that names<a name="line.722"></a>
+<span class="sourceLineNo">723</span>     *  a class to be initialized.<a name="line.723"></a>
+<span class="sourceLineNo">724</span>     *  &lt;p&gt;If the configuration has already been read in, then the old<a name="line.724"></a>
+<span class="sourceLineNo">725</span>     *  configuration will be deleted.  Note that this may exit the application.<a name="line.725"></a>
+<span class="sourceLineNo">726</span>     *  @param specificationURL A string describing a URL.<a name="line.726"></a>
+<span class="sourceLineNo">727</span>     *  @return A configuration.<a name="line.727"></a>
+<span class="sourceLineNo">728</span>     *  @exception Exception If the configuration cannot be opened, or<a name="line.728"></a>
+<span class="sourceLineNo">729</span>     *   if the contents of the URL is not a configuration.<a name="line.729"></a>
+<span class="sourceLineNo">730</span>     */<a name="line.730"></a>
+<span class="sourceLineNo">731</span>    public static Configuration readConfiguration(URL specificationURL)<a name="line.731"></a>
+<span class="sourceLineNo">732</span>            throws Exception {<a name="line.732"></a>
+<span class="sourceLineNo">733</span>        if (_initialSpecificationURI == null) {<a name="line.733"></a>
+<span class="sourceLineNo">734</span>            _initialSpecificationURI = specificationURL.toURI();<a name="line.734"></a>
+<span class="sourceLineNo">735</span>        }<a name="line.735"></a>
+<span class="sourceLineNo">736</span>        MoMLParser parser = new MoMLParser();<a name="line.736"></a>
+<span class="sourceLineNo">737</span>        parser.reset();<a name="line.737"></a>
+<span class="sourceLineNo">738</span><a name="line.738"></a>
+<span class="sourceLineNo">739</span>        Configuration configuration = null;<a name="line.739"></a>
+<span class="sourceLineNo">740</span>        Exception cause = null;<a name="line.740"></a>
+<span class="sourceLineNo">741</span>        try {<a name="line.741"></a>
+<span class="sourceLineNo">742</span>            configuration = (Configuration) parser.parse(specificationURL,<a name="line.742"></a>
+<span class="sourceLineNo">743</span>                    specificationURL);<a name="line.743"></a>
+<span class="sourceLineNo">744</span>        } catch (Exception ex) {<a name="line.744"></a>
+<span class="sourceLineNo">745</span>            cause = ex;<a name="line.745"></a>
+<span class="sourceLineNo">746</span>            ex.printStackTrace();<a name="line.746"></a>
+<span class="sourceLineNo">747</span>        }<a name="line.747"></a>
+<span class="sourceLineNo">748</span><a name="line.748"></a>
+<span class="sourceLineNo">749</span>        if (configuration == null) {<a name="line.749"></a>
+<span class="sourceLineNo">750</span>            NullPointerException exception = new NullPointerException(<a name="line.750"></a>
+<span class="sourceLineNo">751</span>                    "Failed to find configuration in " + specificationURL);<a name="line.751"></a>
+<span class="sourceLineNo">752</span>            if (cause != null) {<a name="line.752"></a>
+<span class="sourceLineNo">753</span>                exception.initCause(cause);<a name="line.753"></a>
+<span class="sourceLineNo">754</span>            }<a name="line.754"></a>
+<span class="sourceLineNo">755</span>            throw exception;<a name="line.755"></a>
+<span class="sourceLineNo">756</span>        }<a name="line.756"></a>
+<span class="sourceLineNo">757</span>        // If the toplevel model is a configuration containing a directory,<a name="line.757"></a>
+<span class="sourceLineNo">758</span>        // then create an effigy for the configuration itself, and put it<a name="line.758"></a>
+<span class="sourceLineNo">759</span>        // in the directory.<a name="line.759"></a>
+<span class="sourceLineNo">760</span>        ComponentEntity directory = configuration.getDirectory();<a name="line.760"></a>
+<span class="sourceLineNo">761</span><a name="line.761"></a>
+<span class="sourceLineNo">762</span>        if (directory != null) {<a name="line.762"></a>
+<span class="sourceLineNo">763</span>            PtolemyEffigy effigy = null;<a name="line.763"></a>
+<span class="sourceLineNo">764</span>            try {<a name="line.764"></a>
+<span class="sourceLineNo">765</span>                effigy = new PtolemyEffigy((ModelDirectory) directory,<a name="line.765"></a>
+<span class="sourceLineNo">766</span>                        configuration.getName());<a name="line.766"></a>
+<span class="sourceLineNo">767</span>                // Mark this to be a system effigy so it is not deleted<a name="line.767"></a>
+<span class="sourceLineNo">768</span>                // when an effigy it contains is deleted.<a name="line.768"></a>
+<span class="sourceLineNo">769</span>                effigy.setSystemEffigy(true);<a name="line.769"></a>
+<span class="sourceLineNo">770</span>            } catch (NameDuplicationException ex) {<a name="line.770"></a>
+<span class="sourceLineNo">771</span>                // Try deleting the old configuration<a name="line.771"></a>
+<span class="sourceLineNo">772</span>                PtolemyEffigy oldEffigy = (PtolemyEffigy) ((ModelDirectory) directory)<a name="line.772"></a>
+<span class="sourceLineNo">773</span>                        .getEntity(configuration.getName());<a name="line.773"></a>
+<span class="sourceLineNo">774</span>                oldEffigy.setContainer(null);<a name="line.774"></a>
+<span class="sourceLineNo">775</span>                effigy = new PtolemyEffigy((ModelDirectory) directory,<a name="line.775"></a>
+<span class="sourceLineNo">776</span>                        configuration.getName());<a name="line.776"></a>
+<span class="sourceLineNo">777</span>            }<a name="line.777"></a>
+<span class="sourceLineNo">778</span><a name="line.778"></a>
+<span class="sourceLineNo">779</span>            effigy.setModel(configuration);<a name="line.779"></a>
+<span class="sourceLineNo">780</span>            effigy.identifier.setExpression(specificationURL.toExternalForm());<a name="line.780"></a>
+<span class="sourceLineNo">781</span>        }<a name="line.781"></a>
+<span class="sourceLineNo">782</span><a name="line.782"></a>
+<span class="sourceLineNo">783</span>        // If there is an _applicationInitializer parameter, then<a name="line.783"></a>
+<span class="sourceLineNo">784</span>        // construct it.  The _applicationInitializer parameter contains<a name="line.784"></a>
+<span class="sourceLineNo">785</span>        // a string that names a class to be initialized.<a name="line.785"></a>
+<span class="sourceLineNo">786</span>        StringParameter applicationInitializerParameter = (StringParameter) configuration<a name="line.786"></a>
+<span class="sourceLineNo">787</span>                .getAttribute("_applicationInitializer", Parameter.class);<a name="line.787"></a>
+<span class="sourceLineNo">788</span><a name="line.788"></a>
+<span class="sourceLineNo">789</span>        if (applicationInitializerParameter != null) {<a name="line.789"></a>
+<span class="sourceLineNo">790</span>            String applicationInitializerClassName = applicationInitializerParameter<a name="line.790"></a>
+<span class="sourceLineNo">791</span>                    .stringValue();<a name="line.791"></a>
+<span class="sourceLineNo">792</span>            try {<a name="line.792"></a>
+<span class="sourceLineNo">793</span>                Class applicationInitializer = Class<a name="line.793"></a>
+<span class="sourceLineNo">794</span>                        .forName(applicationInitializerClassName);<a name="line.794"></a>
+<span class="sourceLineNo">795</span>                applicationInitializer.newInstance();<a name="line.795"></a>
+<span class="sourceLineNo">796</span>            } catch (Throwable throwable) {<a name="line.796"></a>
+<span class="sourceLineNo">797</span>                throw new Exception(<a name="line.797"></a>
+<span class="sourceLineNo">798</span>                        "Failed to call application initializer " + "class \""<a name="line.798"></a>
+<span class="sourceLineNo">799</span>                                + applicationInitializerClassName<a name="line.799"></a>
+<span class="sourceLineNo">800</span>                                + "\".  Perhaps the configuration file \""<a name="line.800"></a>
+<span class="sourceLineNo">801</span>                                + specificationURL + "\" has a problem?",<a name="line.801"></a>
+<span class="sourceLineNo">802</span>                        throwable);<a name="line.802"></a>
+<span class="sourceLineNo">803</span>            }<a name="line.803"></a>
+<span class="sourceLineNo">804</span>        }<a name="line.804"></a>
+<span class="sourceLineNo">805</span><a name="line.805"></a>
+<span class="sourceLineNo">806</span>        return configuration;<a name="line.806"></a>
+<span class="sourceLineNo">807</span>    }<a name="line.807"></a>
+<span class="sourceLineNo">808</span><a name="line.808"></a>
+<span class="sourceLineNo">809</span>    /** Start the models running, each in a new thread, then return.<a name="line.809"></a>
+<span class="sourceLineNo">810</span>     *  @exception KernelException If the manager throws it.<a name="line.810"></a>
+<span class="sourceLineNo">811</span>     */<a name="line.811"></a>
+<span class="sourceLineNo">812</span>    public void runModels() throws KernelException {<a name="line.812"></a>
+<span class="sourceLineNo">813</span>        _runModels(true);<a name="line.813"></a>
+<span class="sourceLineNo">814</span>    }<a name="line.814"></a>
+<span class="sourceLineNo">815</span><a name="line.815"></a>
+<span class="sourceLineNo">816</span>    /** Given the name of a file or a URL, convert it to a URL.<a name="line.816"></a>
+<span class="sourceLineNo">817</span>     *  This first attempts to do that directly by invoking a URL constructor.<a name="line.817"></a>
+<span class="sourceLineNo">818</span>     *  If that fails, then it tries to interpret the spec as a file name<a name="line.818"></a>
+<span class="sourceLineNo">819</span>     *  on the local file system.  If that fails, then it tries to interpret<a name="line.819"></a>
+<span class="sourceLineNo">820</span>     *  the spec as a resource accessible to the class loader, which uses<a name="line.820"></a>
+<span class="sourceLineNo">821</span>     *  the classpath to find the resource.  If that fails, then it throws<a name="line.821"></a>
+<span class="sourceLineNo">822</span>     *  an exception.  The specification can give a file name relative to<a name="line.822"></a>
+<span class="sourceLineNo">823</span>     *  current working directory, or the directory in which this application<a name="line.823"></a>
+<span class="sourceLineNo">824</span>     *  is started up.<a name="line.824"></a>
+<span class="sourceLineNo">825</span>     *  @param spec The specification.<a name="line.825"></a>
+<span class="sourceLineNo">826</span>     *  @return the URL.<a name="line.826"></a>
+<span class="sourceLineNo">827</span>     *  @exception IOException If it cannot convert the specification to<a name="line.827"></a>
+<span class="sourceLineNo">828</span>     *   a URL.<a name="line.828"></a>
+<span class="sourceLineNo">829</span>     */<a name="line.829"></a>
+<span class="sourceLineNo">830</span>    public static URL specToURL(String spec) throws IOException {<a name="line.830"></a>
+<span class="sourceLineNo">831</span>        // FIXME: There is a bit of a design flaw here because<a name="line.831"></a>
+<span class="sourceLineNo">832</span>        // we open a stream to the url (which is probably expensive)<a name="line.832"></a>
+<span class="sourceLineNo">833</span>        // and then close it.  The reason for opening the stream<a name="line.833"></a>
+<span class="sourceLineNo">834</span>        // is that we want to be sure that the URL is valid,<a name="line.834"></a>
+<span class="sourceLineNo">835</span>        // and if it is not, we check the local file system<a name="line.835"></a>
+<span class="sourceLineNo">836</span>        // and the classpath.<a name="line.836"></a>
+<span class="sourceLineNo">837</span>        // One solution would be to have a method that returned a<a name="line.837"></a>
+<span class="sourceLineNo">838</span>        // URLConnection because we can open a stream with a<a name="line.838"></a>
+<span class="sourceLineNo">839</span>        // URLConnection and still get the original URL if necessary<a name="line.839"></a>
+<span class="sourceLineNo">840</span>        URL specURL = null;<a name="line.840"></a>
+<span class="sourceLineNo">841</span><a name="line.841"></a>
+<span class="sourceLineNo">842</span>        try {<a name="line.842"></a>
+<span class="sourceLineNo">843</span>            // First argument is null because we are only<a name="line.843"></a>
+<span class="sourceLineNo">844</span>            // processing absolute URLs this way.  Relative<a name="line.844"></a>
+<span class="sourceLineNo">845</span>            // URLs are opened as ordinary files.<a name="line.845"></a>
+<span class="sourceLineNo">846</span>            specURL = new URL(null, spec);<a name="line.846"></a>
+<span class="sourceLineNo">847</span>            // Make sure that the specURL actually exists<a name="line.847"></a>
+<span class="sourceLineNo">848</span>            InputStream urlStream = specURL.openStream();<a name="line.848"></a>
+<span class="sourceLineNo">849</span>            urlStream.close();<a name="line.849"></a>
+<span class="sourceLineNo">850</span>            return specURL;<a name="line.850"></a>
+<span class="sourceLineNo">851</span>        } catch (Exception ex) {<a name="line.851"></a>
+<span class="sourceLineNo">852</span>            try {<a name="line.852"></a>
+<span class="sourceLineNo">853</span>                // Try as a regular file<a name="line.853"></a>
+<span class="sourceLineNo">854</span>                File file = new File(spec);<a name="line.854"></a>
+<span class="sourceLineNo">855</span><a name="line.855"></a>
+<span class="sourceLineNo">856</span>                // Oddly, under Windows file.exists() might return even<a name="line.856"></a>
+<span class="sourceLineNo">857</span>                // though the file does not exist if we changed user.dir.<a name="line.857"></a>
+<span class="sourceLineNo">858</span>                // See<a name="line.858"></a>
+<span class="sourceLineNo">859</span>                // http://forum.java.sun.com/thread.jsp?forum=31&amp;thread=328939<a name="line.859"></a>
+<span class="sourceLineNo">860</span>                // One hack is to convert to an absolute path first<a name="line.860"></a>
+<span class="sourceLineNo">861</span>                File absoluteFile = file.getAbsoluteFile();<a name="line.861"></a>
+<span class="sourceLineNo">862</span><a name="line.862"></a>
+<span class="sourceLineNo">863</span>                try {<a name="line.863"></a>
+<span class="sourceLineNo">864</span>                    if (!absoluteFile.exists()) {<a name="line.864"></a>
+<span class="sourceLineNo">865</span>                        throw new IOException(<a name="line.865"></a>
+<span class="sourceLineNo">866</span>                                "File '" + absoluteFile + "' does not exist.");<a name="line.866"></a>
+<span class="sourceLineNo">867</span>                    }<a name="line.867"></a>
+<span class="sourceLineNo">868</span>                } catch (java.security.AccessControlException accessControl) {<a name="line.868"></a>
+<span class="sourceLineNo">869</span>                    IOException exception = new IOException(<a name="line.869"></a>
+<span class="sourceLineNo">870</span>                            "AccessControlException while " + "trying to read '"<a name="line.870"></a>
+<span class="sourceLineNo">871</span>                                    + absoluteFile + "'");<a name="line.871"></a>
+<span class="sourceLineNo">872</span><a name="line.872"></a>
+<span class="sourceLineNo">873</span>                    // IOException does not have a cause argument constructor.<a name="line.873"></a>
+<span class="sourceLineNo">874</span>                    exception.initCause(accessControl);<a name="line.874"></a>
+<span class="sourceLineNo">875</span>                    throw exception;<a name="line.875"></a>
+<span class="sourceLineNo">876</span>                }<a name="line.876"></a>
+<span class="sourceLineNo">877</span><a name="line.877"></a>
+<span class="sourceLineNo">878</span>                specURL = absoluteFile.getCanonicalFile().toURI().toURL();<a name="line.878"></a>
+<span class="sourceLineNo">879</span>                //InputStream urlStream = specURL.openStream();<a name="line.879"></a>
+<span class="sourceLineNo">880</span>                //urlStream.close();<a name="line.880"></a>
+<span class="sourceLineNo">881</span>                return specURL;<a name="line.881"></a>
+<span class="sourceLineNo">882</span>            } catch (Throwable throwable) {<a name="line.882"></a>
+<span class="sourceLineNo">883</span>                try {<a name="line.883"></a>
+<span class="sourceLineNo">884</span>                    // Try one last thing, using the classpath.<a name="line.884"></a>
+<span class="sourceLineNo">885</span>                    // Need a class context, and this is a static method, so...<a name="line.885"></a>
+<span class="sourceLineNo">886</span>                    // we can't use this.getClass().getClassLoader()<a name="line.886"></a>
+<span class="sourceLineNo">887</span>                    // NOTE: There doesn't seem to be any way to convert<a name="line.887"></a>
+<span class="sourceLineNo">888</span>                    // this a canonical name, so if a model is opened this<a name="line.888"></a>
+<span class="sourceLineNo">889</span>                    // way, and then later opened as a file, the model<a name="line.889"></a>
+<span class="sourceLineNo">890</span>                    // directory will think it has two different files.<a name="line.890"></a>
+<span class="sourceLineNo">891</span>                    //Class refClass = Class.forName(<a name="line.891"></a>
+<span class="sourceLineNo">892</span>                    //        "ptolemy.kernel.util.NamedObj");<a name="line.892"></a>
+<span class="sourceLineNo">893</span>                    //specURL = refClass.getClassLoader().getResource(spec);<a name="line.893"></a>
+<span class="sourceLineNo">894</span>                    // This works in Web Start, see<a name="line.894"></a>
+<span class="sourceLineNo">895</span>                    // http://download.oracle.com/javase/1.5.0/docs/guide/javaws/developersguide/faq.html#211<a name="line.895"></a>
+<span class="sourceLineNo">896</span><a name="line.896"></a>
+<span class="sourceLineNo">897</span>                    // Unfortunately, Thread.currentThread().getContextClassLoader() can<a name="line.897"></a>
+<span class="sourceLineNo">898</span>                    // return null.  This happened when<a name="line.898"></a>
+<span class="sourceLineNo">899</span>                    // $CLASSPATH/ptolemy/actor/lib/vertx/demo/TokenTransmissionTime/Sender.xml<a name="line.899"></a>
+<span class="sourceLineNo">900</span>                    // failed and subsequent calls to openModelOrEntity() would<a name="line.900"></a>
+<span class="sourceLineNo">901</span>                    // fail because the configuration could not be found.<a name="line.901"></a>
+<span class="sourceLineNo">902</span>                    // So, we have our own getResource() that handles this.<a name="line.902"></a>
+<span class="sourceLineNo">903</span>                    specURL = ClassUtilities.getResource(spec);<a name="line.903"></a>
+<span class="sourceLineNo">904</span><a name="line.904"></a>
+<span class="sourceLineNo">905</span>                    if (specURL == null) {<a name="line.905"></a>
+<span class="sourceLineNo">906</span>                        try {<a name="line.906"></a>
+<span class="sourceLineNo">907</span>                            specURL = ClassUtilities.jarURLEntryResource(spec);<a name="line.907"></a>
+<span class="sourceLineNo">908</span>                        } catch (IOException ex4) {<a name="line.908"></a>
+<span class="sourceLineNo">909</span>                            // Ignore<a name="line.909"></a>
+<span class="sourceLineNo">910</span>                        }<a name="line.910"></a>
+<span class="sourceLineNo">911</span>                        if (specURL == null) {<a name="line.911"></a>
+<span class="sourceLineNo">912</span>                            // If we have a jar URL, convert spaces to %20<a name="line.912"></a>
+<span class="sourceLineNo">913</span>                            // so as to avoid multiple windows with the<a name="line.913"></a>
+<span class="sourceLineNo">914</span>                            // same file.  Web Start needs this if the Web<a name="line.914"></a>
+<span class="sourceLineNo">915</span>                            // Start cache is in a directory that has<a name="line.915"></a>
+<span class="sourceLineNo">916</span>                            // spaces in the path, which is the default<a name="line.916"></a>
+<span class="sourceLineNo">917</span>                            // under Windows.<a name="line.917"></a>
+<span class="sourceLineNo">918</span>                            specURL = JNLPUtilities<a name="line.918"></a>
+<span class="sourceLineNo">919</span>                                    .canonicalizeJarURL(new URL(spec));<a name="line.919"></a>
+<span class="sourceLineNo">920</span>                            if (specURL == null) {<a name="line.920"></a>
+<span class="sourceLineNo">921</span>                                throw new Exception(<a name="line.921"></a>
+<span class="sourceLineNo">922</span>                                        "JNLPUtilities.canonicalizeJarURL(new URL(\""<a name="line.922"></a>
+<span class="sourceLineNo">923</span>                                                + spec + "\")) returned null.");<a name="line.923"></a>
+<span class="sourceLineNo">924</span>                            }<a name="line.924"></a>
+<span class="sourceLineNo">925</span>                        }<a name="line.925"></a>
+<span class="sourceLineNo">926</span>                    }<a name="line.926"></a>
+<span class="sourceLineNo">927</span><a name="line.927"></a>
+<span class="sourceLineNo">928</span>                    // Verify that it can be opened<a name="line.928"></a>
+<span class="sourceLineNo">929</span>                    InputStream urlStream = specURL.openStream();<a name="line.929"></a>
+<span class="sourceLineNo">930</span>                    urlStream.close();<a name="line.930"></a>
+<span class="sourceLineNo">931</span>                    return specURL;<a name="line.931"></a>
+<span class="sourceLineNo">932</span>                } catch (Exception ex3) {<a name="line.932"></a>
+<span class="sourceLineNo">933</span>                    // Use a very verbose message in case opening<a name="line.933"></a>
+<span class="sourceLineNo">934</span>                    // the configuration fails under Web Start.<a name="line.934"></a>
+<span class="sourceLineNo">935</span>                    // Without this error message, users will<a name="line.935"></a>
+<span class="sourceLineNo">936</span>                    // have no hope of telling us why Web Start failed.<a name="line.936"></a>
+<span class="sourceLineNo">937</span>                    IOException exception = new IOException("File not found: '"<a name="line.937"></a>
+<span class="sourceLineNo">938</span>                            + spec + "'\n caused by:\n" + ex + "\n AND:\n"<a name="line.938"></a>
+<span class="sourceLineNo">939</span>                            + throwable + "\n AND:\n" + ex3);<a name="line.939"></a>
+<span class="sourceLineNo">940</span><a name="line.940"></a>
+<span class="sourceLineNo">941</span>                    // IOException does not have a cause argument<a name="line.941"></a>
+<span class="sourceLineNo">942</span>                    exception.initCause(ex3);<a name="line.942"></a>
+<span class="sourceLineNo">943</span>                    throw exception;<a name="line.943"></a>
+<span class="sourceLineNo">944</span>                }<a name="line.944"></a>
+<span class="sourceLineNo">945</span>            }<a name="line.945"></a>
+<span class="sourceLineNo">946</span>        }<a name="line.946"></a>
+<span class="sourceLineNo">947</span>    }<a name="line.947"></a>
+<span class="sourceLineNo">948</span><a name="line.948"></a>
+<span class="sourceLineNo">949</span>    /** Throw an exception that includes the elements of the args parameter.<a name="line.949"></a>
+<span class="sourceLineNo">950</span>     *  @param cause The throwable that caused the problem.<a name="line.950"></a>
+<span class="sourceLineNo">951</span>     *  @param args An array of Strings.<a name="line.951"></a>
+<span class="sourceLineNo">952</span>     *  @exception Exception Always thrown<a name="line.952"></a>
+<span class="sourceLineNo">953</span>     */<a name="line.953"></a>
+<span class="sourceLineNo">954</span>    public static void throwArgsException(Throwable cause, String[] args)<a name="line.954"></a>
+<span class="sourceLineNo">955</span>            throws Exception {<a name="line.955"></a>
+<span class="sourceLineNo">956</span><a name="line.956"></a>
+<span class="sourceLineNo">957</span>        // Accumulate the arguments into a StringBuffer<a name="line.957"></a>
+<span class="sourceLineNo">958</span>        StringBuffer argsStringBuffer = new StringBuffer();<a name="line.958"></a>
+<span class="sourceLineNo">959</span><a name="line.959"></a>
+<span class="sourceLineNo">960</span>        try {<a name="line.960"></a>
+<span class="sourceLineNo">961</span>            for (String arg : args) {<a name="line.961"></a>
+<span class="sourceLineNo">962</span>                if (argsStringBuffer.length() &gt; 0) {<a name="line.962"></a>
+<span class="sourceLineNo">963</span>                    argsStringBuffer.append(" ");<a name="line.963"></a>
+<span class="sourceLineNo">964</span>                }<a name="line.964"></a>
+<span class="sourceLineNo">965</span><a name="line.965"></a>
+<span class="sourceLineNo">966</span>                argsStringBuffer.append(arg);<a name="line.966"></a>
+<span class="sourceLineNo">967</span>            }<a name="line.967"></a>
+<span class="sourceLineNo">968</span>        } catch (Throwable throwable) {<a name="line.968"></a>
+<span class="sourceLineNo">969</span>            //Ignored<a name="line.969"></a>
+<span class="sourceLineNo">970</span>        }<a name="line.970"></a>
+<span class="sourceLineNo">971</span><a name="line.971"></a>
+<span class="sourceLineNo">972</span>        // Make sure we throw an exception if one is caught.<a name="line.972"></a>
+<span class="sourceLineNo">973</span>        // If we don't, then running vergil -foo will just exit.<a name="line.973"></a>
+<span class="sourceLineNo">974</span>        throw new Exception(<a name="line.974"></a>
+<span class="sourceLineNo">975</span>                "Failed to parse \"" + argsStringBuffer.toString() + "\"",<a name="line.975"></a>
+<span class="sourceLineNo">976</span>                cause);<a name="line.976"></a>
+<span class="sourceLineNo">977</span>    }<a name="line.977"></a>
+<span class="sourceLineNo">978</span><a name="line.978"></a>
+<span class="sourceLineNo">979</span>    /** Wait for all executing runs to finish, then return.<a name="line.979"></a>
+<span class="sourceLineNo">980</span>     */<a name="line.980"></a>
+<span class="sourceLineNo">981</span>    public synchronized void waitForFinish() {<a name="line.981"></a>
+<span class="sourceLineNo">982</span>        while (_activeCount &gt; 0) {<a name="line.982"></a>
+<span class="sourceLineNo">983</span>            try {<a name="line.983"></a>
+<span class="sourceLineNo">984</span>                wait();<a name="line.984"></a>
+<span class="sourceLineNo">985</span>            } catch (InterruptedException ex) {<a name="line.985"></a>
+<span class="sourceLineNo">986</span>                break;<a name="line.986"></a>
+<span class="sourceLineNo">987</span>            }<a name="line.987"></a>
+<span class="sourceLineNo">988</span>        }<a name="line.988"></a>
+<span class="sourceLineNo">989</span>    }<a name="line.989"></a>
+<span class="sourceLineNo">990</span><a name="line.990"></a>
+<span class="sourceLineNo">991</span>    ///////////////////////////////////////////////////////////////////<a name="line.991"></a>
+<span class="sourceLineNo">992</span>    ////                         protected methods                 ////<a name="line.992"></a>
+<span class="sourceLineNo">993</span><a name="line.993"></a>
+<span class="sourceLineNo">994</span>    /**Get the number of models that are active.<a name="line.994"></a>
+<span class="sourceLineNo">995</span>     * @return The number of active models.<a name="line.995"></a>
+<span class="sourceLineNo">996</span>     * @see #setActiveCount<a name="line.996"></a>
+<span class="sourceLineNo">997</span>     */<a name="line.997"></a>
+<span class="sourceLineNo">998</span>    public int getActiveCount() {<a name="line.998"></a>
+<span class="sourceLineNo">999</span>        return _activeCount;<a name="line.999"></a>
+<span class="sourceLineNo">1000</span>    }<a name="line.1000"></a>
+<span class="sourceLineNo">1001</span><a name="line.1001"></a>
+<span class="sourceLineNo">1002</span>    /**Set the number of active models.<a name="line.1002"></a>
+<span class="sourceLineNo">1003</span>     * @param _activeCount The number of active models.<a name="line.1003"></a>
+<span class="sourceLineNo">1004</span>     * @see #getActiveCount<a name="line.1004"></a>
+<span class="sourceLineNo">1005</span>     */<a name="line.1005"></a>
+<span class="sourceLineNo">1006</span>    public void setActiveCount(int _activeCount) {<a name="line.1006"></a>
+<span class="sourceLineNo">1007</span>        this._activeCount = _activeCount;<a name="line.1007"></a>
+<span class="sourceLineNo">1008</span>    }<a name="line.1008"></a>
+<span class="sourceLineNo">1009</span><a name="line.1009"></a>
+<span class="sourceLineNo">1010</span>    /** Return a string summarizing the command-line arguments,<a name="line.1010"></a>
+<span class="sourceLineNo">1011</span>     *  including any configuration directories in a base path,<a name="line.1011"></a>
+<span class="sourceLineNo">1012</span>     *  typically "ptolemy/configs".<a name="line.1012"></a>
+<span class="sourceLineNo">1013</span>     *  Some subclasses of this class use configurations from ptolemy/configs.<a name="line.1013"></a>
+<span class="sourceLineNo">1014</span>     *  For example, if ptolemy/configs/full/configuration.xml exists<a name="line.1014"></a>
+<span class="sourceLineNo">1015</span>     *  then -full is a legitimate argument.<a name="line.1015"></a>
+<span class="sourceLineNo">1016</span>     *  @param commandTemplate The form of the command line<a name="line.1016"></a>
+<span class="sourceLineNo">1017</span>     *  @param commandOptions Command-line options that take arguments.<a name="line.1017"></a>
+<span class="sourceLineNo">1018</span>     *  @param commandFlags An array of Strings that list command-line<a name="line.1018"></a>
+<span class="sourceLineNo">1019</span>     *  options that are either present or not.<a name="line.1019"></a>
+<span class="sourceLineNo">1020</span>     *  @return A usage string.<a name="line.1020"></a>
+<span class="sourceLineNo">1021</span>     *  @see ptolemy.util.StringUtilities#usageString(String, String [][], String [])<a name="line.1021"></a>
+<span class="sourceLineNo">1022</span>     */<a name="line.1022"></a>
+<span class="sourceLineNo">1023</span>    protected String _configurationUsage(String commandTemplate,<a name="line.1023"></a>
+<span class="sourceLineNo">1024</span>            String[][] commandOptions, String[] commandFlags) {<a name="line.1024"></a>
+<span class="sourceLineNo">1025</span>        String[][] commandFlagsWithDescriptions = new String[commandFlags.length][2];<a name="line.1025"></a>
+<span class="sourceLineNo">1026</span>        for (int i = 0; i &lt; commandFlags.length; i++) {<a name="line.1026"></a>
+<span class="sourceLineNo">1027</span>            commandFlagsWithDescriptions[i][0] = commandFlags[i];<a name="line.1027"></a>
+<span class="sourceLineNo">1028</span>            commandFlagsWithDescriptions[i][1] = "";<a name="line.1028"></a>
+<span class="sourceLineNo">1029</span>        }<a name="line.1029"></a>
+<span class="sourceLineNo">1030</span>        return _configurationUsage(commandTemplate, commandOptions,<a name="line.1030"></a>
+<span class="sourceLineNo">1031</span>                commandFlagsWithDescriptions);<a name="line.1031"></a>
+<span class="sourceLineNo">1032</span>    }<a name="line.1032"></a>
+<span class="sourceLineNo">1033</span><a name="line.1033"></a>
+<span class="sourceLineNo">1034</span>    /** Return a string summarizing the command-line arguments,<a name="line.1034"></a>
+<span class="sourceLineNo">1035</span>     *  including any configuration directories in a base path,<a name="line.1035"></a>
+<span class="sourceLineNo">1036</span>     *  typically "ptolemy/configs".<a name="line.1036"></a>
+<span class="sourceLineNo">1037</span>     *  Some subclasses of this class use configurations from ptolemy/configs.<a name="line.1037"></a>
+<span class="sourceLineNo">1038</span>     *  For example, if ptolemy/configs/full/configuration.xml exists<a name="line.1038"></a>
+<span class="sourceLineNo">1039</span>     *  then -full is a legitimate argument.<a name="line.1039"></a>
+<span class="sourceLineNo">1040</span>     *  @param commandTemplate The form of the command line<a name="line.1040"></a>
+<span class="sourceLineNo">1041</span>     *  @param commandOptions Command-line options that take arguments.<a name="line.1041"></a>
+<span class="sourceLineNo">1042</span>     *  @param commandFlagsWithDescriptions A 2xM array of Strings that list<a name="line.1042"></a>
+<span class="sourceLineNo">1043</span>     *  command-line options that are either present or not and a description<a name="line.1043"></a>
+<span class="sourceLineNo">1044</span>     *  of what the command line option does.<a name="line.1044"></a>
+<span class="sourceLineNo">1045</span>     *  @return A usage string.<a name="line.1045"></a>
+<span class="sourceLineNo">1046</span>     *  @see ptolemy.util.StringUtilities#usageString(String, String [][], String [][])<a name="line.1046"></a>
+<span class="sourceLineNo">1047</span>     */<a name="line.1047"></a>
+<span class="sourceLineNo">1048</span>    protected String _configurationUsage(String commandTemplate,<a name="line.1048"></a>
+<span class="sourceLineNo">1049</span>            String[][] commandOptions,<a name="line.1049"></a>
+<span class="sourceLineNo">1050</span>            String[][] commandFlagsWithDescriptions) {<a name="line.1050"></a>
+<span class="sourceLineNo">1051</span>        StringBuffer result = new StringBuffer("Usage: " + commandTemplate<a name="line.1051"></a>
+<span class="sourceLineNo">1052</span>                + "\n\n" + "Options that take values:\n");<a name="line.1052"></a>
+<span class="sourceLineNo">1053</span>        int i;<a name="line.1053"></a>
+<span class="sourceLineNo">1054</span><a name="line.1054"></a>
+<span class="sourceLineNo">1055</span>        // Print any command options from this class first<a name="line.1055"></a>
+<span class="sourceLineNo">1056</span>        for (i = 0; i &lt; _commandOptions.length; i++) {<a name="line.1056"></a>
+<span class="sourceLineNo">1057</span>            result.append(" " + _commandOptions[i][0] + " "<a name="line.1057"></a>
+<span class="sourceLineNo">1058</span>                    + _commandOptions[i][1] + "\n");<a name="line.1058"></a>
+<span class="sourceLineNo">1059</span>        }<a name="line.1059"></a>
+<span class="sourceLineNo">1060</span><a name="line.1060"></a>
+<span class="sourceLineNo">1061</span>        for (i = 0; i &lt; commandOptions.length; i++) {<a name="line.1061"></a>
+<span class="sourceLineNo">1062</span>            result.append(" " + commandOptions[i][0] + " "<a name="line.1062"></a>
+<span class="sourceLineNo">1063</span>                    + commandOptions[i][1] + "\n");<a name="line.1063"></a>
+<span class="sourceLineNo">1064</span>        }<a name="line.1064"></a>
+<span class="sourceLineNo">1065</span><a name="line.1065"></a>
+<span class="sourceLineNo">1066</span>        result.append("\nFlags (do not take values):\n");<a name="line.1066"></a>
+<span class="sourceLineNo">1067</span><a name="line.1067"></a>
+<span class="sourceLineNo">1068</span>        // Print any command flags from this class first<a name="line.1068"></a>
+<span class="sourceLineNo">1069</span>        for (i = 0; i &lt; _commandFlagsWithDescriptions.length; i++) {<a name="line.1069"></a>
+<span class="sourceLineNo">1070</span>            result.append(" " + _commandFlagsWithDescriptions[i][0] + "\t"<a name="line.1070"></a>
+<span class="sourceLineNo">1071</span>                    + _commandFlagsWithDescriptions[i][1] + "\n");<a name="line.1071"></a>
+<span class="sourceLineNo">1072</span>        }<a name="line.1072"></a>
+<span class="sourceLineNo">1073</span>        for (i = 0; i &lt; commandFlagsWithDescriptions.length; i++) {<a name="line.1073"></a>
+<span class="sourceLineNo">1074</span>            result.append(" " + commandFlagsWithDescriptions[i][0] + "\t"<a name="line.1074"></a>
+<span class="sourceLineNo">1075</span>                    + commandFlagsWithDescriptions[i][1] + "\n");<a name="line.1075"></a>
+<span class="sourceLineNo">1076</span>        }<a name="line.1076"></a>
+<span class="sourceLineNo">1077</span><a name="line.1077"></a>
+<span class="sourceLineNo">1078</span>        try {<a name="line.1078"></a>
+<span class="sourceLineNo">1079</span>            // Look for configuration directories in _basePath<a name="line.1079"></a>
+<span class="sourceLineNo">1080</span>            // This will likely fail if ptolemy/configs is in a jar file<a name="line.1080"></a>
+<span class="sourceLineNo">1081</span>            // We use a URI here so that we cause call File(URI).<a name="line.1081"></a>
+<span class="sourceLineNo">1082</span>            File[] configurationDirectories = configurationDirectories(<a name="line.1082"></a>
+<span class="sourceLineNo">1083</span>                    _basePath);<a name="line.1083"></a>
+<span class="sourceLineNo">1084</span><a name="line.1084"></a>
+<span class="sourceLineNo">1085</span>            if (configurationDirectories != null) {<a name="line.1085"></a>
+<span class="sourceLineNo">1086</span>                result.append("\nThe following (mutually exclusive) flags "<a name="line.1086"></a>
+<span class="sourceLineNo">1087</span>                        + "specify alternative configurations:\n");<a name="line.1087"></a>
+<span class="sourceLineNo">1088</span><a name="line.1088"></a>
+<span class="sourceLineNo">1089</span>                for (i = 0; i &lt; configurationDirectories.length; i++) {<a name="line.1089"></a>
+<span class="sourceLineNo">1090</span>                    String configurationName = configurationDirectories[i]<a name="line.1090"></a>
+<span class="sourceLineNo">1091</span>                            .getName();<a name="line.1091"></a>
+<span class="sourceLineNo">1092</span>                    result.append(" -" + configurationName);<a name="line.1092"></a>
+<span class="sourceLineNo">1093</span><a name="line.1093"></a>
+<span class="sourceLineNo">1094</span>                    // Pad out to a fixed number of spaces to get good alignment.<a name="line.1094"></a>
+<span class="sourceLineNo">1095</span>                    for (int j = configurationName.length(); j &lt; 20; j++) {<a name="line.1095"></a>
+<span class="sourceLineNo">1096</span>                        result.append(" ");<a name="line.1096"></a>
+<span class="sourceLineNo">1097</span>                    }<a name="line.1097"></a>
+<span class="sourceLineNo">1098</span><a name="line.1098"></a>
+<span class="sourceLineNo">1099</span>                    String configurationFileName = configurationDirectories[i]<a name="line.1099"></a>
+<span class="sourceLineNo">1100</span>                            + File.separator + "configuration.xml";<a name="line.1100"></a>
+<span class="sourceLineNo">1101</span><a name="line.1101"></a>
+<span class="sourceLineNo">1102</span>                    boolean printDefaultConfigurationMessage = true;<a name="line.1102"></a>
+<span class="sourceLineNo">1103</span><a name="line.1103"></a>
+<span class="sourceLineNo">1104</span>                    try {<a name="line.1104"></a>
+<span class="sourceLineNo">1105</span>                        // Read the configuration and get the top level docs<a name="line.1105"></a>
+<span class="sourceLineNo">1106</span>                        // FIXME: this will not work if the configs are<a name="line.1106"></a>
+<span class="sourceLineNo">1107</span>                        // in jar files.<a name="line.1107"></a>
+<span class="sourceLineNo">1108</span>                        // FIXME: Skip jxta, since it starts up the jxta config<a name="line.1108"></a>
+<span class="sourceLineNo">1109</span>                        // tools.<a name="line.1109"></a>
+<span class="sourceLineNo">1110</span>                        if (!configurationName.equals("jxta")) {<a name="line.1110"></a>
+<span class="sourceLineNo">1111</span>                            URL specificationURL = specToURL(<a name="line.1111"></a>
+<span class="sourceLineNo">1112</span>                                    configurationFileName);<a name="line.1112"></a>
+<span class="sourceLineNo">1113</span>                            Configuration configuration;<a name="line.1113"></a>
+<span class="sourceLineNo">1114</span>                            // URL.equals() is very expensive so we convert to a URI first  See:<a name="line.1114"></a>
+<span class="sourceLineNo">1115</span>                            //http://michaelscharf.blogspot.com/2006/11/javaneturlequals-and-hashcode-make.html<a name="line.1115"></a>
+<span class="sourceLineNo">1116</span>                            if (specificationURL.toURI()<a name="line.1116"></a>
+<span class="sourceLineNo">1117</span>                                    .equals(_initialSpecificationURI)) {<a name="line.1117"></a>
+<span class="sourceLineNo">1118</span>                                // Avoid rereading the configuration, which will result<a name="line.1118"></a>
+<span class="sourceLineNo">1119</span>                                // in the old configuration being removed, which exits the app.<a name="line.1119"></a>
+<span class="sourceLineNo">1120</span>                                configuration = _configuration;<a name="line.1120"></a>
+<span class="sourceLineNo">1121</span>                            } else {<a name="line.1121"></a>
+<span class="sourceLineNo">1122</span>                                ErrorHandler errorHandler = MoMLParser<a name="line.1122"></a>
+<span class="sourceLineNo">1123</span>                                        .getErrorHandler();<a name="line.1123"></a>
+<span class="sourceLineNo">1124</span><a name="line.1124"></a>
+<span class="sourceLineNo">1125</span>                                // Read the configuration. If there is an<a name="line.1125"></a>
+<span class="sourceLineNo">1126</span>                                // error, ignore the error, but don't print<a name="line.1126"></a>
+<span class="sourceLineNo">1127</span>                                // usage for that configuration<a name="line.1127"></a>
+<span class="sourceLineNo">1128</span>                                try {<a name="line.1128"></a>
+<span class="sourceLineNo">1129</span>                                    MoMLParser.setErrorHandler(<a name="line.1129"></a>
+<span class="sourceLineNo">1130</span>                                            new IgnoreErrorHandler());<a name="line.1130"></a>
+<span class="sourceLineNo">1131</span>                                    configuration = readConfiguration(<a name="line.1131"></a>
+<span class="sourceLineNo">1132</span>                                            specificationURL);<a name="line.1132"></a>
+<span class="sourceLineNo">1133</span>                                } finally {<a name="line.1133"></a>
+<span class="sourceLineNo">1134</span>                                    MoMLParser.setErrorHandler(errorHandler);<a name="line.1134"></a>
+<span class="sourceLineNo">1135</span>                                }<a name="line.1135"></a>
+<span class="sourceLineNo">1136</span><a name="line.1136"></a>
+<span class="sourceLineNo">1137</span>                                if (configuration != null<a name="line.1137"></a>
+<span class="sourceLineNo">1138</span>                                        &amp;&amp; configuration<a name="line.1138"></a>
+<span class="sourceLineNo">1139</span>                                                .getAttribute("_doc") != null<a name="line.1139"></a>
+<span class="sourceLineNo">1140</span>                                        &amp;&amp; configuration.getAttribute(<a name="line.1140"></a>
+<span class="sourceLineNo">1141</span>                                                "_doc") instanceof Documentation) {<a name="line.1141"></a>
+<span class="sourceLineNo">1142</span>                                    Documentation doc = (Documentation) configuration<a name="line.1142"></a>
+<span class="sourceLineNo">1143</span>                                            .getAttribute("_doc");<a name="line.1143"></a>
+<span class="sourceLineNo">1144</span>                                    result.append("\t\t"<a name="line.1144"></a>
+<span class="sourceLineNo">1145</span>                                            + doc.getValueAsString() + "\n");<a name="line.1145"></a>
+<span class="sourceLineNo">1146</span>                                    printDefaultConfigurationMessage = false;<a name="line.1146"></a>
+<span class="sourceLineNo">1147</span>                                }<a name="line.1147"></a>
+<span class="sourceLineNo">1148</span>                            }<a name="line.1148"></a>
+<span class="sourceLineNo">1149</span>                        }<a name="line.1149"></a>
+<span class="sourceLineNo">1150</span>                    } catch (Exception ex) {<a name="line.1150"></a>
+<span class="sourceLineNo">1151</span>                        //result.append("\tCould not read configuration"<a name="line.1151"></a>
+<span class="sourceLineNo">1152</span>                        //    + "\n" + ex);<a name="line.1152"></a>
+<span class="sourceLineNo">1153</span>                        //ex.printStackTrace();<a name="line.1153"></a>
+<span class="sourceLineNo">1154</span>                    }<a name="line.1154"></a>
+<span class="sourceLineNo">1155</span><a name="line.1155"></a>
+<span class="sourceLineNo">1156</span>                    if (printDefaultConfigurationMessage) {<a name="line.1156"></a>
+<span class="sourceLineNo">1157</span>                        result.append(<a name="line.1157"></a>
+<span class="sourceLineNo">1158</span>                                "\t\tuses " + configurationFileName + "\n");<a name="line.1158"></a>
+<span class="sourceLineNo">1159</span>                    }<a name="line.1159"></a>
+<span class="sourceLineNo">1160</span>                }<a name="line.1160"></a>
+<span class="sourceLineNo">1161</span>            }<a name="line.1161"></a>
+<span class="sourceLineNo">1162</span>        } catch (Exception ex) {<a name="line.1162"></a>
+<span class="sourceLineNo">1163</span>            result.append("Warning: Failed to find configuration(s) in '"<a name="line.1163"></a>
+<span class="sourceLineNo">1164</span>                    + _basePath + "': " + ex);<a name="line.1164"></a>
+<span class="sourceLineNo">1165</span>        }<a name="line.1165"></a>
+<span class="sourceLineNo">1166</span><a name="line.1166"></a>
+<span class="sourceLineNo">1167</span>        return result.toString();<a name="line.1167"></a>
+<span class="sourceLineNo">1168</span>    }<a name="line.1168"></a>
+<span class="sourceLineNo">1169</span><a name="line.1169"></a>
+<span class="sourceLineNo">1170</span>    /** Perform any application specific initialization.<a name="line.1170"></a>
+<span class="sourceLineNo">1171</span>     *  In this base class, do nothing.  Derived classes<a name="line.1171"></a>
+<span class="sourceLineNo">1172</span>     *  can perform initialization.<a name="line.1172"></a>
+<span class="sourceLineNo">1173</span>     *  This method is called by early in the constructor,<a name="line.1173"></a>
+<span class="sourceLineNo">1174</span>     *  so the object may not be completely constructed, so<a name="line.1174"></a>
+<span class="sourceLineNo">1175</span>     *  derived classes should not access fields from a<a name="line.1175"></a>
+<span class="sourceLineNo">1176</span>     *  parent class.<a name="line.1176"></a>
+<span class="sourceLineNo">1177</span>     */<a name="line.1177"></a>
+<span class="sourceLineNo">1178</span>    protected void _initializeApplication() {<a name="line.1178"></a>
+<span class="sourceLineNo">1179</span>        // Do nothing.<a name="line.1179"></a>
+<span class="sourceLineNo">1180</span>    }<a name="line.1180"></a>
+<span class="sourceLineNo">1181</span><a name="line.1181"></a>
+<span class="sourceLineNo">1182</span>    /** Return a default Configuration, or null to do without one.<a name="line.1182"></a>
+<span class="sourceLineNo">1183</span>     *  This configuration will be created before any command-line arguments<a name="line.1183"></a>
+<span class="sourceLineNo">1184</span>     *  are processed.  If there are no command-line arguments, then<a name="line.1184"></a>
+<span class="sourceLineNo">1185</span>     *  the default configuration is given by _createEmptyConfiguration()<a name="line.1185"></a>
+<span class="sourceLineNo">1186</span>     *  instead.  This method merges the compile-time configuration file<a name="line.1186"></a>
+<span class="sourceLineNo">1187</span>     *  values from {@link ptolemy.util.StringUtilities#mergePropertiesFile()}.<a name="line.1187"></a>
+<span class="sourceLineNo">1188</span>     *  Subclasses should call<a name="line.1188"></a>
+<span class="sourceLineNo">1189</span>     * {@link ptolemy.actor.gui.PtolemyPreferences#setDefaultPreferences(Configuration)}.<a name="line.1189"></a>
+<span class="sourceLineNo">1190</span>     *  @return null<a name="line.1190"></a>
+<span class="sourceLineNo">1191</span>     *  @exception Exception Thrown in derived classes if the default<a name="line.1191"></a>
+<span class="sourceLineNo">1192</span>     *   configuration cannot be opened.<a name="line.1192"></a>
+<span class="sourceLineNo">1193</span>     */<a name="line.1193"></a>
+<span class="sourceLineNo">1194</span>    protected Configuration _createDefaultConfiguration() throws Exception {<a name="line.1194"></a>
+<span class="sourceLineNo">1195</span>        // Load the properties file<a name="line.1195"></a>
+<span class="sourceLineNo">1196</span>        try {<a name="line.1196"></a>
+<span class="sourceLineNo">1197</span>            StringUtilities.mergePropertiesFile();<a name="line.1197"></a>
+<span class="sourceLineNo">1198</span>        } catch (Throwable throwable) {<a name="line.1198"></a>
+<span class="sourceLineNo">1199</span>            // FIXME: this should be logged, not ignored<a name="line.1199"></a>
+<span class="sourceLineNo">1200</span>            // Ignore the exception, it clutters the start up.<a name="line.1200"></a>
+<span class="sourceLineNo">1201</span>        }<a name="line.1201"></a>
+<span class="sourceLineNo">1202</span><a name="line.1202"></a>
+<span class="sourceLineNo">1203</span>        return null;<a name="line.1203"></a>
+<span class="sourceLineNo">1204</span>    }<a name="line.1204"></a>
+<span class="sourceLineNo">1205</span><a name="line.1205"></a>
+<span class="sourceLineNo">1206</span>    /** Return a default Configuration to use when there are no command-line<a name="line.1206"></a>
+<span class="sourceLineNo">1207</span>     *  arguments, or null to do without one.  This base class returns the<a name="line.1207"></a>
+<span class="sourceLineNo">1208</span>     *  configuration returned by _createDefaultConfiguration().<a name="line.1208"></a>
+<span class="sourceLineNo">1209</span>     *  @return null<a name="line.1209"></a>
+<span class="sourceLineNo">1210</span>     *  @exception Exception Thrown in derived classes if the empty<a name="line.1210"></a>
+<span class="sourceLineNo">1211</span>     *   configuration cannot be opened.<a name="line.1211"></a>
+<span class="sourceLineNo">1212</span>     */<a name="line.1212"></a>
+<span class="sourceLineNo">1213</span>    protected Configuration _createEmptyConfiguration() throws Exception {<a name="line.1213"></a>
+<span class="sourceLineNo">1214</span>        return _createDefaultConfiguration();<a name="line.1214"></a>
+<span class="sourceLineNo">1215</span>    }<a name="line.1215"></a>
+<span class="sourceLineNo">1216</span><a name="line.1216"></a>
+<span class="sourceLineNo">1217</span>    /** Open the specified Ptolemy II model. If a model already has<a name="line.1217"></a>
+<span class="sourceLineNo">1218</span>     *  open tableaux, then put those in the foreground and<a name="line.1218"></a>
+<span class="sourceLineNo">1219</span>     *  return the first one.  Otherwise, create a new tableau and if<a name="line.1219"></a>
+<span class="sourceLineNo">1220</span>     *  necessary, a new effigy.  Unless there is a more natural container<a name="line.1220"></a>
+<span class="sourceLineNo">1221</span>     *  for the effigy (e.g. it is a hierarchical model), then if a new<a name="line.1221"></a>
+<span class="sourceLineNo">1222</span>     *  effigy is created, it is put into the directory of the configuration.<a name="line.1222"></a>
+<span class="sourceLineNo">1223</span>     *  Any new tableau created will be contained by that effigy.<a name="line.1223"></a>
+<span class="sourceLineNo">1224</span>     *  @param entity The model.<a name="line.1224"></a>
+<span class="sourceLineNo">1225</span>     *  @return The tableau that is created, or the first one found,<a name="line.1225"></a>
+<span class="sourceLineNo">1226</span>     *   or null if none is created or found.<a name="line.1226"></a>
+<span class="sourceLineNo">1227</span>     *  @exception IllegalActionException If constructing an effigy or tableau<a name="line.1227"></a>
+<span class="sourceLineNo">1228</span>     *   fails.<a name="line.1228"></a>
+<span class="sourceLineNo">1229</span>     *  @exception NameDuplicationException If a name conflict occurs (this<a name="line.1229"></a>
+<span class="sourceLineNo">1230</span>     *   should not be thrown).<a name="line.1230"></a>
+<span class="sourceLineNo">1231</span>     */<a name="line.1231"></a>
+<span class="sourceLineNo">1232</span>    protected Tableau _openModel(NamedObj entity)<a name="line.1232"></a>
+<span class="sourceLineNo">1233</span>            throws IllegalActionException, NameDuplicationException {<a name="line.1233"></a>
+<span class="sourceLineNo">1234</span>        return _configuration.openModel(entity);<a name="line.1234"></a>
+<span class="sourceLineNo">1235</span>    }<a name="line.1235"></a>
+<span class="sourceLineNo">1236</span><a name="line.1236"></a>
+<span class="sourceLineNo">1237</span>    /** Open the specified URL.<a name="line.1237"></a>
+<span class="sourceLineNo">1238</span>     *  If a model with the specified identifier is present in the directory,<a name="line.1238"></a>
+<span class="sourceLineNo">1239</span>     *  then find all the tableaux of that model and make them<a name="line.1239"></a>
+<span class="sourceLineNo">1240</span>     *  visible; otherwise, read a model from the specified URL &lt;i&gt;in&lt;/i&gt;<a name="line.1240"></a>
+<span class="sourceLineNo">1241</span>     *  and create a default tableau for the model and add the tableau<a name="line.1241"></a>
+<span class="sourceLineNo">1242</span>     *  to this directory.<a name="line.1242"></a>
+<span class="sourceLineNo">1243</span>     *  @param base The base for relative file references, or null if<a name="line.1243"></a>
+<span class="sourceLineNo">1244</span>     *   there are no relative file references.<a name="line.1244"></a>
+<span class="sourceLineNo">1245</span>     *  @param in The input URL.<a name="line.1245"></a>
+<span class="sourceLineNo">1246</span>     *  @param identifier The identifier that uniquely identifies the model.<a name="line.1246"></a>
+<span class="sourceLineNo">1247</span>     *  @return The tableau that is created, or null if none.<a name="line.1247"></a>
+<span class="sourceLineNo">1248</span>     *  @exception Exception If the URL cannot be read.<a name="line.1248"></a>
+<span class="sourceLineNo">1249</span>     */<a name="line.1249"></a>
+<span class="sourceLineNo">1250</span>    protected Tableau _openModel(URL base, URL in, String identifier)<a name="line.1250"></a>
+<span class="sourceLineNo">1251</span>            throws Exception {<a name="line.1251"></a>
+<span class="sourceLineNo">1252</span>        return _configuration.openModel(base, in, identifier);<a name="line.1252"></a>
+<span class="sourceLineNo">1253</span>    }<a name="line.1253"></a>
+<span class="sourceLineNo">1254</span><a name="line.1254"></a>
+<span class="sourceLineNo">1255</span>    /** Parse a command-line argument.<a name="line.1255"></a>
+<span class="sourceLineNo">1256</span>     *  @param arg The command-line argument to be parsed.<a name="line.1256"></a>
+<span class="sourceLineNo">1257</span>     *  @return True if the argument is understood, false otherwise.<a name="line.1257"></a>
+<span class="sourceLineNo">1258</span>     *  @exception Exception If something goes wrong.<a name="line.1258"></a>
+<span class="sourceLineNo">1259</span>     */<a name="line.1259"></a>
+<span class="sourceLineNo">1260</span>    protected boolean _parseArg(String arg) throws Exception {<a name="line.1260"></a>
+<span class="sourceLineNo">1261</span>        if (arg.equals("-class")) {<a name="line.1261"></a>
+<span class="sourceLineNo">1262</span>            _expectingClass = true;<a name="line.1262"></a>
+<span class="sourceLineNo">1263</span>        } else if (arg.equals("-exit")) {<a name="line.1263"></a>
+<span class="sourceLineNo">1264</span>            _exit = true;<a name="line.1264"></a>
+<span class="sourceLineNo">1265</span>        } else if (arg.equals("-help")) {<a name="line.1265"></a>
+<span class="sourceLineNo">1266</span>            System.out.println(_usage());<a name="line.1266"></a>
+<span class="sourceLineNo">1267</span><a name="line.1267"></a>
+<span class="sourceLineNo">1268</span>            // NOTE: This means the test suites cannot test -help<a name="line.1268"></a>
+<span class="sourceLineNo">1269</span>            StringUtilities.exit(0);<a name="line.1269"></a>
+<span class="sourceLineNo">1270</span>        } else if (arg.equals("-printPDF")) {<a name="line.1270"></a>
+<span class="sourceLineNo">1271</span>            _printPDF = true;<a name="line.1271"></a>
+<span class="sourceLineNo">1272</span>        } else if (arg.equals("-run")) {<a name="line.1272"></a>
+<span class="sourceLineNo">1273</span>            _run = true;<a name="line.1273"></a>
+<span class="sourceLineNo">1274</span>        } else if (arg.equals("-runThenExit")) {<a name="line.1274"></a>
+<span class="sourceLineNo">1275</span>            _run = true;<a name="line.1275"></a>
+<span class="sourceLineNo">1276</span>            _exit = true;<a name="line.1276"></a>
+<span class="sourceLineNo">1277</span>        } else if (arg.equals("-run20x")) {<a name="line.1277"></a>
+<span class="sourceLineNo">1278</span>            _run = true;<a name="line.1278"></a>
+<span class="sourceLineNo">1279</span>            _run20x = true;<a name="line.1279"></a>
+<span class="sourceLineNo">1280</span>            _exit = true;<a name="line.1280"></a>
+<span class="sourceLineNo">1281</span>            Manager.minimumStatisticsTime = 1;<a name="line.1281"></a>
+<span class="sourceLineNo">1282</span>        } else if (arg.equals("-statistics")) {<a name="line.1282"></a>
+<span class="sourceLineNo">1283</span>            _statistics = true;<a name="line.1283"></a>
+<span class="sourceLineNo">1284</span>        } else if (arg.equals("-test")) {<a name="line.1284"></a>
+<span class="sourceLineNo">1285</span>            _test = true;<a name="line.1285"></a>
+<span class="sourceLineNo">1286</span>        } else if (arg.equals("-version")) {<a name="line.1286"></a>
+<span class="sourceLineNo">1287</span>            System.out.println("Version "<a name="line.1287"></a>
+<span class="sourceLineNo">1288</span>                    + VersionAttribute.CURRENT_VERSION.getExpression()<a name="line.1288"></a>
+<span class="sourceLineNo">1289</span>                    + ", Build $Id$");<a name="line.1289"></a>
+<span class="sourceLineNo">1290</span><a name="line.1290"></a>
+<span class="sourceLineNo">1291</span>            // NOTE: This means the test suites cannot test -version<a name="line.1291"></a>
+<span class="sourceLineNo">1292</span>            StringUtilities.exit(0);<a name="line.1292"></a>
+<span class="sourceLineNo">1293</span>        } else if (arg.equals("")) {<a name="line.1293"></a>
+<span class="sourceLineNo">1294</span>            // Ignore blank argument.<a name="line.1294"></a>
+<span class="sourceLineNo">1295</span>        } else {<a name="line.1295"></a>
+<span class="sourceLineNo">1296</span>            if (_expectingClass) {<a name="line.1296"></a>
+<span class="sourceLineNo">1297</span>                // $PTII/bin/ptolemy -class ptolemy.domains.sdf.demo.Butterfly.Butterfly<a name="line.1297"></a>
+<span class="sourceLineNo">1298</span>                // Previous argument was -class<a name="line.1298"></a>
+<span class="sourceLineNo">1299</span>                _expectingClass = false;<a name="line.1299"></a>
+<span class="sourceLineNo">1300</span><a name="line.1300"></a>
+<span class="sourceLineNo">1301</span>                // Create the class.<a name="line.1301"></a>
+<span class="sourceLineNo">1302</span>                Class&lt;?&gt; newClass = Class.forName(arg);<a name="line.1302"></a>
+<span class="sourceLineNo">1303</span><a name="line.1303"></a>
+<span class="sourceLineNo">1304</span>                // Instantiate the specified class in a new workspace.<a name="line.1304"></a>
+<span class="sourceLineNo">1305</span>                Workspace workspace = new Workspace();<a name="line.1305"></a>
+<span class="sourceLineNo">1306</span><a name="line.1306"></a>
+<span class="sourceLineNo">1307</span>                //Workspace workspace = _configuration.workspace();<a name="line.1307"></a>
+<span class="sourceLineNo">1308</span>                // Get the constructor that takes a Workspace argument.<a name="line.1308"></a>
+<span class="sourceLineNo">1309</span>                Class&lt;?&gt;[] argTypes = new Class[1];<a name="line.1309"></a>
+<span class="sourceLineNo">1310</span>                argTypes[0] = workspace.getClass();<a name="line.1310"></a>
+<span class="sourceLineNo">1311</span><a name="line.1311"></a>
+<span class="sourceLineNo">1312</span>                Constructor&lt;?&gt; constructor = newClass.getConstructor(argTypes);<a name="line.1312"></a>
+<span class="sourceLineNo">1313</span><a name="line.1313"></a>
+<span class="sourceLineNo">1314</span>                Object[] args = new Object[1];<a name="line.1314"></a>
+<span class="sourceLineNo">1315</span>                args[0] = workspace;<a name="line.1315"></a>
+<span class="sourceLineNo">1316</span><a name="line.1316"></a>
+<span class="sourceLineNo">1317</span>                NamedObj newModel = (NamedObj) constructor.newInstance(args);<a name="line.1317"></a>
+<span class="sourceLineNo">1318</span><a name="line.1318"></a>
+<span class="sourceLineNo">1319</span>                // If there is a configuration, then create an effigy<a name="line.1319"></a>
+<span class="sourceLineNo">1320</span>                // for the class, and enter it in the directory.<a name="line.1320"></a>
+<span class="sourceLineNo">1321</span>                System.out.println("-class: _configuration: " + _configuration);<a name="line.1321"></a>
+<span class="sourceLineNo">1322</span><a name="line.1322"></a>
+<span class="sourceLineNo">1323</span>                if (_configuration != null) {<a name="line.1323"></a>
+<span class="sourceLineNo">1324</span>                    _openModel(newModel);<a name="line.1324"></a>
+<span class="sourceLineNo">1325</span><a name="line.1325"></a>
+<span class="sourceLineNo">1326</span>                    // FIXME: we can probably delete this code.<a name="line.1326"></a>
+<span class="sourceLineNo">1327</span>                    //                     // Create an effigy for the model.<a name="line.1327"></a>
+<span class="sourceLineNo">1328</span>                    //                     PtolemyEffigy effigy = new PtolemyEffigy(_configuration<a name="line.1328"></a>
+<span class="sourceLineNo">1329</span>                    //                             .workspace());<a name="line.1329"></a>
+<span class="sourceLineNo">1330</span>                    //                     effigy.setModel(newModel);<a name="line.1330"></a>
+<span class="sourceLineNo">1331</span>                    //                     System.out.println("-class: effigy: " + effigy);<a name="line.1331"></a>
+<span class="sourceLineNo">1332</span>                    //                     ModelDirectory directory = (ModelDirectory) _configuration<a name="line.1332"></a>
+<span class="sourceLineNo">1333</span>                    //                         .getDirectory();<a name="line.1333"></a>
+<span class="sourceLineNo">1334</span>                    //                     // Can't use names with dots, so we substitute.<a name="line.1334"></a>
+<span class="sourceLineNo">1335</span>                    //                     String safeName =<a name="line.1335"></a>
+<span class="sourceLineNo">1336</span>                    //                         StringUtilities.substitute(arg, ".","_" );<a name="line.1336"></a>
+<span class="sourceLineNo">1337</span>                    //                     effigy.setName(safeName);<a name="line.1337"></a>
+<span class="sourceLineNo">1338</span>                    //                     if (directory != null) {<a name="line.1338"></a>
+<span class="sourceLineNo">1339</span>                    //                         if (directory.getEntity(safeName) != null) {<a name="line.1339"></a>
+<span class="sourceLineNo">1340</span>                    //                             // Name is already taken.<a name="line.1340"></a>
+<span class="sourceLineNo">1341</span>                    //                             int count = 2;<a name="line.1341"></a>
+<span class="sourceLineNo">1342</span>                    //                             String newName = safeName + " " + count;<a name="line.1342"></a>
+<span class="sourceLineNo">1343</span>                    //                             while (directory.getEntity(newName) != null) {<a name="line.1343"></a>
+<span class="sourceLineNo">1344</span>                    //                                 count++;<a name="line.1344"></a>
+<span class="sourceLineNo">1345</span>                    //                             }<a name="line.1345"></a>
+<span class="sourceLineNo">1346</span>                    //                             effigy.setName(newName);<a name="line.1346"></a>
+<span class="sourceLineNo">1347</span>                    //                         }<a name="line.1347"></a>
+<span class="sourceLineNo">1348</span>                    //                     }<a name="line.1348"></a>
+<span class="sourceLineNo">1349</span>                    //                     effigy.setContainer(directory);<a name="line.1349"></a>
+<span class="sourceLineNo">1350</span>                } else {<a name="line.1350"></a>
+<span class="sourceLineNo">1351</span>                    System.err.println("No configuration found.");<a name="line.1351"></a>
+<span class="sourceLineNo">1352</span>                    throw new IllegalActionException(newModel,<a name="line.1352"></a>
+<span class="sourceLineNo">1353</span>                            "No configuration found.");<a name="line.1353"></a>
+<span class="sourceLineNo">1354</span>                }<a name="line.1354"></a>
+<span class="sourceLineNo">1355</span>            } else {<a name="line.1355"></a>
+<span class="sourceLineNo">1356</span>                if (!arg.startsWith("-")) {<a name="line.1356"></a>
+<span class="sourceLineNo">1357</span>                    // Assume the argument is a file name or URL.<a name="line.1357"></a>
+<span class="sourceLineNo">1358</span>                    // Attempt to read it.<a name="line.1358"></a>
+<span class="sourceLineNo">1359</span>                    URL inURL;<a name="line.1359"></a>
+<span class="sourceLineNo">1360</span>                    try {<a name="line.1360"></a>
+<span class="sourceLineNo">1361</span>                        inURL = specToURL(arg);<a name="line.1361"></a>
+<span class="sourceLineNo">1362</span>                    } catch (IOException ex) {<a name="line.1362"></a>
+<span class="sourceLineNo">1363</span>                        try {<a name="line.1363"></a>
+<span class="sourceLineNo">1364</span>                            // Create a File and get the URL so that commands like<a name="line.1364"></a>
+<span class="sourceLineNo">1365</span>                            // $PTII/bin/vergil $PTII/doc/index.htm#in_browser work.<a name="line.1365"></a>
+<span class="sourceLineNo">1366</span>                            File inFile = new File(arg);<a name="line.1366"></a>
+<span class="sourceLineNo">1367</span>                            inURL = inFile.toURI().toURL();<a name="line.1367"></a>
+<span class="sourceLineNo">1368</span>                        } catch (Throwable throwable) {<a name="line.1368"></a>
+<span class="sourceLineNo">1369</span>                            if (StringUtilities.inApplet()) {<a name="line.1369"></a>
+<span class="sourceLineNo">1370</span>                                inURL = new URL(arg);<a name="line.1370"></a>
+<span class="sourceLineNo">1371</span>                            } else {<a name="line.1371"></a>
+<span class="sourceLineNo">1372</span>                                // FIXME: This is a fall back for relative filenames,<a name="line.1372"></a>
+<span class="sourceLineNo">1373</span>                                // I'm not sure if it will ever be called.<a name="line.1373"></a>
+<span class="sourceLineNo">1374</span>                                inURL = new URL(new URL("file://./"), arg);<a name="line.1374"></a>
+<span class="sourceLineNo">1375</span>                            }<a name="line.1375"></a>
+<span class="sourceLineNo">1376</span>                        }<a name="line.1376"></a>
+<span class="sourceLineNo">1377</span>                    }<a name="line.1377"></a>
+<span class="sourceLineNo">1378</span><a name="line.1378"></a>
+<span class="sourceLineNo">1379</span>                    // Strangely, the XmlParser does not want as base the<a name="line.1379"></a>
+<span class="sourceLineNo">1380</span>                    // directory containing the file, but rather the<a name="line.1380"></a>
+<span class="sourceLineNo">1381</span>                    // file itself.<a name="line.1381"></a>
+<span class="sourceLineNo">1382</span>                    URL base = inURL;<a name="line.1382"></a>
+<span class="sourceLineNo">1383</span><a name="line.1383"></a>
+<span class="sourceLineNo">1384</span>                    // If a configuration has been found, then<a name="line.1384"></a>
+<span class="sourceLineNo">1385</span>                    // defer to it to read the model.  Otherwise,<a name="line.1385"></a>
+<span class="sourceLineNo">1386</span>                    // assume the file is an XML file.<a name="line.1386"></a>
+<span class="sourceLineNo">1387</span>                    if (_configuration != null) {<a name="line.1387"></a>
+<span class="sourceLineNo">1388</span>                        ModelDirectory directory = _configuration<a name="line.1388"></a>
+<span class="sourceLineNo">1389</span>                                .getDirectory();<a name="line.1389"></a>
+<span class="sourceLineNo">1390</span>                        if (directory == null) {<a name="line.1390"></a>
+<span class="sourceLineNo">1391</span>                            throw new InternalErrorException(<a name="line.1391"></a>
+<span class="sourceLineNo">1392</span>                                    "No model directory!");<a name="line.1392"></a>
+<span class="sourceLineNo">1393</span>                        }<a name="line.1393"></a>
+<span class="sourceLineNo">1394</span><a name="line.1394"></a>
+<span class="sourceLineNo">1395</span>                        String key = inURL.toExternalForm();<a name="line.1395"></a>
+<span class="sourceLineNo">1396</span><a name="line.1396"></a>
+<span class="sourceLineNo">1397</span>                        //long startTime = (new Date()).getTime();<a name="line.1397"></a>
+<span class="sourceLineNo">1398</span>                        // Now defer to the model reader.<a name="line.1398"></a>
+<span class="sourceLineNo">1399</span>                        /*Tableau tableau = */_openModel(base, inURL, key);<a name="line.1399"></a>
+<span class="sourceLineNo">1400</span><a name="line.1400"></a>
+<span class="sourceLineNo">1401</span>                        // FIXME: If the -run option was given, then start a run.<a name="line.1401"></a>
+<span class="sourceLineNo">1402</span>                        // FIXME: If the -fullscreen option was given, open full screen.<a name="line.1402"></a>
+<span class="sourceLineNo">1403</span>                        //System.out.println("Model open done: " +<a name="line.1403"></a>
+<span class="sourceLineNo">1404</span>                        //                   Manager.timeAndMemory(startTime));<a name="line.1404"></a>
+<span class="sourceLineNo">1405</span>                    } else {<a name="line.1405"></a>
+<span class="sourceLineNo">1406</span>                        // No configuration has been encountered.<a name="line.1406"></a>
+<span class="sourceLineNo">1407</span>                        // Assume this is a MoML file, and open it.<a name="line.1407"></a>
+<span class="sourceLineNo">1408</span>                        _parser.reset();<a name="line.1408"></a>
+<span class="sourceLineNo">1409</span><a name="line.1409"></a>
+<span class="sourceLineNo">1410</span>                        try {<a name="line.1410"></a>
+<span class="sourceLineNo">1411</span>                            /*NamedObj toplevel = _parser.parse(base, inURL);<a name="line.1411"></a>
+<span class="sourceLineNo">1412</span>                            <a name="line.1412"></a>
+<span class="sourceLineNo">1413</span>                            if (toplevel instanceof Configuration) {<a name="line.1413"></a>
+<span class="sourceLineNo">1414</span>                                _configuration = (Configuration) toplevel;<a name="line.1414"></a>
+<span class="sourceLineNo">1415</span>                            }*/<a name="line.1415"></a>
+<span class="sourceLineNo">1416</span><a name="line.1416"></a>
+<span class="sourceLineNo">1417</span>                            /*<a name="line.1417"></a>
+<span class="sourceLineNo">1418</span>                            If configuration is not set by the readConfiguration()<a name="line.1418"></a>
+<span class="sourceLineNo">1419</span>                            method, the _applicationInitializer is never called<a name="line.1419"></a>
+<span class="sourceLineNo">1420</span>                            which, for Kepler, results in no subsystems getting<a name="line.1420"></a>
+<span class="sourceLineNo">1421</span>                            loaded.  The code here is almost identical to that<a name="line.1421"></a>
+<span class="sourceLineNo">1422</span>                            in readConfiguration except for the loading of<a name="line.1422"></a>
+<span class="sourceLineNo">1423</span>                            _applicationInitializer.<a name="line.1423"></a>
+<span class="sourceLineNo">1424</span>                            -chad<a name="line.1424"></a>
+<span class="sourceLineNo">1425</span>                             */<a name="line.1425"></a>
+<span class="sourceLineNo">1426</span>                            _configuration = readConfiguration(inURL);<a name="line.1426"></a>
+<span class="sourceLineNo">1427</span><a name="line.1427"></a>
+<span class="sourceLineNo">1428</span>                        } catch (Exception ex) {<a name="line.1428"></a>
+<span class="sourceLineNo">1429</span>                            // Unfortunately, java.util.zip.ZipException<a name="line.1429"></a>
+<span class="sourceLineNo">1430</span>                            // does not include the file name.<a name="line.1430"></a>
+<span class="sourceLineNo">1431</span>                            // If inURL is a jarURL check for %20<a name="line.1431"></a>
+<span class="sourceLineNo">1432</span>                            String detailMessage = "";<a name="line.1432"></a>
+<span class="sourceLineNo">1433</span><a name="line.1433"></a>
+<span class="sourceLineNo">1434</span>                            try {<a name="line.1434"></a>
+<span class="sourceLineNo">1435</span>                                if (inURL.toString().indexOf("!/") != -1<a name="line.1435"></a>
+<span class="sourceLineNo">1436</span>                                        &amp;&amp; inURL.toString()<a name="line.1436"></a>
+<span class="sourceLineNo">1437</span>                                                .indexOf("%20") != -1) {<a name="line.1437"></a>
+<span class="sourceLineNo">1438</span>                                    detailMessage = " The URL contains "<a name="line.1438"></a>
+<span class="sourceLineNo">1439</span>                                            + "'!/', so it may be a jar "<a name="line.1439"></a>
+<span class="sourceLineNo">1440</span>                                            + "URL, and jar URLs cannot contain "<a name="line.1440"></a>
+<span class="sourceLineNo">1441</span>                                            + "%20. This might happen if the "<a name="line.1441"></a>
+<span class="sourceLineNo">1442</span>                                            + "pathname to the jnlp file had a "<a name="line.1442"></a>
+<span class="sourceLineNo">1443</span>                                            + "space in it";<a name="line.1443"></a>
+<span class="sourceLineNo">1444</span>                                }<a name="line.1444"></a>
+<span class="sourceLineNo">1445</span>                            } catch (Throwable throwable) {<a name="line.1445"></a>
+<span class="sourceLineNo">1446</span>                                // Ignored<a name="line.1446"></a>
+<span class="sourceLineNo">1447</span>                            }<a name="line.1447"></a>
+<span class="sourceLineNo">1448</span><a name="line.1448"></a>
+<span class="sourceLineNo">1449</span>                            throw new Exception("Failed to parse '" + inURL<a name="line.1449"></a>
+<span class="sourceLineNo">1450</span>                                    + "'" + detailMessage, ex);<a name="line.1450"></a>
+<span class="sourceLineNo">1451</span>                        }<a name="line.1451"></a>
+<span class="sourceLineNo">1452</span>                    }<a name="line.1452"></a>
+<span class="sourceLineNo">1453</span>                } else {<a name="line.1453"></a>
+<span class="sourceLineNo">1454</span>                    // Argument not recognized.<a name="line.1454"></a>
+<span class="sourceLineNo">1455</span>                    return false;<a name="line.1455"></a>
+<span class="sourceLineNo">1456</span>                }<a name="line.1456"></a>
+<span class="sourceLineNo">1457</span>            }<a name="line.1457"></a>
+<span class="sourceLineNo">1458</span>        }<a name="line.1458"></a>
+<span class="sourceLineNo">1459</span><a name="line.1459"></a>
+<span class="sourceLineNo">1460</span>        return true;<a name="line.1460"></a>
+<span class="sourceLineNo">1461</span>    }<a name="line.1461"></a>
+<span class="sourceLineNo">1462</span><a name="line.1462"></a>
+<span class="sourceLineNo">1463</span>    /** Parse the command-line arguments.<a name="line.1463"></a>
+<span class="sourceLineNo">1464</span>     *  @param args The command-line arguments to be parsed.<a name="line.1464"></a>
+<span class="sourceLineNo">1465</span>     *  @exception Exception If an argument is not understood or triggers<a name="line.1465"></a>
+<span class="sourceLineNo">1466</span>     *   an error.<a name="line.1466"></a>
+<span class="sourceLineNo">1467</span>     */<a name="line.1467"></a>
+<span class="sourceLineNo">1468</span>    protected void _parseArgs(String[] args) throws Exception {<a name="line.1468"></a>
+<span class="sourceLineNo">1469</span>        if (args.length &gt; 0) {<a name="line.1469"></a>
+<span class="sourceLineNo">1470</span>            _configuration = _createDefaultConfiguration();<a name="line.1470"></a>
+<span class="sourceLineNo">1471</span>        } else {<a name="line.1471"></a>
+<span class="sourceLineNo">1472</span>            _configuration = _createEmptyConfiguration();<a name="line.1472"></a>
+<span class="sourceLineNo">1473</span>        }<a name="line.1473"></a>
+<span class="sourceLineNo">1474</span><a name="line.1474"></a>
+<span class="sourceLineNo">1475</span>        for (int i = 0; i &lt; args.length; i++) {<a name="line.1475"></a>
+<span class="sourceLineNo">1476</span>            String arg = args[i];<a name="line.1476"></a>
+<span class="sourceLineNo">1477</span><a name="line.1477"></a>
+<span class="sourceLineNo">1478</span>            if (_parseArg(arg) == false) {<a name="line.1478"></a>
+<span class="sourceLineNo">1479</span>                if (arg.trim().startsWith("-")) {<a name="line.1479"></a>
+<span class="sourceLineNo">1480</span>                    if (i &gt;= args.length - 1) {<a name="line.1480"></a>
+<span class="sourceLineNo">1481</span>                        throw new IllegalActionException(<a name="line.1481"></a>
+<span class="sourceLineNo">1482</span>                                "Cannot set " + "parameter " + arg<a name="line.1482"></a>
+<span class="sourceLineNo">1483</span>                                        + " when no value is " + "given.");<a name="line.1483"></a>
+<span class="sourceLineNo">1484</span>                    }<a name="line.1484"></a>
+<span class="sourceLineNo">1485</span><a name="line.1485"></a>
+<span class="sourceLineNo">1486</span>                    // Save in case this is a parameter name and value.<a name="line.1486"></a>
+<span class="sourceLineNo">1487</span>                    _parameterNames.add(arg.substring(1));<a name="line.1487"></a>
+<span class="sourceLineNo">1488</span>                    _parameterValues.add(args[i + 1]);<a name="line.1488"></a>
+<span class="sourceLineNo">1489</span>                    i++;<a name="line.1489"></a>
+<span class="sourceLineNo">1490</span>                } else {<a name="line.1490"></a>
+<span class="sourceLineNo">1491</span>                    // Unrecognized option.<a name="line.1491"></a>
+<span class="sourceLineNo">1492</span>                    throw new IllegalActionException(<a name="line.1492"></a>
+<span class="sourceLineNo">1493</span>                            "Unrecognized option: " + arg);<a name="line.1493"></a>
+<span class="sourceLineNo">1494</span>                }<a name="line.1494"></a>
+<span class="sourceLineNo">1495</span>            }<a name="line.1495"></a>
+<span class="sourceLineNo">1496</span>        }<a name="line.1496"></a>
+<span class="sourceLineNo">1497</span><a name="line.1497"></a>
+<span class="sourceLineNo">1498</span>        if (_expectingClass) {<a name="line.1498"></a>
+<span class="sourceLineNo">1499</span>            throw new IllegalActionException("Missing classname.");<a name="line.1499"></a>
+<span class="sourceLineNo">1500</span>        }<a name="line.1500"></a>
+<span class="sourceLineNo">1501</span><a name="line.1501"></a>
+<span class="sourceLineNo">1502</span>        // Check saved options to see whether any is setting an attribute.<a name="line.1502"></a>
+<span class="sourceLineNo">1503</span>        Iterator names = _parameterNames.iterator();<a name="line.1503"></a>
+<span class="sourceLineNo">1504</span>        Iterator values = _parameterValues.iterator();<a name="line.1504"></a>
+<span class="sourceLineNo">1505</span><a name="line.1505"></a>
+<span class="sourceLineNo">1506</span>        while (names.hasNext() &amp;&amp; values.hasNext()) {<a name="line.1506"></a>
+<span class="sourceLineNo">1507</span>            String name = (String) names.next();<a name="line.1507"></a>
+<span class="sourceLineNo">1508</span>            String value = (String) values.next();<a name="line.1508"></a>
+<span class="sourceLineNo">1509</span><a name="line.1509"></a>
+<span class="sourceLineNo">1510</span>            boolean match = false;<a name="line.1510"></a>
+<span class="sourceLineNo">1511</span>            ModelDirectory directory = _configuration.getDirectory();<a name="line.1511"></a>
+<span class="sourceLineNo">1512</span><a name="line.1512"></a>
+<span class="sourceLineNo">1513</span>            if (directory == null) {<a name="line.1513"></a>
+<span class="sourceLineNo">1514</span>                throw new InternalErrorException("No model directory!");<a name="line.1514"></a>
+<span class="sourceLineNo">1515</span>            }<a name="line.1515"></a>
+<span class="sourceLineNo">1516</span><a name="line.1516"></a>
+<span class="sourceLineNo">1517</span>            Iterator effigies = directory.entityList(Effigy.class).iterator();<a name="line.1517"></a>
+<span class="sourceLineNo">1518</span><a name="line.1518"></a>
+<span class="sourceLineNo">1519</span>            while (effigies.hasNext()) {<a name="line.1519"></a>
+<span class="sourceLineNo">1520</span>                Effigy effigy = (Effigy) effigies.next();<a name="line.1520"></a>
+<span class="sourceLineNo">1521</span><a name="line.1521"></a>
+<span class="sourceLineNo">1522</span>                if (effigy instanceof PtolemyEffigy) {<a name="line.1522"></a>
+<span class="sourceLineNo">1523</span>                    NamedObj model = ((PtolemyEffigy) effigy).getModel();<a name="line.1523"></a>
+<span class="sourceLineNo">1524</span><a name="line.1524"></a>
+<span class="sourceLineNo">1525</span>                    // System.out.println("model = " + model.getFullName());<a name="line.1525"></a>
+<span class="sourceLineNo">1526</span>                    Attribute attribute = model.getAttribute(name);<a name="line.1526"></a>
+<span class="sourceLineNo">1527</span><a name="line.1527"></a>
+<span class="sourceLineNo">1528</span>                    if (attribute instanceof Settable) {<a name="line.1528"></a>
+<span class="sourceLineNo">1529</span>                        match = true;<a name="line.1529"></a>
+<span class="sourceLineNo">1530</span><a name="line.1530"></a>
+<span class="sourceLineNo">1531</span>                        // Use a MoMLChangeRequest so that visual rendition (if<a name="line.1531"></a>
+<span class="sourceLineNo">1532</span>                        // any) is updated and listeners are notified.<a name="line.1532"></a>
+<span class="sourceLineNo">1533</span>                        String moml = "&lt;property name=\"" + name + "\" value=\""<a name="line.1533"></a>
+<span class="sourceLineNo">1534</span>                                + value + "\"/&gt;";<a name="line.1534"></a>
+<span class="sourceLineNo">1535</span>                        MoMLChangeRequest request = new MoMLChangeRequest(this,<a name="line.1535"></a>
+<span class="sourceLineNo">1536</span>                                model, moml);<a name="line.1536"></a>
+<span class="sourceLineNo">1537</span>                        model.requestChange(request);<a name="line.1537"></a>
+<span class="sourceLineNo">1538</span><a name="line.1538"></a>
+<span class="sourceLineNo">1539</span>                        /* Formerly (before the change request):<a name="line.1539"></a>
+<span class="sourceLineNo">1540</span>                         ((Settable)attribute).setExpression(value);<a name="line.1540"></a>
+<span class="sourceLineNo">1541</span>                         if (attribute instanceof Variable) {<a name="line.1541"></a>
+<span class="sourceLineNo">1542</span>                         // Force evaluation so that listeners are notified.<a name="line.1542"></a>
+<span class="sourceLineNo">1543</span>                         ((Variable)attribute).getToken();<a name="line.1543"></a>
+<span class="sourceLineNo">1544</span>                         }<a name="line.1544"></a>
+<span class="sourceLineNo">1545</span>                         */<a name="line.1545"></a>
+<span class="sourceLineNo">1546</span>                    }<a name="line.1546"></a>
+<span class="sourceLineNo">1547</span><a name="line.1547"></a>
+<span class="sourceLineNo">1548</span>                    if (model instanceof CompositeActor) {<a name="line.1548"></a>
+<span class="sourceLineNo">1549</span>                        Director director = ((CompositeActor) model)<a name="line.1549"></a>
+<span class="sourceLineNo">1550</span>                                .getDirector();<a name="line.1550"></a>
+<span class="sourceLineNo">1551</span><a name="line.1551"></a>
+<span class="sourceLineNo">1552</span>                        if (director != null) {<a name="line.1552"></a>
+<span class="sourceLineNo">1553</span>                            attribute = director.getAttribute(name);<a name="line.1553"></a>
+<span class="sourceLineNo">1554</span><a name="line.1554"></a>
+<span class="sourceLineNo">1555</span>                            if (attribute instanceof Settable) {<a name="line.1555"></a>
+<span class="sourceLineNo">1556</span>                                match = true;<a name="line.1556"></a>
+<span class="sourceLineNo">1557</span><a name="line.1557"></a>
+<span class="sourceLineNo">1558</span>                                // Use a MoMLChangeRequest so that visual rendition (if<a name="line.1558"></a>
+<span class="sourceLineNo">1559</span>                                // any) is updated and listeners are notified.<a name="line.1559"></a>
+<span class="sourceLineNo">1560</span>                                String moml = "&lt;property name=\"" + name<a name="line.1560"></a>
+<span class="sourceLineNo">1561</span>                                        + "\" value=\"" + value + "\"/&gt;";<a name="line.1561"></a>
+<span class="sourceLineNo">1562</span>                                MoMLChangeRequest request = new MoMLChangeRequest(<a name="line.1562"></a>
+<span class="sourceLineNo">1563</span>                                        this, director, moml);<a name="line.1563"></a>
+<span class="sourceLineNo">1564</span>                                director.requestChange(request);<a name="line.1564"></a>
+<span class="sourceLineNo">1565</span><a name="line.1565"></a>
+<span class="sourceLineNo">1566</span>                                /* Formerly (before change request):<a name="line.1566"></a>
+<span class="sourceLineNo">1567</span>                                 ((Settable)attribute).setExpression(value);<a name="line.1567"></a>
+<span class="sourceLineNo">1568</span>                                 if (attribute instanceof Variable) {<a name="line.1568"></a>
+<span class="sourceLineNo">1569</span>                                 // Force evaluation so that listeners<a name="line.1569"></a>
+<span class="sourceLineNo">1570</span>                                 // are notified.<a name="line.1570"></a>
+<span class="sourceLineNo">1571</span>                                 ((Variable)attribute).getToken();<a name="line.1571"></a>
+<span class="sourceLineNo">1572</span>                                 }<a name="line.1572"></a>
+<span class="sourceLineNo">1573</span>                                 */<a name="line.1573"></a>
+<span class="sourceLineNo">1574</span>                            }<a name="line.1574"></a>
+<span class="sourceLineNo">1575</span>                        }<a name="line.1575"></a>
+<span class="sourceLineNo">1576</span>                    }<a name="line.1576"></a>
+<span class="sourceLineNo">1577</span>                }<a name="line.1577"></a>
+<span class="sourceLineNo">1578</span>            }<a name="line.1578"></a>
+<span class="sourceLineNo">1579</span><a name="line.1579"></a>
+<span class="sourceLineNo">1580</span>            if (!match) {<a name="line.1580"></a>
+<span class="sourceLineNo">1581</span>                // Unrecognized option.<a name="line.1581"></a>
+<span class="sourceLineNo">1582</span>                throw new IllegalActionException("Unrecognized option: "<a name="line.1582"></a>
+<span class="sourceLineNo">1583</span>                        + "No parameter exists with name " + name);<a name="line.1583"></a>
+<span class="sourceLineNo">1584</span>            }<a name="line.1584"></a>
+<span class="sourceLineNo">1585</span>        }<a name="line.1585"></a>
+<span class="sourceLineNo">1586</span><a name="line.1586"></a>
+<span class="sourceLineNo">1587</span>        // If the default configuration contains any Tableaux,<a name="line.1587"></a>
+<span class="sourceLineNo">1588</span>        // then we show them now.  This is deferred until now because<a name="line.1588"></a>
+<span class="sourceLineNo">1589</span>        // how they are shown may depend on command-line arguments<a name="line.1589"></a>
+<span class="sourceLineNo">1590</span>        // and/or parameters in some MoML file that is read.<a name="line.1590"></a>
+<span class="sourceLineNo">1591</span>        if (_configuration == null) {<a name="line.1591"></a>
+<span class="sourceLineNo">1592</span>            throw new IllegalActionException("No configuration provided.");<a name="line.1592"></a>
+<span class="sourceLineNo">1593</span>        }<a name="line.1593"></a>
+<span class="sourceLineNo">1594</span><a name="line.1594"></a>
+<span class="sourceLineNo">1595</span>        _configuration.showAll();<a name="line.1595"></a>
+<span class="sourceLineNo">1596</span>    }<a name="line.1596"></a>
+<span class="sourceLineNo">1597</span><a name="line.1597"></a>
+<span class="sourceLineNo">1598</span>    /** Print each effigy to the first printer with the string "PDF"<a name="line.1598"></a>
+<span class="sourceLineNo">1599</span>     *  in the name.  For this to work, the frame associated with the<a name="line.1599"></a>
+<span class="sourceLineNo">1600</span>     *  tableau must implement Printable or Pageable.  As a side<a name="line.1600"></a>
+<span class="sourceLineNo">1601</span>     *  effect, for better printing, the background color is set to<a name="line.1601"></a>
+<span class="sourceLineNo">1602</span>     *  white.<a name="line.1602"></a>
+<span class="sourceLineNo">1603</span>     *  @exception Exception If a printer with the string "PDF"<a name="line.1603"></a>
+<span class="sourceLineNo">1604</span>     *  cannot be found or if the job cannot be set to the PDF print<a name="line.1604"></a>
+<span class="sourceLineNo">1605</span>     *  service or if there is another problem printing.<a name="line.1605"></a>
+<span class="sourceLineNo">1606</span>     */<a name="line.1606"></a>
+<span class="sourceLineNo">1607</span>    protected void _printPDF() throws Exception {<a name="line.1607"></a>
+<span class="sourceLineNo">1608</span>        if (_configuration == null) {<a name="line.1608"></a>
+<span class="sourceLineNo">1609</span>            System.out.println("_printPDF: no configuration?");<a name="line.1609"></a>
+<span class="sourceLineNo">1610</span>            return;<a name="line.1610"></a>
+<span class="sourceLineNo">1611</span>        }<a name="line.1611"></a>
+<span class="sourceLineNo">1612</span>        ModelDirectory directory = _configuration.getDirectory();<a name="line.1612"></a>
+<span class="sourceLineNo">1613</span>        Iterator effigies = directory.entityList().iterator();<a name="line.1613"></a>
+<span class="sourceLineNo">1614</span><a name="line.1614"></a>
+<span class="sourceLineNo">1615</span>        while (effigies.hasNext()) {<a name="line.1615"></a>
+<span class="sourceLineNo">1616</span>            Effigy effigy = (Effigy) effigies.next();<a name="line.1616"></a>
+<span class="sourceLineNo">1617</span>            Iterator tableaux = effigy.entityList(Tableau.class).iterator();<a name="line.1617"></a>
+<span class="sourceLineNo">1618</span>            while (tableaux.hasNext()) {<a name="line.1618"></a>
+<span class="sourceLineNo">1619</span>                Tableau tableau = (Tableau) tableaux.next();<a name="line.1619"></a>
+<span class="sourceLineNo">1620</span>                JFrame frame = tableau.getFrame();<a name="line.1620"></a>
+<span class="sourceLineNo">1621</span>                if (frame instanceof TableauFrame) {<a name="line.1621"></a>
+<span class="sourceLineNo">1622</span>                    // FIXME: lamely, we skip by the configuration directory and UserLibrary by name?<a name="line.1622"></a>
+<span class="sourceLineNo">1623</span>                    if (!tableau.getFullName().equals(<a name="line.1623"></a>
+<span class="sourceLineNo">1624</span>                            ".configuration.directory.configuration.graphTableau")<a name="line.1624"></a>
+<span class="sourceLineNo">1625</span>                            &amp;&amp; !tableau.getFullName().equals(<a name="line.1625"></a>
+<span class="sourceLineNo">1626</span>                                    ".configuration.directory.UserLibrary.graphTableau")) {<a name="line.1626"></a>
+<span class="sourceLineNo">1627</span>                        try {<a name="line.1627"></a>
+<span class="sourceLineNo">1628</span>                            // Set the background to white<a name="line.1628"></a>
+<span class="sourceLineNo">1629</span><a name="line.1629"></a>
+<span class="sourceLineNo">1630</span>                            //frame.setBackground(java.awt.Color.WHITE);<a name="line.1630"></a>
+<span class="sourceLineNo">1631</span>                            //((ptolemy.vergil.basic.BasicGraphFrame)frame).getJGraph().getCanvasPane().getCanvas().setBackground(java.awt.Color.WHITE);<a name="line.1631"></a>
+<span class="sourceLineNo">1632</span>                            PtolemyPreferences preferences = PtolemyPreferences<a name="line.1632"></a>
+<span class="sourceLineNo">1633</span>                                    .getPtolemyPreferencesWithinConfiguration(<a name="line.1633"></a>
+<span class="sourceLineNo">1634</span>                                            _configuration);<a name="line.1634"></a>
+<span class="sourceLineNo">1635</span>                            // Coverity Scan suggests avoiding a NPE here.<a name="line.1635"></a>
+<span class="sourceLineNo">1636</span>                            if (preferences == null) {<a name="line.1636"></a>
+<span class="sourceLineNo">1637</span>                                throw new InternalErrorException(_configuration,<a name="line.1637"></a>
+<span class="sourceLineNo">1638</span>                                        null,<a name="line.1638"></a>
+<span class="sourceLineNo">1639</span>                                        "Could not get PtolemyPreferences?"<a name="line.1639"></a>
+<span class="sourceLineNo">1640</span>                                                + "  Perhaps \""<a name="line.1640"></a>
+<span class="sourceLineNo">1641</span>                                                + PtolemyPreferences.PREFERENCES_WITHIN_CONFIGURATION<a name="line.1641"></a>
+<span class="sourceLineNo">1642</span>                                                + "\" could not be read in the configuration?");<a name="line.1642"></a>
+<span class="sourceLineNo">1643</span>                            } else {<a name="line.1643"></a>
+<span class="sourceLineNo">1644</span>                                preferences.backgroundColor<a name="line.1644"></a>
+<span class="sourceLineNo">1645</span>                                        .setExpression("{1.0, 1.0, 1.0, 1.0}");<a name="line.1645"></a>
+<span class="sourceLineNo">1646</span>                                frame.repaint();<a name="line.1646"></a>
+<span class="sourceLineNo">1647</span>                            }<a name="line.1647"></a>
+<span class="sourceLineNo">1648</span>                        } catch (Exception ex) {<a name="line.1648"></a>
+<span class="sourceLineNo">1649</span>                            System.out.println(<a name="line.1649"></a>
+<span class="sourceLineNo">1650</span>                                    "Failed to set the background to white.");<a name="line.1650"></a>
+<span class="sourceLineNo">1651</span>                            ex.printStackTrace();<a name="line.1651"></a>
+<span class="sourceLineNo">1652</span>                        }<a name="line.1652"></a>
+<span class="sourceLineNo">1653</span>                        ((TableauFrame) frame).printPDF();<a name="line.1653"></a>
+<span class="sourceLineNo">1654</span>                    }<a name="line.1654"></a>
+<span class="sourceLineNo">1655</span>                }<a name="line.1655"></a>
+<span class="sourceLineNo">1656</span>            }<a name="line.1656"></a>
+<span class="sourceLineNo">1657</span>        }<a name="line.1657"></a>
+<span class="sourceLineNo">1658</span>    }<a name="line.1658"></a>
+<span class="sourceLineNo">1659</span><a name="line.1659"></a>
+<span class="sourceLineNo">1660</span>    /** Read a Configuration from the URL given by the specified string.<a name="line.1660"></a>
+<span class="sourceLineNo">1661</span>     *  The URL may absolute, or relative to the Ptolemy II tree root,<a name="line.1661"></a>
+<span class="sourceLineNo">1662</span>     *  or in the classpath.  To convert a String to a URL suitable for<a name="line.1662"></a>
+<span class="sourceLineNo">1663</span>     *  use by this method, call specToURL(String).<a name="line.1663"></a>
+<span class="sourceLineNo">1664</span>     *  @param specificationURL A string describing a URL.<a name="line.1664"></a>
+<span class="sourceLineNo">1665</span>     *  @return A configuration.<a name="line.1665"></a>
+<span class="sourceLineNo">1666</span>     *  @exception Exception If the configuration cannot be opened, or<a name="line.1666"></a>
+<span class="sourceLineNo">1667</span>     *   if the contents of the URL is not a configuration.<a name="line.1667"></a>
+<span class="sourceLineNo">1668</span>     *  @deprecated Use readConfiguration() instead.<a name="line.1668"></a>
+<span class="sourceLineNo">1669</span>     */<a name="line.1669"></a>
+<span class="sourceLineNo">1670</span>    @Deprecated<a name="line.1670"></a>
+<span class="sourceLineNo">1671</span>    protected Configuration _readConfiguration(URL specificationURL)<a name="line.1671"></a>
+<span class="sourceLineNo">1672</span>            throws Exception {<a name="line.1672"></a>
+<span class="sourceLineNo">1673</span>        return readConfiguration(specificationURL);<a name="line.1673"></a>
+<span class="sourceLineNo">1674</span>    }<a name="line.1674"></a>
+<span class="sourceLineNo">1675</span><a name="line.1675"></a>
+<span class="sourceLineNo">1676</span>    /** Return a string summarizing the command-line arguments.<a name="line.1676"></a>
+<span class="sourceLineNo">1677</span>     *  @return A usage string.<a name="line.1677"></a>
+<span class="sourceLineNo">1678</span>     */<a name="line.1678"></a>
+<span class="sourceLineNo">1679</span>    protected String _usage() {<a name="line.1679"></a>
+<span class="sourceLineNo">1680</span>        // Call the static method that generates the usage strings.<a name="line.1680"></a>
+<span class="sourceLineNo">1681</span>        return StringUtilities.usageString(_commandTemplate, _commandOptions,<a name="line.1681"></a>
+<span class="sourceLineNo">1682</span>                _commandFlagsWithDescriptions);<a name="line.1682"></a>
+<span class="sourceLineNo">1683</span>    }<a name="line.1683"></a>
+<span class="sourceLineNo">1684</span><a name="line.1684"></a>
+<span class="sourceLineNo">1685</span>    ///////////////////////////////////////////////////////////////////<a name="line.1685"></a>
+<span class="sourceLineNo">1686</span>    ////                         protected variables               ////<a name="line.1686"></a>
+<span class="sourceLineNo">1687</span><a name="line.1687"></a>
+<span class="sourceLineNo">1688</span>    /** The base path of the configuration directory, usually<a name="line.1688"></a>
+<span class="sourceLineNo">1689</span>     *  "ptolemy/configs" for Ptolemy II, but subclasses might<a name="line.1689"></a>
+<span class="sourceLineNo">1690</span>     *  have configurations in a different directory.<a name="line.1690"></a>
+<span class="sourceLineNo">1691</span>     */<a name="line.1691"></a>
+<span class="sourceLineNo">1692</span>    protected String _basePath = "ptolemy/configs";<a name="line.1692"></a>
+<span class="sourceLineNo">1693</span><a name="line.1693"></a>
+<span class="sourceLineNo">1694</span>    /** The command-line options that are either present or not. */<a name="line.1694"></a>
+<span class="sourceLineNo">1695</span>    protected String[][] _commandFlagsWithDescriptions = {<a name="line.1695"></a>
+<span class="sourceLineNo">1696</span>            { "-exit", "Exit after generating statistics" },<a name="line.1696"></a>
+<span class="sourceLineNo">1697</span>            { "-help", "Print this help message" },<a name="line.1697"></a>
+<span class="sourceLineNo">1698</span>            { "-printPDF", "Print to a PDF printer" },<a name="line.1698"></a>
+<span class="sourceLineNo">1699</span>            { "-run", "Run the models" },<a name="line.1699"></a>
+<span class="sourceLineNo">1700</span>            { "-run20x", "Run the models 20 times, then exit" },<a name="line.1700"></a>
+<span class="sourceLineNo">1701</span>            { "-runThenExit",<a name="line.1701"></a>
+<span class="sourceLineNo">1702</span>                    "Run the models, then exit after the models finish." },<a name="line.1702"></a>
+<span class="sourceLineNo">1703</span>            { "-statistics", "Open the model, print statistics and exit." },<a name="line.1703"></a>
+<span class="sourceLineNo">1704</span>            { "-test", "Exit after two seconds." },<a name="line.1704"></a>
+<span class="sourceLineNo">1705</span>            { "-version", "Print version information." } };<a name="line.1705"></a>
+<span class="sourceLineNo">1706</span><a name="line.1706"></a>
+<span class="sourceLineNo">1707</span>    /** The command-line options that take arguments. */<a name="line.1707"></a>
+<span class="sourceLineNo">1708</span>    protected static String[][] _commandOptions = { { "-class", "&lt;classname&gt;" },<a name="line.1708"></a>
+<span class="sourceLineNo">1709</span>            { "-&lt;parameter name&gt;", "&lt;parameter value&gt;" }, };<a name="line.1709"></a>
+<span class="sourceLineNo">1710</span><a name="line.1710"></a>
+<span class="sourceLineNo">1711</span>    /** The form of the command line. */<a name="line.1711"></a>
+<span class="sourceLineNo">1712</span>    protected String _commandTemplate = "moml [ options ] [file ...]";<a name="line.1712"></a>
+<span class="sourceLineNo">1713</span><a name="line.1713"></a>
+<span class="sourceLineNo">1714</span>    /** The configuration model of this application. */<a name="line.1714"></a>
+<span class="sourceLineNo">1715</span>    protected Configuration _configuration;<a name="line.1715"></a>
+<span class="sourceLineNo">1716</span><a name="line.1716"></a>
+<span class="sourceLineNo">1717</span>    /** Indicator that -runThenExit was requested. */<a name="line.1717"></a>
+<span class="sourceLineNo">1718</span>    protected boolean _exit = false;<a name="line.1718"></a>
+<span class="sourceLineNo">1719</span><a name="line.1719"></a>
+<span class="sourceLineNo">1720</span>    /** The parser used to construct the configuration. */<a name="line.1720"></a>
+<span class="sourceLineNo">1721</span>    protected MoMLParser _parser;<a name="line.1721"></a>
+<span class="sourceLineNo">1722</span><a name="line.1722"></a>
+<span class="sourceLineNo">1723</span>    /** If true, then print to PDF. */<a name="line.1723"></a>
+<span class="sourceLineNo">1724</span>    protected static boolean _printPDF = false;<a name="line.1724"></a>
+<span class="sourceLineNo">1725</span><a name="line.1725"></a>
+<span class="sourceLineNo">1726</span>    /** If true, then -run was specified on the command line. */<a name="line.1726"></a>
+<span class="sourceLineNo">1727</span>    protected boolean _run = false;<a name="line.1727"></a>
+<span class="sourceLineNo">1728</span><a name="line.1728"></a>
+<span class="sourceLineNo">1729</span>    /** If true, then -run20x was specified on the command line. */<a name="line.1729"></a>
+<span class="sourceLineNo">1730</span>    protected boolean _run20x = false;<a name="line.1730"></a>
+<span class="sourceLineNo">1731</span><a name="line.1731"></a>
+<span class="sourceLineNo">1732</span>    /** If true, then -statistics was specified on the command line. */<a name="line.1732"></a>
+<span class="sourceLineNo">1733</span>    protected boolean _statistics = false;<a name="line.1733"></a>
+<span class="sourceLineNo">1734</span><a name="line.1734"></a>
+<span class="sourceLineNo">1735</span>    /** If true, then auto exit after a few seconds. */<a name="line.1735"></a>
+<span class="sourceLineNo">1736</span>    protected static boolean _test = false;<a name="line.1736"></a>
+<span class="sourceLineNo">1737</span><a name="line.1737"></a>
+<span class="sourceLineNo">1738</span>    ///////////////////////////////////////////////////////////////////<a name="line.1738"></a>
+<span class="sourceLineNo">1739</span>    ////                         inner classes                     ////<a name="line.1739"></a>
+<span class="sourceLineNo">1740</span><a name="line.1740"></a>
+<span class="sourceLineNo">1741</span>    /** Look for directories that contain files named configuration.xml<a name="line.1741"></a>
+<span class="sourceLineNo">1742</span>     *  and intro.htm.<a name="line.1742"></a>
+<span class="sourceLineNo">1743</span>     */<a name="line.1743"></a>
+<span class="sourceLineNo">1744</span>    static class ConfigurationFilenameFilter implements FilenameFilter {<a name="line.1744"></a>
+<span class="sourceLineNo">1745</span>        // FindBugs suggests making this class static so as to decrease<a name="line.1745"></a>
+<span class="sourceLineNo">1746</span>        // the size of instances and avoid dangling references.<a name="line.1746"></a>
+<span class="sourceLineNo">1747</span><a name="line.1747"></a>
+<span class="sourceLineNo">1748</span>        /** Return true if the specified file names a directory<a name="line.1748"></a>
+<span class="sourceLineNo">1749</span>         *  that contains a file named configuration.xml<a name="line.1749"></a>
+<span class="sourceLineNo">1750</span>         *  and a file named intro.htm<a name="line.1750"></a>
+<span class="sourceLineNo">1751</span>         *  @param directory the directory in which the potential<a name="line.1751"></a>
+<span class="sourceLineNo">1752</span>         *  directory was found.<a name="line.1752"></a>
+<span class="sourceLineNo">1753</span>         *  @param name the name of the directory or file.<a name="line.1753"></a>
+<span class="sourceLineNo">1754</span>         *  @return true if the file is a directory that<a name="line.1754"></a>
+<span class="sourceLineNo">1755</span>         *  contains a file called configuration.xml<a name="line.1755"></a>
+<span class="sourceLineNo">1756</span>         */<a name="line.1756"></a>
+<span class="sourceLineNo">1757</span>        @Override<a name="line.1757"></a>
+<span class="sourceLineNo">1758</span>        public boolean accept(File directory, String name) {<a name="line.1758"></a>
+<span class="sourceLineNo">1759</span>            try {<a name="line.1759"></a>
+<span class="sourceLineNo">1760</span>                File configurationDirectory = new File(directory, name);<a name="line.1760"></a>
+<span class="sourceLineNo">1761</span><a name="line.1761"></a>
+<span class="sourceLineNo">1762</span>                if (!configurationDirectory.isDirectory()) {<a name="line.1762"></a>
+<span class="sourceLineNo">1763</span>                    return false;<a name="line.1763"></a>
+<span class="sourceLineNo">1764</span>                }<a name="line.1764"></a>
+<span class="sourceLineNo">1765</span><a name="line.1765"></a>
+<span class="sourceLineNo">1766</span>                File configurationFile = new File(configurationDirectory,<a name="line.1766"></a>
+<span class="sourceLineNo">1767</span>                        "configuration.xml");<a name="line.1767"></a>
+<span class="sourceLineNo">1768</span>                File introFile = new File(configurationDirectory, "intro.htm");<a name="line.1768"></a>
+<span class="sourceLineNo">1769</span><a name="line.1769"></a>
+<span class="sourceLineNo">1770</span>                if (configurationFile.isFile() &amp;&amp; introFile.isFile()) {<a name="line.1770"></a>
+<span class="sourceLineNo">1771</span>                    return true;<a name="line.1771"></a>
+<span class="sourceLineNo">1772</span>                }<a name="line.1772"></a>
+<span class="sourceLineNo">1773</span>            } catch (Throwable throwable) {<a name="line.1773"></a>
+<span class="sourceLineNo">1774</span>                return false;<a name="line.1774"></a>
+<span class="sourceLineNo">1775</span>            }<a name="line.1775"></a>
+<span class="sourceLineNo">1776</span><a name="line.1776"></a>
+<span class="sourceLineNo">1777</span>            return false;<a name="line.1777"></a>
+<span class="sourceLineNo">1778</span>        }<a name="line.1778"></a>
+<span class="sourceLineNo">1779</span>    }<a name="line.1779"></a>
+<span class="sourceLineNo">1780</span><a name="line.1780"></a>
+<span class="sourceLineNo">1781</span>    /** Error Handler that ignore errors.<a name="line.1781"></a>
+<span class="sourceLineNo">1782</span>     */<a name="line.1782"></a>
+<span class="sourceLineNo">1783</span>    public static class IgnoreErrorHandler implements ErrorHandler {<a name="line.1783"></a>
+<span class="sourceLineNo">1784</span>        // FindBugs suggests making this class static so as to decrease<a name="line.1784"></a>
+<span class="sourceLineNo">1785</span>        // the size of instances and avoid dangling references.<a name="line.1785"></a>
+<span class="sourceLineNo">1786</span><a name="line.1786"></a>
+<span class="sourceLineNo">1787</span>        ///////////////////////////////////////////////////////////////////<a name="line.1787"></a>
+<span class="sourceLineNo">1788</span>        ////                         public methods                    ////<a name="line.1788"></a>
+<span class="sourceLineNo">1789</span><a name="line.1789"></a>
+<span class="sourceLineNo">1790</span>        /** Enable or disable skipping of errors.  This method does nothing.<a name="line.1790"></a>
+<span class="sourceLineNo">1791</span>         *  @param enable True to enable skipping, false to disable.<a name="line.1791"></a>
+<span class="sourceLineNo">1792</span>         */<a name="line.1792"></a>
+<span class="sourceLineNo">1793</span>        @Override<a name="line.1793"></a>
+<span class="sourceLineNo">1794</span>        public void enableErrorSkipping(boolean enable) {<a name="line.1794"></a>
+<span class="sourceLineNo">1795</span>        }<a name="line.1795"></a>
+<span class="sourceLineNo">1796</span><a name="line.1796"></a>
+<span class="sourceLineNo">1797</span>        /** Ignore the error.<a name="line.1797"></a>
+<span class="sourceLineNo">1798</span>         *  @param element The XML element that triggered the error.<a name="line.1798"></a>
+<span class="sourceLineNo">1799</span>         *  @param context The container object for the element.<a name="line.1799"></a>
+<span class="sourceLineNo">1800</span>         *  @param exception The exception that was thrown.<a name="line.1800"></a>
+<span class="sourceLineNo">1801</span>         *  @return CONTINUE to request skipping this element.<a name="line.1801"></a>
+<span class="sourceLineNo">1802</span>         */<a name="line.1802"></a>
+<span class="sourceLineNo">1803</span>        @Override<a name="line.1803"></a>
+<span class="sourceLineNo">1804</span>        public int handleError(String element, NamedObj context,<a name="line.1804"></a>
+<span class="sourceLineNo">1805</span>                Throwable exception) {<a name="line.1805"></a>
+<span class="sourceLineNo">1806</span>            return CONTINUE;<a name="line.1806"></a>
+<span class="sourceLineNo">1807</span>        }<a name="line.1807"></a>
+<span class="sourceLineNo">1808</span><a name="line.1808"></a>
+<span class="sourceLineNo">1809</span>    }<a name="line.1809"></a>
+<span class="sourceLineNo">1810</span><a name="line.1810"></a>
+<span class="sourceLineNo">1811</span>    ///////////////////////////////////////////////////////////////////<a name="line.1811"></a>
+<span class="sourceLineNo">1812</span>    ////                         private methods                   ////<a name="line.1812"></a>
+<span class="sourceLineNo">1813</span><a name="line.1813"></a>
+<span class="sourceLineNo">1814</span>    /** Start the models running, each in a new thread, then return.<a name="line.1814"></a>
+<span class="sourceLineNo">1815</span>     *  @param useStartRun True if Manager.startRun() should be called,<a name="line.1815"></a>
+<span class="sourceLineNo">1816</span>     *  false if Manager.executeShould be called.<a name="line.1816"></a>
+<span class="sourceLineNo">1817</span>     *  @exception KernelException If the manager throws it.<a name="line.1817"></a>
+<span class="sourceLineNo">1818</span>     */<a name="line.1818"></a>
+<span class="sourceLineNo">1819</span>    private void _runModels(boolean useStartRun) throws KernelException {<a name="line.1819"></a>
+<span class="sourceLineNo">1820</span>        Iterator models = models().iterator();<a name="line.1820"></a>
+<span class="sourceLineNo">1821</span><a name="line.1821"></a>
+<span class="sourceLineNo">1822</span>        while (models.hasNext()) {<a name="line.1822"></a>
+<span class="sourceLineNo">1823</span>            NamedObj model = (NamedObj) models.next();<a name="line.1823"></a>
+<span class="sourceLineNo">1824</span><a name="line.1824"></a>
+<span class="sourceLineNo">1825</span>            if (model instanceof CompositeActor) {<a name="line.1825"></a>
+<span class="sourceLineNo">1826</span>                CompositeActor actor = (CompositeActor) model;<a name="line.1826"></a>
+<span class="sourceLineNo">1827</span><a name="line.1827"></a>
+<span class="sourceLineNo">1828</span>                if (_statistics) {<a name="line.1828"></a>
+<span class="sourceLineNo">1829</span>                    System.out.println("Statistics for " + model.getFullName());<a name="line.1829"></a>
+<span class="sourceLineNo">1830</span>                    System.out.println(<a name="line.1830"></a>
+<span class="sourceLineNo">1831</span>                            ((CompositeEntity) model).statistics(null));<a name="line.1831"></a>
+<span class="sourceLineNo">1832</span>                }<a name="line.1832"></a>
+<span class="sourceLineNo">1833</span><a name="line.1833"></a>
+<span class="sourceLineNo">1834</span>                // Create a manager if necessary.<a name="line.1834"></a>
+<span class="sourceLineNo">1835</span>                Manager manager = actor.getManager();<a name="line.1835"></a>
+<span class="sourceLineNo">1836</span><a name="line.1836"></a>
+<span class="sourceLineNo">1837</span>                if (manager == null) {<a name="line.1837"></a>
+<span class="sourceLineNo">1838</span>                    manager = new Manager(actor.workspace(), "manager");<a name="line.1838"></a>
+<span class="sourceLineNo">1839</span>                    actor.setManager(manager);<a name="line.1839"></a>
+<span class="sourceLineNo">1840</span>                }<a name="line.1840"></a>
+<span class="sourceLineNo">1841</span><a name="line.1841"></a>
+<span class="sourceLineNo">1842</span>                manager.addExecutionListener(this);<a name="line.1842"></a>
+<span class="sourceLineNo">1843</span>                _activeCount++;<a name="line.1843"></a>
+<span class="sourceLineNo">1844</span><a name="line.1844"></a>
+<span class="sourceLineNo">1845</span>                if (useStartRun) {<a name="line.1845"></a>
+<span class="sourceLineNo">1846</span>                    // Run the model in a new thread.<a name="line.1846"></a>
+<span class="sourceLineNo">1847</span>                    manager.startRun();<a name="line.1847"></a>
+<span class="sourceLineNo">1848</span>                } else {<a name="line.1848"></a>
+<span class="sourceLineNo">1849</span>                    manager.execute();<a name="line.1849"></a>
+<span class="sourceLineNo">1850</span>                }<a name="line.1850"></a>
+<span class="sourceLineNo">1851</span>            }<a name="line.1851"></a>
+<span class="sourceLineNo">1852</span>        }<a name="line.1852"></a>
+<span class="sourceLineNo">1853</span>    }<a name="line.1853"></a>
+<span class="sourceLineNo">1854</span><a name="line.1854"></a>
+<span class="sourceLineNo">1855</span>    ///////////////////////////////////////////////////////////////////<a name="line.1855"></a>
+<span class="sourceLineNo">1856</span>    ////                         private variables                 ////<a name="line.1856"></a>
+<span class="sourceLineNo">1857</span><a name="line.1857"></a>
+<span class="sourceLineNo">1858</span>    // The count of currently executing runs.<a name="line.1858"></a>
+<span class="sourceLineNo">1859</span>    private volatile int _activeCount = 0;<a name="line.1859"></a>
+<span class="sourceLineNo">1860</span><a name="line.1860"></a>
+<span class="sourceLineNo">1861</span>    // Flag indicating that the previous argument was -class.<a name="line.1861"></a>
+<span class="sourceLineNo">1862</span>    private boolean _expectingClass = false;<a name="line.1862"></a>
+<span class="sourceLineNo">1863</span><a name="line.1863"></a>
+<span class="sourceLineNo">1864</span>    // List of parameter names seen on the command line.<a name="line.1864"></a>
+<span class="sourceLineNo">1865</span>    private List&lt;String&gt; _parameterNames = new LinkedList&lt;String&gt;();<a name="line.1865"></a>
+<span class="sourceLineNo">1866</span><a name="line.1866"></a>
+<span class="sourceLineNo">1867</span>    // List of parameter values seen on the command line.<a name="line.1867"></a>
+<span class="sourceLineNo">1868</span>    private List&lt;String&gt; _parameterValues = new LinkedList&lt;String&gt;();<a name="line.1868"></a>
+<span class="sourceLineNo">1869</span><a name="line.1869"></a>
+<span class="sourceLineNo">1870</span>    /** URI from which the configuration was read.  We use a URI to<a name="line.1870"></a>
+<span class="sourceLineNo">1871</span>     * avoid URL.equals(),which is very expensive?  See FindBugs and<a name="line.1871"></a>
+<span class="sourceLineNo">1872</span>     * http://michaelscharf.blogspot.com/2006/11/javaneturlequals-and-hashcode-make.html<a name="line.1872"></a>
+<span class="sourceLineNo">1873</span>     * This variable is volatile to avoid "unsynchronized lazy<a name="line.1873"></a>
+<span class="sourceLineNo">1874</span>     * initialization of a non-volatile static field".  See FindBugs<a name="line.1874"></a>
+<span class="sourceLineNo">1875</span>     * LI_LAZY_INIT_STATIC.<a name="line.1875"></a>
+<span class="sourceLineNo">1876</span>     */<a name="line.1876"></a>
+<span class="sourceLineNo">1877</span>    private static volatile URI _initialSpecificationURI;<a name="line.1877"></a>
+<span class="sourceLineNo">1878</span>}<a name="line.1878"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

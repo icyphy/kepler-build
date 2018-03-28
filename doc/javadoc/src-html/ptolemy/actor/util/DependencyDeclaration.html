@@ -1,0 +1,183 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../../stylesheet.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>/* An instance of DependencyDeclaration is an attribute that declares<a name="line.1"></a>
+<span class="sourceLineNo">002</span> dependencies between parameters.<a name="line.2"></a>
+<span class="sourceLineNo">003</span><a name="line.3"></a>
+<span class="sourceLineNo">004</span> Copyright (c) 2003-2013 The Regents of the University of California.<a name="line.4"></a>
+<span class="sourceLineNo">005</span> All rights reserved.<a name="line.5"></a>
+<span class="sourceLineNo">006</span> Permission is hereby granted, without written agreement and without<a name="line.6"></a>
+<span class="sourceLineNo">007</span> license or royalty fees, to use, copy, modify, and distribute this<a name="line.7"></a>
+<span class="sourceLineNo">008</span> software and its documentation for any purpose, provided that the above<a name="line.8"></a>
+<span class="sourceLineNo">009</span> copyright notice and the following two paragraphs appear in all copies<a name="line.9"></a>
+<span class="sourceLineNo">010</span> of this software.<a name="line.10"></a>
+<span class="sourceLineNo">011</span><a name="line.11"></a>
+<span class="sourceLineNo">012</span> IN NO EVENT SHALL THE UNIVERSITY OF CALIFORNIA BE LIABLE TO ANY PARTY<a name="line.12"></a>
+<span class="sourceLineNo">013</span> FOR DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES<a name="line.13"></a>
+<span class="sourceLineNo">014</span> ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION, EVEN IF<a name="line.14"></a>
+<span class="sourceLineNo">015</span> THE UNIVERSITY OF CALIFORNIA HAS BEEN ADVISED OF THE POSSIBILITY OF<a name="line.15"></a>
+<span class="sourceLineNo">016</span> SUCH DAMAGE.<a name="line.16"></a>
+<span class="sourceLineNo">017</span><a name="line.17"></a>
+<span class="sourceLineNo">018</span> THE UNIVERSITY OF CALIFORNIA SPECIFICALLY DISCLAIMS ANY WARRANTIES,<a name="line.18"></a>
+<span class="sourceLineNo">019</span> INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF<a name="line.19"></a>
+<span class="sourceLineNo">020</span> MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE<a name="line.20"></a>
+<span class="sourceLineNo">021</span> PROVIDED HEREUNDER IS ON AN "AS IS" BASIS, AND THE UNIVERSITY OF<a name="line.21"></a>
+<span class="sourceLineNo">022</span> CALIFORNIA HAS NO OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT, UPDATES,<a name="line.22"></a>
+<span class="sourceLineNo">023</span> ENHANCEMENTS, OR MODIFICATIONS.<a name="line.23"></a>
+<span class="sourceLineNo">024</span><a name="line.24"></a>
+<span class="sourceLineNo">025</span> PT_COPYRIGHT_VERSION_2<a name="line.25"></a>
+<span class="sourceLineNo">026</span> COPYRIGHTENDKEY<a name="line.26"></a>
+<span class="sourceLineNo">027</span><a name="line.27"></a>
+<span class="sourceLineNo">028</span> */<a name="line.28"></a>
+<span class="sourceLineNo">029</span>package ptolemy.actor.util;<a name="line.29"></a>
+<span class="sourceLineNo">030</span><a name="line.30"></a>
+<span class="sourceLineNo">031</span>import java.util.List;<a name="line.31"></a>
+<span class="sourceLineNo">032</span><a name="line.32"></a>
+<span class="sourceLineNo">033</span>import ptolemy.data.expr.Variable;<a name="line.33"></a>
+<span class="sourceLineNo">034</span>import ptolemy.kernel.util.Attribute;<a name="line.34"></a>
+<span class="sourceLineNo">035</span>import ptolemy.kernel.util.IllegalActionException;<a name="line.35"></a>
+<span class="sourceLineNo">036</span>import ptolemy.kernel.util.NameDuplicationException;<a name="line.36"></a>
+<span class="sourceLineNo">037</span><a name="line.37"></a>
+<span class="sourceLineNo">038</span>///////////////////////////////////////////////////////////////////<a name="line.38"></a>
+<span class="sourceLineNo">039</span>//// DependencyDeclaration<a name="line.39"></a>
+<span class="sourceLineNo">040</span><a name="line.40"></a>
+<span class="sourceLineNo">041</span>/**<a name="line.41"></a>
+<span class="sourceLineNo">042</span> An instance of DependencyDeclaration is an attribute that declares<a name="line.42"></a>
+<span class="sourceLineNo">043</span> variable dependence information of a parameter.  This attribute is<a name="line.43"></a>
+<span class="sourceLineNo">044</span> usually created in a parameter, when necessary, during the<a name="line.44"></a>
+<span class="sourceLineNo">045</span> preinitialize method of an actor.  This class is used primarily by the<a name="line.45"></a>
+<span class="sourceLineNo">046</span> ConstVariableModelAnalysis class to determine a change context for<a name="line.46"></a>
+<span class="sourceLineNo">047</span> parameters whose value dependence is not declared through an<a name="line.47"></a>
+<span class="sourceLineNo">048</span> expression reference, but maintained by the actor's Java code instead.<a name="line.48"></a>
+<span class="sourceLineNo">049</span><a name="line.49"></a>
+<span class="sourceLineNo">050</span> &lt;p&gt; This attribute is not persistent by default, so it will not be exported<a name="line.50"></a>
+<span class="sourceLineNo">051</span> into a MoML representation of the model.<a name="line.51"></a>
+<span class="sourceLineNo">052</span><a name="line.52"></a>
+<span class="sourceLineNo">053</span> @author Steve Neuendorffer<a name="line.53"></a>
+<span class="sourceLineNo">054</span> @version $Id$<a name="line.54"></a>
+<span class="sourceLineNo">055</span> @since Ptolemy II 4.0<a name="line.55"></a>
+<span class="sourceLineNo">056</span> @Pt.ProposedRating Yellow (neuendor)<a name="line.56"></a>
+<span class="sourceLineNo">057</span> @Pt.AcceptedRating Yellow (neuendor)<a name="line.57"></a>
+<span class="sourceLineNo">058</span> @see ptolemy.actor.util.ConstVariableModelAnalysis<a name="line.58"></a>
+<span class="sourceLineNo">059</span> */<a name="line.59"></a>
+<span class="sourceLineNo">060</span>public class DependencyDeclaration extends Attribute {<a name="line.60"></a>
+<span class="sourceLineNo">061</span>    /** Construct an DependencyDeclaration attribute in the given<a name="line.61"></a>
+<span class="sourceLineNo">062</span>     *  container with the given name. The container argument must not<a name="line.62"></a>
+<span class="sourceLineNo">063</span>     *  be null, or a NullPointerException will be thrown.  If the<a name="line.63"></a>
+<span class="sourceLineNo">064</span>     *  name argument is null, then the name is set to the empty<a name="line.64"></a>
+<span class="sourceLineNo">065</span>     *  string. Increment the version number of the workspace.<a name="line.65"></a>
+<span class="sourceLineNo">066</span>     *  Set this attribute to be not persistent.<a name="line.66"></a>
+<span class="sourceLineNo">067</span>     *<a name="line.67"></a>
+<span class="sourceLineNo">068</span>     *  @param container The container.<a name="line.68"></a>
+<span class="sourceLineNo">069</span>     *  @param name The name of this attribute.<a name="line.69"></a>
+<span class="sourceLineNo">070</span>     *  @exception IllegalActionException If the name has a period in it, or<a name="line.70"></a>
+<span class="sourceLineNo">071</span>     *   the attribute is not compatible with the specified container.<a name="line.71"></a>
+<span class="sourceLineNo">072</span>     *  @exception NameDuplicationException If the container already contains<a name="line.72"></a>
+<span class="sourceLineNo">073</span>     *   an entity with the specified name.<a name="line.73"></a>
+<span class="sourceLineNo">074</span>     */<a name="line.74"></a>
+<span class="sourceLineNo">075</span>    public DependencyDeclaration(Variable container, String name)<a name="line.75"></a>
+<span class="sourceLineNo">076</span>            throws IllegalActionException, NameDuplicationException {<a name="line.76"></a>
+<span class="sourceLineNo">077</span>        super(container, name);<a name="line.77"></a>
+<span class="sourceLineNo">078</span>        setPersistent(false);<a name="line.78"></a>
+<span class="sourceLineNo">079</span>    }<a name="line.79"></a>
+<span class="sourceLineNo">080</span><a name="line.80"></a>
+<span class="sourceLineNo">081</span>    ///////////////////////////////////////////////////////////////////<a name="line.81"></a>
+<span class="sourceLineNo">082</span>    ////                         public methods                    ////<a name="line.82"></a>
+<span class="sourceLineNo">083</span><a name="line.83"></a>
+<span class="sourceLineNo">084</span>    /** Return the list of dependents of the parameter that contains<a name="line.84"></a>
+<span class="sourceLineNo">085</span>     *  this attribute.  This attribute declares that the container<a name="line.85"></a>
+<span class="sourceLineNo">086</span>     *  depends on at least the given set of parameters.<a name="line.86"></a>
+<span class="sourceLineNo">087</span>     *  @return A list of variables.<a name="line.87"></a>
+<span class="sourceLineNo">088</span>     *  @see #setDependents<a name="line.88"></a>
+<span class="sourceLineNo">089</span>     */<a name="line.89"></a>
+<span class="sourceLineNo">090</span>    public List getDependents() {<a name="line.90"></a>
+<span class="sourceLineNo">091</span>        return _dependents;<a name="line.91"></a>
+<span class="sourceLineNo">092</span>    }<a name="line.92"></a>
+<span class="sourceLineNo">093</span><a name="line.93"></a>
+<span class="sourceLineNo">094</span>    /** Set the set of dependents for this declaration.<a name="line.94"></a>
+<span class="sourceLineNo">095</span>     *  @param dependents A list of variables.<a name="line.95"></a>
+<span class="sourceLineNo">096</span>     *  @exception RuntimeException If the list of dependents is null.<a name="line.96"></a>
+<span class="sourceLineNo">097</span>     *  @see #getDependents<a name="line.97"></a>
+<span class="sourceLineNo">098</span>     */<a name="line.98"></a>
+<span class="sourceLineNo">099</span>    public void setDependents(List dependents) {<a name="line.99"></a>
+<span class="sourceLineNo">100</span>        if (dependents == null) {<a name="line.100"></a>
+<span class="sourceLineNo">101</span>            throw new RuntimeException("Attempt to set dependents to null!");<a name="line.101"></a>
+<span class="sourceLineNo">102</span>        }<a name="line.102"></a>
+<span class="sourceLineNo">103</span><a name="line.103"></a>
+<span class="sourceLineNo">104</span>        _dependents = dependents;<a name="line.104"></a>
+<span class="sourceLineNo">105</span>    }<a name="line.105"></a>
+<span class="sourceLineNo">106</span><a name="line.106"></a>
+<span class="sourceLineNo">107</span>    ///////////////////////////////////////////////////////////////////<a name="line.107"></a>
+<span class="sourceLineNo">108</span>    ////                         private variables                 ////<a name="line.108"></a>
+<span class="sourceLineNo">109</span>    // The declared dependents.<a name="line.109"></a>
+<span class="sourceLineNo">110</span>    private List _dependents;<a name="line.110"></a>
+<span class="sourceLineNo">111</span>}<a name="line.111"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

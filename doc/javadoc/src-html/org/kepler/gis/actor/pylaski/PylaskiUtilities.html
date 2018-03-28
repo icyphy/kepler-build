@@ -1,0 +1,513 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../../../../stylesheet.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>/*<a name="line.1"></a>
+<span class="sourceLineNo">002</span> * Copyright (c) 2017 The Regents of the University of California.<a name="line.2"></a>
+<span class="sourceLineNo">003</span> * All rights reserved.<a name="line.3"></a>
+<span class="sourceLineNo">004</span> *<a name="line.4"></a>
+<span class="sourceLineNo">005</span> * '$Author: crawl $'<a name="line.5"></a>
+<span class="sourceLineNo">006</span> * '$Date: 2017-03-27 14:55:16 -0700 (Mon, 27 Mar 2017) $' <a name="line.6"></a>
+<span class="sourceLineNo">007</span> * '$Revision: 34553 $'<a name="line.7"></a>
+<span class="sourceLineNo">008</span> * <a name="line.8"></a>
+<span class="sourceLineNo">009</span> * Permission is hereby granted, without written agreement and without<a name="line.9"></a>
+<span class="sourceLineNo">010</span> * license or royalty fees, to use, copy, modify, and distribute this<a name="line.10"></a>
+<span class="sourceLineNo">011</span> * software and its documentation for any purpose, provided that the above<a name="line.11"></a>
+<span class="sourceLineNo">012</span> * copyright notice and the following two paragraphs appear in all copies<a name="line.12"></a>
+<span class="sourceLineNo">013</span> * of this software.<a name="line.13"></a>
+<span class="sourceLineNo">014</span> *<a name="line.14"></a>
+<span class="sourceLineNo">015</span> * IN NO EVENT SHALL THE UNIVERSITY OF CALIFORNIA BE LIABLE TO ANY PARTY<a name="line.15"></a>
+<span class="sourceLineNo">016</span> * FOR DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES<a name="line.16"></a>
+<span class="sourceLineNo">017</span> * ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION, EVEN IF<a name="line.17"></a>
+<span class="sourceLineNo">018</span> * THE UNIVERSITY OF CALIFORNIA HAS BEEN ADVISED OF THE POSSIBILITY OF<a name="line.18"></a>
+<span class="sourceLineNo">019</span> * SUCH DAMAGE.<a name="line.19"></a>
+<span class="sourceLineNo">020</span> *<a name="line.20"></a>
+<span class="sourceLineNo">021</span> * THE UNIVERSITY OF CALIFORNIA SPECIFICALLY DISCLAIMS ANY WARRANTIES,<a name="line.21"></a>
+<span class="sourceLineNo">022</span> * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF<a name="line.22"></a>
+<span class="sourceLineNo">023</span> * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE<a name="line.23"></a>
+<span class="sourceLineNo">024</span> * PROVIDED HEREUNDER IS ON AN "AS IS" BASIS, AND THE UNIVERSITY OF<a name="line.24"></a>
+<span class="sourceLineNo">025</span> * CALIFORNIA HAS NO OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT, UPDATES,<a name="line.25"></a>
+<span class="sourceLineNo">026</span> * ENHANCEMENTS, OR MODIFICATIONS.<a name="line.26"></a>
+<span class="sourceLineNo">027</span> *<a name="line.27"></a>
+<span class="sourceLineNo">028</span> */<a name="line.28"></a>
+<span class="sourceLineNo">029</span>package org.kepler.gis.actor.pylaski;<a name="line.29"></a>
+<span class="sourceLineNo">030</span><a name="line.30"></a>
+<span class="sourceLineNo">031</span>import java.net.URI;<a name="line.31"></a>
+<span class="sourceLineNo">032</span>import java.net.URISyntaxException;<a name="line.32"></a>
+<span class="sourceLineNo">033</span>import java.text.DateFormat;<a name="line.33"></a>
+<span class="sourceLineNo">034</span>import java.text.SimpleDateFormat;<a name="line.34"></a>
+<span class="sourceLineNo">035</span>import java.util.Date;<a name="line.35"></a>
+<span class="sourceLineNo">036</span>import java.util.HashSet;<a name="line.36"></a>
+<span class="sourceLineNo">037</span>import java.util.Set;<a name="line.37"></a>
+<span class="sourceLineNo">038</span><a name="line.38"></a>
+<span class="sourceLineNo">039</span>import org.geotools.feature.DefaultFeatureCollection;<a name="line.39"></a>
+<span class="sourceLineNo">040</span>import org.kepler.gis.data.VectorToken;<a name="line.40"></a>
+<span class="sourceLineNo">041</span><a name="line.41"></a>
+<span class="sourceLineNo">042</span>/**<a name="line.42"></a>
+<span class="sourceLineNo">043</span> * Utility functions and classes for interfacing with the Pylaski REST API<a name="line.43"></a>
+<span class="sourceLineNo">044</span> *<a name="line.44"></a>
+<span class="sourceLineNo">045</span> * @see https://github.com/words-sdsc/wifire/blob/master/pylaski.ipynb<a name="line.45"></a>
+<span class="sourceLineNo">046</span> * <a name="line.46"></a>
+<span class="sourceLineNo">047</span> * @author Ben Fleming<a name="line.47"></a>
+<span class="sourceLineNo">048</span> * @version $Id: PylaskiUtilities.java 34553 2017-03-27 21:55:16Z crawl $<a name="line.48"></a>
+<span class="sourceLineNo">049</span> */<a name="line.49"></a>
+<span class="sourceLineNo">050</span>public class PylaskiUtilities {<a name="line.50"></a>
+<span class="sourceLineNo">051</span>    /** This class cannot be instantiated. */<a name="line.51"></a>
+<span class="sourceLineNo">052</span>    private PylaskiUtilities() {<a name="line.52"></a>
+<span class="sourceLineNo">053</span>    }<a name="line.53"></a>
+<span class="sourceLineNo">054</span><a name="line.54"></a>
+<span class="sourceLineNo">055</span>    /**<a name="line.55"></a>
+<span class="sourceLineNo">056</span>     * Maps the selection enums (see above) to their string counterparts. Used<a name="line.56"></a>
+<span class="sourceLineNo">057</span>     * when building URI's.<a name="line.57"></a>
+<span class="sourceLineNo">058</span>     *<a name="line.58"></a>
+<span class="sourceLineNo">059</span>     * @param selection<a name="line.59"></a>
+<span class="sourceLineNo">060</span>     *            The selection enum<a name="line.60"></a>
+<span class="sourceLineNo">061</span>     * @return The string counterpart<a name="line.61"></a>
+<span class="sourceLineNo">062</span>     */<a name="line.62"></a>
+<span class="sourceLineNo">063</span>    public static String getSelectionString(Selection selection) {<a name="line.63"></a>
+<span class="sourceLineNo">064</span>        switch (selection) {<a name="line.64"></a>
+<span class="sourceLineNo">065</span>        case CLOSEST_TO:<a name="line.65"></a>
+<span class="sourceLineNo">066</span>            return "closestTo";<a name="line.66"></a>
+<span class="sourceLineNo">067</span>        case BOUNDING_BOX:<a name="line.67"></a>
+<span class="sourceLineNo">068</span>            return "boundingBox";<a name="line.68"></a>
+<span class="sourceLineNo">069</span>        case WITHIN_RADIUS:<a name="line.69"></a>
+<span class="sourceLineNo">070</span>            return "withinRadius";<a name="line.70"></a>
+<span class="sourceLineNo">071</span>        }<a name="line.71"></a>
+<span class="sourceLineNo">072</span><a name="line.72"></a>
+<span class="sourceLineNo">073</span>        return null;<a name="line.73"></a>
+<span class="sourceLineNo">074</span>    }<a name="line.74"></a>
+<span class="sourceLineNo">075</span><a name="line.75"></a>
+<span class="sourceLineNo">076</span>    /**<a name="line.76"></a>
+<span class="sourceLineNo">077</span>     * Merges two vector tokens together into one. Feature collections inside<a name="line.77"></a>
+<span class="sourceLineNo">078</span>     * vectors are weaved together. If one vector token is null, the other will<a name="line.78"></a>
+<span class="sourceLineNo">079</span>     * simply be returned.<a name="line.79"></a>
+<span class="sourceLineNo">080</span>     *<a name="line.80"></a>
+<span class="sourceLineNo">081</span>     * TODO: This probably belongs in the VectorUtilities class<a name="line.81"></a>
+<span class="sourceLineNo">082</span>     *<a name="line.82"></a>
+<span class="sourceLineNo">083</span>     * @param tokenA<a name="line.83"></a>
+<span class="sourceLineNo">084</span>     *            The first vector token<a name="line.84"></a>
+<span class="sourceLineNo">085</span>     * @param tokenB<a name="line.85"></a>
+<span class="sourceLineNo">086</span>     *            The second vector token<a name="line.86"></a>
+<span class="sourceLineNo">087</span>     * @return VectorToken as a merge between tokenA and tokenB<a name="line.87"></a>
+<span class="sourceLineNo">088</span>     * @throws Exception<a name="line.88"></a>
+<span class="sourceLineNo">089</span>     *             Raised if both tokens are null<a name="line.89"></a>
+<span class="sourceLineNo">090</span>     */<a name="line.90"></a>
+<span class="sourceLineNo">091</span>    public static VectorToken mergeVectors(VectorToken tokenA, VectorToken tokenB) throws Exception {<a name="line.91"></a>
+<span class="sourceLineNo">092</span>        if (tokenA == null &amp;&amp; tokenB == null) {<a name="line.92"></a>
+<span class="sourceLineNo">093</span>            throw new Exception("Both vector tokens cannot be null.");<a name="line.93"></a>
+<span class="sourceLineNo">094</span>        }<a name="line.94"></a>
+<span class="sourceLineNo">095</span><a name="line.95"></a>
+<span class="sourceLineNo">096</span>        if (tokenA == null) {<a name="line.96"></a>
+<span class="sourceLineNo">097</span>            return tokenB;<a name="line.97"></a>
+<span class="sourceLineNo">098</span>        }<a name="line.98"></a>
+<span class="sourceLineNo">099</span><a name="line.99"></a>
+<span class="sourceLineNo">100</span>        if (tokenB == null) {<a name="line.100"></a>
+<span class="sourceLineNo">101</span>            return tokenA;<a name="line.101"></a>
+<span class="sourceLineNo">102</span>        }<a name="line.102"></a>
+<span class="sourceLineNo">103</span><a name="line.103"></a>
+<span class="sourceLineNo">104</span>        DefaultFeatureCollection features = new DefaultFeatureCollection();<a name="line.104"></a>
+<span class="sourceLineNo">105</span><a name="line.105"></a>
+<span class="sourceLineNo">106</span>        features.addAll(tokenA.getVectors());<a name="line.106"></a>
+<span class="sourceLineNo">107</span>        features.addAll(tokenB.getVectors());<a name="line.107"></a>
+<span class="sourceLineNo">108</span><a name="line.108"></a>
+<span class="sourceLineNo">109</span>        return new VectorToken(features);<a name="line.109"></a>
+<span class="sourceLineNo">110</span>    }<a name="line.110"></a>
+<span class="sourceLineNo">111</span><a name="line.111"></a>
+<span class="sourceLineNo">112</span>    /** The host URL of the REST API - all requests are made to this URL */<a name="line.112"></a>
+<span class="sourceLineNo">113</span>    public static final String DEFAULT_HOST = "https://firemap.sdsc.edu:5443";<a name="line.113"></a>
+<span class="sourceLineNo">114</span><a name="line.114"></a>
+<span class="sourceLineNo">115</span>    /** The format of the date/time values provided by the Pylaski API */<a name="line.115"></a>
+<span class="sourceLineNo">116</span>    public static final String DATE_FORMAT = "yyyy-MM-dd'T'HH:mm:ssZ";<a name="line.116"></a>
+<span class="sourceLineNo">117</span><a name="line.117"></a>
+<span class="sourceLineNo">118</span>    /**<a name="line.118"></a>
+<span class="sourceLineNo">119</span>     * Station selection types<a name="line.119"></a>
+<span class="sourceLineNo">120</span>     */<a name="line.120"></a>
+<span class="sourceLineNo">121</span>    public enum Selection {<a name="line.121"></a>
+<span class="sourceLineNo">122</span>        CLOSEST_TO, BOUNDING_BOX, WITHIN_RADIUS,<a name="line.122"></a>
+<span class="sourceLineNo">123</span>    }<a name="line.123"></a>
+<span class="sourceLineNo">124</span><a name="line.124"></a>
+<span class="sourceLineNo">125</span>    /**<a name="line.125"></a>
+<span class="sourceLineNo">126</span>     * Configure settings for sending REST API requests.<a name="line.126"></a>
+<span class="sourceLineNo">127</span>     */<a name="line.127"></a>
+<span class="sourceLineNo">128</span>    public static class Settings {<a name="line.128"></a>
+<span class="sourceLineNo">129</span>        // Properties<a name="line.129"></a>
+<span class="sourceLineNo">130</span><a name="line.130"></a>
+<span class="sourceLineNo">131</span>        // The host URL of the REST API - all requests are made to this URL<a name="line.131"></a>
+<span class="sourceLineNo">132</span>        public String host = DEFAULT_HOST;<a name="line.132"></a>
+<span class="sourceLineNo">133</span><a name="line.133"></a>
+<span class="sourceLineNo">134</span>        // The station selection type<a name="line.134"></a>
+<span class="sourceLineNo">135</span>        private Selection _selection = Selection.CLOSEST_TO;<a name="line.135"></a>
+<span class="sourceLineNo">136</span><a name="line.136"></a>
+<span class="sourceLineNo">137</span>        // Search coordinates<a name="line.137"></a>
+<span class="sourceLineNo">138</span>        private double _minLat = 0.0;<a name="line.138"></a>
+<span class="sourceLineNo">139</span>        private double _minLon = 0.0;<a name="line.139"></a>
+<span class="sourceLineNo">140</span>        private double _maxLat = 0.0;<a name="line.140"></a>
+<span class="sourceLineNo">141</span>        private double _maxLon = 0.0;<a name="line.141"></a>
+<span class="sourceLineNo">142</span>        private double _radius = 0.0;<a name="line.142"></a>
+<span class="sourceLineNo">143</span><a name="line.143"></a>
+<span class="sourceLineNo">144</span>        // Search timestamps<a name="line.144"></a>
+<span class="sourceLineNo">145</span>        private Date _from;<a name="line.145"></a>
+<span class="sourceLineNo">146</span>        private Date _to;<a name="line.146"></a>
+<span class="sourceLineNo">147</span><a name="line.147"></a>
+<span class="sourceLineNo">148</span>        // Observables to request<a name="line.148"></a>
+<span class="sourceLineNo">149</span>        private Set&lt;String&gt; _observables;<a name="line.149"></a>
+<span class="sourceLineNo">150</span><a name="line.150"></a>
+<span class="sourceLineNo">151</span>        // Public methods<a name="line.151"></a>
+<span class="sourceLineNo">152</span><a name="line.152"></a>
+<span class="sourceLineNo">153</span>        /**<a name="line.153"></a>
+<span class="sourceLineNo">154</span>         * Constructor<a name="line.154"></a>
+<span class="sourceLineNo">155</span>         */<a name="line.155"></a>
+<span class="sourceLineNo">156</span>        public Settings() {<a name="line.156"></a>
+<span class="sourceLineNo">157</span>            _observables = new HashSet&lt;&gt;();<a name="line.157"></a>
+<span class="sourceLineNo">158</span>        }<a name="line.158"></a>
+<span class="sourceLineNo">159</span><a name="line.159"></a>
+<span class="sourceLineNo">160</span>        /**<a name="line.160"></a>
+<span class="sourceLineNo">161</span>         * The selection type (inferred from the location settings).<a name="line.161"></a>
+<span class="sourceLineNo">162</span>         *<a name="line.162"></a>
+<span class="sourceLineNo">163</span>         * @return Selection enum<a name="line.163"></a>
+<span class="sourceLineNo">164</span>         */<a name="line.164"></a>
+<span class="sourceLineNo">165</span>        public Selection getSelectionType() {<a name="line.165"></a>
+<span class="sourceLineNo">166</span>            return _selection;<a name="line.166"></a>
+<span class="sourceLineNo">167</span>        }<a name="line.167"></a>
+<span class="sourceLineNo">168</span><a name="line.168"></a>
+<span class="sourceLineNo">169</span>        /**<a name="line.169"></a>
+<span class="sourceLineNo">170</span>         * Sets the location to a single coordinate. This creates a "closest to"<a name="line.170"></a>
+<span class="sourceLineNo">171</span>         * selection search.<a name="line.171"></a>
+<span class="sourceLineNo">172</span>         *<a name="line.172"></a>
+<span class="sourceLineNo">173</span>         * @param lat<a name="line.173"></a>
+<span class="sourceLineNo">174</span>         *            Latitude<a name="line.174"></a>
+<span class="sourceLineNo">175</span>         * @param lon<a name="line.175"></a>
+<span class="sourceLineNo">176</span>         *            Longitude<a name="line.176"></a>
+<span class="sourceLineNo">177</span>         */<a name="line.177"></a>
+<span class="sourceLineNo">178</span>        public void setLocation(double lat, double lon) {<a name="line.178"></a>
+<span class="sourceLineNo">179</span>            _selection = Selection.CLOSEST_TO;<a name="line.179"></a>
+<span class="sourceLineNo">180</span><a name="line.180"></a>
+<span class="sourceLineNo">181</span>            _minLat = lat;<a name="line.181"></a>
+<span class="sourceLineNo">182</span>            _minLon = lon;<a name="line.182"></a>
+<span class="sourceLineNo">183</span>        }<a name="line.183"></a>
+<span class="sourceLineNo">184</span><a name="line.184"></a>
+<span class="sourceLineNo">185</span>        /**<a name="line.185"></a>
+<span class="sourceLineNo">186</span>         * Sets the location to within a radius around a single coordinate. This<a name="line.186"></a>
+<span class="sourceLineNo">187</span>         * creates a "within radius" selection search.<a name="line.187"></a>
+<span class="sourceLineNo">188</span>         *<a name="line.188"></a>
+<span class="sourceLineNo">189</span>         * @param lat<a name="line.189"></a>
+<span class="sourceLineNo">190</span>         *            Latitude<a name="line.190"></a>
+<span class="sourceLineNo">191</span>         * @param lon<a name="line.191"></a>
+<span class="sourceLineNo">192</span>         *            Longitude<a name="line.192"></a>
+<span class="sourceLineNo">193</span>         * @param radius<a name="line.193"></a>
+<span class="sourceLineNo">194</span>         *            Radius (in meters)<a name="line.194"></a>
+<span class="sourceLineNo">195</span>         */<a name="line.195"></a>
+<span class="sourceLineNo">196</span>        public void setLocation(double lat, double lon, double radius) {<a name="line.196"></a>
+<span class="sourceLineNo">197</span>            _selection = Selection.WITHIN_RADIUS;<a name="line.197"></a>
+<span class="sourceLineNo">198</span><a name="line.198"></a>
+<span class="sourceLineNo">199</span>            _minLat = lat;<a name="line.199"></a>
+<span class="sourceLineNo">200</span>            _minLon = lon;<a name="line.200"></a>
+<span class="sourceLineNo">201</span>            _radius = radius;<a name="line.201"></a>
+<span class="sourceLineNo">202</span>        }<a name="line.202"></a>
+<span class="sourceLineNo">203</span><a name="line.203"></a>
+<span class="sourceLineNo">204</span>        /**<a name="line.204"></a>
+<span class="sourceLineNo">205</span>         * Sets the location to within a rectangle. This creates a "bounding<a name="line.205"></a>
+<span class="sourceLineNo">206</span>         * box" selection search.<a name="line.206"></a>
+<span class="sourceLineNo">207</span>         *<a name="line.207"></a>
+<span class="sourceLineNo">208</span>         * @param minLat<a name="line.208"></a>
+<span class="sourceLineNo">209</span>         *            Minimum latitude<a name="line.209"></a>
+<span class="sourceLineNo">210</span>         * @param minLon<a name="line.210"></a>
+<span class="sourceLineNo">211</span>         *            Minimum longitude<a name="line.211"></a>
+<span class="sourceLineNo">212</span>         * @param maxLat<a name="line.212"></a>
+<span class="sourceLineNo">213</span>         *            Maximum latitude<a name="line.213"></a>
+<span class="sourceLineNo">214</span>         * @param maxLon<a name="line.214"></a>
+<span class="sourceLineNo">215</span>         *            Maximum longitude<a name="line.215"></a>
+<span class="sourceLineNo">216</span>         */<a name="line.216"></a>
+<span class="sourceLineNo">217</span>        public void setLocation(double minLat, double minLon, double maxLat, double maxLon) {<a name="line.217"></a>
+<span class="sourceLineNo">218</span>            _selection = Selection.BOUNDING_BOX;<a name="line.218"></a>
+<span class="sourceLineNo">219</span><a name="line.219"></a>
+<span class="sourceLineNo">220</span>            _minLat = minLat;<a name="line.220"></a>
+<span class="sourceLineNo">221</span>            _minLon = minLon;<a name="line.221"></a>
+<span class="sourceLineNo">222</span>            _maxLat = maxLat;<a name="line.222"></a>
+<span class="sourceLineNo">223</span>            _maxLon = maxLon;<a name="line.223"></a>
+<span class="sourceLineNo">224</span>        }<a name="line.224"></a>
+<span class="sourceLineNo">225</span><a name="line.225"></a>
+<span class="sourceLineNo">226</span>        /**<a name="line.226"></a>
+<span class="sourceLineNo">227</span>         * Sets the date range for data search. If the "to" date exceeds the<a name="line.227"></a>
+<span class="sourceLineNo">228</span>         * current date, a forecast URI will be possible to generate (see<a name="line.228"></a>
+<span class="sourceLineNo">229</span>         * below). If both "from" and "to" dates excee the current date, a data<a name="line.229"></a>
+<span class="sourceLineNo">230</span>         * URI will not be possible to generate.<a name="line.230"></a>
+<span class="sourceLineNo">231</span>         *<a name="line.231"></a>
+<span class="sourceLineNo">232</span>         * @param from<a name="line.232"></a>
+<span class="sourceLineNo">233</span>         *            A date object to search from<a name="line.233"></a>
+<span class="sourceLineNo">234</span>         * @param to<a name="line.234"></a>
+<span class="sourceLineNo">235</span>         *            A date object to search to - must be after the "from" date<a name="line.235"></a>
+<span class="sourceLineNo">236</span>         * @throws Exception<a name="line.236"></a>
+<span class="sourceLineNo">237</span>         *             Raised if "to" date is at or before the "from" date<a name="line.237"></a>
+<span class="sourceLineNo">238</span>         */<a name="line.238"></a>
+<span class="sourceLineNo">239</span>        public void setDate(Date from, Date to) throws Exception {<a name="line.239"></a>
+<span class="sourceLineNo">240</span>            if (!from.before(to)) {<a name="line.240"></a>
+<span class="sourceLineNo">241</span>                throw new Exception("From date must be before the to date.");<a name="line.241"></a>
+<span class="sourceLineNo">242</span>            }<a name="line.242"></a>
+<span class="sourceLineNo">243</span><a name="line.243"></a>
+<span class="sourceLineNo">244</span>            _from = from;<a name="line.244"></a>
+<span class="sourceLineNo">245</span>            _to = to;<a name="line.245"></a>
+<span class="sourceLineNo">246</span>        }<a name="line.246"></a>
+<span class="sourceLineNo">247</span><a name="line.247"></a>
+<span class="sourceLineNo">248</span>        /**<a name="line.248"></a>
+<span class="sourceLineNo">249</span>         * Sets the date around a central time.<a name="line.249"></a>
+<span class="sourceLineNo">250</span>         *<a name="line.250"></a>
+<span class="sourceLineNo">251</span>         * @param at<a name="line.251"></a>
+<span class="sourceLineNo">252</span>         *            A date object to search around<a name="line.252"></a>
+<span class="sourceLineNo">253</span>         * @param buffer<a name="line.253"></a>
+<span class="sourceLineNo">254</span>         *            A buffer to pad the date with (in milliseconds)<a name="line.254"></a>
+<span class="sourceLineNo">255</span>         * @throws Exception<a name="line.255"></a>
+<span class="sourceLineNo">256</span>         *             An exception that should never be raised when using this<a name="line.256"></a>
+<span class="sourceLineNo">257</span>         *             particular method<a name="line.257"></a>
+<span class="sourceLineNo">258</span>         */<a name="line.258"></a>
+<span class="sourceLineNo">259</span>        public void setDate(Date at, int buffer) throws Exception {<a name="line.259"></a>
+<span class="sourceLineNo">260</span>            Date from = new Date(at.getTime() - buffer);<a name="line.260"></a>
+<span class="sourceLineNo">261</span>            Date to = new Date(at.getTime() + buffer);<a name="line.261"></a>
+<span class="sourceLineNo">262</span><a name="line.262"></a>
+<span class="sourceLineNo">263</span>            setDate(from, to);<a name="line.263"></a>
+<span class="sourceLineNo">264</span>        }<a name="line.264"></a>
+<span class="sourceLineNo">265</span><a name="line.265"></a>
+<span class="sourceLineNo">266</span>        /**<a name="line.266"></a>
+<span class="sourceLineNo">267</span>         * Sets the date around a central time. Uses a default buffer of +/- 2<a name="line.267"></a>
+<span class="sourceLineNo">268</span>         * hours.<a name="line.268"></a>
+<span class="sourceLineNo">269</span>         *<a name="line.269"></a>
+<span class="sourceLineNo">270</span>         * @param at<a name="line.270"></a>
+<span class="sourceLineNo">271</span>         *            A date object to search around<a name="line.271"></a>
+<span class="sourceLineNo">272</span>         * @throws Exception<a name="line.272"></a>
+<span class="sourceLineNo">273</span>         *             An exception that should never be raised when using this<a name="line.273"></a>
+<span class="sourceLineNo">274</span>         *             particular method<a name="line.274"></a>
+<span class="sourceLineNo">275</span>         */<a name="line.275"></a>
+<span class="sourceLineNo">276</span>        public void setDate(Date at) throws Exception {<a name="line.276"></a>
+<span class="sourceLineNo">277</span>            // 2 hour buffer<a name="line.277"></a>
+<span class="sourceLineNo">278</span>            setDate(at, 2 * 60 * 60 * 1000);<a name="line.278"></a>
+<span class="sourceLineNo">279</span>        }<a name="line.279"></a>
+<span class="sourceLineNo">280</span><a name="line.280"></a>
+<span class="sourceLineNo">281</span>        /**<a name="line.281"></a>
+<span class="sourceLineNo">282</span>         * Removes the date range filter. This will result in the REST API<a name="line.282"></a>
+<span class="sourceLineNo">283</span>         * returning the latest readings.<a name="line.283"></a>
+<span class="sourceLineNo">284</span>         */<a name="line.284"></a>
+<span class="sourceLineNo">285</span>        public void removeDate() {<a name="line.285"></a>
+<span class="sourceLineNo">286</span>            _from = null;<a name="line.286"></a>
+<span class="sourceLineNo">287</span>            _to = null;<a name="line.287"></a>
+<span class="sourceLineNo">288</span>        }<a name="line.288"></a>
+<span class="sourceLineNo">289</span><a name="line.289"></a>
+<span class="sourceLineNo">290</span>        /**<a name="line.290"></a>
+<span class="sourceLineNo">291</span>         * Adds an observable to be requested from the API.<a name="line.291"></a>
+<span class="sourceLineNo">292</span>         *<a name="line.292"></a>
+<span class="sourceLineNo">293</span>         * @param observable<a name="line.293"></a>
+<span class="sourceLineNo">294</span>         *            An observable as a string - refer to the Pylaski<a name="line.294"></a>
+<span class="sourceLineNo">295</span>         *            documentation (link above)<a name="line.295"></a>
+<span class="sourceLineNo">296</span>         */<a name="line.296"></a>
+<span class="sourceLineNo">297</span>        public void addObservable(String observable) {<a name="line.297"></a>
+<span class="sourceLineNo">298</span>            _observables.add(observable);<a name="line.298"></a>
+<span class="sourceLineNo">299</span>        }<a name="line.299"></a>
+<span class="sourceLineNo">300</span><a name="line.300"></a>
+<span class="sourceLineNo">301</span>        /**<a name="line.301"></a>
+<span class="sourceLineNo">302</span>         * Removes a previously added observable.<a name="line.302"></a>
+<span class="sourceLineNo">303</span>         *<a name="line.303"></a>
+<span class="sourceLineNo">304</span>         * @param observable<a name="line.304"></a>
+<span class="sourceLineNo">305</span>         *            An observable as a string<a name="line.305"></a>
+<span class="sourceLineNo">306</span>         */<a name="line.306"></a>
+<span class="sourceLineNo">307</span>        public void removeObservable(String observable) {<a name="line.307"></a>
+<span class="sourceLineNo">308</span>            _observables.remove(observable);<a name="line.308"></a>
+<span class="sourceLineNo">309</span>        }<a name="line.309"></a>
+<span class="sourceLineNo">310</span><a name="line.310"></a>
+<span class="sourceLineNo">311</span>        /**<a name="line.311"></a>
+<span class="sourceLineNo">312</span>         * Sets the list of observables.<a name="line.312"></a>
+<span class="sourceLineNo">313</span>         *<a name="line.313"></a>
+<span class="sourceLineNo">314</span>         * @param observables<a name="line.314"></a>
+<span class="sourceLineNo">315</span>         *            A list of observables - refer to the Pylaski documentation<a name="line.315"></a>
+<span class="sourceLineNo">316</span>         *            (link above)<a name="line.316"></a>
+<span class="sourceLineNo">317</span>         */<a name="line.317"></a>
+<span class="sourceLineNo">318</span>        public void setObservables(String[] observables) {<a name="line.318"></a>
+<span class="sourceLineNo">319</span>            _observables.clear();<a name="line.319"></a>
+<span class="sourceLineNo">320</span><a name="line.320"></a>
+<span class="sourceLineNo">321</span>            for (String observable : observables) {<a name="line.321"></a>
+<span class="sourceLineNo">322</span>                _observables.add(observable);<a name="line.322"></a>
+<span class="sourceLineNo">323</span>            }<a name="line.323"></a>
+<span class="sourceLineNo">324</span>        }<a name="line.324"></a>
+<span class="sourceLineNo">325</span><a name="line.325"></a>
+<span class="sourceLineNo">326</span>        /**<a name="line.326"></a>
+<span class="sourceLineNo">327</span>         * Generates the REST URI for retrieving past and present observable<a name="line.327"></a>
+<span class="sourceLineNo">328</span>         * data.<a name="line.328"></a>
+<span class="sourceLineNo">329</span>         *<a name="line.329"></a>
+<span class="sourceLineNo">330</span>         * @return A request URI<a name="line.330"></a>
+<span class="sourceLineNo">331</span>         * @throws URISyntaxException<a name="line.331"></a>
+<span class="sourceLineNo">332</span>         *             If the URI is invalid<a name="line.332"></a>
+<span class="sourceLineNo">333</span>         */<a name="line.333"></a>
+<span class="sourceLineNo">334</span>        public URI getDataURI() throws URISyntaxException {<a name="line.334"></a>
+<span class="sourceLineNo">335</span>            Date now = new Date();<a name="line.335"></a>
+<span class="sourceLineNo">336</span>            StringBuilder p = new StringBuilder(_getBaseParams());<a name="line.336"></a>
+<span class="sourceLineNo">337</span><a name="line.337"></a>
+<span class="sourceLineNo">338</span>            if (_from == null &amp;&amp; _to == null) {<a name="line.338"></a>
+<span class="sourceLineNo">339</span>                return new URI(host + "/stations/data/latest?" + p.toString());<a name="line.339"></a>
+<span class="sourceLineNo">340</span>            }<a name="line.340"></a>
+<span class="sourceLineNo">341</span><a name="line.341"></a>
+<span class="sourceLineNo">342</span>            if (_from == null || _from.before(now)) {<a name="line.342"></a>
+<span class="sourceLineNo">343</span>                DateFormat df = new SimpleDateFormat(DATE_FORMAT);<a name="line.343"></a>
+<span class="sourceLineNo">344</span><a name="line.344"></a>
+<span class="sourceLineNo">345</span>                if (_from != null) {<a name="line.345"></a>
+<span class="sourceLineNo">346</span>                    p.append("from=").append(df.format(_from)).append("&amp;");<a name="line.346"></a>
+<span class="sourceLineNo">347</span>                }<a name="line.347"></a>
+<span class="sourceLineNo">348</span><a name="line.348"></a>
+<span class="sourceLineNo">349</span>                if (_to != null) {<a name="line.349"></a>
+<span class="sourceLineNo">350</span>                    // Cap the "to" date at the latest date<a name="line.350"></a>
+<span class="sourceLineNo">351</span>                    Date to = _to.after(now) ? now : _to;<a name="line.351"></a>
+<span class="sourceLineNo">352</span>                    p.append("to=").append(df.format(to)).append("&amp;");<a name="line.352"></a>
+<span class="sourceLineNo">353</span>                }<a name="line.353"></a>
+<span class="sourceLineNo">354</span><a name="line.354"></a>
+<span class="sourceLineNo">355</span>                return new URI(host + "/stations/data?" + p.toString());<a name="line.355"></a>
+<span class="sourceLineNo">356</span>            }<a name="line.356"></a>
+<span class="sourceLineNo">357</span><a name="line.357"></a>
+<span class="sourceLineNo">358</span>            return null;<a name="line.358"></a>
+<span class="sourceLineNo">359</span>        }<a name="line.359"></a>
+<span class="sourceLineNo">360</span><a name="line.360"></a>
+<span class="sourceLineNo">361</span>        /**<a name="line.361"></a>
+<span class="sourceLineNo">362</span>         * Generates the REST URI for retrieving future/forecast observable<a name="line.362"></a>
+<span class="sourceLineNo">363</span>         * data.<a name="line.363"></a>
+<span class="sourceLineNo">364</span>         *<a name="line.364"></a>
+<span class="sourceLineNo">365</span>         * @param hrrrx<a name="line.365"></a>
+<span class="sourceLineNo">366</span>         *            Whether to use the HRRRx forecast data<a name="line.366"></a>
+<span class="sourceLineNo">367</span>         * @return A request URI<a name="line.367"></a>
+<span class="sourceLineNo">368</span>         * @throws URISyntaxException<a name="line.368"></a>
+<span class="sourceLineNo">369</span>         *             If the URI is invalid<a name="line.369"></a>
+<span class="sourceLineNo">370</span>         */<a name="line.370"></a>
+<span class="sourceLineNo">371</span>        public URI getForecastURI(boolean hrrrx) throws URISyntaxException {<a name="line.371"></a>
+<span class="sourceLineNo">372</span>            Date now = new Date();<a name="line.372"></a>
+<span class="sourceLineNo">373</span>            StringBuilder p = new StringBuilder(_getBaseParams());<a name="line.373"></a>
+<span class="sourceLineNo">374</span><a name="line.374"></a>
+<span class="sourceLineNo">375</span>            p.append("hrrrx=").append(hrrrx ? "true" : "false").append("&amp;");<a name="line.375"></a>
+<span class="sourceLineNo">376</span><a name="line.376"></a>
+<span class="sourceLineNo">377</span>            // Dates don't seem to do anything using the REST service, but put<a name="line.377"></a>
+<span class="sourceLineNo">378</span>            // them in for good measure<a name="line.378"></a>
+<span class="sourceLineNo">379</span>            if (_to != null &amp;&amp; _to.after(now)) {<a name="line.379"></a>
+<span class="sourceLineNo">380</span>                DateFormat df = new SimpleDateFormat(DATE_FORMAT);<a name="line.380"></a>
+<span class="sourceLineNo">381</span><a name="line.381"></a>
+<span class="sourceLineNo">382</span>                if (_from != null) {<a name="line.382"></a>
+<span class="sourceLineNo">383</span>                    // Cap the "from" date at the latest date<a name="line.383"></a>
+<span class="sourceLineNo">384</span>                    Date from = _from.before(now) ? now : _from;<a name="line.384"></a>
+<span class="sourceLineNo">385</span>                    p.append("from=").append(df.format(from)).append("&amp;");<a name="line.385"></a>
+<span class="sourceLineNo">386</span>                }<a name="line.386"></a>
+<span class="sourceLineNo">387</span><a name="line.387"></a>
+<span class="sourceLineNo">388</span>                p.append("to=").append(df.format(_to)).append("&amp;");<a name="line.388"></a>
+<span class="sourceLineNo">389</span><a name="line.389"></a>
+<span class="sourceLineNo">390</span>                return new URI(host + "/forecast?" + p.toString());<a name="line.390"></a>
+<span class="sourceLineNo">391</span>            }<a name="line.391"></a>
+<span class="sourceLineNo">392</span><a name="line.392"></a>
+<span class="sourceLineNo">393</span>            return null;<a name="line.393"></a>
+<span class="sourceLineNo">394</span>        }<a name="line.394"></a>
+<span class="sourceLineNo">395</span><a name="line.395"></a>
+<span class="sourceLineNo">396</span>        /**<a name="line.396"></a>
+<span class="sourceLineNo">397</span>         * Generates the REST URI for retrieving future/forecast observable<a name="line.397"></a>
+<span class="sourceLineNo">398</span>         * data. Defaults the HRRRx setting to false.<a name="line.398"></a>
+<span class="sourceLineNo">399</span>         *<a name="line.399"></a>
+<span class="sourceLineNo">400</span>         * @return A request URI<a name="line.400"></a>
+<span class="sourceLineNo">401</span>         * @throws URISyntaxException<a name="line.401"></a>
+<span class="sourceLineNo">402</span>         *             If the URI is invalid<a name="line.402"></a>
+<span class="sourceLineNo">403</span>         */<a name="line.403"></a>
+<span class="sourceLineNo">404</span>        public URI getForecastURI() throws URISyntaxException {<a name="line.404"></a>
+<span class="sourceLineNo">405</span>            return getForecastURI(false);<a name="line.405"></a>
+<span class="sourceLineNo">406</span>        }<a name="line.406"></a>
+<span class="sourceLineNo">407</span><a name="line.407"></a>
+<span class="sourceLineNo">408</span>        // Private methods<a name="line.408"></a>
+<span class="sourceLineNo">409</span><a name="line.409"></a>
+<span class="sourceLineNo">410</span>        /**<a name="line.410"></a>
+<span class="sourceLineNo">411</span>         * Generates shared URI parameters for past/present and forecast URI's<a name="line.411"></a>
+<span class="sourceLineNo">412</span>         *<a name="line.412"></a>
+<span class="sourceLineNo">413</span>         * @return A string of URI parameters<a name="line.413"></a>
+<span class="sourceLineNo">414</span>         */<a name="line.414"></a>
+<span class="sourceLineNo">415</span>        private String _getBaseParams() {<a name="line.415"></a>
+<span class="sourceLineNo">416</span>            StringBuilder p = new StringBuilder();<a name="line.416"></a>
+<span class="sourceLineNo">417</span><a name="line.417"></a>
+<span class="sourceLineNo">418</span>            p.append("selection=").append(getSelectionString(_selection)).append("&amp;");<a name="line.418"></a>
+<span class="sourceLineNo">419</span><a name="line.419"></a>
+<span class="sourceLineNo">420</span>            if (_selection == Selection.BOUNDING_BOX) {<a name="line.420"></a>
+<span class="sourceLineNo">421</span>                p.append("minLat=").append(_minLat).append("&amp;");<a name="line.421"></a>
+<span class="sourceLineNo">422</span>                p.append("minLon=").append(_minLon).append("&amp;");<a name="line.422"></a>
+<span class="sourceLineNo">423</span>                p.append("maxLat=").append(_maxLat).append("&amp;");<a name="line.423"></a>
+<span class="sourceLineNo">424</span>                p.append("maxLon=").append(_maxLon).append("&amp;");<a name="line.424"></a>
+<span class="sourceLineNo">425</span>            } else {<a name="line.425"></a>
+<span class="sourceLineNo">426</span>                p.append("lat=").append(_minLat).append("&amp;");<a name="line.426"></a>
+<span class="sourceLineNo">427</span>                p.append("lon=").append(_minLon).append("&amp;");<a name="line.427"></a>
+<span class="sourceLineNo">428</span>            }<a name="line.428"></a>
+<span class="sourceLineNo">429</span><a name="line.429"></a>
+<span class="sourceLineNo">430</span>            if (_selection == Selection.WITHIN_RADIUS) {<a name="line.430"></a>
+<span class="sourceLineNo">431</span>                p.append("radius=").append(_radius).append("&amp;");<a name="line.431"></a>
+<span class="sourceLineNo">432</span>            }<a name="line.432"></a>
+<span class="sourceLineNo">433</span><a name="line.433"></a>
+<span class="sourceLineNo">434</span>            for (String observable : _observables) {<a name="line.434"></a>
+<span class="sourceLineNo">435</span>                p.append("observable=").append(observable).append("&amp;");<a name="line.435"></a>
+<span class="sourceLineNo">436</span>            }<a name="line.436"></a>
+<span class="sourceLineNo">437</span><a name="line.437"></a>
+<span class="sourceLineNo">438</span>            return p.toString();<a name="line.438"></a>
+<span class="sourceLineNo">439</span>        }<a name="line.439"></a>
+<span class="sourceLineNo">440</span>    }<a name="line.440"></a>
+<span class="sourceLineNo">441</span>}<a name="line.441"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

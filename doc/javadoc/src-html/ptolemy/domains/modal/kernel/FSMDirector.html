@@ -1,0 +1,1531 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../../../stylesheet.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>/* An FSMDirector governs the execution of a modal model.<a name="line.1"></a>
+<span class="sourceLineNo">002</span><a name="line.2"></a>
+<span class="sourceLineNo">003</span> Copyright (c) 1999-2014 The Regents of the University of California.<a name="line.3"></a>
+<span class="sourceLineNo">004</span> All rights reserved.<a name="line.4"></a>
+<span class="sourceLineNo">005</span> Permission is hereby granted, without written agreement and without<a name="line.5"></a>
+<span class="sourceLineNo">006</span> license or royalty fees, to use, copy, modify, and distribute this<a name="line.6"></a>
+<span class="sourceLineNo">007</span> software and its documentation for any purpose, provided that the above<a name="line.7"></a>
+<span class="sourceLineNo">008</span> copyright notice and the following two paragraphs appear in all copies<a name="line.8"></a>
+<span class="sourceLineNo">009</span> of this software.<a name="line.9"></a>
+<span class="sourceLineNo">010</span><a name="line.10"></a>
+<span class="sourceLineNo">011</span> IN NO EVENT SHALL THE UNIVERSITY OF CALIFORNIA BE LIABLE TO ANY PARTY<a name="line.11"></a>
+<span class="sourceLineNo">012</span> FOR DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES<a name="line.12"></a>
+<span class="sourceLineNo">013</span> ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION, EVEN IF<a name="line.13"></a>
+<span class="sourceLineNo">014</span> THE UNIVERSITY OF CALIFORNIA HAS BEEN ADVISED OF THE POSSIBILITY OF<a name="line.14"></a>
+<span class="sourceLineNo">015</span> SUCH DAMAGE.<a name="line.15"></a>
+<span class="sourceLineNo">016</span><a name="line.16"></a>
+<span class="sourceLineNo">017</span> THE UNIVERSITY OF CALIFORNIA SPECIFICALLY DISCLAIMS ANY WARRANTIES,<a name="line.17"></a>
+<span class="sourceLineNo">018</span> INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF<a name="line.18"></a>
+<span class="sourceLineNo">019</span> MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE<a name="line.19"></a>
+<span class="sourceLineNo">020</span> PROVIDED HEREUNDER IS ON AN "AS IS" BASIS, AND THE UNIVERSITY OF<a name="line.20"></a>
+<span class="sourceLineNo">021</span> CALIFORNIA HAS NO OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT, UPDATES,<a name="line.21"></a>
+<span class="sourceLineNo">022</span> ENHANCEMENTS, OR MODIFICATIONS.<a name="line.22"></a>
+<span class="sourceLineNo">023</span><a name="line.23"></a>
+<span class="sourceLineNo">024</span> PT_COPYRIGHT_VERSION_2<a name="line.24"></a>
+<span class="sourceLineNo">025</span> COPYRIGHTENDKEY<a name="line.25"></a>
+<span class="sourceLineNo">026</span> */<a name="line.26"></a>
+<span class="sourceLineNo">027</span>package ptolemy.domains.modal.kernel;<a name="line.27"></a>
+<span class="sourceLineNo">028</span><a name="line.28"></a>
+<span class="sourceLineNo">029</span>import java.util.HashMap;<a name="line.29"></a>
+<span class="sourceLineNo">030</span>import java.util.Iterator;<a name="line.30"></a>
+<span class="sourceLineNo">031</span>import java.util.LinkedList;<a name="line.31"></a>
+<span class="sourceLineNo">032</span>import java.util.List;<a name="line.32"></a>
+<span class="sourceLineNo">033</span>import java.util.Map;<a name="line.33"></a>
+<span class="sourceLineNo">034</span><a name="line.34"></a>
+<span class="sourceLineNo">035</span>import ptolemy.actor.Actor;<a name="line.35"></a>
+<span class="sourceLineNo">036</span>import ptolemy.actor.CompositeActor;<a name="line.36"></a>
+<span class="sourceLineNo">037</span>import ptolemy.actor.Director;<a name="line.37"></a>
+<span class="sourceLineNo">038</span>import ptolemy.actor.IOPort;<a name="line.38"></a>
+<span class="sourceLineNo">039</span>import ptolemy.actor.InvariantViolationException;<a name="line.39"></a>
+<span class="sourceLineNo">040</span>import ptolemy.actor.NoTokenException;<a name="line.40"></a>
+<span class="sourceLineNo">041</span>import ptolemy.actor.QuasiTransparentDirector;<a name="line.41"></a>
+<span class="sourceLineNo">042</span>import ptolemy.actor.Receiver;<a name="line.42"></a>
+<span class="sourceLineNo">043</span>import ptolemy.actor.SuperdenseTimeDirector;<a name="line.43"></a>
+<span class="sourceLineNo">044</span>import ptolemy.actor.TypedActor;<a name="line.44"></a>
+<span class="sourceLineNo">045</span>import ptolemy.actor.util.BooleanDependency;<a name="line.45"></a>
+<span class="sourceLineNo">046</span>import ptolemy.actor.util.CausalityInterface;<a name="line.46"></a>
+<span class="sourceLineNo">047</span>import ptolemy.actor.util.Dependency;<a name="line.47"></a>
+<span class="sourceLineNo">048</span>import ptolemy.actor.util.ExplicitChangeContext;<a name="line.48"></a>
+<span class="sourceLineNo">049</span>import ptolemy.actor.util.Time;<a name="line.49"></a>
+<span class="sourceLineNo">050</span>import ptolemy.data.BooleanToken;<a name="line.50"></a>
+<span class="sourceLineNo">051</span>import ptolemy.data.Token;<a name="line.51"></a>
+<span class="sourceLineNo">052</span>import ptolemy.data.expr.ParseTreeEvaluator;<a name="line.52"></a>
+<span class="sourceLineNo">053</span>import ptolemy.data.expr.Variable;<a name="line.53"></a>
+<span class="sourceLineNo">054</span>import ptolemy.domains.modal.modal.Refinement;<a name="line.54"></a>
+<span class="sourceLineNo">055</span>import ptolemy.kernel.CompositeEntity;<a name="line.55"></a>
+<span class="sourceLineNo">056</span>import ptolemy.kernel.Entity;<a name="line.56"></a>
+<span class="sourceLineNo">057</span>import ptolemy.kernel.util.Attribute;<a name="line.57"></a>
+<span class="sourceLineNo">058</span>import ptolemy.kernel.util.IllegalActionException;<a name="line.58"></a>
+<span class="sourceLineNo">059</span>import ptolemy.kernel.util.InternalErrorException;<a name="line.59"></a>
+<span class="sourceLineNo">060</span>import ptolemy.kernel.util.ModelErrorHandler;<a name="line.60"></a>
+<span class="sourceLineNo">061</span>import ptolemy.kernel.util.NameDuplicationException;<a name="line.61"></a>
+<span class="sourceLineNo">062</span>import ptolemy.kernel.util.Nameable;<a name="line.62"></a>
+<span class="sourceLineNo">063</span>import ptolemy.kernel.util.NamedObj;<a name="line.63"></a>
+<span class="sourceLineNo">064</span>import ptolemy.kernel.util.StringAttribute;<a name="line.64"></a>
+<span class="sourceLineNo">065</span>import ptolemy.kernel.util.Workspace;<a name="line.65"></a>
+<span class="sourceLineNo">066</span><a name="line.66"></a>
+<span class="sourceLineNo">067</span>///////////////////////////////////////////////////////////////////<a name="line.67"></a>
+<span class="sourceLineNo">068</span>//// FSMDirector<a name="line.68"></a>
+<span class="sourceLineNo">069</span><a name="line.69"></a>
+<span class="sourceLineNo">070</span>/**<a name="line.70"></a>
+<span class="sourceLineNo">071</span> * An FSMDirector governs the execution of a modal model. A modal<a name="line.71"></a>
+<span class="sourceLineNo">072</span> * model is a TypedCompositeActor with a FSMDirector as local<a name="line.72"></a>
+<span class="sourceLineNo">073</span> * director. The mode control logic is captured by a mode controller,<a name="line.73"></a>
+<span class="sourceLineNo">074</span> * an instance of FSMActor contained by the composite actor. Each<a name="line.74"></a>
+<span class="sourceLineNo">075</span> * state of the mode controller represents a mode of operation and can<a name="line.75"></a>
+<span class="sourceLineNo">076</span> * be refined by an opaque CompositeActor contained by the same<a name="line.76"></a>
+<span class="sourceLineNo">077</span> * composite actor.<a name="line.77"></a>
+<span class="sourceLineNo">078</span><a name="line.78"></a>
+<span class="sourceLineNo">079</span> * &lt;p&gt; The mode controller contains a set of states and transitions. A<a name="line.79"></a>
+<span class="sourceLineNo">080</span> * transition has a &lt;i&gt;guard expression&lt;/i&gt;, any number of &lt;i&gt;output<a name="line.80"></a>
+<span class="sourceLineNo">081</span> * actions&lt;/i&gt;, and any number of &lt;i&gt;set actions&lt;/i&gt;. It has an<a name="line.81"></a>
+<span class="sourceLineNo">082</span> * &lt;i&gt;initial state&lt;/i&gt;, which is the unique state whose<a name="line.82"></a>
+<span class="sourceLineNo">083</span> * &lt;i&gt;isInitialState&lt;/i&gt; parameter is true.  The states and<a name="line.83"></a>
+<span class="sourceLineNo">084</span> * transitions can have &lt;i&gt;refinements&lt;/i&gt;, which are composite<a name="line.84"></a>
+<span class="sourceLineNo">085</span> * actors. In outline, a firing of this director is a sequence of<a name="line.85"></a>
+<span class="sourceLineNo">086</span> * steps:&lt;/p&gt;<a name="line.86"></a>
+<span class="sourceLineNo">087</span> *<a name="line.87"></a>
+<span class="sourceLineNo">088</span> * &lt;ol&gt;<a name="line.88"></a>
+<span class="sourceLineNo">089</span> * &lt;li&gt;Read inputs.<a name="line.89"></a>
+<span class="sourceLineNo">090</span> * &lt;li&gt;Evaluate the guards of preemptive transition out of the current state.<a name="line.90"></a>
+<span class="sourceLineNo">091</span> * &lt;li&gt;If no preemptive transition is enabled:<a name="line.91"></a>
+<span class="sourceLineNo">092</span> * &lt;ol&gt;<a name="line.92"></a>
+<span class="sourceLineNo">093</span> * &lt;li&gt;Fire the refinements of the current state (if any).<a name="line.93"></a>
+<span class="sourceLineNo">094</span> * &lt;li&gt;Evaluate guards on non-preemptive transitions out of the current state.<a name="line.94"></a>
+<span class="sourceLineNo">095</span> * &lt;/ol&gt;<a name="line.95"></a>
+<span class="sourceLineNo">096</span> * &lt;li&gt;Choose a transition whose guard is true.<a name="line.96"></a>
+<span class="sourceLineNo">097</span> * &lt;li&gt;Execute the output actions of the chosen transition.<a name="line.97"></a>
+<span class="sourceLineNo">098</span> * &lt;li&gt;Fire the transition refinements of the chosen transition.<a name="line.98"></a>
+<span class="sourceLineNo">099</span> * &lt;/ol&gt;<a name="line.99"></a>
+<span class="sourceLineNo">100</span> * &lt;p&gt;In postfire, the following steps are performed:&lt;/p&gt;<a name="line.100"></a>
+<span class="sourceLineNo">101</span> * &lt;ol&gt;<a name="line.101"></a>
+<span class="sourceLineNo">102</span> * &lt;li&gt;Postfire the refinements of the current state if they were fired.<a name="line.102"></a>
+<span class="sourceLineNo">103</span> * &lt;li&gt;Initialize the refinements of the destination state if the transition is a reset<a name="line.103"></a>
+<span class="sourceLineNo">104</span> * transition.<a name="line.104"></a>
+<span class="sourceLineNo">105</span> * &lt;li&gt;Execute the set actions of the chosen transition.<a name="line.105"></a>
+<span class="sourceLineNo">106</span> * &lt;li&gt;Postfire the transition refinements of the chosen transition.<a name="line.106"></a>
+<span class="sourceLineNo">107</span> * &lt;li&gt;Change the current state to the destination of the chosen transition.<a name="line.107"></a>
+<span class="sourceLineNo">108</span> * &lt;/ol&gt;<a name="line.108"></a>
+<span class="sourceLineNo">109</span><a name="line.109"></a>
+<span class="sourceLineNo">110</span> * &lt;p&gt;Since this director makes no persistent state changes in its fire()<a name="line.110"></a>
+<span class="sourceLineNo">111</span> * method, it conforms with the &lt;i&gt;actor abstract<a name="line.111"></a>
+<span class="sourceLineNo">112</span> * semantics&lt;/i&gt;. Assuming the state and transition refinements also<a name="line.112"></a>
+<span class="sourceLineNo">113</span> * conform, this director can be used inside any Ptolemy II actor<a name="line.113"></a>
+<span class="sourceLineNo">114</span> * model of computation. How it behaves in each domain, however, can<a name="line.114"></a>
+<span class="sourceLineNo">115</span> * be somewhat subtle, particularly with domains that have fixed-point<a name="line.115"></a>
+<span class="sourceLineNo">116</span> * semantics and when nondeterministic transitions are used. The<a name="line.116"></a>
+<span class="sourceLineNo">117</span> * details are given below.&lt;/p&gt;<a name="line.117"></a>
+<span class="sourceLineNo">118</span> *<a name="line.118"></a>
+<span class="sourceLineNo">119</span> * &lt;p&gt; When a modal model is fired, this director first transfers the<a name="line.119"></a>
+<span class="sourceLineNo">120</span> * input tokens from the outside domain to the mode controller and the<a name="line.120"></a>
+<span class="sourceLineNo">121</span> * refinement of its current state. The preemptive transitions from<a name="line.121"></a>
+<span class="sourceLineNo">122</span> * the current state of the mode controller are examined. If there is<a name="line.122"></a>
+<span class="sourceLineNo">123</span> * more than one transition enabled, and any of the enabled<a name="line.123"></a>
+<span class="sourceLineNo">124</span> * transitions is not marked nondeterministic, an exception is<a name="line.124"></a>
+<span class="sourceLineNo">125</span> * thrown. If there is exactly one preemptive transition enabled then<a name="line.125"></a>
+<span class="sourceLineNo">126</span> * it is chosen. The choice actions (outputActions) contained by the<a name="line.126"></a>
+<span class="sourceLineNo">127</span> * transition are executed. Any output token produced by the mode<a name="line.127"></a>
+<span class="sourceLineNo">128</span> * controller is transferred to both the output ports of the modal<a name="line.128"></a>
+<span class="sourceLineNo">129</span> * model and the input ports of the mode controller. Then the<a name="line.129"></a>
+<span class="sourceLineNo">130</span> * refinements associated with the enabled transition are<a name="line.130"></a>
+<span class="sourceLineNo">131</span> * executed. Any output token produced by the refinements is<a name="line.131"></a>
+<span class="sourceLineNo">132</span> * transferred to both the output ports of the modal model and the<a name="line.132"></a>
+<span class="sourceLineNo">133</span> * input ports of the mode controller. The refinements of the current<a name="line.133"></a>
+<span class="sourceLineNo">134</span> * state will not be fired.&lt;/p&gt;<a name="line.134"></a>
+<span class="sourceLineNo">135</span> *<a name="line.135"></a>
+<span class="sourceLineNo">136</span> * &lt;p&gt; If no preemptive transition is enabled, the refinements of the<a name="line.136"></a>
+<span class="sourceLineNo">137</span> * current state are fired. Any output token produced by the<a name="line.137"></a>
+<span class="sourceLineNo">138</span> * refinements is transferred to both the output ports of the modal<a name="line.138"></a>
+<span class="sourceLineNo">139</span> * model and the input ports of the mode controller. After this, the<a name="line.139"></a>
+<span class="sourceLineNo">140</span> * non-preemptive transitions from the current state of the mode<a name="line.140"></a>
+<span class="sourceLineNo">141</span> * controller are examined. If there is more than one transition<a name="line.141"></a>
+<span class="sourceLineNo">142</span> * enabled, and any of the enabled transitions is not marked<a name="line.142"></a>
+<span class="sourceLineNo">143</span> * nondeterministic, an exception is thrown. If there is exactly one<a name="line.143"></a>
+<span class="sourceLineNo">144</span> * non-preemptive transition enabled then it is chosen and the choice<a name="line.144"></a>
+<span class="sourceLineNo">145</span> * actions contained by the transition are executed. Any output token<a name="line.145"></a>
+<span class="sourceLineNo">146</span> * produced by the mode controller is transferred to the output ports<a name="line.146"></a>
+<span class="sourceLineNo">147</span> * of the modal model and the input ports of the mode<a name="line.147"></a>
+<span class="sourceLineNo">148</span> * controller. Then, the refinements of the enabled transition are<a name="line.148"></a>
+<span class="sourceLineNo">149</span> * executed. Any output token produced by the refinements is<a name="line.149"></a>
+<span class="sourceLineNo">150</span> * transferred to both the output ports of the modal model and the<a name="line.150"></a>
+<span class="sourceLineNo">151</span> * input ports of the mode controller.&lt;/p&gt;<a name="line.151"></a>
+<span class="sourceLineNo">152</span> *<a name="line.152"></a>
+<span class="sourceLineNo">153</span> * &lt;p&gt; In a firing, it is possible that the current state refinement<a name="line.153"></a>
+<span class="sourceLineNo">154</span> * produces an output, and a transition that is taken also produces an<a name="line.154"></a>
+<span class="sourceLineNo">155</span> * output on the same port. In this case, only the second of these<a name="line.155"></a>
+<span class="sourceLineNo">156</span> * outputs will appear on the output of the composite actor containing<a name="line.156"></a>
+<span class="sourceLineNo">157</span> * this director.  However, the first of these output values, the one<a name="line.157"></a>
+<span class="sourceLineNo">158</span> * produced by the refinement, may affect whether the transition is<a name="line.158"></a>
+<span class="sourceLineNo">159</span> * taken. That is, it can affect the guard. If in addition a<a name="line.159"></a>
+<span class="sourceLineNo">160</span> * transition refinement writes to the output, then that value will be<a name="line.160"></a>
+<span class="sourceLineNo">161</span> * produced, overwriting the value produced either by the state<a name="line.161"></a>
+<span class="sourceLineNo">162</span> * refinement or the output action on the transition.&lt;/p&gt;<a name="line.162"></a>
+<span class="sourceLineNo">163</span> *<a name="line.163"></a>
+<span class="sourceLineNo">164</span> * &lt;p&gt; At the end of one firing, the modal model transfers its outputs<a name="line.164"></a>
+<span class="sourceLineNo">165</span> * to the outside model. The mode controller does not change state<a name="line.165"></a>
+<span class="sourceLineNo">166</span> * during successive firings in one iteration of the top level in<a name="line.166"></a>
+<span class="sourceLineNo">167</span> * order to support upper level domains that iterate to a fixed<a name="line.167"></a>
+<span class="sourceLineNo">168</span> * point.&lt;/p&gt;<a name="line.168"></a>
+<span class="sourceLineNo">169</span> *<a name="line.169"></a>
+<span class="sourceLineNo">170</span> * &lt;p&gt; When the modal model is postfired, the chosen transition of the<a name="line.170"></a>
+<span class="sourceLineNo">171</span> * latest firing is committed. The commit actions contained by the<a name="line.171"></a>
+<span class="sourceLineNo">172</span> * transition are executed and the current state of the mode<a name="line.172"></a>
+<span class="sourceLineNo">173</span> * controller is set to the destination state of the transition.&lt;/p&gt;<a name="line.173"></a>
+<span class="sourceLineNo">174</span> *<a name="line.174"></a>
+<span class="sourceLineNo">175</span> * &lt;p&gt;FIXME: If a state has multiple refinements, they are fired in the order defined.<a name="line.175"></a>
+<span class="sourceLineNo">176</span> * If they write to the same output, then the "last one wins." It will be its value<a name="line.176"></a>
+<span class="sourceLineNo">177</span> * produced. It might make more sense to require them to be consistent, giving something<a name="line.177"></a>
+<span class="sourceLineNo">178</span> * closer to SR semantics. The same argument could apply when both a refinement and<a name="line.178"></a>
+<span class="sourceLineNo">179</span> * a transition produce outputs.&lt;/p&gt;<a name="line.179"></a>
+<span class="sourceLineNo">180</span> *<a name="line.180"></a>
+<span class="sourceLineNo">181</span> * @author Xiaojun Liu, Haiyang Zheng, Edward A. Lee, Christian Motika<a name="line.181"></a>
+<span class="sourceLineNo">182</span> * @version $Id$<a name="line.182"></a>
+<span class="sourceLineNo">183</span> * @since Ptolemy II 8.0<a name="line.183"></a>
+<span class="sourceLineNo">184</span> * @Pt.ProposedRating Yellow (hyzheng)<a name="line.184"></a>
+<span class="sourceLineNo">185</span> * @Pt.AcceptedRating Red (hyzheng)<a name="line.185"></a>
+<span class="sourceLineNo">186</span> * @see FSMActor<a name="line.186"></a>
+<span class="sourceLineNo">187</span> */<a name="line.187"></a>
+<span class="sourceLineNo">188</span>public class FSMDirector extends Director implements ExplicitChangeContext,<a name="line.188"></a>
+<span class="sourceLineNo">189</span>        QuasiTransparentDirector, SuperdenseTimeDirector {<a name="line.189"></a>
+<span class="sourceLineNo">190</span>    /**<a name="line.190"></a>
+<span class="sourceLineNo">191</span>     * Construct a director in the default workspace with an empty<a name="line.191"></a>
+<span class="sourceLineNo">192</span>     * string as its name. The director is added to the list of<a name="line.192"></a>
+<span class="sourceLineNo">193</span>     * objects in the workspace. Increment the version number of the<a name="line.193"></a>
+<span class="sourceLineNo">194</span>     * workspace.<a name="line.194"></a>
+<span class="sourceLineNo">195</span>     *  @exception NameDuplicationException If construction of Time objects fails.<a name="line.195"></a>
+<span class="sourceLineNo">196</span>     *  @exception IllegalActionException If construction of Time objects fails.<a name="line.196"></a>
+<span class="sourceLineNo">197</span>     */<a name="line.197"></a>
+<span class="sourceLineNo">198</span>    public FSMDirector()<a name="line.198"></a>
+<span class="sourceLineNo">199</span>            throws IllegalActionException, NameDuplicationException {<a name="line.199"></a>
+<span class="sourceLineNo">200</span>        super();<a name="line.200"></a>
+<span class="sourceLineNo">201</span>        _createAttribute();<a name="line.201"></a>
+<span class="sourceLineNo">202</span>    }<a name="line.202"></a>
+<span class="sourceLineNo">203</span><a name="line.203"></a>
+<span class="sourceLineNo">204</span>    /**<a name="line.204"></a>
+<span class="sourceLineNo">205</span>     * Construct a director in the workspace with an empty name. The<a name="line.205"></a>
+<span class="sourceLineNo">206</span>     * director is added to the list of objects in the<a name="line.206"></a>
+<span class="sourceLineNo">207</span>     * workspace. Increment the version number of the workspace.<a name="line.207"></a>
+<span class="sourceLineNo">208</span>     * @param workspace The workspace of this director.<a name="line.208"></a>
+<span class="sourceLineNo">209</span>     *  @exception NameDuplicationException If construction of Time objects fails.<a name="line.209"></a>
+<span class="sourceLineNo">210</span>     *  @exception IllegalActionException If construction of Time objects fails.<a name="line.210"></a>
+<span class="sourceLineNo">211</span>     */<a name="line.211"></a>
+<span class="sourceLineNo">212</span>    public FSMDirector(Workspace workspace)<a name="line.212"></a>
+<span class="sourceLineNo">213</span>            throws IllegalActionException, NameDuplicationException {<a name="line.213"></a>
+<span class="sourceLineNo">214</span>        super(workspace);<a name="line.214"></a>
+<span class="sourceLineNo">215</span>        _createAttribute();<a name="line.215"></a>
+<span class="sourceLineNo">216</span>    }<a name="line.216"></a>
+<span class="sourceLineNo">217</span><a name="line.217"></a>
+<span class="sourceLineNo">218</span>    /**<a name="line.218"></a>
+<span class="sourceLineNo">219</span>     * Construct a director in the given container with the given<a name="line.219"></a>
+<span class="sourceLineNo">220</span>     * name. The container argument must not be null, or a<a name="line.220"></a>
+<span class="sourceLineNo">221</span>     * NullPointerException will be thrown. If the name argument is<a name="line.221"></a>
+<span class="sourceLineNo">222</span>     * null, then the name is set to the empty string. Increment the<a name="line.222"></a>
+<span class="sourceLineNo">223</span>     * version number of the workspace.<a name="line.223"></a>
+<span class="sourceLineNo">224</span>     *<a name="line.224"></a>
+<span class="sourceLineNo">225</span>     * @param container Container of this director.<a name="line.225"></a>
+<span class="sourceLineNo">226</span>     * @param name Name of this director.<a name="line.226"></a>
+<span class="sourceLineNo">227</span>     * @exception IllegalActionException If the name has a period in it, or the director<a name="line.227"></a>
+<span class="sourceLineNo">228</span>     * is not compatible with the specified container.<a name="line.228"></a>
+<span class="sourceLineNo">229</span>     * @exception NameDuplicationException If the container not a CompositeActor and the<a name="line.229"></a>
+<span class="sourceLineNo">230</span>     * name collides with an entity in the container.<a name="line.230"></a>
+<span class="sourceLineNo">231</span>     */<a name="line.231"></a>
+<span class="sourceLineNo">232</span>    public FSMDirector(CompositeEntity container, String name)<a name="line.232"></a>
+<span class="sourceLineNo">233</span>            throws IllegalActionException, NameDuplicationException {<a name="line.233"></a>
+<span class="sourceLineNo">234</span>        super(container, name);<a name="line.234"></a>
+<span class="sourceLineNo">235</span>        _createAttribute();<a name="line.235"></a>
+<span class="sourceLineNo">236</span>    }<a name="line.236"></a>
+<span class="sourceLineNo">237</span><a name="line.237"></a>
+<span class="sourceLineNo">238</span>    ///////////////////////////////////////////////////////////////////<a name="line.238"></a>
+<span class="sourceLineNo">239</span>    ////                         public variables                  ////<a name="line.239"></a>
+<span class="sourceLineNo">240</span><a name="line.240"></a>
+<span class="sourceLineNo">241</span>    /**<a name="line.241"></a>
+<span class="sourceLineNo">242</span>     * Attribute specifying the name of the mode controller in the<a name="line.242"></a>
+<span class="sourceLineNo">243</span>     * container of this director. This director must have a mode<a name="line.243"></a>
+<span class="sourceLineNo">244</span>     * controller that has the same container as this director,<a name="line.244"></a>
+<span class="sourceLineNo">245</span>     * otherwise an IllegalActionException will be thrown when action<a name="line.245"></a>
+<span class="sourceLineNo">246</span>     * methods of this director are called.<a name="line.246"></a>
+<span class="sourceLineNo">247</span>     */<a name="line.247"></a>
+<span class="sourceLineNo">248</span>    public StringAttribute controllerName = null;<a name="line.248"></a>
+<span class="sourceLineNo">249</span><a name="line.249"></a>
+<span class="sourceLineNo">250</span>    ///////////////////////////////////////////////////////////////////<a name="line.250"></a>
+<span class="sourceLineNo">251</span>    ////                         public methods                    ////<a name="line.251"></a>
+<span class="sourceLineNo">252</span><a name="line.252"></a>
+<span class="sourceLineNo">253</span>    /**<a name="line.253"></a>
+<span class="sourceLineNo">254</span>     * React to a change in an attribute. If the changed attribute is<a name="line.254"></a>
+<span class="sourceLineNo">255</span>     * the &lt;i&gt;controllerName&lt;/i&gt; attribute, then make note that this<a name="line.255"></a>
+<span class="sourceLineNo">256</span>     * has changed.<a name="line.256"></a>
+<span class="sourceLineNo">257</span>     * @param attribute The attribute that changed.<a name="line.257"></a>
+<span class="sourceLineNo">258</span>     * @exception IllegalActionException If thrown by the superclass attributeChanged()<a name="line.258"></a>
+<span class="sourceLineNo">259</span>     * method.<a name="line.259"></a>
+<span class="sourceLineNo">260</span>     */<a name="line.260"></a>
+<span class="sourceLineNo">261</span>    @Override<a name="line.261"></a>
+<span class="sourceLineNo">262</span>    public void attributeChanged(Attribute attribute)<a name="line.262"></a>
+<span class="sourceLineNo">263</span>            throws IllegalActionException {<a name="line.263"></a>
+<span class="sourceLineNo">264</span>        super.attributeChanged(attribute);<a name="line.264"></a>
+<span class="sourceLineNo">265</span><a name="line.265"></a>
+<span class="sourceLineNo">266</span>        if (attribute == controllerName) {<a name="line.266"></a>
+<span class="sourceLineNo">267</span>            _controllerVersion = -1;<a name="line.267"></a>
+<span class="sourceLineNo">268</span>        }<a name="line.268"></a>
+<span class="sourceLineNo">269</span>    }<a name="line.269"></a>
+<span class="sourceLineNo">270</span><a name="line.270"></a>
+<span class="sourceLineNo">271</span>    /**<a name="line.271"></a>
+<span class="sourceLineNo">272</span>     * Clone the director into the specified workspace. This calls the<a name="line.272"></a>
+<span class="sourceLineNo">273</span>     * base class and then sets the attribute public members to refer<a name="line.273"></a>
+<span class="sourceLineNo">274</span>     * to the attributes of the new director.<a name="line.274"></a>
+<span class="sourceLineNo">275</span>     *<a name="line.275"></a>
+<span class="sourceLineNo">276</span>     * @param workspace The workspace for the new director.<a name="line.276"></a>
+<span class="sourceLineNo">277</span>     * @return A new director.<a name="line.277"></a>
+<span class="sourceLineNo">278</span>     * @exception CloneNotSupportedException If a derived class contains an attribute that<a name="line.278"></a>
+<span class="sourceLineNo">279</span>     * cannot be cloned.<a name="line.279"></a>
+<span class="sourceLineNo">280</span>     */<a name="line.280"></a>
+<span class="sourceLineNo">281</span>    @Override<a name="line.281"></a>
+<span class="sourceLineNo">282</span>    public Object clone(Workspace workspace) throws CloneNotSupportedException {<a name="line.282"></a>
+<span class="sourceLineNo">283</span>        FSMDirector newObject = (FSMDirector) super.clone(workspace);<a name="line.283"></a>
+<span class="sourceLineNo">284</span>        // Protected variables.<a name="line.284"></a>
+<span class="sourceLineNo">285</span>        newObject._currentLocalReceiverMap = null;<a name="line.285"></a>
+<span class="sourceLineNo">286</span>        newObject._localReceiverMaps = new HashMap();<a name="line.286"></a>
+<span class="sourceLineNo">287</span><a name="line.287"></a>
+<span class="sourceLineNo">288</span>        // Private variables.<a name="line.288"></a>
+<span class="sourceLineNo">289</span>        newObject._controller = null;<a name="line.289"></a>
+<span class="sourceLineNo">290</span>        newObject._controllerVersion = -1;<a name="line.290"></a>
+<span class="sourceLineNo">291</span>        newObject._localReceiverMapsVersion = -1;<a name="line.291"></a>
+<span class="sourceLineNo">292</span><a name="line.292"></a>
+<span class="sourceLineNo">293</span>        return newObject;<a name="line.293"></a>
+<span class="sourceLineNo">294</span>    }<a name="line.294"></a>
+<span class="sourceLineNo">295</span><a name="line.295"></a>
+<span class="sourceLineNo">296</span>    /**<a name="line.296"></a>
+<span class="sourceLineNo">297</span>     * Return a default dependency to use between input input ports<a name="line.297"></a>
+<span class="sourceLineNo">298</span>     * and output ports. This overrides the base class so that if<a name="line.298"></a>
+<span class="sourceLineNo">299</span>     * there is an executive director, then we get the default<a name="line.299"></a>
+<span class="sourceLineNo">300</span>     * dependency from it.<a name="line.300"></a>
+<span class="sourceLineNo">301</span>     *<a name="line.301"></a>
+<span class="sourceLineNo">302</span>     * @see Dependency<a name="line.302"></a>
+<span class="sourceLineNo">303</span>     * @see CausalityInterface<a name="line.303"></a>
+<span class="sourceLineNo">304</span>     * @see Actor#getCausalityInterface()<a name="line.304"></a>
+<span class="sourceLineNo">305</span>     * @return A default dependency between input ports and output ports.<a name="line.305"></a>
+<span class="sourceLineNo">306</span>     */<a name="line.306"></a>
+<span class="sourceLineNo">307</span>    @Override<a name="line.307"></a>
+<span class="sourceLineNo">308</span>    public Dependency defaultDependency() {<a name="line.308"></a>
+<span class="sourceLineNo">309</span>        Director executiveDirector = ((Actor) getContainer())<a name="line.309"></a>
+<span class="sourceLineNo">310</span>                .getExecutiveDirector();<a name="line.310"></a>
+<span class="sourceLineNo">311</span>        if (isEmbedded() &amp;&amp; executiveDirector != null) {<a name="line.311"></a>
+<span class="sourceLineNo">312</span>            return executiveDirector.defaultDependency();<a name="line.312"></a>
+<span class="sourceLineNo">313</span>        }<a name="line.313"></a>
+<span class="sourceLineNo">314</span>        return BooleanDependency.OTIMES_IDENTITY;<a name="line.314"></a>
+<span class="sourceLineNo">315</span>    }<a name="line.315"></a>
+<span class="sourceLineNo">316</span><a name="line.316"></a>
+<span class="sourceLineNo">317</span>    /**<a name="line.317"></a>
+<span class="sourceLineNo">318</span>     * Fire the modal model for one iteration. If there is a<a name="line.318"></a>
+<span class="sourceLineNo">319</span>     * preemptive transition enabled, execute its choice actions<a name="line.319"></a>
+<span class="sourceLineNo">320</span>     * (outputActions). Otherwise, fire the refinement of the current<a name="line.320"></a>
+<span class="sourceLineNo">321</span>     * state.  After this firing, if there is a transition enabled,<a name="line.321"></a>
+<span class="sourceLineNo">322</span>     * execute its choice actions. If any tokens are produced during<a name="line.322"></a>
+<span class="sourceLineNo">323</span>     * this iteration, they are sent to the output ports of the<a name="line.323"></a>
+<span class="sourceLineNo">324</span>     * model model and also the input ports of the mode controller.<a name="line.324"></a>
+<span class="sourceLineNo">325</span>     *<a name="line.325"></a>
+<span class="sourceLineNo">326</span>     * @exception IllegalActionException If there is more than one<a name="line.326"></a>
+<span class="sourceLineNo">327</span>     *                transition enabled and nondeterminism is not<a name="line.327"></a>
+<span class="sourceLineNo">328</span>     *                permitted, or there is no controller, or it is<a name="line.328"></a>
+<span class="sourceLineNo">329</span>     *                thrown by any choice action.<a name="line.329"></a>
+<span class="sourceLineNo">330</span>     */<a name="line.330"></a>
+<span class="sourceLineNo">331</span>    @Override<a name="line.331"></a>
+<span class="sourceLineNo">332</span>    public void fire() throws IllegalActionException {<a name="line.332"></a>
+<span class="sourceLineNo">333</span>        FSMActor controller = getController();<a name="line.333"></a>
+<span class="sourceLineNo">334</span>        State currentState = controller.currentState();<a name="line.334"></a>
+<span class="sourceLineNo">335</span>        if (_debugging) {<a name="line.335"></a>
+<span class="sourceLineNo">336</span>            _debug("*** Firing " + getFullName(), " at time " + getModelTime());<a name="line.336"></a>
+<span class="sourceLineNo">337</span>            _debug("Current state is:", currentState.getName());<a name="line.337"></a>
+<span class="sourceLineNo">338</span>        }<a name="line.338"></a>
+<span class="sourceLineNo">339</span>        controller.fire();<a name="line.339"></a>
+<span class="sourceLineNo">340</span>    }<a name="line.340"></a>
+<span class="sourceLineNo">341</span><a name="line.341"></a>
+<span class="sourceLineNo">342</span>    /**<a name="line.342"></a>
+<span class="sourceLineNo">343</span>     * Schedule a firing of the given actor at the given time<a name="line.343"></a>
+<span class="sourceLineNo">344</span>     * and microstep. If there exists an executive<a name="line.344"></a>
+<span class="sourceLineNo">345</span>     * director, this method delegates to the fireAt() method of the executive director by<a name="line.345"></a>
+<span class="sourceLineNo">346</span>     * requesting a firing of the container of this director at the given time adjusted by the<a name="line.346"></a>
+<span class="sourceLineNo">347</span>     * current offset between local time and the environment time.<a name="line.347"></a>
+<span class="sourceLineNo">348</span>     *<a name="line.348"></a>
+<span class="sourceLineNo">349</span>     * &lt;p&gt; If there is no executive director, then the request results<a name="line.349"></a>
+<span class="sourceLineNo">350</span>     * in model time of this director being set to the specified<a name="line.350"></a>
+<span class="sourceLineNo">351</span>     * time. The reason for this latter behavior is to support models<a name="line.351"></a>
+<span class="sourceLineNo">352</span>     * where FSM is at the top level. A director inside the state<a name="line.352"></a>
+<span class="sourceLineNo">353</span>     * refinements could be timed, and expects time to advance in its<a name="line.353"></a>
+<span class="sourceLineNo">354</span>     * environment between firings. It typically makes a call to<a name="line.354"></a>
+<span class="sourceLineNo">355</span>     * fireAt() at the conclusion of each iteration to specify the<a name="line.355"></a>
+<span class="sourceLineNo">356</span>     * time value it expects to next see. Such directors can thus be<a name="line.356"></a>
+<span class="sourceLineNo">357</span>     * used inside top-level FSM models. For example, the DEDirector<a name="line.357"></a>
+<span class="sourceLineNo">358</span>     * and SDFDirector behave exactly this way.&lt;/p&gt;<a name="line.358"></a>
+<span class="sourceLineNo">359</span>     *<a name="line.359"></a>
+<span class="sourceLineNo">360</span>     * @param actor The actor scheduled to be fired.<a name="line.360"></a>
+<span class="sourceLineNo">361</span>     * @param time The scheduled time.<a name="line.361"></a>
+<span class="sourceLineNo">362</span>     * @param microstep The microstep.<a name="line.362"></a>
+<span class="sourceLineNo">363</span>     * @return The time at which the actor passed as an argument will be fired.<a name="line.363"></a>
+<span class="sourceLineNo">364</span>     * @exception IllegalActionException If thrown by the executive director.<a name="line.364"></a>
+<span class="sourceLineNo">365</span>     */<a name="line.365"></a>
+<span class="sourceLineNo">366</span>    @Override<a name="line.366"></a>
+<span class="sourceLineNo">367</span>    public Time fireAt(Actor actor, Time time, int microstep)<a name="line.367"></a>
+<span class="sourceLineNo">368</span>            throws IllegalActionException {<a name="line.368"></a>
+<span class="sourceLineNo">369</span>        Actor container = (Actor) getContainer();<a name="line.369"></a>
+<span class="sourceLineNo">370</span>        if (container != null) {<a name="line.370"></a>
+<span class="sourceLineNo">371</span>            Director director = container.getExecutiveDirector();<a name="line.371"></a>
+<span class="sourceLineNo">372</span>            if (isEmbedded() &amp;&amp; director != null) {<a name="line.372"></a>
+<span class="sourceLineNo">373</span>                if (_debugging) {<a name="line.373"></a>
+<span class="sourceLineNo">374</span>                    _debug("**** Requesting that enclosing director refire me at "<a name="line.374"></a>
+<span class="sourceLineNo">375</span>                            + time + " with microstep " + microstep);<a name="line.375"></a>
+<span class="sourceLineNo">376</span>                }<a name="line.376"></a>
+<span class="sourceLineNo">377</span>                // Translate the local time into an environment time.<a name="line.377"></a>
+<span class="sourceLineNo">378</span>                Time environmentTime = localClock<a name="line.378"></a>
+<span class="sourceLineNo">379</span>                        .getEnvironmentTimeForLocalTime(time);<a name="line.379"></a>
+<span class="sourceLineNo">380</span>                Time result = director.fireAt(container, environmentTime,<a name="line.380"></a>
+<span class="sourceLineNo">381</span>                        microstep);<a name="line.381"></a>
+<span class="sourceLineNo">382</span><a name="line.382"></a>
+<span class="sourceLineNo">383</span>                // Translate the response from the environment into a local time.<a name="line.383"></a>
+<span class="sourceLineNo">384</span>                return localClock.getLocalTimeForEnvironmentTime(result);<a name="line.384"></a>
+<span class="sourceLineNo">385</span>            }<a name="line.385"></a>
+<span class="sourceLineNo">386</span><a name="line.386"></a>
+<span class="sourceLineNo">387</span>        }<a name="line.387"></a>
+<span class="sourceLineNo">388</span>        setModelTime(time);<a name="line.388"></a>
+<span class="sourceLineNo">389</span>        return time;<a name="line.389"></a>
+<span class="sourceLineNo">390</span>    }<a name="line.390"></a>
+<span class="sourceLineNo">391</span><a name="line.391"></a>
+<span class="sourceLineNo">392</span>    /**<a name="line.392"></a>
+<span class="sourceLineNo">393</span>     * Return the mode controller of this director. The name of the<a name="line.393"></a>
+<span class="sourceLineNo">394</span>     * mode controller is specified by the &lt;i&gt;controllerName&lt;/i&gt;<a name="line.394"></a>
+<span class="sourceLineNo">395</span>     * attribute. The mode controller must have the same container as<a name="line.395"></a>
+<span class="sourceLineNo">396</span>     * this director. This method is read-synchronized on the<a name="line.396"></a>
+<span class="sourceLineNo">397</span>     * workspace.<a name="line.397"></a>
+<span class="sourceLineNo">398</span>     *<a name="line.398"></a>
+<span class="sourceLineNo">399</span>     * @return The mode controller of this director.<a name="line.399"></a>
+<span class="sourceLineNo">400</span>     * @exception IllegalActionException If no controller is found.<a name="line.400"></a>
+<span class="sourceLineNo">401</span>     */<a name="line.401"></a>
+<span class="sourceLineNo">402</span>    public FSMActor getController() throws IllegalActionException {<a name="line.402"></a>
+<span class="sourceLineNo">403</span>        if (_controllerVersion == workspace().getVersion()) {<a name="line.403"></a>
+<span class="sourceLineNo">404</span>            return _controller;<a name="line.404"></a>
+<span class="sourceLineNo">405</span>        }<a name="line.405"></a>
+<span class="sourceLineNo">406</span><a name="line.406"></a>
+<span class="sourceLineNo">407</span>        try {<a name="line.407"></a>
+<span class="sourceLineNo">408</span>            workspace().getReadAccess();<a name="line.408"></a>
+<span class="sourceLineNo">409</span><a name="line.409"></a>
+<span class="sourceLineNo">410</span>            String name = controllerName.getExpression();<a name="line.410"></a>
+<span class="sourceLineNo">411</span><a name="line.411"></a>
+<span class="sourceLineNo">412</span>            if (name == null) {<a name="line.412"></a>
+<span class="sourceLineNo">413</span>                throw new IllegalActionException(this,<a name="line.413"></a>
+<span class="sourceLineNo">414</span>                        "No name for mode " + "controller is set.");<a name="line.414"></a>
+<span class="sourceLineNo">415</span>            }<a name="line.415"></a>
+<span class="sourceLineNo">416</span><a name="line.416"></a>
+<span class="sourceLineNo">417</span>            Nameable container = getContainer();<a name="line.417"></a>
+<span class="sourceLineNo">418</span><a name="line.418"></a>
+<span class="sourceLineNo">419</span>            if (!(container instanceof CompositeActor)) {<a name="line.419"></a>
+<span class="sourceLineNo">420</span>                throw new IllegalActionException(this, "No controller found.");<a name="line.420"></a>
+<span class="sourceLineNo">421</span>            }<a name="line.421"></a>
+<span class="sourceLineNo">422</span><a name="line.422"></a>
+<span class="sourceLineNo">423</span>            CompositeActor cont = (CompositeActor) container;<a name="line.423"></a>
+<span class="sourceLineNo">424</span>            Entity entity = cont.getEntity(name);<a name="line.424"></a>
+<span class="sourceLineNo">425</span><a name="line.425"></a>
+<span class="sourceLineNo">426</span>            if (entity == null) {<a name="line.426"></a>
+<span class="sourceLineNo">427</span>                throw new IllegalActionException(this,<a name="line.427"></a>
+<span class="sourceLineNo">428</span>                        "No controller found " + "with name " + name);<a name="line.428"></a>
+<span class="sourceLineNo">429</span>            }<a name="line.429"></a>
+<span class="sourceLineNo">430</span><a name="line.430"></a>
+<span class="sourceLineNo">431</span>            if (!(entity instanceof FSMActor)) {<a name="line.431"></a>
+<span class="sourceLineNo">432</span>                throw new IllegalActionException(this, entity,<a name="line.432"></a>
+<span class="sourceLineNo">433</span>                        "mode controller must be an instance of FSMActor.");<a name="line.433"></a>
+<span class="sourceLineNo">434</span>            }<a name="line.434"></a>
+<span class="sourceLineNo">435</span><a name="line.435"></a>
+<span class="sourceLineNo">436</span>            _controller = (FSMActor) entity;<a name="line.436"></a>
+<span class="sourceLineNo">437</span>            _controllerVersion = workspace().getVersion();<a name="line.437"></a>
+<span class="sourceLineNo">438</span>            return _controller;<a name="line.438"></a>
+<span class="sourceLineNo">439</span>        } finally {<a name="line.439"></a>
+<span class="sourceLineNo">440</span>            workspace().doneReading();<a name="line.440"></a>
+<span class="sourceLineNo">441</span>        }<a name="line.441"></a>
+<span class="sourceLineNo">442</span>    }<a name="line.442"></a>
+<span class="sourceLineNo">443</span><a name="line.443"></a>
+<span class="sourceLineNo">444</span>    /**<a name="line.444"></a>
+<span class="sourceLineNo">445</span>     * Return the explicit change context. In this case, the change context returned is the<a name="line.445"></a>
+<span class="sourceLineNo">446</span>     * composite actor controlled by this director.<a name="line.446"></a>
+<span class="sourceLineNo">447</span>     *<a name="line.447"></a>
+<span class="sourceLineNo">448</span>     * @return The explicit change context.<a name="line.448"></a>
+<span class="sourceLineNo">449</span>     */<a name="line.449"></a>
+<span class="sourceLineNo">450</span>    @Override<a name="line.450"></a>
+<span class="sourceLineNo">451</span>    public Entity getContext() {<a name="line.451"></a>
+<span class="sourceLineNo">452</span>        return (Entity) getContainer();<a name="line.452"></a>
+<span class="sourceLineNo">453</span>    }<a name="line.453"></a>
+<span class="sourceLineNo">454</span><a name="line.454"></a>
+<span class="sourceLineNo">455</span>    /**<a name="line.455"></a>
+<span class="sourceLineNo">456</span>     * Override the base class so that if any outgoing transition has<a name="line.456"></a>
+<span class="sourceLineNo">457</span>     * a guard that evaluates to true, then return the current<a name="line.457"></a>
+<span class="sourceLineNo">458</span>     * time. Otherwise, delegate to the enclosing director.<a name="line.458"></a>
+<span class="sourceLineNo">459</span>     */<a name="line.459"></a>
+<span class="sourceLineNo">460</span>    @Override<a name="line.460"></a>
+<span class="sourceLineNo">461</span>    public Time getModelNextIterationTime() {<a name="line.461"></a>
+<span class="sourceLineNo">462</span>        try {<a name="line.462"></a>
+<span class="sourceLineNo">463</span>            FSMActor controller = getController();<a name="line.463"></a>
+<span class="sourceLineNo">464</span>            List transitionList = controller.currentState().outgoingPort<a name="line.464"></a>
+<span class="sourceLineNo">465</span>                    .linkedRelationList();<a name="line.465"></a>
+<span class="sourceLineNo">466</span>            // First check preemptive transitions, then non-preemptive ones.<a name="line.466"></a>
+<span class="sourceLineNo">467</span>            List enabledTransitions = controller<a name="line.467"></a>
+<span class="sourceLineNo">468</span>                    .enabledTransitions(transitionList, true, false);<a name="line.468"></a>
+<span class="sourceLineNo">469</span>            if (enabledTransitions.size() &gt; 0) {<a name="line.469"></a>
+<span class="sourceLineNo">470</span>                return getModelTime();<a name="line.470"></a>
+<span class="sourceLineNo">471</span>            }<a name="line.471"></a>
+<span class="sourceLineNo">472</span>            enabledTransitions = controller.enabledTransitions(transitionList,<a name="line.472"></a>
+<span class="sourceLineNo">473</span>                    false, false);<a name="line.473"></a>
+<span class="sourceLineNo">474</span>            if (enabledTransitions.size() &gt; 0) {<a name="line.474"></a>
+<span class="sourceLineNo">475</span>                return getModelTime();<a name="line.475"></a>
+<span class="sourceLineNo">476</span>            }<a name="line.476"></a>
+<span class="sourceLineNo">477</span>            // The result returned below needs to be adjusted by the current offset.<a name="line.477"></a>
+<span class="sourceLineNo">478</span>            Time result = localClock.getLocalTimeForEnvironmentTime(<a name="line.478"></a>
+<span class="sourceLineNo">479</span>                    super.getModelNextIterationTime());<a name="line.479"></a>
+<span class="sourceLineNo">480</span>            return result;<a name="line.480"></a>
+<span class="sourceLineNo">481</span>        } catch (IllegalActionException e) {<a name="line.481"></a>
+<span class="sourceLineNo">482</span>            // Any exception here should have shown up before now.<a name="line.482"></a>
+<span class="sourceLineNo">483</span>            throw new InternalErrorException(e);<a name="line.483"></a>
+<span class="sourceLineNo">484</span>        }<a name="line.484"></a>
+<span class="sourceLineNo">485</span>    }<a name="line.485"></a>
+<span class="sourceLineNo">486</span><a name="line.486"></a>
+<span class="sourceLineNo">487</span>    /**<a name="line.487"></a>
+<span class="sourceLineNo">488</span>     * Return a list of variables that are modified in a modal<a name="line.488"></a>
+<span class="sourceLineNo">489</span>     * model. The variables are assumed to have a change context of<a name="line.489"></a>
+<span class="sourceLineNo">490</span>     * the container of this director. This class returns all<a name="line.490"></a>
+<span class="sourceLineNo">491</span>     * variables that are assigned in the actions of transitions.<a name="line.491"></a>
+<span class="sourceLineNo">492</span>     *<a name="line.492"></a>
+<span class="sourceLineNo">493</span>     * @return A list of variables.<a name="line.493"></a>
+<span class="sourceLineNo">494</span>     * @exception IllegalActionException If no controller can be<a name="line.494"></a>
+<span class="sourceLineNo">495</span>     *                found, or the variables to be assigned by the<a name="line.495"></a>
+<span class="sourceLineNo">496</span>     *                actions can not be found.<a name="line.496"></a>
+<span class="sourceLineNo">497</span>     */<a name="line.497"></a>
+<span class="sourceLineNo">498</span>    @Override<a name="line.498"></a>
+<span class="sourceLineNo">499</span>    public List getModifiedVariables() throws IllegalActionException {<a name="line.499"></a>
+<span class="sourceLineNo">500</span>        List list = new LinkedList();<a name="line.500"></a>
+<span class="sourceLineNo">501</span><a name="line.501"></a>
+<span class="sourceLineNo">502</span>        // Collect assignments from FSM transitions<a name="line.502"></a>
+<span class="sourceLineNo">503</span>        for (Iterator states = getController().entityList().iterator(); states<a name="line.503"></a>
+<span class="sourceLineNo">504</span>                .hasNext();) {<a name="line.504"></a>
+<span class="sourceLineNo">505</span>            State state = (State) states.next();<a name="line.505"></a>
+<span class="sourceLineNo">506</span><a name="line.506"></a>
+<span class="sourceLineNo">507</span>            for (Iterator transitions = state.outgoingPort.linkedRelationList()<a name="line.507"></a>
+<span class="sourceLineNo">508</span>                    .iterator(); transitions.hasNext();) {<a name="line.508"></a>
+<span class="sourceLineNo">509</span>                Transition transition = (Transition) transitions.next();<a name="line.509"></a>
+<span class="sourceLineNo">510</span><a name="line.510"></a>
+<span class="sourceLineNo">511</span>                for (Iterator actions = transition.choiceActionList()<a name="line.511"></a>
+<span class="sourceLineNo">512</span>                        .iterator(); actions.hasNext();) {<a name="line.512"></a>
+<span class="sourceLineNo">513</span>                    AbstractActionsAttribute action = (AbstractActionsAttribute) actions<a name="line.513"></a>
+<span class="sourceLineNo">514</span>                            .next();<a name="line.514"></a>
+<span class="sourceLineNo">515</span><a name="line.515"></a>
+<span class="sourceLineNo">516</span>                    for (Iterator names = action.getDestinationNameList()<a name="line.516"></a>
+<span class="sourceLineNo">517</span>                            .iterator(); names.hasNext();) {<a name="line.517"></a>
+<span class="sourceLineNo">518</span>                        String name = (String) names.next();<a name="line.518"></a>
+<span class="sourceLineNo">519</span>                        NamedObj object = action.getDestination(name);<a name="line.519"></a>
+<span class="sourceLineNo">520</span><a name="line.520"></a>
+<span class="sourceLineNo">521</span>                        if (object instanceof Variable) {<a name="line.521"></a>
+<span class="sourceLineNo">522</span>                            list.add(object);<a name="line.522"></a>
+<span class="sourceLineNo">523</span>                        }<a name="line.523"></a>
+<span class="sourceLineNo">524</span>                    }<a name="line.524"></a>
+<span class="sourceLineNo">525</span>                }<a name="line.525"></a>
+<span class="sourceLineNo">526</span><a name="line.526"></a>
+<span class="sourceLineNo">527</span>                for (Iterator actions = transition.commitActionList()<a name="line.527"></a>
+<span class="sourceLineNo">528</span>                        .iterator(); actions.hasNext();) {<a name="line.528"></a>
+<span class="sourceLineNo">529</span>                    AbstractActionsAttribute action = (AbstractActionsAttribute) actions<a name="line.529"></a>
+<span class="sourceLineNo">530</span>                            .next();<a name="line.530"></a>
+<span class="sourceLineNo">531</span><a name="line.531"></a>
+<span class="sourceLineNo">532</span>                    for (Iterator names = action.getDestinationNameList()<a name="line.532"></a>
+<span class="sourceLineNo">533</span>                            .iterator(); names.hasNext();) {<a name="line.533"></a>
+<span class="sourceLineNo">534</span>                        String name = (String) names.next();<a name="line.534"></a>
+<span class="sourceLineNo">535</span>                        NamedObj object = action.getDestination(name);<a name="line.535"></a>
+<span class="sourceLineNo">536</span><a name="line.536"></a>
+<span class="sourceLineNo">537</span>                        if (object instanceof Variable) {<a name="line.537"></a>
+<span class="sourceLineNo">538</span>                            list.add(object);<a name="line.538"></a>
+<span class="sourceLineNo">539</span>                        }<a name="line.539"></a>
+<span class="sourceLineNo">540</span>                    }<a name="line.540"></a>
+<span class="sourceLineNo">541</span>                }<a name="line.541"></a>
+<span class="sourceLineNo">542</span>            }<a name="line.542"></a>
+<span class="sourceLineNo">543</span>        }<a name="line.543"></a>
+<span class="sourceLineNo">544</span><a name="line.544"></a>
+<span class="sourceLineNo">545</span>        return list;<a name="line.545"></a>
+<span class="sourceLineNo">546</span>    }<a name="line.546"></a>
+<span class="sourceLineNo">547</span><a name="line.547"></a>
+<span class="sourceLineNo">548</span>    /**<a name="line.548"></a>
+<span class="sourceLineNo">549</span>     * Return the parse tree evaluator used to evaluate guard<a name="line.549"></a>
+<span class="sourceLineNo">550</span>     * expressions. In this base class, an instance of {@link<a name="line.550"></a>
+<span class="sourceLineNo">551</span>     * ParseTreeEvaluator} is returned. The derived classes may need<a name="line.551"></a>
+<span class="sourceLineNo">552</span>     * to override this method to return different parse tree<a name="line.552"></a>
+<span class="sourceLineNo">553</span>     * evaluators.<a name="line.553"></a>
+<span class="sourceLineNo">554</span>     *<a name="line.554"></a>
+<span class="sourceLineNo">555</span>     * @return ParseTreeEvaluator used to evaluate guard expressions.<a name="line.555"></a>
+<span class="sourceLineNo">556</span>     */<a name="line.556"></a>
+<span class="sourceLineNo">557</span>    public ParseTreeEvaluator getParseTreeEvaluator() {<a name="line.557"></a>
+<span class="sourceLineNo">558</span>        return new ParseTreeEvaluator();<a name="line.558"></a>
+<span class="sourceLineNo">559</span>    }<a name="line.559"></a>
+<span class="sourceLineNo">560</span><a name="line.560"></a>
+<span class="sourceLineNo">561</span>    /**<a name="line.561"></a>
+<span class="sourceLineNo">562</span>     * Return a superdense time index for the current time. This<a name="line.562"></a>
+<span class="sourceLineNo">563</span>     * method delegates to the executive director, if there is one<a name="line.563"></a>
+<span class="sourceLineNo">564</span>     * that implements SuperdenseTimeDirector, and returns current<a name="line.564"></a>
+<span class="sourceLineNo">565</span>     * time with index 1 otherwise.<a name="line.565"></a>
+<span class="sourceLineNo">566</span>     *<a name="line.566"></a>
+<span class="sourceLineNo">567</span>     * @return A superdense time index.<a name="line.567"></a>
+<span class="sourceLineNo">568</span>     * @see #setIndex(int)<a name="line.568"></a>
+<span class="sourceLineNo">569</span>     * @see ptolemy.actor.SuperdenseTimeDirector<a name="line.569"></a>
+<span class="sourceLineNo">570</span>     */<a name="line.570"></a>
+<span class="sourceLineNo">571</span>    @Override<a name="line.571"></a>
+<span class="sourceLineNo">572</span>    public int getIndex() {<a name="line.572"></a>
+<span class="sourceLineNo">573</span>        Director executiveDirector = ((Actor) getContainer())<a name="line.573"></a>
+<span class="sourceLineNo">574</span>                .getExecutiveDirector();<a name="line.574"></a>
+<span class="sourceLineNo">575</span>        if (isEmbedded()<a name="line.575"></a>
+<span class="sourceLineNo">576</span>                &amp;&amp; executiveDirector instanceof SuperdenseTimeDirector) {<a name="line.576"></a>
+<span class="sourceLineNo">577</span>            return ((SuperdenseTimeDirector) executiveDirector).getIndex()<a name="line.577"></a>
+<span class="sourceLineNo">578</span>                    + _indexOffset;<a name="line.578"></a>
+<span class="sourceLineNo">579</span>        }<a name="line.579"></a>
+<span class="sourceLineNo">580</span>        return 1;<a name="line.580"></a>
+<span class="sourceLineNo">581</span>    }<a name="line.581"></a>
+<span class="sourceLineNo">582</span><a name="line.582"></a>
+<span class="sourceLineNo">583</span>    /**<a name="line.583"></a>
+<span class="sourceLineNo">584</span>     * Return true if the model errors are handled. Otherwise, return<a name="line.584"></a>
+<span class="sourceLineNo">585</span>     * false and the model errors are passed to the higher level in<a name="line.585"></a>
+<span class="sourceLineNo">586</span>     * hierarchy.<a name="line.586"></a>
+<span class="sourceLineNo">587</span>     *<a name="line.587"></a>
+<span class="sourceLineNo">588</span>     * &lt;p&gt; In this method, model errors including<a name="line.588"></a>
+<span class="sourceLineNo">589</span>     * multipleEnabledTransitionException and<a name="line.589"></a>
+<span class="sourceLineNo">590</span>     * InvariantViolationException are handled.&lt;/p&gt;<a name="line.590"></a>
+<span class="sourceLineNo">591</span>     *<a name="line.591"></a>
+<span class="sourceLineNo">592</span>     * &lt;p&gt; In the current design, if multiple enabled transitions are<a name="line.592"></a>
+<span class="sourceLineNo">593</span>     * detected, an exception will be thrown. For future designs,<a name="line.593"></a>
+<span class="sourceLineNo">594</span>     * different ways to handle this situation will be introduced<a name="line.594"></a>
+<span class="sourceLineNo">595</span>     * here.&lt;/p&gt;<a name="line.595"></a>
+<span class="sourceLineNo">596</span>     *<a name="line.596"></a>
+<span class="sourceLineNo">597</span>     * &lt;p&gt; When an invariant is violated, this method checks whether<a name="line.597"></a>
+<span class="sourceLineNo">598</span>     * there exists an enabled (non-preemptive) transition. If there<a name="line.598"></a>
+<span class="sourceLineNo">599</span>     * is one, the model error is ignored and this director will<a name="line.599"></a>
+<span class="sourceLineNo">600</span>     * handle the enabled transition later. Otherwise, an exception<a name="line.600"></a>
+<span class="sourceLineNo">601</span>     * will be thrown.&lt;/p&gt;<a name="line.601"></a>
+<span class="sourceLineNo">602</span>     *<a name="line.602"></a>
+<span class="sourceLineNo">603</span>     * @param context The context where the model error happens.<a name="line.603"></a>
+<span class="sourceLineNo">604</span>     * @param exception An exception that represents the model error.<a name="line.604"></a>
+<span class="sourceLineNo">605</span>     * @return True if the error has been handled, false if the model error is passed<a name="line.605"></a>
+<span class="sourceLineNo">606</span>     * to the higher level.<a name="line.606"></a>
+<span class="sourceLineNo">607</span>     * @exception IllegalActionException If multiple enabled transition is detected,<a name="line.607"></a>
+<span class="sourceLineNo">608</span>     * or mode controller can not be found, or can not read outputs from refinements.<a name="line.608"></a>
+<span class="sourceLineNo">609</span>     */<a name="line.609"></a>
+<span class="sourceLineNo">610</span>    @Override<a name="line.610"></a>
+<span class="sourceLineNo">611</span>    public boolean handleModelError(NamedObj context,<a name="line.611"></a>
+<span class="sourceLineNo">612</span>            IllegalActionException exception) throws IllegalActionException {<a name="line.612"></a>
+<span class="sourceLineNo">613</span>        // NOTE: Besides throwing exception directly, we can handle<a name="line.613"></a>
+<span class="sourceLineNo">614</span>        // multiple enabled transitions in different ways by the derived<a name="line.614"></a>
+<span class="sourceLineNo">615</span>        // sub classes.<a name="line.615"></a>
+<span class="sourceLineNo">616</span>        if (exception instanceof MultipleEnabledTransitionsException) {<a name="line.616"></a>
+<span class="sourceLineNo">617</span>            throw exception;<a name="line.617"></a>
+<span class="sourceLineNo">618</span>        }<a name="line.618"></a>
+<span class="sourceLineNo">619</span><a name="line.619"></a>
+<span class="sourceLineNo">620</span>        // If the exception is an InvariantViolationException<a name="line.620"></a>
+<span class="sourceLineNo">621</span>        // exception, check if any transition is enabled.<a name="line.621"></a>
+<span class="sourceLineNo">622</span>        // FIXME: This whole mechanism needs to be checked...<a name="line.622"></a>
+<span class="sourceLineNo">623</span>        if (exception instanceof InvariantViolationException) {<a name="line.623"></a>
+<span class="sourceLineNo">624</span>            FSMActor controller = getController();<a name="line.624"></a>
+<span class="sourceLineNo">625</span>            controller.readOutputsFromRefinement();<a name="line.625"></a>
+<span class="sourceLineNo">626</span><a name="line.626"></a>
+<span class="sourceLineNo">627</span>            State currentState = controller.currentState();<a name="line.627"></a>
+<span class="sourceLineNo">628</span>            // FIXME: Need to understand how error transitions work<a name="line.628"></a>
+<span class="sourceLineNo">629</span>            // in combination with immediate transitions and model errors.<a name="line.629"></a>
+<span class="sourceLineNo">630</span>            // Note that this only makes sense for non-preemptive transitions.<a name="line.630"></a>
+<span class="sourceLineNo">631</span>            List enabledTransitions = controller.enabledTransitions(<a name="line.631"></a>
+<span class="sourceLineNo">632</span>                    currentState.outgoingPort.linkedRelationList(), false,<a name="line.632"></a>
+<span class="sourceLineNo">633</span>                    false);<a name="line.633"></a>
+<span class="sourceLineNo">634</span><a name="line.634"></a>
+<span class="sourceLineNo">635</span>            if (enabledTransitions.size() == 0) {<a name="line.635"></a>
+<span class="sourceLineNo">636</span>                ModelErrorHandler container = getContainer();<a name="line.636"></a>
+<span class="sourceLineNo">637</span><a name="line.637"></a>
+<span class="sourceLineNo">638</span>                if (container != null) {<a name="line.638"></a>
+<span class="sourceLineNo">639</span>                    // We can not call the handleModelError() method of the<a name="line.639"></a>
+<span class="sourceLineNo">640</span>                    // super class, because the container will call this<a name="line.640"></a>
+<span class="sourceLineNo">641</span>                    // method again and it will lead to a dead loop.<a name="line.641"></a>
+<span class="sourceLineNo">642</span>                    // return container.handleModelError(context, exception);<a name="line.642"></a>
+<span class="sourceLineNo">643</span>                    throw exception;<a name="line.643"></a>
+<span class="sourceLineNo">644</span>                }<a name="line.644"></a>
+<span class="sourceLineNo">645</span>            }<a name="line.645"></a>
+<span class="sourceLineNo">646</span><a name="line.646"></a>
+<span class="sourceLineNo">647</span>            if (_debugging &amp;&amp; _verbose) {<a name="line.647"></a>
+<span class="sourceLineNo">648</span>                _debug("ModelError " + exception.getMessage() + " is handled.");<a name="line.648"></a>
+<span class="sourceLineNo">649</span>            }<a name="line.649"></a>
+<span class="sourceLineNo">650</span><a name="line.650"></a>
+<span class="sourceLineNo">651</span>            return true;<a name="line.651"></a>
+<span class="sourceLineNo">652</span>        }<a name="line.652"></a>
+<span class="sourceLineNo">653</span><a name="line.653"></a>
+<span class="sourceLineNo">654</span>        // else delegate the exception to upper level.<a name="line.654"></a>
+<span class="sourceLineNo">655</span>        return false;<a name="line.655"></a>
+<span class="sourceLineNo">656</span>    }<a name="line.656"></a>
+<span class="sourceLineNo">657</span><a name="line.657"></a>
+<span class="sourceLineNo">658</span>    /** Return true if all state refinements have directors that<a name="line.658"></a>
+<span class="sourceLineNo">659</span>     *  implement the strict actor semantics.<a name="line.659"></a>
+<span class="sourceLineNo">660</span>     *  @return True if the director exports strict actor semantics.<a name="line.660"></a>
+<span class="sourceLineNo">661</span>     */<a name="line.661"></a>
+<span class="sourceLineNo">662</span>    @Override<a name="line.662"></a>
+<span class="sourceLineNo">663</span>    public boolean implementsStrictActorSemantics() {<a name="line.663"></a>
+<span class="sourceLineNo">664</span>        // Iterate over the state refinements.<a name="line.664"></a>
+<span class="sourceLineNo">665</span>        try {<a name="line.665"></a>
+<span class="sourceLineNo">666</span>            FSMActor controller = getController();<a name="line.666"></a>
+<span class="sourceLineNo">667</span>            List&lt;State&gt; states = controller.entityList();<a name="line.667"></a>
+<span class="sourceLineNo">668</span>            for (State state : states) {<a name="line.668"></a>
+<span class="sourceLineNo">669</span>                TypedActor[] refinements;<a name="line.669"></a>
+<span class="sourceLineNo">670</span>                try {<a name="line.670"></a>
+<span class="sourceLineNo">671</span>                    refinements = state.getRefinement();<a name="line.671"></a>
+<span class="sourceLineNo">672</span>                } catch (IllegalActionException e) {<a name="line.672"></a>
+<span class="sourceLineNo">673</span>                    throw new InternalErrorException(e);<a name="line.673"></a>
+<span class="sourceLineNo">674</span>                }<a name="line.674"></a>
+<span class="sourceLineNo">675</span>                if (refinements != null) {<a name="line.675"></a>
+<span class="sourceLineNo">676</span>                    for (TypedActor refinement : refinements) {<a name="line.676"></a>
+<span class="sourceLineNo">677</span>                        Director director = refinement.getDirector();<a name="line.677"></a>
+<span class="sourceLineNo">678</span>                        // Added director != this since it might be<a name="line.678"></a>
+<span class="sourceLineNo">679</span>                        // possible that the refinement is a Modal<a name="line.679"></a>
+<span class="sourceLineNo">680</span>                        // Model without its own director. In this<a name="line.680"></a>
+<span class="sourceLineNo">681</span>                        // case director == this, and the call<a name="line.681"></a>
+<span class="sourceLineNo">682</span>                        // director.implementsStrictActorSemantics()<a name="line.682"></a>
+<span class="sourceLineNo">683</span>                        // would lead to a infinite loop.<a name="line.683"></a>
+<span class="sourceLineNo">684</span>                        if (director != null &amp;&amp; director != this<a name="line.684"></a>
+<span class="sourceLineNo">685</span>                                &amp;&amp; !director.implementsStrictActorSemantics()) {<a name="line.685"></a>
+<span class="sourceLineNo">686</span>                            return false;<a name="line.686"></a>
+<span class="sourceLineNo">687</span>                        }<a name="line.687"></a>
+<span class="sourceLineNo">688</span>                    }<a name="line.688"></a>
+<span class="sourceLineNo">689</span>                }<a name="line.689"></a>
+<span class="sourceLineNo">690</span>            }<a name="line.690"></a>
+<span class="sourceLineNo">691</span>        } catch (IllegalActionException e1) {<a name="line.691"></a>
+<span class="sourceLineNo">692</span>            throw new InternalErrorException(e1);<a name="line.692"></a>
+<span class="sourceLineNo">693</span>        }<a name="line.693"></a>
+<span class="sourceLineNo">694</span>        return true;<a name="line.694"></a>
+<span class="sourceLineNo">695</span>    }<a name="line.695"></a>
+<span class="sourceLineNo">696</span><a name="line.696"></a>
+<span class="sourceLineNo">697</span>    /**<a name="line.697"></a>
+<span class="sourceLineNo">698</span>     * Initialize the mode controller and all the refinements by<a name="line.698"></a>
+<span class="sourceLineNo">699</span>     * calling the initialize() method in the super class. Build the<a name="line.699"></a>
+<span class="sourceLineNo">700</span>     * local maps for receivers. Suspend all the refinements of states<a name="line.700"></a>
+<span class="sourceLineNo">701</span>     * that are not the current state.<a name="line.701"></a>
+<span class="sourceLineNo">702</span>     *<a name="line.702"></a>
+<span class="sourceLineNo">703</span>     * @exception IllegalActionException If thrown by the initialize()<a name="line.703"></a>
+<span class="sourceLineNo">704</span>     *                method of the super class, or can not find mode<a name="line.704"></a>
+<span class="sourceLineNo">705</span>     *                controller, or can not find refinement of the<a name="line.705"></a>
+<span class="sourceLineNo">706</span>     *                current state.<a name="line.706"></a>
+<span class="sourceLineNo">707</span>     */<a name="line.707"></a>
+<span class="sourceLineNo">708</span>    @Override<a name="line.708"></a>
+<span class="sourceLineNo">709</span>    public void initialize() throws IllegalActionException {<a name="line.709"></a>
+<span class="sourceLineNo">710</span>        super.initialize();<a name="line.710"></a>
+<span class="sourceLineNo">711</span>        // Transitions may produce initial outputs that need to be transferred<a name="line.711"></a>
+<span class="sourceLineNo">712</span>        // to the outside. Make sure to do this before resetting receivers.<a name="line.712"></a>
+<span class="sourceLineNo">713</span>        transferOutputs();<a name="line.713"></a>
+<span class="sourceLineNo">714</span><a name="line.714"></a>
+<span class="sourceLineNo">715</span>        resetOutputReceivers();<a name="line.715"></a>
+<span class="sourceLineNo">716</span><a name="line.716"></a>
+<span class="sourceLineNo">717</span>        // Suspend the refinements of all non-initial states at the start time.<a name="line.717"></a>
+<span class="sourceLineNo">718</span>        // NOTE: Perhaps this could be avoided by doing a suspend in the loop<a name="line.718"></a>
+<span class="sourceLineNo">719</span>        // over refinements above.<a name="line.719"></a>
+<span class="sourceLineNo">720</span>        List&lt;State&gt; states = getController().entityList();<a name="line.720"></a>
+<span class="sourceLineNo">721</span>        for (State state : states) {<a name="line.721"></a>
+<span class="sourceLineNo">722</span>            if (((BooleanToken) state.isInitialState.getToken())<a name="line.722"></a>
+<span class="sourceLineNo">723</span>                    .booleanValue()) {<a name="line.723"></a>
+<span class="sourceLineNo">724</span>                continue;<a name="line.724"></a>
+<span class="sourceLineNo">725</span>            }<a name="line.725"></a>
+<span class="sourceLineNo">726</span>            TypedActor[] refinements = state.getRefinement();<a name="line.726"></a>
+<span class="sourceLineNo">727</span>            if (refinements != null) {<a name="line.727"></a>
+<span class="sourceLineNo">728</span>                for (TypedActor refinement : refinements) {<a name="line.728"></a>
+<span class="sourceLineNo">729</span>                    Director refinementDirector = refinement.getDirector();<a name="line.729"></a>
+<span class="sourceLineNo">730</span>                    if (refinementDirector != this) {<a name="line.730"></a>
+<span class="sourceLineNo">731</span>                        refinementDirector.suspend();<a name="line.731"></a>
+<span class="sourceLineNo">732</span>                    }<a name="line.732"></a>
+<span class="sourceLineNo">733</span>                }<a name="line.733"></a>
+<span class="sourceLineNo">734</span>            }<a name="line.734"></a>
+<span class="sourceLineNo">735</span>        }<a name="line.735"></a>
+<span class="sourceLineNo">736</span>    }<a name="line.736"></a>
+<span class="sourceLineNo">737</span><a name="line.737"></a>
+<span class="sourceLineNo">738</span>    /**<a name="line.738"></a>
+<span class="sourceLineNo">739</span>     * Indicate that a schedule for the model may no longer be valid,<a name="line.739"></a>
+<span class="sourceLineNo">740</span>     * if there is a schedule. This method should be called when<a name="line.740"></a>
+<span class="sourceLineNo">741</span>     * topology changes are made, or for that matter when any change<a name="line.741"></a>
+<span class="sourceLineNo">742</span>     * that may invalidate the schedule is made. In this class,<a name="line.742"></a>
+<span class="sourceLineNo">743</span>     * delegate to the executive director.  This is because changes in<a name="line.743"></a>
+<span class="sourceLineNo">744</span>     * the FSM may affect the causality interface of the FSM, which<a name="line.744"></a>
+<span class="sourceLineNo">745</span>     * may be used in scheduling by the enclosing director.<a name="line.745"></a>
+<span class="sourceLineNo">746</span>     */<a name="line.746"></a>
+<span class="sourceLineNo">747</span>    @Override<a name="line.747"></a>
+<span class="sourceLineNo">748</span>    public void invalidateSchedule() {<a name="line.748"></a>
+<span class="sourceLineNo">749</span>        Director executiveDirector = ((Actor) getContainer())<a name="line.749"></a>
+<span class="sourceLineNo">750</span>                .getExecutiveDirector();<a name="line.750"></a>
+<span class="sourceLineNo">751</span>        if (isEmbedded() &amp;&amp; executiveDirector != null) {<a name="line.751"></a>
+<span class="sourceLineNo">752</span>            executiveDirector.invalidateSchedule();<a name="line.752"></a>
+<span class="sourceLineNo">753</span>        }<a name="line.753"></a>
+<span class="sourceLineNo">754</span>    }<a name="line.754"></a>
+<span class="sourceLineNo">755</span><a name="line.755"></a>
+<span class="sourceLineNo">756</span>    /**<a name="line.756"></a>
+<span class="sourceLineNo">757</span>     * Return false. This director checks inputs to see whether they<a name="line.757"></a>
+<span class="sourceLineNo">758</span>     * are known before evaluating guards, so it can fired even if it<a name="line.758"></a>
+<span class="sourceLineNo">759</span>     * has unknown inputs.<a name="line.759"></a>
+<span class="sourceLineNo">760</span>     *<a name="line.760"></a>
+<span class="sourceLineNo">761</span>     * @return False.<a name="line.761"></a>
+<span class="sourceLineNo">762</span>     * @exception IllegalActionException<a name="line.762"></a>
+<span class="sourceLineNo">763</span>     *                Not thrown in this base class.<a name="line.763"></a>
+<span class="sourceLineNo">764</span>     */<a name="line.764"></a>
+<span class="sourceLineNo">765</span>    @Override<a name="line.765"></a>
+<span class="sourceLineNo">766</span>    public boolean isStrict() throws IllegalActionException {<a name="line.766"></a>
+<span class="sourceLineNo">767</span>        return false;<a name="line.767"></a>
+<span class="sourceLineNo">768</span>        /*<a name="line.768"></a>
+<span class="sourceLineNo">769</span>         * NOTE: This used to return a value as follows based on the<a name="line.769"></a>
+<span class="sourceLineNo">770</span>         * causality interface. But this is conservative and prevents<a name="line.770"></a>
+<span class="sourceLineNo">771</span>         * using the director in some models. Actor container =<a name="line.771"></a>
+<span class="sourceLineNo">772</span>         * (Actor)getContainer(); CausalityInterface causality =<a name="line.772"></a>
+<span class="sourceLineNo">773</span>         * container.getCausalityInterface(); int numberOfOutputs =<a name="line.773"></a>
+<span class="sourceLineNo">774</span>         * container.outputPortList().size(); Collection&lt;IOPort&gt;<a name="line.774"></a>
+<span class="sourceLineNo">775</span>         * inputs = container.inputPortList(); for (IOPort input :<a name="line.775"></a>
+<span class="sourceLineNo">776</span>         * inputs) { // If the input is also output, skip it. // This<a name="line.776"></a>
+<span class="sourceLineNo">777</span>         * is the output of a refinement. if (input.isOutput()) {<a name="line.777"></a>
+<span class="sourceLineNo">778</span>         * continue; } try { if<a name="line.778"></a>
+<span class="sourceLineNo">779</span>         * (causality.dependentPorts(input).size() &lt; numberOfOutputs)<a name="line.779"></a>
+<span class="sourceLineNo">780</span>         * { return false; } } catch (IllegalActionException e) {<a name="line.780"></a>
+<span class="sourceLineNo">781</span>         * throw new InternalErrorException(e); } } return true;<a name="line.781"></a>
+<span class="sourceLineNo">782</span>         */<a name="line.782"></a>
+<span class="sourceLineNo">783</span>    }<a name="line.783"></a>
+<span class="sourceLineNo">784</span><a name="line.784"></a>
+<span class="sourceLineNo">785</span>    /**<a name="line.785"></a>
+<span class="sourceLineNo">786</span>     * Return a receiver that is a one-place buffer. A token put into<a name="line.786"></a>
+<span class="sourceLineNo">787</span>     * the receiver will override any token already in the receiver.<a name="line.787"></a>
+<span class="sourceLineNo">788</span>     *<a name="line.788"></a>
+<span class="sourceLineNo">789</span>     * @return A receiver that is a one-place buffer.<a name="line.789"></a>
+<span class="sourceLineNo">790</span>     */<a name="line.790"></a>
+<span class="sourceLineNo">791</span>    @Override<a name="line.791"></a>
+<span class="sourceLineNo">792</span>    public Receiver newReceiver() {<a name="line.792"></a>
+<span class="sourceLineNo">793</span>        return new FSMReceiver();<a name="line.793"></a>
+<span class="sourceLineNo">794</span>    }<a name="line.794"></a>
+<span class="sourceLineNo">795</span><a name="line.795"></a>
+<span class="sourceLineNo">796</span>    /**<a name="line.796"></a>
+<span class="sourceLineNo">797</span>     * Invoke postfire() on any state refinements that were fired,<a name="line.797"></a>
+<span class="sourceLineNo">798</span>     * then execute the commit actions contained by the last chosen<a name="line.798"></a>
+<span class="sourceLineNo">799</span>     * transition, if any, and finally set the current state<a name="line.799"></a>
+<span class="sourceLineNo">800</span>     * to the destination state of the transition. This will return<a name="line.800"></a>
+<span class="sourceLineNo">801</span>     * false if any refinement that is postfired returns false.<a name="line.801"></a>
+<span class="sourceLineNo">802</span>     * &lt;p&gt;<a name="line.802"></a>
+<span class="sourceLineNo">803</span>     * If any transition was taken in this iteration, and if there is<a name="line.803"></a>
+<span class="sourceLineNo">804</span>     * an executive director, and if there is a transition from the<a name="line.804"></a>
+<span class="sourceLineNo">805</span>     * new state that is currently enabled, then this method calls<a name="line.805"></a>
+<span class="sourceLineNo">806</span>     * fireAtCurrentTime(Actor) on that executive director (this call<a name="line.806"></a>
+<span class="sourceLineNo">807</span>     * occurs indirectly in the FSMActor controller). If there is an<a name="line.807"></a>
+<span class="sourceLineNo">808</span>     * enabled transition, then the current state is transient, and we<a name="line.808"></a>
+<span class="sourceLineNo">809</span>     * will want to spend zero time in it.<a name="line.809"></a>
+<span class="sourceLineNo">810</span>     *<a name="line.810"></a>
+<span class="sourceLineNo">811</span>     * @return True if the mode controller wishes to be scheduled for another iteration.<a name="line.811"></a>
+<span class="sourceLineNo">812</span>     * @exception IllegalActionException<a name="line.812"></a>
+<span class="sourceLineNo">813</span>     *                If thrown by any commit action or there is no controller.<a name="line.813"></a>
+<span class="sourceLineNo">814</span>     */<a name="line.814"></a>
+<span class="sourceLineNo">815</span>    @Override<a name="line.815"></a>
+<span class="sourceLineNo">816</span>    public boolean postfire() throws IllegalActionException {<a name="line.816"></a>
+<span class="sourceLineNo">817</span>        boolean result = true;<a name="line.817"></a>
+<span class="sourceLineNo">818</span>        if (_debugging) {<a name="line.818"></a>
+<span class="sourceLineNo">819</span>            _debug("*** postfire called at time: ", getModelTime().toString());<a name="line.819"></a>
+<span class="sourceLineNo">820</span>        }<a name="line.820"></a>
+<span class="sourceLineNo">821</span>        FSMActor controller = getController();<a name="line.821"></a>
+<span class="sourceLineNo">822</span>        result &amp;= controller.postfire();<a name="line.822"></a>
+<span class="sourceLineNo">823</span>        _currentLocalReceiverMap = (Map) _localReceiverMaps<a name="line.823"></a>
+<span class="sourceLineNo">824</span>                .get(controller.currentState());<a name="line.824"></a>
+<span class="sourceLineNo">825</span><a name="line.825"></a>
+<span class="sourceLineNo">826</span>        // Reset all the receivers on the inside of output ports.<a name="line.826"></a>
+<span class="sourceLineNo">827</span>        // NOTE: This only has an effect for FSMReceiver.<a name="line.827"></a>
+<span class="sourceLineNo">828</span>        _resetOutputReceivers();<a name="line.828"></a>
+<span class="sourceLineNo">829</span><a name="line.829"></a>
+<span class="sourceLineNo">830</span>        return result &amp;&amp; !_stopRequested &amp;&amp; !_finishRequested;<a name="line.830"></a>
+<span class="sourceLineNo">831</span>    }<a name="line.831"></a>
+<span class="sourceLineNo">832</span><a name="line.832"></a>
+<span class="sourceLineNo">833</span>    /** Check whether contained refinements have a director.<a name="line.833"></a>
+<span class="sourceLineNo">834</span>     *  @exception IllegalActionException If a contained refinement<a name="line.834"></a>
+<span class="sourceLineNo">835</span>     *  does not have a director.<a name="line.835"></a>
+<span class="sourceLineNo">836</span>     */<a name="line.836"></a>
+<span class="sourceLineNo">837</span>    @Override<a name="line.837"></a>
+<span class="sourceLineNo">838</span>    public void preinitialize() throws IllegalActionException {<a name="line.838"></a>
+<span class="sourceLineNo">839</span>        Iterator&lt;?&gt; actors = ((CompositeActor) getContainer()).deepEntityList()<a name="line.839"></a>
+<span class="sourceLineNo">840</span>                .iterator();<a name="line.840"></a>
+<span class="sourceLineNo">841</span>        while (actors.hasNext()) {<a name="line.841"></a>
+<span class="sourceLineNo">842</span>            Actor actor = (Actor) actors.next();<a name="line.842"></a>
+<span class="sourceLineNo">843</span>            if (!(actor instanceof Refinement)<a name="line.843"></a>
+<span class="sourceLineNo">844</span>                    &amp;&amp; actor.getContainer() instanceof Refinement) {<a name="line.844"></a>
+<span class="sourceLineNo">845</span>                throw new IllegalActionException(actor.getContainer(),<a name="line.845"></a>
+<span class="sourceLineNo">846</span>                        "Refinement is missing a director!");<a name="line.846"></a>
+<span class="sourceLineNo">847</span>            }<a name="line.847"></a>
+<span class="sourceLineNo">848</span>        }<a name="line.848"></a>
+<span class="sourceLineNo">849</span><a name="line.849"></a>
+<span class="sourceLineNo">850</span>        super.preinitialize();<a name="line.850"></a>
+<span class="sourceLineNo">851</span>    }<a name="line.851"></a>
+<span class="sourceLineNo">852</span><a name="line.852"></a>
+<span class="sourceLineNo">853</span>    /**<a name="line.853"></a>
+<span class="sourceLineNo">854</span>     * Return true if the mode controller is ready to fire. If this<a name="line.854"></a>
+<span class="sourceLineNo">855</span>     * model is not at the top level and the current time of this<a name="line.855"></a>
+<span class="sourceLineNo">856</span>     * director lags behind that of the executive director, update the<a name="line.856"></a>
+<span class="sourceLineNo">857</span>     * current time to that of the executive director. Record whether<a name="line.857"></a>
+<span class="sourceLineNo">858</span>     * the refinements of the current state of the mode controller are<a name="line.858"></a>
+<span class="sourceLineNo">859</span>     * ready to fire.<a name="line.859"></a>
+<span class="sourceLineNo">860</span>     *<a name="line.860"></a>
+<span class="sourceLineNo">861</span>     * @exception IllegalActionException<a name="line.861"></a>
+<span class="sourceLineNo">862</span>     *                If there is no controller.<a name="line.862"></a>
+<span class="sourceLineNo">863</span>     */<a name="line.863"></a>
+<span class="sourceLineNo">864</span>    @Override<a name="line.864"></a>
+<span class="sourceLineNo">865</span>    public boolean prefire() throws IllegalActionException {<a name="line.865"></a>
+<span class="sourceLineNo">866</span>        if (_debugging) {<a name="line.866"></a>
+<span class="sourceLineNo">867</span>            _debug("Prefire called at time: " + getModelTime());<a name="line.867"></a>
+<span class="sourceLineNo">868</span>        }<a name="line.868"></a>
+<span class="sourceLineNo">869</span>        super.prefire();<a name="line.869"></a>
+<span class="sourceLineNo">870</span>        return getController().prefire();<a name="line.870"></a>
+<span class="sourceLineNo">871</span>    }<a name="line.871"></a>
+<span class="sourceLineNo">872</span><a name="line.872"></a>
+<span class="sourceLineNo">873</span>    /** Rebuild the output receivers map and reset the output receivers.<a name="line.873"></a>
+<span class="sourceLineNo">874</span>     *  @exception IllegalActionException If there is no mode<a name="line.874"></a>
+<span class="sourceLineNo">875</span>     *  controller, or can not find refinements for states or if<a name="line.875"></a>
+<span class="sourceLineNo">876</span>     *  getting the receivers fails.<a name="line.876"></a>
+<span class="sourceLineNo">877</span>     */<a name="line.877"></a>
+<span class="sourceLineNo">878</span>    public void resetOutputReceivers() throws IllegalActionException {<a name="line.878"></a>
+<span class="sourceLineNo">879</span>        _buildLocalReceiverMaps();<a name="line.879"></a>
+<span class="sourceLineNo">880</span>        _resetOutputReceivers();<a name="line.880"></a>
+<span class="sourceLineNo">881</span>    }<a name="line.881"></a>
+<span class="sourceLineNo">882</span><a name="line.882"></a>
+<span class="sourceLineNo">883</span>    /**<a name="line.883"></a>
+<span class="sourceLineNo">884</span>     * If the container is not null, register this director as the model error handler.<a name="line.884"></a>
+<span class="sourceLineNo">885</span>     *<a name="line.885"></a>
+<span class="sourceLineNo">886</span>     * @param container The proposed container.<a name="line.886"></a>
+<span class="sourceLineNo">887</span>     * @exception IllegalActionException If the action would result in<a name="line.887"></a>
+<span class="sourceLineNo">888</span>     *                a recursive containment structure, or if this<a name="line.888"></a>
+<span class="sourceLineNo">889</span>     *                entity and container are not in the same<a name="line.889"></a>
+<span class="sourceLineNo">890</span>     *                workspace, or if the protected method<a name="line.890"></a>
+<span class="sourceLineNo">891</span>     *                _checkContainer() throws it, or if a contained<a name="line.891"></a>
+<span class="sourceLineNo">892</span>     *                Settable becomes invalid and the error handler<a name="line.892"></a>
+<span class="sourceLineNo">893</span>     *                throws it.<a name="line.893"></a>
+<span class="sourceLineNo">894</span>     * @exception NameDuplicationException If the name of this entity<a name="line.894"></a>
+<span class="sourceLineNo">895</span>     * collides with a name already in the container.<a name="line.895"></a>
+<span class="sourceLineNo">896</span>     */<a name="line.896"></a>
+<span class="sourceLineNo">897</span>    @Override<a name="line.897"></a>
+<span class="sourceLineNo">898</span>    public void setContainer(NamedObj container)<a name="line.898"></a>
+<span class="sourceLineNo">899</span>            throws IllegalActionException, NameDuplicationException {<a name="line.899"></a>
+<span class="sourceLineNo">900</span>        super.setContainer(container);<a name="line.900"></a>
+<span class="sourceLineNo">901</span><a name="line.901"></a>
+<span class="sourceLineNo">902</span>        if (container != null) {<a name="line.902"></a>
+<span class="sourceLineNo">903</span>            container.setModelErrorHandler(this);<a name="line.903"></a>
+<span class="sourceLineNo">904</span>        }<a name="line.904"></a>
+<span class="sourceLineNo">905</span>    }<a name="line.905"></a>
+<span class="sourceLineNo">906</span><a name="line.906"></a>
+<span class="sourceLineNo">907</span>    /**<a name="line.907"></a>
+<span class="sourceLineNo">908</span>     * Set the superdense time index by delegating to the directors of<a name="line.908"></a>
+<span class="sourceLineNo">909</span>     * the refinements of the current state, if any. This should only<a name="line.909"></a>
+<span class="sourceLineNo">910</span>     * be called by an enclosing director.<a name="line.910"></a>
+<span class="sourceLineNo">911</span>     *<a name="line.911"></a>
+<span class="sourceLineNo">912</span>     * @exception IllegalActionException<a name="line.912"></a>
+<span class="sourceLineNo">913</span>     *                Not thrown in this base class.<a name="line.913"></a>
+<span class="sourceLineNo">914</span>     * @see #getIndex()<a name="line.914"></a>
+<span class="sourceLineNo">915</span>     * @see ptolemy.actor.SuperdenseTimeDirector<a name="line.915"></a>
+<span class="sourceLineNo">916</span>     */<a name="line.916"></a>
+<span class="sourceLineNo">917</span>    @Override<a name="line.917"></a>
+<span class="sourceLineNo">918</span>    public void setIndex(int index) throws IllegalActionException {<a name="line.918"></a>
+<span class="sourceLineNo">919</span>        // FIXME: Is this right?<a name="line.919"></a>
+<span class="sourceLineNo">920</span>        Actor[] actors = _controller.currentState().getRefinement();<a name="line.920"></a>
+<span class="sourceLineNo">921</span>        if (actors != null) {<a name="line.921"></a>
+<span class="sourceLineNo">922</span>            for (int i = 0; i &lt; actors.length; ++i) {<a name="line.922"></a>
+<span class="sourceLineNo">923</span>                Director destinationDirector = actors[i].getDirector();<a name="line.923"></a>
+<span class="sourceLineNo">924</span>                // If the refinement doesn't have a director, then the<a name="line.924"></a>
+<span class="sourceLineNo">925</span>                // destinationDirector would be this one! This is an error,<a name="line.925"></a>
+<span class="sourceLineNo">926</span>                // but we tolerate it here.<a name="line.926"></a>
+<span class="sourceLineNo">927</span>                if (destinationDirector != this<a name="line.927"></a>
+<span class="sourceLineNo">928</span>                        &amp;&amp; destinationDirector instanceof SuperdenseTimeDirector) {<a name="line.928"></a>
+<span class="sourceLineNo">929</span>                    ((SuperdenseTimeDirector) destinationDirector)<a name="line.929"></a>
+<span class="sourceLineNo">930</span>                            .setIndex(index);<a name="line.930"></a>
+<span class="sourceLineNo">931</span>                }<a name="line.931"></a>
+<span class="sourceLineNo">932</span>            }<a name="line.932"></a>
+<span class="sourceLineNo">933</span>        }<a name="line.933"></a>
+<span class="sourceLineNo">934</span>    }<a name="line.934"></a>
+<span class="sourceLineNo">935</span><a name="line.935"></a>
+<span class="sourceLineNo">936</span>    /**<a name="line.936"></a>
+<span class="sourceLineNo">937</span>     * Transfer data from the input port of the container to the ports<a name="line.937"></a>
+<span class="sourceLineNo">938</span>     * connected to the inside of the input port and on the mode<a name="line.938"></a>
+<span class="sourceLineNo">939</span>     * controller or the refinement of its current state. This method<a name="line.939"></a>
+<span class="sourceLineNo">940</span>     * will transfer exactly one token on each input channel that has<a name="line.940"></a>
+<span class="sourceLineNo">941</span>     * at least one token available.  The port argument must be an<a name="line.941"></a>
+<span class="sourceLineNo">942</span>     * opaque input port. If any channel of the input port has no<a name="line.942"></a>
+<span class="sourceLineNo">943</span>     * data, then that channel is ignored. Any token left not consumed<a name="line.943"></a>
+<span class="sourceLineNo">944</span>     * in the ports to which data are transferred is discarded.<a name="line.944"></a>
+<span class="sourceLineNo">945</span>     *<a name="line.945"></a>
+<span class="sourceLineNo">946</span>     * @param port<a name="line.946"></a>
+<span class="sourceLineNo">947</span>     *            The input port to transfer tokens from.<a name="line.947"></a>
+<span class="sourceLineNo">948</span>     * @return True if at least one data token is transferred.<a name="line.948"></a>
+<span class="sourceLineNo">949</span>     * @exception IllegalActionException<a name="line.949"></a>
+<span class="sourceLineNo">950</span>     *                If the port is not an opaque input port.<a name="line.950"></a>
+<span class="sourceLineNo">951</span>     */<a name="line.951"></a>
+<span class="sourceLineNo">952</span>    @Override<a name="line.952"></a>
+<span class="sourceLineNo">953</span>    public boolean transferInputs(IOPort port) throws IllegalActionException {<a name="line.953"></a>
+<span class="sourceLineNo">954</span>        if (!port.isInput() || !port.isOpaque()) {<a name="line.954"></a>
+<span class="sourceLineNo">955</span>            throw new IllegalActionException(this, port,<a name="line.955"></a>
+<span class="sourceLineNo">956</span>                    "transferInputs: port argument is not an opaque"<a name="line.956"></a>
+<span class="sourceLineNo">957</span>                            + "input port.");<a name="line.957"></a>
+<span class="sourceLineNo">958</span>        }<a name="line.958"></a>
+<span class="sourceLineNo">959</span><a name="line.959"></a>
+<span class="sourceLineNo">960</span>        boolean transferredToken = false;<a name="line.960"></a>
+<span class="sourceLineNo">961</span>        // NOTE: The following method does quite a song and dance with the "local<a name="line.961"></a>
+<span class="sourceLineNo">962</span>        // receivers map" to avoid putting the input data into all<a name="line.962"></a>
+<span class="sourceLineNo">963</span>        // refinements. Is this worth it? A much simpler design would<a name="line.963"></a>
+<span class="sourceLineNo">964</span>        // just make the input data available to all refinements, whether<a name="line.964"></a>
+<span class="sourceLineNo">965</span>        // they run or not.<a name="line.965"></a>
+<span class="sourceLineNo">966</span>        Receiver[][] insideReceivers = _currentLocalReceivers(port);<a name="line.966"></a>
+<span class="sourceLineNo">967</span><a name="line.967"></a>
+<span class="sourceLineNo">968</span>        // If the port is not connected, then the input is known to be absent<a name="line.968"></a>
+<span class="sourceLineNo">969</span>        // and we can safely send a clear to the inside.<a name="line.969"></a>
+<span class="sourceLineNo">970</span>        int numberOfSources = port.numberOfSources();<a name="line.970"></a>
+<span class="sourceLineNo">971</span>        if (numberOfSources &lt; insideReceivers.length) {<a name="line.971"></a>
+<span class="sourceLineNo">972</span>            // At least one inside channel has no viable sources.<a name="line.972"></a>
+<span class="sourceLineNo">973</span>            for (int i = numberOfSources; i &lt; insideReceivers.length; i++) {<a name="line.973"></a>
+<span class="sourceLineNo">974</span>                for (Receiver receiver : insideReceivers[i]) {<a name="line.974"></a>
+<span class="sourceLineNo">975</span>                    receiver.clear();<a name="line.975"></a>
+<span class="sourceLineNo">976</span>                }<a name="line.976"></a>
+<span class="sourceLineNo">977</span>            }<a name="line.977"></a>
+<span class="sourceLineNo">978</span>        }<a name="line.978"></a>
+<span class="sourceLineNo">979</span><a name="line.979"></a>
+<span class="sourceLineNo">980</span>        for (int i = 0; i &lt; port.getWidth(); i++) {<a name="line.980"></a>
+<span class="sourceLineNo">981</span>            try {<a name="line.981"></a>
+<span class="sourceLineNo">982</span>                if (port.isKnown(i)) {<a name="line.982"></a>
+<span class="sourceLineNo">983</span>                    if (port.hasToken(i)) {<a name="line.983"></a>
+<span class="sourceLineNo">984</span>                        Token t = port.get(i);<a name="line.984"></a>
+<span class="sourceLineNo">985</span>                        // FindBugs: insideReceivers can't be null;<a name="line.985"></a>
+<span class="sourceLineNo">986</span>                        if (i &lt; insideReceivers.length<a name="line.986"></a>
+<span class="sourceLineNo">987</span>                                &amp;&amp; insideReceivers[i] != null) {<a name="line.987"></a>
+<span class="sourceLineNo">988</span>                            for (int j = 0; j &lt; insideReceivers[i].length; j++) {<a name="line.988"></a>
+<span class="sourceLineNo">989</span>                                insideReceivers[i][j].put(t);<a name="line.989"></a>
+<span class="sourceLineNo">990</span>                                if (_debugging) {<a name="line.990"></a>
+<span class="sourceLineNo">991</span>                                    _debug(getFullName(),<a name="line.991"></a>
+<span class="sourceLineNo">992</span>                                            "transferring input " + t + " from "<a name="line.992"></a>
+<span class="sourceLineNo">993</span>                                                    + port.getFullName()<a name="line.993"></a>
+<span class="sourceLineNo">994</span>                                                    + " to "<a name="line.994"></a>
+<span class="sourceLineNo">995</span>                                                    + insideReceivers[i][j]<a name="line.995"></a>
+<span class="sourceLineNo">996</span>                                                            .getContainer()<a name="line.996"></a>
+<span class="sourceLineNo">997</span>                                                            .getFullName());<a name="line.997"></a>
+<span class="sourceLineNo">998</span>                                }<a name="line.998"></a>
+<span class="sourceLineNo">999</span>                            }<a name="line.999"></a>
+<span class="sourceLineNo">1000</span>                            transferredToken = true;<a name="line.1000"></a>
+<span class="sourceLineNo">1001</span>                        }<a name="line.1001"></a>
+<span class="sourceLineNo">1002</span>                    } else {<a name="line.1002"></a>
+<span class="sourceLineNo">1003</span>                        /** Port does not have a token. */<a name="line.1003"></a>
+<span class="sourceLineNo">1004</span>                        // FindBugs: insideReceivers can't be null;<a name="line.1004"></a>
+<span class="sourceLineNo">1005</span>                        if (insideReceivers[i] != null) {<a name="line.1005"></a>
+<span class="sourceLineNo">1006</span>                            for (int j = 0; j &lt; insideReceivers[i].length; j++) {<a name="line.1006"></a>
+<span class="sourceLineNo">1007</span>                                if (_debugging) {<a name="line.1007"></a>
+<span class="sourceLineNo">1008</span>                                    _debug(getName(),<a name="line.1008"></a>
+<span class="sourceLineNo">1009</span>                                            "input port has no token. Clearing "<a name="line.1009"></a>
+<span class="sourceLineNo">1010</span>                                                    + insideReceivers[i][j]<a name="line.1010"></a>
+<span class="sourceLineNo">1011</span>                                                            .getContainer()<a name="line.1011"></a>
+<span class="sourceLineNo">1012</span>                                                            .getFullName());<a name="line.1012"></a>
+<span class="sourceLineNo">1013</span>                                }<a name="line.1013"></a>
+<span class="sourceLineNo">1014</span>                                insideReceivers[i][j].clear();<a name="line.1014"></a>
+<span class="sourceLineNo">1015</span>                            }<a name="line.1015"></a>
+<span class="sourceLineNo">1016</span>                        }<a name="line.1016"></a>
+<span class="sourceLineNo">1017</span>                    }<a name="line.1017"></a>
+<span class="sourceLineNo">1018</span>                } else {<a name="line.1018"></a>
+<span class="sourceLineNo">1019</span>                    /** Port status is not known. */<a name="line.1019"></a>
+<span class="sourceLineNo">1020</span>                    if (_debugging) {<a name="line.1020"></a>
+<span class="sourceLineNo">1021</span>                        _debug("Input port status is not known. Resetting inside receivers of "<a name="line.1021"></a>
+<span class="sourceLineNo">1022</span>                                + port.getName());<a name="line.1022"></a>
+<span class="sourceLineNo">1023</span>                    }<a name="line.1023"></a>
+<span class="sourceLineNo">1024</span>                    // FindBugs: insideReceivers can't be null;<a name="line.1024"></a>
+<span class="sourceLineNo">1025</span>                    if (insideReceivers[i] != null) {<a name="line.1025"></a>
+<span class="sourceLineNo">1026</span>                        for (int j = 0; j &lt; insideReceivers[i].length; j++) {<a name="line.1026"></a>
+<span class="sourceLineNo">1027</span>                            insideReceivers[i][j].reset();<a name="line.1027"></a>
+<span class="sourceLineNo">1028</span>                        }<a name="line.1028"></a>
+<span class="sourceLineNo">1029</span>                    }<a name="line.1029"></a>
+<span class="sourceLineNo">1030</span>                }<a name="line.1030"></a>
+<span class="sourceLineNo">1031</span>            } catch (NoTokenException ex) {<a name="line.1031"></a>
+<span class="sourceLineNo">1032</span>                // this shouldn't happen.<a name="line.1032"></a>
+<span class="sourceLineNo">1033</span>                throw new InternalErrorException(<a name="line.1033"></a>
+<span class="sourceLineNo">1034</span>                        "Director.transferInputs: Internal error: "<a name="line.1034"></a>
+<span class="sourceLineNo">1035</span>                                + ex.getMessage());<a name="line.1035"></a>
+<span class="sourceLineNo">1036</span>            }<a name="line.1036"></a>
+<span class="sourceLineNo">1037</span>        }<a name="line.1037"></a>
+<span class="sourceLineNo">1038</span>        return transferredToken;<a name="line.1038"></a>
+<span class="sourceLineNo">1039</span>    }<a name="line.1039"></a>
+<span class="sourceLineNo">1040</span><a name="line.1040"></a>
+<span class="sourceLineNo">1041</span>    ///////////////////////////////////////////////////////////////////<a name="line.1041"></a>
+<span class="sourceLineNo">1042</span>    ////                         protected methods                 ////<a name="line.1042"></a>
+<span class="sourceLineNo">1043</span><a name="line.1043"></a>
+<span class="sourceLineNo">1044</span>    /**<a name="line.1044"></a>
+<span class="sourceLineNo">1045</span>     * Build for each state of the mode controller the map from input ports of the modal model to<a name="line.1045"></a>
+<span class="sourceLineNo">1046</span>     * the local receivers when the mode controller is in that state. This method is<a name="line.1046"></a>
+<span class="sourceLineNo">1047</span>     * read-synchronized on the workspace.<a name="line.1047"></a>
+<span class="sourceLineNo">1048</span>     *<a name="line.1048"></a>
+<span class="sourceLineNo">1049</span>     * @exception IllegalActionException<a name="line.1049"></a>
+<span class="sourceLineNo">1050</span>     *                If there is no mode controller, or can not find refinements for states.<a name="line.1050"></a>
+<span class="sourceLineNo">1051</span>     */<a name="line.1051"></a>
+<span class="sourceLineNo">1052</span>    protected void _buildLocalReceiverMaps() throws IllegalActionException {<a name="line.1052"></a>
+<span class="sourceLineNo">1053</span>        try {<a name="line.1053"></a>
+<span class="sourceLineNo">1054</span>            workspace().getReadAccess();<a name="line.1054"></a>
+<span class="sourceLineNo">1055</span><a name="line.1055"></a>
+<span class="sourceLineNo">1056</span>            FSMActor controller = getController();<a name="line.1056"></a>
+<span class="sourceLineNo">1057</span><a name="line.1057"></a>
+<span class="sourceLineNo">1058</span>            // Remove any existing maps.<a name="line.1058"></a>
+<span class="sourceLineNo">1059</span>            _localReceiverMaps.clear();<a name="line.1059"></a>
+<span class="sourceLineNo">1060</span><a name="line.1060"></a>
+<span class="sourceLineNo">1061</span>            // Create a map for each state of the mode controller.<a name="line.1061"></a>
+<span class="sourceLineNo">1062</span>            Iterator states = controller.entityList().iterator();<a name="line.1062"></a>
+<span class="sourceLineNo">1063</span>            State state = null;<a name="line.1063"></a>
+<span class="sourceLineNo">1064</span><a name="line.1064"></a>
+<span class="sourceLineNo">1065</span>            while (states.hasNext()) {<a name="line.1065"></a>
+<span class="sourceLineNo">1066</span>                state = (State) states.next();<a name="line.1066"></a>
+<span class="sourceLineNo">1067</span>                _localReceiverMaps.put(state, new HashMap());<a name="line.1067"></a>
+<span class="sourceLineNo">1068</span>            }<a name="line.1068"></a>
+<span class="sourceLineNo">1069</span><a name="line.1069"></a>
+<span class="sourceLineNo">1070</span>            CompositeActor comp = (CompositeActor) getContainer();<a name="line.1070"></a>
+<span class="sourceLineNo">1071</span>            Iterator inPorts = comp.inputPortList().iterator();<a name="line.1071"></a>
+<span class="sourceLineNo">1072</span>            List resultsList = new LinkedList();<a name="line.1072"></a>
+<span class="sourceLineNo">1073</span><a name="line.1073"></a>
+<span class="sourceLineNo">1074</span>            while (inPorts.hasNext()) {<a name="line.1074"></a>
+<span class="sourceLineNo">1075</span>                IOPort port = (IOPort) inPorts.next();<a name="line.1075"></a>
+<span class="sourceLineNo">1076</span>                Receiver[][] allReceivers = port.deepGetReceivers();<a name="line.1076"></a>
+<span class="sourceLineNo">1077</span>                states = controller.entityList().iterator();<a name="line.1077"></a>
+<span class="sourceLineNo">1078</span><a name="line.1078"></a>
+<span class="sourceLineNo">1079</span>                while (states.hasNext()) {<a name="line.1079"></a>
+<span class="sourceLineNo">1080</span>                    state = (State) states.next();<a name="line.1080"></a>
+<span class="sourceLineNo">1081</span><a name="line.1081"></a>
+<span class="sourceLineNo">1082</span>                    TypedActor[] actors = state.getRefinement();<a name="line.1082"></a>
+<span class="sourceLineNo">1083</span>                    Receiver[][] allReceiversArray = new Receiver[allReceivers.length][0];<a name="line.1083"></a>
+<span class="sourceLineNo">1084</span><a name="line.1084"></a>
+<span class="sourceLineNo">1085</span>                    for (int i = 0; i &lt; allReceivers.length; ++i) {<a name="line.1085"></a>
+<span class="sourceLineNo">1086</span>                        resultsList.clear();<a name="line.1086"></a>
+<span class="sourceLineNo">1087</span><a name="line.1087"></a>
+<span class="sourceLineNo">1088</span>                        for (int j = 0; j &lt; allReceivers[i].length; ++j) {<a name="line.1088"></a>
+<span class="sourceLineNo">1089</span>                            Receiver receiver = allReceivers[i][j];<a name="line.1089"></a>
+<span class="sourceLineNo">1090</span>                            Nameable cont = receiver.getContainer()<a name="line.1090"></a>
+<span class="sourceLineNo">1091</span>                                    .getContainer();<a name="line.1091"></a>
+<span class="sourceLineNo">1092</span><a name="line.1092"></a>
+<span class="sourceLineNo">1093</span>                            if (cont == controller) {<a name="line.1093"></a>
+<span class="sourceLineNo">1094</span>                                resultsList.add(receiver);<a name="line.1094"></a>
+<span class="sourceLineNo">1095</span>                            } else {<a name="line.1095"></a>
+<span class="sourceLineNo">1096</span>                                // check transitions<a name="line.1096"></a>
+<span class="sourceLineNo">1097</span>                                Iterator transitions = state<a name="line.1097"></a>
+<span class="sourceLineNo">1098</span>                                        .nonpreemptiveTransitionList()<a name="line.1098"></a>
+<span class="sourceLineNo">1099</span>                                        .iterator();<a name="line.1099"></a>
+<span class="sourceLineNo">1100</span><a name="line.1100"></a>
+<span class="sourceLineNo">1101</span>                                while (transitions.hasNext()) {<a name="line.1101"></a>
+<span class="sourceLineNo">1102</span>                                    Transition transition = (Transition) transitions<a name="line.1102"></a>
+<span class="sourceLineNo">1103</span>                                            .next();<a name="line.1103"></a>
+<span class="sourceLineNo">1104</span>                                    _checkActorsForReceiver(<a name="line.1104"></a>
+<span class="sourceLineNo">1105</span>                                            transition.getRefinement(), cont,<a name="line.1105"></a>
+<span class="sourceLineNo">1106</span>                                            receiver, resultsList);<a name="line.1106"></a>
+<span class="sourceLineNo">1107</span>                                }<a name="line.1107"></a>
+<span class="sourceLineNo">1108</span><a name="line.1108"></a>
+<span class="sourceLineNo">1109</span>                                // check refinements<a name="line.1109"></a>
+<span class="sourceLineNo">1110</span>                                List stateList = new LinkedList();<a name="line.1110"></a>
+<span class="sourceLineNo">1111</span>                                stateList.add(state);<a name="line.1111"></a>
+<span class="sourceLineNo">1112</span>                                transitions = state.preemptiveTransitionList()<a name="line.1112"></a>
+<span class="sourceLineNo">1113</span>                                        .iterator();<a name="line.1113"></a>
+<span class="sourceLineNo">1114</span><a name="line.1114"></a>
+<span class="sourceLineNo">1115</span>                                while (transitions.hasNext()) {<a name="line.1115"></a>
+<span class="sourceLineNo">1116</span>                                    Transition transition = (Transition) transitions<a name="line.1116"></a>
+<span class="sourceLineNo">1117</span>                                            .next();<a name="line.1117"></a>
+<span class="sourceLineNo">1118</span>                                    stateList<a name="line.1118"></a>
+<span class="sourceLineNo">1119</span>                                            .add(transition.destinationState());<a name="line.1119"></a>
+<span class="sourceLineNo">1120</span>                                    _checkActorsForReceiver(<a name="line.1120"></a>
+<span class="sourceLineNo">1121</span>                                            transition.getRefinement(), cont,<a name="line.1121"></a>
+<span class="sourceLineNo">1122</span>                                            receiver, resultsList);<a name="line.1122"></a>
+<span class="sourceLineNo">1123</span>                                }<a name="line.1123"></a>
+<span class="sourceLineNo">1124</span><a name="line.1124"></a>
+<span class="sourceLineNo">1125</span>                                Iterator nextStates = stateList.iterator();<a name="line.1125"></a>
+<span class="sourceLineNo">1126</span><a name="line.1126"></a>
+<span class="sourceLineNo">1127</span>                                while (nextStates.hasNext()) {<a name="line.1127"></a>
+<span class="sourceLineNo">1128</span>                                    actors = ((State) nextStates.next())<a name="line.1128"></a>
+<span class="sourceLineNo">1129</span>                                            .getRefinement();<a name="line.1129"></a>
+<span class="sourceLineNo">1130</span>                                    _checkActorsForReceiver(actors, cont,<a name="line.1130"></a>
+<span class="sourceLineNo">1131</span>                                            receiver, resultsList);<a name="line.1131"></a>
+<span class="sourceLineNo">1132</span>                                }<a name="line.1132"></a>
+<span class="sourceLineNo">1133</span>                            }<a name="line.1133"></a>
+<span class="sourceLineNo">1134</span>                        }<a name="line.1134"></a>
+<span class="sourceLineNo">1135</span><a name="line.1135"></a>
+<span class="sourceLineNo">1136</span>                        allReceiversArray[i] = new Receiver[resultsList.size()];<a name="line.1136"></a>
+<span class="sourceLineNo">1137</span><a name="line.1137"></a>
+<span class="sourceLineNo">1138</span>                        Object[] receivers = resultsList.toArray();<a name="line.1138"></a>
+<span class="sourceLineNo">1139</span><a name="line.1139"></a>
+<span class="sourceLineNo">1140</span>                        for (int j = 0; j &lt; receivers.length; ++j) {<a name="line.1140"></a>
+<span class="sourceLineNo">1141</span>                            allReceiversArray[i][j] = (Receiver) receivers[j];<a name="line.1141"></a>
+<span class="sourceLineNo">1142</span>                        }<a name="line.1142"></a>
+<span class="sourceLineNo">1143</span>                    }<a name="line.1143"></a>
+<span class="sourceLineNo">1144</span><a name="line.1144"></a>
+<span class="sourceLineNo">1145</span>                    Map m = (HashMap) _localReceiverMaps.get(state);<a name="line.1145"></a>
+<span class="sourceLineNo">1146</span>                    m.put(port, allReceiversArray);<a name="line.1146"></a>
+<span class="sourceLineNo">1147</span>                }<a name="line.1147"></a>
+<span class="sourceLineNo">1148</span>            }<a name="line.1148"></a>
+<span class="sourceLineNo">1149</span><a name="line.1149"></a>
+<span class="sourceLineNo">1150</span>            _localReceiverMapsVersion = workspace().getVersion();<a name="line.1150"></a>
+<span class="sourceLineNo">1151</span>            _currentLocalReceiverMap = (Map) _localReceiverMaps<a name="line.1151"></a>
+<span class="sourceLineNo">1152</span>                    .get(controller.currentState());<a name="line.1152"></a>
+<span class="sourceLineNo">1153</span>        } finally {<a name="line.1153"></a>
+<span class="sourceLineNo">1154</span>            workspace().doneReading();<a name="line.1154"></a>
+<span class="sourceLineNo">1155</span>        }<a name="line.1155"></a>
+<span class="sourceLineNo">1156</span>    }<a name="line.1156"></a>
+<span class="sourceLineNo">1157</span><a name="line.1157"></a>
+<span class="sourceLineNo">1158</span>    /**<a name="line.1158"></a>
+<span class="sourceLineNo">1159</span>     * Return the receivers contained by ports connected to the inside<a name="line.1159"></a>
+<span class="sourceLineNo">1160</span>     * of the given input port and on the mode controller or the<a name="line.1160"></a>
+<span class="sourceLineNo">1161</span>     * refinement of its current state.<a name="line.1161"></a>
+<span class="sourceLineNo">1162</span>     *<a name="line.1162"></a>
+<span class="sourceLineNo">1163</span>     * @param port<a name="line.1163"></a>
+<span class="sourceLineNo">1164</span>     *            An input port of the container of this director.<a name="line.1164"></a>
+<span class="sourceLineNo">1165</span>     * @return The receivers that currently get inputs from the given port.<a name="line.1165"></a>
+<span class="sourceLineNo">1166</span>     * @exception IllegalActionException<a name="line.1166"></a>
+<span class="sourceLineNo">1167</span>     *                If there is no controller.<a name="line.1167"></a>
+<span class="sourceLineNo">1168</span>     */<a name="line.1168"></a>
+<span class="sourceLineNo">1169</span>    protected Receiver[][] _currentLocalReceivers(IOPort port)<a name="line.1169"></a>
+<span class="sourceLineNo">1170</span>            throws IllegalActionException {<a name="line.1170"></a>
+<span class="sourceLineNo">1171</span>        if (_localReceiverMapsVersion != workspace().getVersion()) {<a name="line.1171"></a>
+<span class="sourceLineNo">1172</span>            _buildLocalReceiverMaps();<a name="line.1172"></a>
+<span class="sourceLineNo">1173</span>        }<a name="line.1173"></a>
+<span class="sourceLineNo">1174</span><a name="line.1174"></a>
+<span class="sourceLineNo">1175</span>        return (Receiver[][]) _currentLocalReceiverMap.get(port);<a name="line.1175"></a>
+<span class="sourceLineNo">1176</span>    }<a name="line.1176"></a>
+<span class="sourceLineNo">1177</span><a name="line.1177"></a>
+<span class="sourceLineNo">1178</span>    /**<a name="line.1178"></a>
+<span class="sourceLineNo">1179</span>     * Return the last chosen transitions.<a name="line.1179"></a>
+<span class="sourceLineNo">1180</span>     *<a name="line.1180"></a>
+<span class="sourceLineNo">1181</span>     * @return The last chosen transitions, or null if there has been none.<a name="line.1181"></a>
+<span class="sourceLineNo">1182</span>     * @exception IllegalActionException<a name="line.1182"></a>
+<span class="sourceLineNo">1183</span>     *                If there is no controller.<a name="line.1183"></a>
+<span class="sourceLineNo">1184</span>     */<a name="line.1184"></a>
+<span class="sourceLineNo">1185</span>    protected Map&lt;State, Transition&gt; _getLastChosenTransition()<a name="line.1185"></a>
+<span class="sourceLineNo">1186</span>            throws IllegalActionException {<a name="line.1186"></a>
+<span class="sourceLineNo">1187</span>        FSMActor controller = getController();<a name="line.1187"></a>
+<span class="sourceLineNo">1188</span>        if (controller != null) {<a name="line.1188"></a>
+<span class="sourceLineNo">1189</span>            return controller._lastChosenTransitions;<a name="line.1189"></a>
+<span class="sourceLineNo">1190</span>        } else {<a name="line.1190"></a>
+<span class="sourceLineNo">1191</span>            return null;<a name="line.1191"></a>
+<span class="sourceLineNo">1192</span>        }<a name="line.1192"></a>
+<span class="sourceLineNo">1193</span>    }<a name="line.1193"></a>
+<span class="sourceLineNo">1194</span><a name="line.1194"></a>
+<span class="sourceLineNo">1195</span>    /** Return the list used to keep track of refinements that have been<a name="line.1195"></a>
+<span class="sourceLineNo">1196</span>     *  fired. This is protected so that FSMDirector can mirror it with<a name="line.1196"></a>
+<span class="sourceLineNo">1197</span>     *  its own protected method so that subclasses of FSMDirector can<a name="line.1197"></a>
+<span class="sourceLineNo">1198</span>     *  access it.<a name="line.1198"></a>
+<span class="sourceLineNo">1199</span>     *  @return A list of actors to postfire.<a name="line.1199"></a>
+<span class="sourceLineNo">1200</span>     *  @exception IllegalActionException If can't get the controller.<a name="line.1200"></a>
+<span class="sourceLineNo">1201</span>     */<a name="line.1201"></a>
+<span class="sourceLineNo">1202</span>    protected List&lt;Actor&gt; _getStateRefinementsToPostfire()<a name="line.1202"></a>
+<span class="sourceLineNo">1203</span>            throws IllegalActionException {<a name="line.1203"></a>
+<span class="sourceLineNo">1204</span>        FSMActor controller = getController();<a name="line.1204"></a>
+<span class="sourceLineNo">1205</span>        return controller._getStateRefinementsToPostfire();<a name="line.1205"></a>
+<span class="sourceLineNo">1206</span>    }<a name="line.1206"></a>
+<span class="sourceLineNo">1207</span><a name="line.1207"></a>
+<span class="sourceLineNo">1208</span>    /** Return the list used to keep track of refinements that have been<a name="line.1208"></a>
+<span class="sourceLineNo">1209</span>     *  fired. This is protected so that FSMDirector can mirror it with<a name="line.1209"></a>
+<span class="sourceLineNo">1210</span>     *  its own protected method so that subclasses of FSMDirector can<a name="line.1210"></a>
+<span class="sourceLineNo">1211</span>     *  access it.<a name="line.1211"></a>
+<span class="sourceLineNo">1212</span>     *  @return A list of actors to postfire.<a name="line.1212"></a>
+<span class="sourceLineNo">1213</span>     *  @exception IllegalActionException If can't get the controller.<a name="line.1213"></a>
+<span class="sourceLineNo">1214</span>     */<a name="line.1214"></a>
+<span class="sourceLineNo">1215</span>    protected List&lt;Actor&gt; _getTransitionRefinementsToPostfire()<a name="line.1215"></a>
+<span class="sourceLineNo">1216</span>            throws IllegalActionException {<a name="line.1216"></a>
+<span class="sourceLineNo">1217</span>        FSMActor controller = getController();<a name="line.1217"></a>
+<span class="sourceLineNo">1218</span>        return controller._getTransitionRefinementsToPostfire();<a name="line.1218"></a>
+<span class="sourceLineNo">1219</span>    }<a name="line.1219"></a>
+<span class="sourceLineNo">1220</span><a name="line.1220"></a>
+<span class="sourceLineNo">1221</span>    /**<a name="line.1221"></a>
+<span class="sourceLineNo">1222</span>     * Set the value of the shadow variables for input ports of the controller actor.<a name="line.1222"></a>
+<span class="sourceLineNo">1223</span>     *<a name="line.1223"></a>
+<span class="sourceLineNo">1224</span>     * @exception IllegalActionException<a name="line.1224"></a>
+<span class="sourceLineNo">1225</span>     *                If a shadow variable cannot take the token read from its corresponding channel<a name="line.1225"></a>
+<span class="sourceLineNo">1226</span>     *                (should not occur).<a name="line.1226"></a>
+<span class="sourceLineNo">1227</span>     */<a name="line.1227"></a>
+<span class="sourceLineNo">1228</span>    protected void _readInputs() throws IllegalActionException {<a name="line.1228"></a>
+<span class="sourceLineNo">1229</span>        FSMActor controller = getController();<a name="line.1229"></a>
+<span class="sourceLineNo">1230</span><a name="line.1230"></a>
+<span class="sourceLineNo">1231</span>        if (controller != null) {<a name="line.1231"></a>
+<span class="sourceLineNo">1232</span>            controller.readInputs();<a name="line.1232"></a>
+<span class="sourceLineNo">1233</span>        }<a name="line.1233"></a>
+<span class="sourceLineNo">1234</span>    }<a name="line.1234"></a>
+<span class="sourceLineNo">1235</span><a name="line.1235"></a>
+<span class="sourceLineNo">1236</span>    /**<a name="line.1236"></a>
+<span class="sourceLineNo">1237</span>     * Set the value of the shadow variables for input ports of the<a name="line.1237"></a>
+<span class="sourceLineNo">1238</span>     * controller actor that are defined by output ports of the<a name="line.1238"></a>
+<span class="sourceLineNo">1239</span>     * refinement.<a name="line.1239"></a>
+<span class="sourceLineNo">1240</span>     *<a name="line.1240"></a>
+<span class="sourceLineNo">1241</span>     * @exception IllegalActionException<a name="line.1241"></a>
+<span class="sourceLineNo">1242</span>     *                If a shadow variable cannot take the token read from its corresponding channel<a name="line.1242"></a>
+<span class="sourceLineNo">1243</span>     *                (should not occur).<a name="line.1243"></a>
+<span class="sourceLineNo">1244</span>     */<a name="line.1244"></a>
+<span class="sourceLineNo">1245</span>    protected void _readOutputsFromRefinement() throws IllegalActionException {<a name="line.1245"></a>
+<span class="sourceLineNo">1246</span>        FSMActor controller = getController();<a name="line.1246"></a>
+<span class="sourceLineNo">1247</span><a name="line.1247"></a>
+<span class="sourceLineNo">1248</span>        if (controller != null) {<a name="line.1248"></a>
+<span class="sourceLineNo">1249</span>            controller.readOutputsFromRefinement();<a name="line.1249"></a>
+<span class="sourceLineNo">1250</span>        }<a name="line.1250"></a>
+<span class="sourceLineNo">1251</span>    }<a name="line.1251"></a>
+<span class="sourceLineNo">1252</span><a name="line.1252"></a>
+<span class="sourceLineNo">1253</span>    /**<a name="line.1253"></a>
+<span class="sourceLineNo">1254</span>     * Set the map from input ports to boolean flags indicating<a name="line.1254"></a>
+<span class="sourceLineNo">1255</span>     * whether a channel is connected to an output port of the<a name="line.1255"></a>
+<span class="sourceLineNo">1256</span>     * refinement of the current state. This method is called by<a name="line.1256"></a>
+<span class="sourceLineNo">1257</span>     * HDFFSMDirector.<a name="line.1257"></a>
+<span class="sourceLineNo">1258</span>     *<a name="line.1258"></a>
+<span class="sourceLineNo">1259</span>     * @exception IllegalActionException If the refinement specified<a name="line.1259"></a>
+<span class="sourceLineNo">1260</span>     *                for one of the states is not valid, or if there<a name="line.1260"></a>
+<span class="sourceLineNo">1261</span>     *                is no controller.<a name="line.1261"></a>
+<span class="sourceLineNo">1262</span>     */<a name="line.1262"></a>
+<span class="sourceLineNo">1263</span>    protected void _setCurrentConnectionMap() throws IllegalActionException {<a name="line.1263"></a>
+<span class="sourceLineNo">1264</span>        FSMActor controller = getController();<a name="line.1264"></a>
+<span class="sourceLineNo">1265</span><a name="line.1265"></a>
+<span class="sourceLineNo">1266</span>        if (controller != null) {<a name="line.1266"></a>
+<span class="sourceLineNo">1267</span>            controller._setCurrentConnectionMap();<a name="line.1267"></a>
+<span class="sourceLineNo">1268</span>        } else {<a name="line.1268"></a>
+<span class="sourceLineNo">1269</span>            throw new IllegalActionException(this, "No controller!");<a name="line.1269"></a>
+<span class="sourceLineNo">1270</span>        }<a name="line.1270"></a>
+<span class="sourceLineNo">1271</span>    }<a name="line.1271"></a>
+<span class="sourceLineNo">1272</span><a name="line.1272"></a>
+<span class="sourceLineNo">1273</span>    /**<a name="line.1273"></a>
+<span class="sourceLineNo">1274</span>     * Set the current state of this actor.<a name="line.1274"></a>
+<span class="sourceLineNo">1275</span>     *<a name="line.1275"></a>
+<span class="sourceLineNo">1276</span>     * @param state<a name="line.1276"></a>
+<span class="sourceLineNo">1277</span>     *            The state to set.<a name="line.1277"></a>
+<span class="sourceLineNo">1278</span>     * @exception IllegalActionException<a name="line.1278"></a>
+<span class="sourceLineNo">1279</span>     *                If there is no controller.<a name="line.1279"></a>
+<span class="sourceLineNo">1280</span>     */<a name="line.1280"></a>
+<span class="sourceLineNo">1281</span>    protected void _setCurrentState(State state) throws IllegalActionException {<a name="line.1281"></a>
+<span class="sourceLineNo">1282</span>        FSMActor controller = getController();<a name="line.1282"></a>
+<span class="sourceLineNo">1283</span><a name="line.1283"></a>
+<span class="sourceLineNo">1284</span>        if (controller != null) {<a name="line.1284"></a>
+<span class="sourceLineNo">1285</span>            controller._currentState = state;<a name="line.1285"></a>
+<span class="sourceLineNo">1286</span>        } else {<a name="line.1286"></a>
+<span class="sourceLineNo">1287</span>            throw new IllegalActionException(this, "No controller!");<a name="line.1287"></a>
+<span class="sourceLineNo">1288</span>        }<a name="line.1288"></a>
+<span class="sourceLineNo">1289</span>    }<a name="line.1289"></a>
+<span class="sourceLineNo">1290</span><a name="line.1290"></a>
+<span class="sourceLineNo">1291</span>    /**<a name="line.1291"></a>
+<span class="sourceLineNo">1292</span>     * Transfer at most one data token from the given output port of<a name="line.1292"></a>
+<span class="sourceLineNo">1293</span>     * the container to the ports it is connected to on the<a name="line.1293"></a>
+<span class="sourceLineNo">1294</span>     * outside. If the receiver is known to be empty, then send a<a name="line.1294"></a>
+<span class="sourceLineNo">1295</span>     * clear. If the receiver status is not known, do nothing.<a name="line.1295"></a>
+<span class="sourceLineNo">1296</span>     *<a name="line.1296"></a>
+<span class="sourceLineNo">1297</span>     * @param port The port to transfer tokens from.<a name="line.1297"></a>
+<span class="sourceLineNo">1298</span>     * @return True if the port has an inside token that was<a name="line.1298"></a>
+<span class="sourceLineNo">1299</span>     *         successfully transferred. Otherwise return false (or<a name="line.1299"></a>
+<span class="sourceLineNo">1300</span>     *         throw an exception).<a name="line.1300"></a>
+<span class="sourceLineNo">1301</span>     * @exception IllegalActionException<a name="line.1301"></a>
+<span class="sourceLineNo">1302</span>     *                If the port is not an opaque output port.<a name="line.1302"></a>
+<span class="sourceLineNo">1303</span>     *<a name="line.1303"></a>
+<span class="sourceLineNo">1304</span>     */<a name="line.1304"></a>
+<span class="sourceLineNo">1305</span>    @Override<a name="line.1305"></a>
+<span class="sourceLineNo">1306</span>    protected boolean _transferOutputs(IOPort port)<a name="line.1306"></a>
+<span class="sourceLineNo">1307</span>            throws IllegalActionException {<a name="line.1307"></a>
+<span class="sourceLineNo">1308</span>        boolean result = false;<a name="line.1308"></a>
+<span class="sourceLineNo">1309</span>        if (_debugging) {<a name="line.1309"></a>
+<span class="sourceLineNo">1310</span>            _debug("Calling transferOutputs on port: " + port.getFullName());<a name="line.1310"></a>
+<span class="sourceLineNo">1311</span>        }<a name="line.1311"></a>
+<span class="sourceLineNo">1312</span><a name="line.1312"></a>
+<span class="sourceLineNo">1313</span>        if (!port.isOutput() || !port.isOpaque()) {<a name="line.1313"></a>
+<span class="sourceLineNo">1314</span>            throw new IllegalActionException(this, port,<a name="line.1314"></a>
+<span class="sourceLineNo">1315</span>                    "Attempted to transferOutputs on a port that "<a name="line.1315"></a>
+<span class="sourceLineNo">1316</span>                            + "is not an opaque input port.");<a name="line.1316"></a>
+<span class="sourceLineNo">1317</span>        }<a name="line.1317"></a>
+<span class="sourceLineNo">1318</span><a name="line.1318"></a>
+<span class="sourceLineNo">1319</span>        for (int i = 0; i &lt; port.getWidthInside(); i++) {<a name="line.1319"></a>
+<span class="sourceLineNo">1320</span>            try {<a name="line.1320"></a>
+<span class="sourceLineNo">1321</span>                if (port.isKnownInside(i)) {<a name="line.1321"></a>
+<span class="sourceLineNo">1322</span>                    if (port.hasTokenInside(i)) {<a name="line.1322"></a>
+<span class="sourceLineNo">1323</span>                        Token t = port.getInside(i);<a name="line.1323"></a>
+<span class="sourceLineNo">1324</span>                        if (_debugging) {<a name="line.1324"></a>
+<span class="sourceLineNo">1325</span>                            _debug(getName(), "transferring output " + t<a name="line.1325"></a>
+<span class="sourceLineNo">1326</span>                                    + " from " + port.getName());<a name="line.1326"></a>
+<span class="sourceLineNo">1327</span>                        }<a name="line.1327"></a>
+<span class="sourceLineNo">1328</span>                        port.send(i, t);<a name="line.1328"></a>
+<span class="sourceLineNo">1329</span>                        // mark this port as we sent a token to<a name="line.1329"></a>
+<span class="sourceLineNo">1330</span>                        // prevent sending a clear afterwards in this<a name="line.1330"></a>
+<span class="sourceLineNo">1331</span>                        // fixed point iteration<a name="line.1331"></a>
+<span class="sourceLineNo">1332</span>                        result = true;<a name="line.1332"></a>
+<span class="sourceLineNo">1333</span>                    } else {<a name="line.1333"></a>
+<span class="sourceLineNo">1334</span>                        // Set the port to be absent only if it is not known<a name="line.1334"></a>
+<span class="sourceLineNo">1335</span>                        // or not connected.<a name="line.1335"></a>
+<span class="sourceLineNo">1336</span>                        if (port.getWidth() &lt;= i || !port.isKnown(i)) {<a name="line.1336"></a>
+<span class="sourceLineNo">1337</span>                            if (_debugging) {<a name="line.1337"></a>
+<span class="sourceLineNo">1338</span>                                _debug(getName(),<a name="line.1338"></a>
+<span class="sourceLineNo">1339</span>                                        "sending clear from " + port.getName());<a name="line.1339"></a>
+<span class="sourceLineNo">1340</span>                            }<a name="line.1340"></a>
+<span class="sourceLineNo">1341</span>                            // only send a clear (=absent) to the<a name="line.1341"></a>
+<span class="sourceLineNo">1342</span>                            // port, iff it is ensured that in the<a name="line.1342"></a>
+<span class="sourceLineNo">1343</span>                            // current state, there might not be an<a name="line.1343"></a>
+<span class="sourceLineNo">1344</span>                            // enabled transition (now or later) that<a name="line.1344"></a>
+<span class="sourceLineNo">1345</span>                            // then would produce a token on that port<a name="line.1345"></a>
+<span class="sourceLineNo">1346</span>                            FSMActor controller = getController();<a name="line.1346"></a>
+<span class="sourceLineNo">1347</span>                            // If a transition has been chosen, then it is safe to set<a name="line.1347"></a>
+<span class="sourceLineNo">1348</span>                            // the outputs absent. If no transition has been chosen,<a name="line.1348"></a>
+<span class="sourceLineNo">1349</span>                            // then we have to check to make sure that sometime later<a name="line.1349"></a>
+<span class="sourceLineNo">1350</span>                            // in the fixed-point iteration, it will not be possible<a name="line.1350"></a>
+<span class="sourceLineNo">1351</span>                            // for a transition to become enabled that might send data<a name="line.1351"></a>
+<span class="sourceLineNo">1352</span>                            // on this port.<a name="line.1352"></a>
+<span class="sourceLineNo">1353</span>                            if (controller._lastChosenTransitions.size() &gt; 0<a name="line.1353"></a>
+<span class="sourceLineNo">1354</span>                                    &amp;&amp; !controller.foundUnknown()<a name="line.1354"></a>
+<span class="sourceLineNo">1355</span>                                    || controller._isSafeToClear(port, i,<a name="line.1355"></a>
+<span class="sourceLineNo">1356</span>                                            controller._currentState, false,<a name="line.1356"></a>
+<span class="sourceLineNo">1357</span>                                            null)) {<a name="line.1357"></a>
+<span class="sourceLineNo">1358</span>                                port.send(i, null);<a name="line.1358"></a>
+<span class="sourceLineNo">1359</span>                            }<a name="line.1359"></a>
+<span class="sourceLineNo">1360</span>                        }<a name="line.1360"></a>
+<span class="sourceLineNo">1361</span>                    }<a name="line.1361"></a>
+<span class="sourceLineNo">1362</span>                }<a name="line.1362"></a>
+<span class="sourceLineNo">1363</span>            } catch (NoTokenException ex) {<a name="line.1363"></a>
+<span class="sourceLineNo">1364</span>                // this shouldn't happen.<a name="line.1364"></a>
+<span class="sourceLineNo">1365</span>                throw new InternalErrorException(this, ex, null);<a name="line.1365"></a>
+<span class="sourceLineNo">1366</span>            }<a name="line.1366"></a>
+<span class="sourceLineNo">1367</span>        }<a name="line.1367"></a>
+<span class="sourceLineNo">1368</span>        return result;<a name="line.1368"></a>
+<span class="sourceLineNo">1369</span>    }<a name="line.1369"></a>
+<span class="sourceLineNo">1370</span><a name="line.1370"></a>
+<span class="sourceLineNo">1371</span>    ///////////////////////////////////////////////////////////////////<a name="line.1371"></a>
+<span class="sourceLineNo">1372</span>    ////                         protected variables               ////<a name="line.1372"></a>
+<span class="sourceLineNo">1373</span><a name="line.1373"></a>
+<span class="sourceLineNo">1374</span>    /** Map from input ports of the modal model to the local receivers<a name="line.1374"></a>
+<span class="sourceLineNo">1375</span>     *  for the current state.<a name="line.1375"></a>
+<span class="sourceLineNo">1376</span>     */<a name="line.1376"></a>
+<span class="sourceLineNo">1377</span>    protected Map _currentLocalReceiverMap = null;<a name="line.1377"></a>
+<span class="sourceLineNo">1378</span><a name="line.1378"></a>
+<span class="sourceLineNo">1379</span>    /** The _indexOffset is set by FSMActor during initialization of<a name="line.1379"></a>
+<span class="sourceLineNo">1380</span>     *  destination refinements upon committing to a reset transition<a name="line.1380"></a>
+<span class="sourceLineNo">1381</span>     *  in order to ensure that the destination refinement views its<a name="line.1381"></a>
+<span class="sourceLineNo">1382</span>     *  index as one larger than the current index.<a name="line.1382"></a>
+<span class="sourceLineNo">1383</span>     */<a name="line.1383"></a>
+<span class="sourceLineNo">1384</span>    protected int _indexOffset = 0;<a name="line.1384"></a>
+<span class="sourceLineNo">1385</span><a name="line.1385"></a>
+<span class="sourceLineNo">1386</span>    /** Record for each state of the mode controller the map from input<a name="line.1386"></a>
+<span class="sourceLineNo">1387</span>     *  ports of the modal model to the local receivers when the mode<a name="line.1387"></a>
+<span class="sourceLineNo">1388</span>     *  controller is in that state.<a name="line.1388"></a>
+<span class="sourceLineNo">1389</span>     */<a name="line.1389"></a>
+<span class="sourceLineNo">1390</span>    protected Map _localReceiverMaps = new HashMap();<a name="line.1390"></a>
+<span class="sourceLineNo">1391</span><a name="line.1391"></a>
+<span class="sourceLineNo">1392</span>    ///////////////////////////////////////////////////////////////////<a name="line.1392"></a>
+<span class="sourceLineNo">1393</span>    ////                         private methods                   ////<a name="line.1393"></a>
+<span class="sourceLineNo">1394</span><a name="line.1394"></a>
+<span class="sourceLineNo">1395</span>    private void _checkActorsForReceiver(TypedActor[] actors, Nameable cont,<a name="line.1395"></a>
+<span class="sourceLineNo">1396</span>            Receiver receiver, List resultsList) {<a name="line.1396"></a>
+<span class="sourceLineNo">1397</span>        if (actors != null) {<a name="line.1397"></a>
+<span class="sourceLineNo">1398</span>            for (int k = 0; k &lt; actors.length; ++k) {<a name="line.1398"></a>
+<span class="sourceLineNo">1399</span>                if (cont == actors[k]) {<a name="line.1399"></a>
+<span class="sourceLineNo">1400</span>                    if (!resultsList.contains(receiver)) {<a name="line.1400"></a>
+<span class="sourceLineNo">1401</span>                        resultsList.add(receiver);<a name="line.1401"></a>
+<span class="sourceLineNo">1402</span>                        break;<a name="line.1402"></a>
+<span class="sourceLineNo">1403</span>                    }<a name="line.1403"></a>
+<span class="sourceLineNo">1404</span>                }<a name="line.1404"></a>
+<span class="sourceLineNo">1405</span>            }<a name="line.1405"></a>
+<span class="sourceLineNo">1406</span>        }<a name="line.1406"></a>
+<span class="sourceLineNo">1407</span>    }<a name="line.1407"></a>
+<span class="sourceLineNo">1408</span><a name="line.1408"></a>
+<span class="sourceLineNo">1409</span>    /** Create the controllerName attribute. */<a name="line.1409"></a>
+<span class="sourceLineNo">1410</span>    private void _createAttribute() {<a name="line.1410"></a>
+<span class="sourceLineNo">1411</span>        try {<a name="line.1411"></a>
+<span class="sourceLineNo">1412</span>            controllerName = new StringAttribute(this, "controllerName");<a name="line.1412"></a>
+<span class="sourceLineNo">1413</span>        } catch (NameDuplicationException ex) {<a name="line.1413"></a>
+<span class="sourceLineNo">1414</span>            throw new InternalErrorException(<a name="line.1414"></a>
+<span class="sourceLineNo">1415</span>                    getName() + "Cannot create " + "controllerName attribute.");<a name="line.1415"></a>
+<span class="sourceLineNo">1416</span>        } catch (IllegalActionException ex) {<a name="line.1416"></a>
+<span class="sourceLineNo">1417</span>            throw new InternalErrorException(<a name="line.1417"></a>
+<span class="sourceLineNo">1418</span>                    getName() + "Cannot create " + "controllerName attribute.");<a name="line.1418"></a>
+<span class="sourceLineNo">1419</span>        }<a name="line.1419"></a>
+<span class="sourceLineNo">1420</span>    }<a name="line.1420"></a>
+<span class="sourceLineNo">1421</span><a name="line.1421"></a>
+<span class="sourceLineNo">1422</span>    /** Reset the output receivers, which are the inside receivers of<a name="line.1422"></a>
+<span class="sourceLineNo">1423</span>     *  the output ports of the container.<a name="line.1423"></a>
+<span class="sourceLineNo">1424</span>     *  @exception IllegalActionException If getting the receivers fails.<a name="line.1424"></a>
+<span class="sourceLineNo">1425</span>     */<a name="line.1425"></a>
+<span class="sourceLineNo">1426</span>    private void _resetOutputReceivers() throws IllegalActionException {<a name="line.1426"></a>
+<span class="sourceLineNo">1427</span>        List&lt;IOPort&gt; outputs = ((Actor) getContainer()).outputPortList();<a name="line.1427"></a>
+<span class="sourceLineNo">1428</span>        for (IOPort output : outputs) {<a name="line.1428"></a>
+<span class="sourceLineNo">1429</span>            if (_debugging) {<a name="line.1429"></a>
+<span class="sourceLineNo">1430</span>                _debug("Resetting inside receivers of output port: "<a name="line.1430"></a>
+<span class="sourceLineNo">1431</span>                        + output.getName());<a name="line.1431"></a>
+<span class="sourceLineNo">1432</span>            }<a name="line.1432"></a>
+<span class="sourceLineNo">1433</span>            Receiver[][] receivers = output.getInsideReceivers();<a name="line.1433"></a>
+<span class="sourceLineNo">1434</span>            if (receivers != null) {<a name="line.1434"></a>
+<span class="sourceLineNo">1435</span>                for (Receiver[] receiver : receivers) {<a name="line.1435"></a>
+<span class="sourceLineNo">1436</span>                    if (receiver != null) {<a name="line.1436"></a>
+<span class="sourceLineNo">1437</span>                        for (int j = 0; j &lt; receiver.length; j++) {<a name="line.1437"></a>
+<span class="sourceLineNo">1438</span>                            if (receiver[j] instanceof FSMReceiver) {<a name="line.1438"></a>
+<span class="sourceLineNo">1439</span>                                receiver[j].reset();<a name="line.1439"></a>
+<span class="sourceLineNo">1440</span>                            }<a name="line.1440"></a>
+<span class="sourceLineNo">1441</span>                        }<a name="line.1441"></a>
+<span class="sourceLineNo">1442</span>                    }<a name="line.1442"></a>
+<span class="sourceLineNo">1443</span>                }<a name="line.1443"></a>
+<span class="sourceLineNo">1444</span>            }<a name="line.1444"></a>
+<span class="sourceLineNo">1445</span>        }<a name="line.1445"></a>
+<span class="sourceLineNo">1446</span>    }<a name="line.1446"></a>
+<span class="sourceLineNo">1447</span><a name="line.1447"></a>
+<span class="sourceLineNo">1448</span>    ///////////////////////////////////////////////////////////////////<a name="line.1448"></a>
+<span class="sourceLineNo">1449</span>    ////                         private variables                 ////<a name="line.1449"></a>
+<span class="sourceLineNo">1450</span><a name="line.1450"></a>
+<span class="sourceLineNo">1451</span>    /** Cached reference to mode controller. */<a name="line.1451"></a>
+<span class="sourceLineNo">1452</span>    private FSMActor _controller = null;<a name="line.1452"></a>
+<span class="sourceLineNo">1453</span><a name="line.1453"></a>
+<span class="sourceLineNo">1454</span>    /** Version of cached reference to mode controller. */<a name="line.1454"></a>
+<span class="sourceLineNo">1455</span>    private long _controllerVersion = -1;<a name="line.1455"></a>
+<span class="sourceLineNo">1456</span><a name="line.1456"></a>
+<span class="sourceLineNo">1457</span>    /** Version of the local receiver maps. */<a name="line.1457"></a>
+<span class="sourceLineNo">1458</span>    private long _localReceiverMapsVersion = -1;<a name="line.1458"></a>
+<span class="sourceLineNo">1459</span>}<a name="line.1459"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

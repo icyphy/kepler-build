@@ -1,0 +1,1392 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../stylesheet.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>/* Utilities used to manipulate strings.<a name="line.1"></a>
+<span class="sourceLineNo">002</span><a name="line.2"></a>
+<span class="sourceLineNo">003</span> Copyright (c) 2002-2017 The Regents of the University of California.<a name="line.3"></a>
+<span class="sourceLineNo">004</span> All rights reserved.<a name="line.4"></a>
+<span class="sourceLineNo">005</span> Permission is hereby granted, without written agreement and without<a name="line.5"></a>
+<span class="sourceLineNo">006</span> license or royalty fees, to use, copy, modify, and distribute this<a name="line.6"></a>
+<span class="sourceLineNo">007</span> software and its documentation for any purpose, provided that the above<a name="line.7"></a>
+<span class="sourceLineNo">008</span> copyright notice and the following two paragraphs appear in all copies<a name="line.8"></a>
+<span class="sourceLineNo">009</span> of this software.<a name="line.9"></a>
+<span class="sourceLineNo">010</span><a name="line.10"></a>
+<span class="sourceLineNo">011</span> IN NO EVENT SHALL THE UNIVERSITY OF CALIFORNIA BE LIABLE TO ANY PARTY<a name="line.11"></a>
+<span class="sourceLineNo">012</span> FOR DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES<a name="line.12"></a>
+<span class="sourceLineNo">013</span> ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION, EVEN IF<a name="line.13"></a>
+<span class="sourceLineNo">014</span> THE UNIVERSITY OF CALIFORNIA HAS BEEN ADVISED OF THE POSSIBILITY OF<a name="line.14"></a>
+<span class="sourceLineNo">015</span> SUCH DAMAGE.<a name="line.15"></a>
+<span class="sourceLineNo">016</span><a name="line.16"></a>
+<span class="sourceLineNo">017</span> THE UNIVERSITY OF CALIFORNIA SPECIFICALLY DISCLAIMS ANY WARRANTIES,<a name="line.17"></a>
+<span class="sourceLineNo">018</span> INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF<a name="line.18"></a>
+<span class="sourceLineNo">019</span> MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE<a name="line.19"></a>
+<span class="sourceLineNo">020</span> PROVIDED HEREUNDER IS ON AN "AS IS" BASIS, AND THE UNIVERSITY OF<a name="line.20"></a>
+<span class="sourceLineNo">021</span> CALIFORNIA HAS NO OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT, UPDATES,<a name="line.21"></a>
+<span class="sourceLineNo">022</span> ENHANCEMENTS, OR MODIFICATIONS.<a name="line.22"></a>
+<span class="sourceLineNo">023</span><a name="line.23"></a>
+<span class="sourceLineNo">024</span> PT_COPYRIGHT_VERSION_2<a name="line.24"></a>
+<span class="sourceLineNo">025</span> COPYRIGHTENDKEY<a name="line.25"></a>
+<span class="sourceLineNo">026</span><a name="line.26"></a>
+<span class="sourceLineNo">027</span> */<a name="line.27"></a>
+<span class="sourceLineNo">028</span>package ptolemy.util;<a name="line.28"></a>
+<span class="sourceLineNo">029</span><a name="line.29"></a>
+<span class="sourceLineNo">030</span>// Note that classes in ptolemy.util do not depend on any<a name="line.30"></a>
+<span class="sourceLineNo">031</span>// other ptolemy packages.<a name="line.31"></a>
+<span class="sourceLineNo">032</span>import java.io.BufferedReader;<a name="line.32"></a>
+<span class="sourceLineNo">033</span>import java.io.File;<a name="line.33"></a>
+<span class="sourceLineNo">034</span>import java.io.IOException;<a name="line.34"></a>
+<span class="sourceLineNo">035</span>import java.io.StreamTokenizer;<a name="line.35"></a>
+<span class="sourceLineNo">036</span>import java.io.StringReader;<a name="line.36"></a>
+<span class="sourceLineNo">037</span>import java.lang.reflect.Field;<a name="line.37"></a>
+<span class="sourceLineNo">038</span>import java.net.MalformedURLException;<a name="line.38"></a>
+<span class="sourceLineNo">039</span>import java.net.URI;<a name="line.39"></a>
+<span class="sourceLineNo">040</span>import java.net.URL;<a name="line.40"></a>
+<span class="sourceLineNo">041</span>import java.util.ArrayList;<a name="line.41"></a>
+<span class="sourceLineNo">042</span>import java.util.Arrays;<a name="line.42"></a>
+<span class="sourceLineNo">043</span>import java.util.LinkedList;<a name="line.43"></a>
+<span class="sourceLineNo">044</span>import java.util.List;<a name="line.44"></a>
+<span class="sourceLineNo">045</span>import java.util.Properties;<a name="line.45"></a>
+<span class="sourceLineNo">046</span>import java.util.StringTokenizer;<a name="line.46"></a>
+<span class="sourceLineNo">047</span><a name="line.47"></a>
+<span class="sourceLineNo">048</span>import sun.misc.Unsafe;<a name="line.48"></a>
+<span class="sourceLineNo">049</span><a name="line.49"></a>
+<span class="sourceLineNo">050</span>///////////////////////////////////////////////////////////////////<a name="line.50"></a>
+<span class="sourceLineNo">051</span>//// StringUtilities<a name="line.51"></a>
+<span class="sourceLineNo">052</span><a name="line.52"></a>
+<span class="sourceLineNo">053</span>/**<a name="line.53"></a>
+<span class="sourceLineNo">054</span> A collection of utilities for manipulating strings.<a name="line.54"></a>
+<span class="sourceLineNo">055</span> These utilities do not depend on any other ptolemy packages.<a name="line.55"></a>
+<span class="sourceLineNo">056</span><a name="line.56"></a>
+<span class="sourceLineNo">057</span> @author Christopher Brooks, Contributors: Teale Fristoe<a name="line.57"></a>
+<span class="sourceLineNo">058</span> @version $Id$<a name="line.58"></a>
+<span class="sourceLineNo">059</span> @since Ptolemy II 2.1<a name="line.59"></a>
+<span class="sourceLineNo">060</span> @Pt.ProposedRating Green (eal)<a name="line.60"></a>
+<span class="sourceLineNo">061</span> @Pt.AcceptedRating Green (cxh)<a name="line.61"></a>
+<span class="sourceLineNo">062</span> */<a name="line.62"></a>
+<span class="sourceLineNo">063</span>public class StringUtilities {<a name="line.63"></a>
+<span class="sourceLineNo">064</span>    /** Instances of this class cannot be created.<a name="line.64"></a>
+<span class="sourceLineNo">065</span>     */<a name="line.65"></a>
+<span class="sourceLineNo">066</span>    private StringUtilities() {<a name="line.66"></a>
+<span class="sourceLineNo">067</span>    }<a name="line.67"></a>
+<span class="sourceLineNo">068</span><a name="line.68"></a>
+<span class="sourceLineNo">069</span>    ///////////////////////////////////////////////////////////////////<a name="line.69"></a>
+<span class="sourceLineNo">070</span>    ////                         public methods                    ////<a name="line.70"></a>
+<span class="sourceLineNo">071</span><a name="line.71"></a>
+<span class="sourceLineNo">072</span>    /** Abbreviate a string.<a name="line.72"></a>
+<span class="sourceLineNo">073</span>     *  If the string is longer than 80 characters, truncate it by<a name="line.73"></a>
+<span class="sourceLineNo">074</span>     *  displaying the first 37 chars, then ". . .", then the last 38<a name="line.74"></a>
+<span class="sourceLineNo">075</span>     *  characters.<a name="line.75"></a>
+<span class="sourceLineNo">076</span>     *  If the &lt;i&gt;longName&lt;/i&gt; argument is null, then the string<a name="line.76"></a>
+<span class="sourceLineNo">077</span>     *  "&amp;gt;Unnamed&amp;lt;" is returned.<a name="line.77"></a>
+<span class="sourceLineNo">078</span>     *  @param longName The string to be abbreviated.<a name="line.78"></a>
+<span class="sourceLineNo">079</span>     *  @return The possibly abbreviated name.<a name="line.79"></a>
+<span class="sourceLineNo">080</span>     *  @see #split(String)<a name="line.80"></a>
+<span class="sourceLineNo">081</span>     */<a name="line.81"></a>
+<span class="sourceLineNo">082</span>    public static String abbreviate(String longName) {<a name="line.82"></a>
+<span class="sourceLineNo">083</span>        // This method is used to abbreviate window titles so that long<a name="line.83"></a>
+<span class="sourceLineNo">084</span>        // file names may appear in the window title bar.  It is not<a name="line.84"></a>
+<span class="sourceLineNo">085</span>        // parameterized so that we can force a unified look and feel.<a name="line.85"></a>
+<span class="sourceLineNo">086</span>        // FIXME: it would be nice to split on a nearby space.<a name="line.86"></a>
+<span class="sourceLineNo">087</span>        if (longName == null) {<a name="line.87"></a>
+<span class="sourceLineNo">088</span>            return "&lt;Unnamed&gt;";<a name="line.88"></a>
+<span class="sourceLineNo">089</span>        }<a name="line.89"></a>
+<span class="sourceLineNo">090</span><a name="line.90"></a>
+<span class="sourceLineNo">091</span>        if (longName.length() &lt;= 80) {<a name="line.91"></a>
+<span class="sourceLineNo">092</span>            return longName;<a name="line.92"></a>
+<span class="sourceLineNo">093</span>        }<a name="line.93"></a>
+<span class="sourceLineNo">094</span><a name="line.94"></a>
+<span class="sourceLineNo">095</span>        return longName.substring(0, 37) + ". . ."<a name="line.95"></a>
+<span class="sourceLineNo">096</span>                + longName.substring(longName.length() - 38);<a name="line.96"></a>
+<span class="sourceLineNo">097</span>    }<a name="line.97"></a>
+<span class="sourceLineNo">098</span><a name="line.98"></a>
+<span class="sourceLineNo">099</span>    /** Add a directory to the java.library.path directory..<a name="line.99"></a>
+<span class="sourceLineNo">100</span>     *  The java.library.path directory determines where the JVM<a name="line.100"></a>
+<span class="sourceLineNo">101</span>     *  looks for native shared libraries.  It is typically read once<a name="line.101"></a>
+<span class="sourceLineNo">102</span>     *  when the JVM is started and no longer read after that.<a name="line.102"></a>
+<span class="sourceLineNo">103</span>     *  &lt;p&gt;This code may only work on certain JVMs&lt;/p&gt;<a name="line.103"></a>
+<span class="sourceLineNo">104</span>     *<a name="line.104"></a>
+<span class="sourceLineNo">105</span>     *  &lt;p&gt;Based on code from http://forums.sun.com/thread.jspa?threadID=707176<a name="line.105"></a>
+<span class="sourceLineNo">106</span>     *  and http://stackoverflow.com/questions/5419039/is-djava-library-path-equivalent-to-system-setpropertyjava-library-path&lt;/p&gt;<a name="line.106"></a>
+<span class="sourceLineNo">107</span>     *<a name="line.107"></a>
+<span class="sourceLineNo">108</span>     *  @param directoryName The directory to be added.<a name="line.108"></a>
+<span class="sourceLineNo">109</span>     *  @exception IOException If there are insufficient permissions to<a name="line.109"></a>
+<span class="sourceLineNo">110</span>     *  get set the java.library.path environment variable or there<a name="line.110"></a>
+<span class="sourceLineNo">111</span>     *  is no such field as usr_paths in the ClassLoader.<a name="line.111"></a>
+<span class="sourceLineNo">112</span>     */<a name="line.112"></a>
+<span class="sourceLineNo">113</span>    public static void addDirectoryToJavaLibraryPath(String directoryName)<a name="line.113"></a>
+<span class="sourceLineNo">114</span>            throws IOException {<a name="line.114"></a>
+<span class="sourceLineNo">115</span>        try {<a name="line.115"></a>
+<span class="sourceLineNo">116</span>            // Java 1.9 throws a warning unless we use this:<a name="line.116"></a>
+<span class="sourceLineNo">117</span>            // https://stackoverflow.com/a/46458447<a name="line.117"></a>
+<span class="sourceLineNo">118</span>            Field theUnsafe = Unsafe.class.getDeclaredField("theUnsafe");<a name="line.118"></a>
+<span class="sourceLineNo">119</span>            theUnsafe.setAccessible(true);<a name="line.119"></a>
+<span class="sourceLineNo">120</span>            Unsafe unsafe = (Unsafe) theUnsafe.get(null);<a name="line.120"></a>
+<span class="sourceLineNo">121</span><a name="line.121"></a>
+<span class="sourceLineNo">122</span>            Field usrPathsField = ClassLoader.class<a name="line.122"></a>
+<span class="sourceLineNo">123</span>                    .getDeclaredField("usr_paths");<a name="line.123"></a>
+<span class="sourceLineNo">124</span>            String[] libraryPathsArray = (String[]) unsafe.getObjectVolatile(<a name="line.124"></a>
+<span class="sourceLineNo">125</span>                    ClassLoader.class,<a name="line.125"></a>
+<span class="sourceLineNo">126</span>                    unsafe.staticFieldOffset(usrPathsField));<a name="line.126"></a>
+<span class="sourceLineNo">127</span>            ArrayList&lt;String&gt; libraryPaths = new ArrayList&lt;String&gt;(<a name="line.127"></a>
+<span class="sourceLineNo">128</span>                    Arrays.asList(libraryPathsArray));<a name="line.128"></a>
+<span class="sourceLineNo">129</span>            if (libraryPaths.contains(directoryName)) {<a name="line.129"></a>
+<span class="sourceLineNo">130</span>                return;<a name="line.130"></a>
+<span class="sourceLineNo">131</span>            }<a name="line.131"></a>
+<span class="sourceLineNo">132</span>            libraryPaths.add(directoryName);<a name="line.132"></a>
+<span class="sourceLineNo">133</span>            unsafe.putObjectVolatile(<a name="line.133"></a>
+<span class="sourceLineNo">134</span>                    ClassLoader.class,<a name="line.134"></a>
+<span class="sourceLineNo">135</span>                    unsafe.staticFieldOffset(usrPathsField),<a name="line.135"></a>
+<span class="sourceLineNo">136</span>                    libraryPaths.toArray(new String[libraryPaths.size()]));<a name="line.136"></a>
+<span class="sourceLineNo">137</span>            System.setProperty("java.library.path",<a name="line.137"></a>
+<span class="sourceLineNo">138</span>                    System.getProperty("java.library.path") + File.pathSeparator<a name="line.138"></a>
+<span class="sourceLineNo">139</span>                            + directoryName);<a name="line.139"></a>
+<span class="sourceLineNo">140</span>        } catch (IllegalAccessException ex) {<a name="line.140"></a>
+<span class="sourceLineNo">141</span>            IOException ioException = new IOException(<a name="line.141"></a>
+<span class="sourceLineNo">142</span>                    "Failed to get permissions to set library path");<a name="line.142"></a>
+<span class="sourceLineNo">143</span>            ioException.initCause(ex);<a name="line.143"></a>
+<span class="sourceLineNo">144</span>            throw ioException;<a name="line.144"></a>
+<span class="sourceLineNo">145</span>        } catch (NoSuchFieldException ex2) {<a name="line.145"></a>
+<span class="sourceLineNo">146</span>            IOException ioException = new IOException(<a name="line.146"></a>
+<span class="sourceLineNo">147</span>                    "Failed to get field handle to set library path");<a name="line.147"></a>
+<span class="sourceLineNo">148</span>            ioException.initCause(ex2);<a name="line.148"></a>
+<span class="sourceLineNo">149</span>            throw ioException;<a name="line.149"></a>
+<span class="sourceLineNo">150</span>        }<a name="line.150"></a>
+<span class="sourceLineNo">151</span>    }<a name="line.151"></a>
+<span class="sourceLineNo">152</span><a name="line.152"></a>
+<span class="sourceLineNo">153</span>    /** Add the $PTII/lib directory to the java.library.path directory.<a name="line.153"></a>
+<span class="sourceLineNo">154</span>     *  The java.library.path directory determines where the JVM<a name="line.154"></a>
+<span class="sourceLineNo">155</span>     *  looks for native shared libraries.  It is typically read once<a name="line.155"></a>
+<span class="sourceLineNo">156</span>     *  when the JVM is started and no longer read after that.<a name="line.156"></a>
+<span class="sourceLineNo">157</span>     *  &lt;p&gt;This code may only work on certain JVMs&lt;/p&gt;<a name="line.157"></a>
+<span class="sourceLineNo">158</span>     *<a name="line.158"></a>
+<span class="sourceLineNo">159</span>     *  @exception IOException If there are insufficient permissions to<a name="line.159"></a>
+<span class="sourceLineNo">160</span>     *  get set the java.library.path environment variable or there<a name="line.160"></a>
+<span class="sourceLineNo">161</span>     *  is no such field as usr_paths in the ClassLoader.<a name="line.161"></a>
+<span class="sourceLineNo">162</span>     */<a name="line.162"></a>
+<span class="sourceLineNo">163</span>    public static void addPtolemyLibraryDirectoryToJavaLibraryPath()<a name="line.163"></a>
+<span class="sourceLineNo">164</span>            throws IOException {<a name="line.164"></a>
+<span class="sourceLineNo">165</span>        String ptIIProperty = "ptolemy.ptII.dir";<a name="line.165"></a>
+<span class="sourceLineNo">166</span>        String ptII = StringUtilities.getProperty(ptIIProperty);<a name="line.166"></a>
+<span class="sourceLineNo">167</span>        if (ptII.length() &gt; 0) {<a name="line.167"></a>
+<span class="sourceLineNo">168</span>            StringUtilities.addDirectoryToJavaLibraryPath(<a name="line.168"></a>
+<span class="sourceLineNo">169</span>                    ptII + File.separator + "lib");<a name="line.169"></a>
+<span class="sourceLineNo">170</span>        } else {<a name="line.170"></a>
+<span class="sourceLineNo">171</span>            System.err.println(<a name="line.171"></a>
+<span class="sourceLineNo">172</span>                    "Warning: StringUtilities.addPtolemyLibraryDirectory() "<a name="line.172"></a>
+<span class="sourceLineNo">173</span>                            + "could not get the value of the " + ptIIProperty<a name="line.173"></a>
+<span class="sourceLineNo">174</span>                            + ".  This means that loading shared libraries like the Serial I/O "<a name="line.174"></a>
+<span class="sourceLineNo">175</span>                            + "interface could fail. ");<a name="line.175"></a>
+<span class="sourceLineNo">176</span>        }<a name="line.176"></a>
+<span class="sourceLineNo">177</span>    }<a name="line.177"></a>
+<span class="sourceLineNo">178</span><a name="line.178"></a>
+<span class="sourceLineNo">179</span>    /** Return a string with a maximum line length of &lt;i&gt;length&lt;/i&gt;<a name="line.179"></a>
+<span class="sourceLineNo">180</span>     *  characters, limited to the given number of characters.<a name="line.180"></a>
+<span class="sourceLineNo">181</span>     *  If there are more than 10 newlines, then the string is truncated<a name="line.181"></a>
+<span class="sourceLineNo">182</span>     *  after 10 lines.<a name="line.182"></a>
+<span class="sourceLineNo">183</span>     *  If the string is truncated, an ellipsis (three periods in a<a name="line.183"></a>
+<span class="sourceLineNo">184</span>     *  row: "...") will be appended to the end of the string.<a name="line.184"></a>
+<span class="sourceLineNo">185</span>     *  Lines that are longer than 160 characters are split into lines<a name="line.185"></a>
+<span class="sourceLineNo">186</span>     *  that are shorter than 160 characters.<a name="line.186"></a>
+<span class="sourceLineNo">187</span>     *  @param string The string to truncate.<a name="line.187"></a>
+<span class="sourceLineNo">188</span>     *  @param length The number of characters to which to truncate the string.<a name="line.188"></a>
+<span class="sourceLineNo">189</span>     *  @return The possibly truncated string with ellipsis possibly added.<a name="line.189"></a>
+<span class="sourceLineNo">190</span>     */<a name="line.190"></a>
+<span class="sourceLineNo">191</span>    public static String ellipsis(String string, int length) {<a name="line.191"></a>
+<span class="sourceLineNo">192</span>        // If necessary, insert newlines into long strings.<a name="line.192"></a>
+<span class="sourceLineNo">193</span>        // If we don't do split long lines and we throw an exception<a name="line.193"></a>
+<span class="sourceLineNo">194</span>        // with a very long line, then the window close button and<a name="line.194"></a>
+<span class="sourceLineNo">195</span>        // possible the dismiss button will be off the right side of<a name="line.195"></a>
+<span class="sourceLineNo">196</span>        // the screen.<a name="line.196"></a>
+<span class="sourceLineNo">197</span>        // The number 160 was generated by trying different sizes and<a name="line.197"></a>
+<span class="sourceLineNo">198</span>        // seeing what fits on a 1024 wide screen.<a name="line.198"></a>
+<span class="sourceLineNo">199</span>        string = StringUtilities.split(string, 160);<a name="line.199"></a>
+<span class="sourceLineNo">200</span><a name="line.200"></a>
+<span class="sourceLineNo">201</span>        // Third argument being true means return the delimiters as tokens.<a name="line.201"></a>
+<span class="sourceLineNo">202</span>        StringTokenizer tokenizer = new StringTokenizer(string, LINE_SEPARATOR,<a name="line.202"></a>
+<span class="sourceLineNo">203</span>                true);<a name="line.203"></a>
+<span class="sourceLineNo">204</span><a name="line.204"></a>
+<span class="sourceLineNo">205</span>        // If there are more than 42 lines and 42 newlines, return<a name="line.205"></a>
+<span class="sourceLineNo">206</span>        // truncate after the first 42 lines and newlines.<a name="line.206"></a>
+<span class="sourceLineNo">207</span>        // This is necessary so that we can deal with very long lines<a name="line.207"></a>
+<span class="sourceLineNo">208</span>        // of text without spaces.<a name="line.208"></a>
+<span class="sourceLineNo">209</span>        if (tokenizer.countTokens() &gt; 42) {<a name="line.209"></a>
+<span class="sourceLineNo">210</span>            StringBuffer results = new StringBuffer();<a name="line.210"></a>
+<span class="sourceLineNo">211</span><a name="line.211"></a>
+<span class="sourceLineNo">212</span>            for (int i = 0; i &lt; 42 &amp;&amp; tokenizer.hasMoreTokens(); i++) {<a name="line.212"></a>
+<span class="sourceLineNo">213</span>                results.append(tokenizer.nextToken());<a name="line.213"></a>
+<span class="sourceLineNo">214</span>            }<a name="line.214"></a>
+<span class="sourceLineNo">215</span><a name="line.215"></a>
+<span class="sourceLineNo">216</span>            results.append("...");<a name="line.216"></a>
+<span class="sourceLineNo">217</span>            string = results.toString();<a name="line.217"></a>
+<span class="sourceLineNo">218</span>        }<a name="line.218"></a>
+<span class="sourceLineNo">219</span><a name="line.219"></a>
+<span class="sourceLineNo">220</span>        if (string.length() &gt; length) {<a name="line.220"></a>
+<span class="sourceLineNo">221</span>            return string.substring(0, length - 3) + "...";<a name="line.221"></a>
+<span class="sourceLineNo">222</span>        }<a name="line.222"></a>
+<span class="sourceLineNo">223</span><a name="line.223"></a>
+<span class="sourceLineNo">224</span>        return string;<a name="line.224"></a>
+<span class="sourceLineNo">225</span>    }<a name="line.225"></a>
+<span class="sourceLineNo">226</span><a name="line.226"></a>
+<span class="sourceLineNo">227</span>    /** Given a string, replace all the instances of XML special characters<a name="line.227"></a>
+<span class="sourceLineNo">228</span>     *  with their corresponding XML entities.  This is necessary to<a name="line.228"></a>
+<span class="sourceLineNo">229</span>     *  allow arbitrary strings to be encoded within XML.<a name="line.229"></a>
+<span class="sourceLineNo">230</span>     *<a name="line.230"></a>
+<span class="sourceLineNo">231</span>     *  &lt;p&gt;In this method, we make the following translations:<a name="line.231"></a>
+<span class="sourceLineNo">232</span>     *  &lt;pre&gt;<a name="line.232"></a>
+<span class="sourceLineNo">233</span>     *  &amp;amp; becomes &amp;amp;amp;<a name="line.233"></a>
+<span class="sourceLineNo">234</span>     *  " becomes &amp;amp;quot;<a name="line.234"></a>
+<span class="sourceLineNo">235</span>     *  &amp;lt; becomes &amp;amp;lt;<a name="line.235"></a>
+<span class="sourceLineNo">236</span>     *  &amp;gt; becomes &amp;amp;gt;<a name="line.236"></a>
+<span class="sourceLineNo">237</span>     *  newline becomes &amp;amp;#10;<a name="line.237"></a>
+<span class="sourceLineNo">238</span>     *  carriage return becomes $amp;#13;<a name="line.238"></a>
+<span class="sourceLineNo">239</span>     *  &lt;/pre&gt;<a name="line.239"></a>
+<span class="sourceLineNo">240</span>     *  @see #unescapeForXML(String)<a name="line.240"></a>
+<span class="sourceLineNo">241</span>     *<a name="line.241"></a>
+<span class="sourceLineNo">242</span>     *  @param string The string to escape.<a name="line.242"></a>
+<span class="sourceLineNo">243</span>     *  @return A new string with special characters replaced.<a name="line.243"></a>
+<span class="sourceLineNo">244</span>     */<a name="line.244"></a>
+<span class="sourceLineNo">245</span>    public static String escapeForXML(String string) {<a name="line.245"></a>
+<span class="sourceLineNo">246</span>        // This method gets called quite a bit when parsing large<a name="line.246"></a>
+<span class="sourceLineNo">247</span>        // files, so rather than calling substitute() many times,<a name="line.247"></a>
+<span class="sourceLineNo">248</span>        // we combine all the loops in one pass.<a name="line.248"></a>
+<span class="sourceLineNo">249</span><a name="line.249"></a>
+<span class="sourceLineNo">250</span>        // A different solution might be to scan the string for<a name="line.250"></a>
+<span class="sourceLineNo">251</span>        // escaped xml characters and if any are found, then create a<a name="line.251"></a>
+<span class="sourceLineNo">252</span>        // StringBuffer and do the conversion.  Using a profiler would<a name="line.252"></a>
+<span class="sourceLineNo">253</span>        // help here.<a name="line.253"></a>
+<span class="sourceLineNo">254</span>        if (string == null) {<a name="line.254"></a>
+<span class="sourceLineNo">255</span>            return null;<a name="line.255"></a>
+<span class="sourceLineNo">256</span>        }<a name="line.256"></a>
+<span class="sourceLineNo">257</span>        StringBuffer buffer = new StringBuffer(string);<a name="line.257"></a>
+<span class="sourceLineNo">258</span>        int i = 0;<a name="line.258"></a>
+<span class="sourceLineNo">259</span>        int length = string.length();<a name="line.259"></a>
+<span class="sourceLineNo">260</span>        while (i &lt; length) {<a name="line.260"></a>
+<span class="sourceLineNo">261</span>            switch (buffer.charAt(i)) {<a name="line.261"></a>
+<span class="sourceLineNo">262</span>            case '\n':<a name="line.262"></a>
+<span class="sourceLineNo">263</span>                buffer.deleteCharAt(i);<a name="line.263"></a>
+<span class="sourceLineNo">264</span>                buffer.insert(i, "&amp;#10;");<a name="line.264"></a>
+<span class="sourceLineNo">265</span>                length += 4;<a name="line.265"></a>
+<span class="sourceLineNo">266</span>                break;<a name="line.266"></a>
+<span class="sourceLineNo">267</span>            case '\r':<a name="line.267"></a>
+<span class="sourceLineNo">268</span>                buffer.deleteCharAt(i);<a name="line.268"></a>
+<span class="sourceLineNo">269</span>                buffer.insert(i, "&amp;#13;");<a name="line.269"></a>
+<span class="sourceLineNo">270</span>                length += 4;<a name="line.270"></a>
+<span class="sourceLineNo">271</span>                break;<a name="line.271"></a>
+<span class="sourceLineNo">272</span>            case '"':<a name="line.272"></a>
+<span class="sourceLineNo">273</span>                buffer.deleteCharAt(i);<a name="line.273"></a>
+<span class="sourceLineNo">274</span>                buffer.insert(i, "&amp;quot;");<a name="line.274"></a>
+<span class="sourceLineNo">275</span>                length += 5;<a name="line.275"></a>
+<span class="sourceLineNo">276</span>                break;<a name="line.276"></a>
+<span class="sourceLineNo">277</span>            case '&amp;':<a name="line.277"></a>
+<span class="sourceLineNo">278</span>                buffer.deleteCharAt(i);<a name="line.278"></a>
+<span class="sourceLineNo">279</span>                buffer.insert(i, "&amp;amp;");<a name="line.279"></a>
+<span class="sourceLineNo">280</span>                length += 4;<a name="line.280"></a>
+<span class="sourceLineNo">281</span>                break;<a name="line.281"></a>
+<span class="sourceLineNo">282</span>            case '&lt;':<a name="line.282"></a>
+<span class="sourceLineNo">283</span>                buffer.deleteCharAt(i);<a name="line.283"></a>
+<span class="sourceLineNo">284</span>                buffer.insert(i, "&amp;lt;");<a name="line.284"></a>
+<span class="sourceLineNo">285</span>                length += 3;<a name="line.285"></a>
+<span class="sourceLineNo">286</span>                break;<a name="line.286"></a>
+<span class="sourceLineNo">287</span>            case '&gt;':<a name="line.287"></a>
+<span class="sourceLineNo">288</span>                buffer.deleteCharAt(i);<a name="line.288"></a>
+<span class="sourceLineNo">289</span>                buffer.insert(i, "&amp;gt;");<a name="line.289"></a>
+<span class="sourceLineNo">290</span>                length += 3;<a name="line.290"></a>
+<span class="sourceLineNo">291</span>                break;<a name="line.291"></a>
+<span class="sourceLineNo">292</span>            }<a name="line.292"></a>
+<span class="sourceLineNo">293</span>            i++;<a name="line.293"></a>
+<span class="sourceLineNo">294</span>        }<a name="line.294"></a>
+<span class="sourceLineNo">295</span>        return buffer.toString();<a name="line.295"></a>
+<span class="sourceLineNo">296</span>    }<a name="line.296"></a>
+<span class="sourceLineNo">297</span><a name="line.297"></a>
+<span class="sourceLineNo">298</span>    /** Given a string, return a string that when fed to the<a name="line.298"></a>
+<span class="sourceLineNo">299</span>     *  Ptolemy expression parser, will turn into the argument<a name="line.299"></a>
+<span class="sourceLineNo">300</span>     *  string. That is, replace all the instances of backslashes<a name="line.300"></a>
+<span class="sourceLineNo">301</span>     *  with double backslashes, all quotation marks with \",<a name="line.301"></a>
+<span class="sourceLineNo">302</span>     *  etc.<a name="line.302"></a>
+<span class="sourceLineNo">303</span>     *  For example<a name="line.303"></a>
+<span class="sourceLineNo">304</span>     *  &lt;pre&gt;<a name="line.304"></a>
+<span class="sourceLineNo">305</span>     *  x"y becomes x\"y;<a name="line.305"></a>
+<span class="sourceLineNo">306</span>     *  x\"y becomes x\\\"y;<a name="line.306"></a>
+<span class="sourceLineNo">307</span>     *  x\y"z becomes x\\y\"z;<a name="line.307"></a>
+<span class="sourceLineNo">308</span>     *  x\\y\"z becomes x\\\\y\\\"<a name="line.308"></a>
+<span class="sourceLineNo">309</span>     *  &lt;/pre&gt;<a name="line.309"></a>
+<span class="sourceLineNo">310</span>     *  Similarly, this method replaces the following characters<a name="line.310"></a>
+<span class="sourceLineNo">311</span>     *  exactly as defined in Java strings: \n, \t, \b, \r, and \f.<a name="line.311"></a>
+<span class="sourceLineNo">312</span>     *  @param string The string to escape.<a name="line.312"></a>
+<span class="sourceLineNo">313</span>     *  @return A new string with that can be put between quotation marks.<a name="line.313"></a>
+<span class="sourceLineNo">314</span>     */<a name="line.314"></a>
+<span class="sourceLineNo">315</span>    public static String escapeString(String string) {<a name="line.315"></a>
+<span class="sourceLineNo">316</span>        // Since the first string is a regular expression, it needs extra escaping.<a name="line.316"></a>
+<span class="sourceLineNo">317</span>        // I have no idea why the extra escaping is needed on the second argument.<a name="line.317"></a>
+<span class="sourceLineNo">318</span>        string = string.replaceAll("\\\\", "\\\\\\\\");<a name="line.318"></a>
+<span class="sourceLineNo">319</span>        string = string.replaceAll("\"", "\\\\\"");<a name="line.319"></a>
+<span class="sourceLineNo">320</span>        string = string.replaceAll("\n", "\\\\n");<a name="line.320"></a>
+<span class="sourceLineNo">321</span>        string = string.replaceAll("\t", "\\\\t");<a name="line.321"></a>
+<span class="sourceLineNo">322</span>        string = string.replaceAll("\b", "\\\\b");<a name="line.322"></a>
+<span class="sourceLineNo">323</span>        string = string.replaceAll("\r", "\\\\r");<a name="line.323"></a>
+<span class="sourceLineNo">324</span>        // Not needed.<a name="line.324"></a>
+<span class="sourceLineNo">325</span>        // string = string.replaceAll("\'", "\\\\'");<a name="line.325"></a>
+<span class="sourceLineNo">326</span>        return string;<a name="line.326"></a>
+<span class="sourceLineNo">327</span>    }<a name="line.327"></a>
+<span class="sourceLineNo">328</span><a name="line.328"></a>
+<span class="sourceLineNo">329</span>    /** If the ptolemy.ptII.exitAfterWrapup or the<a name="line.329"></a>
+<span class="sourceLineNo">330</span>     *  ptolemy.ptII.doNotExit properties are not set, then call<a name="line.330"></a>
+<span class="sourceLineNo">331</span>     *  System.exit().<a name="line.331"></a>
+<span class="sourceLineNo">332</span>     *  Ptolemy code should call this method instead of directly calling<a name="line.332"></a>
+<span class="sourceLineNo">333</span>     *  System.exit() so that we can test code that would usually exit.<a name="line.333"></a>
+<span class="sourceLineNo">334</span>     *  @param returnValue The return value of this process, where<a name="line.334"></a>
+<span class="sourceLineNo">335</span>     *  non-zero values indicate an error.<a name="line.335"></a>
+<span class="sourceLineNo">336</span>     */<a name="line.336"></a>
+<span class="sourceLineNo">337</span>    public static void exit(int returnValue) {<a name="line.337"></a>
+<span class="sourceLineNo">338</span>        try {<a name="line.338"></a>
+<span class="sourceLineNo">339</span>            if (StringUtilities.getProperty("ptolemy.ptII.doNotExit")<a name="line.339"></a>
+<span class="sourceLineNo">340</span>                    .length() &gt; 0) {<a name="line.340"></a>
+<span class="sourceLineNo">341</span>                return;<a name="line.341"></a>
+<span class="sourceLineNo">342</span>            }<a name="line.342"></a>
+<span class="sourceLineNo">343</span>        } catch (SecurityException ex) {<a name="line.343"></a>
+<span class="sourceLineNo">344</span>            System.out.println("Warning: failed to get property \""<a name="line.344"></a>
+<span class="sourceLineNo">345</span>                    + "ptolemy.ptII.doNotExit\". "<a name="line.345"></a>
+<span class="sourceLineNo">346</span>                    + "(-sandbox always causes this)");<a name="line.346"></a>
+<span class="sourceLineNo">347</span>        }<a name="line.347"></a>
+<span class="sourceLineNo">348</span><a name="line.348"></a>
+<span class="sourceLineNo">349</span>        try {<a name="line.349"></a>
+<span class="sourceLineNo">350</span>            if (StringUtilities.getProperty("ptolemy.ptII.exitAfterWrapup")<a name="line.350"></a>
+<span class="sourceLineNo">351</span>                    .length() &gt; 0) {<a name="line.351"></a>
+<span class="sourceLineNo">352</span>                throw new RuntimeException("Normally, we would "<a name="line.352"></a>
+<span class="sourceLineNo">353</span>                        + "exit here because Manager.exitAfterWrapup() "<a name="line.353"></a>
+<span class="sourceLineNo">354</span>                        + "was called.  However, because the "<a name="line.354"></a>
+<span class="sourceLineNo">355</span>                        + "ptolemy.ptII.exitAfterWrapup property "<a name="line.355"></a>
+<span class="sourceLineNo">356</span>                        + "is set, we throw this exception instead.");<a name="line.356"></a>
+<span class="sourceLineNo">357</span>            }<a name="line.357"></a>
+<span class="sourceLineNo">358</span>        } catch (SecurityException ex) {<a name="line.358"></a>
+<span class="sourceLineNo">359</span>            System.out.println("Warning: failed to get property \""<a name="line.359"></a>
+<span class="sourceLineNo">360</span>                    + "ptolemy.ptII.exitAfterWrapup\". "<a name="line.360"></a>
+<span class="sourceLineNo">361</span>                    + "(-sandbox always causes this)");<a name="line.361"></a>
+<span class="sourceLineNo">362</span><a name="line.362"></a>
+<span class="sourceLineNo">363</span>        }<a name="line.363"></a>
+<span class="sourceLineNo">364</span><a name="line.364"></a>
+<span class="sourceLineNo">365</span>        if (!inApplet()) {<a name="line.365"></a>
+<span class="sourceLineNo">366</span>            // Only call System.exit if we are not in an applet.<a name="line.366"></a>
+<span class="sourceLineNo">367</span>            // Non-zero indicates a problem.<a name="line.367"></a>
+<span class="sourceLineNo">368</span>            System.exit(returnValue);<a name="line.368"></a>
+<span class="sourceLineNo">369</span>        }<a name="line.369"></a>
+<span class="sourceLineNo">370</span>    }<a name="line.370"></a>
+<span class="sourceLineNo">371</span><a name="line.371"></a>
+<span class="sourceLineNo">372</span>    /** Return a number of spaces that is proportional to the argument.<a name="line.372"></a>
+<span class="sourceLineNo">373</span>     *  If the argument is negative or zero, return an empty string.<a name="line.373"></a>
+<span class="sourceLineNo">374</span>     *  @param level The level of indenting represented by the spaces.<a name="line.374"></a>
+<span class="sourceLineNo">375</span>     *  @return A string with zero or more spaces.<a name="line.375"></a>
+<span class="sourceLineNo">376</span>     */<a name="line.376"></a>
+<span class="sourceLineNo">377</span>    public static String getIndentPrefix(int level) {<a name="line.377"></a>
+<span class="sourceLineNo">378</span>        if (level &lt;= 0) {<a name="line.378"></a>
+<span class="sourceLineNo">379</span>            return "";<a name="line.379"></a>
+<span class="sourceLineNo">380</span>        }<a name="line.380"></a>
+<span class="sourceLineNo">381</span><a name="line.381"></a>
+<span class="sourceLineNo">382</span>        StringBuffer result = new StringBuffer(level * 4);<a name="line.382"></a>
+<span class="sourceLineNo">383</span><a name="line.383"></a>
+<span class="sourceLineNo">384</span>        for (int i = 0; i &lt; level; i++) {<a name="line.384"></a>
+<span class="sourceLineNo">385</span>            result.append("    ");<a name="line.385"></a>
+<span class="sourceLineNo">386</span>        }<a name="line.386"></a>
+<span class="sourceLineNo">387</span><a name="line.387"></a>
+<span class="sourceLineNo">388</span>        return result.toString();<a name="line.388"></a>
+<span class="sourceLineNo">389</span>    }<a name="line.389"></a>
+<span class="sourceLineNo">390</span><a name="line.390"></a>
+<span class="sourceLineNo">391</span>    /** Get the specified property from the environment. An empty<a name="line.391"></a>
+<span class="sourceLineNo">392</span>     *  string is returned if the property named by the "propertyName"<a name="line.392"></a>
+<span class="sourceLineNo">393</span>     *  argument environment variable does not exist, though if<a name="line.393"></a>
+<span class="sourceLineNo">394</span>     *  certain properties are not defined, then we make various<a name="line.394"></a>
+<span class="sourceLineNo">395</span>     *  attempts to determine them and then set them.  See the javadoc<a name="line.395"></a>
+<span class="sourceLineNo">396</span>     *  page for java.util.System.getProperties() for a list of system<a name="line.396"></a>
+<span class="sourceLineNo">397</span>     *  properties.<a name="line.397"></a>
+<span class="sourceLineNo">398</span>    <a name="line.398"></a>
+<span class="sourceLineNo">399</span>     *  &lt;p&gt;The following properties are handled specially<a name="line.399"></a>
+<span class="sourceLineNo">400</span>     *  &lt;dl&gt;<a name="line.400"></a>
+<span class="sourceLineNo">401</span>     *  &lt;dt&gt; "ptolemy.ptII.dir"<a name="line.401"></a>
+<span class="sourceLineNo">402</span>     *  &lt;dd&gt; vergil usually sets the ptolemy.ptII.dir property to the<a name="line.402"></a>
+<span class="sourceLineNo">403</span>     *  value of $PTII.  However, if we are running under Web Start,<a name="line.403"></a>
+<span class="sourceLineNo">404</span>     *  then this property might not be set, in which case we look<a name="line.404"></a>
+<span class="sourceLineNo">405</span>     *  for "ptolemy/util/StringUtilities.class" and set the<a name="line.405"></a>
+<span class="sourceLineNo">406</span>     *  property accordingly.<a name="line.406"></a>
+<span class="sourceLineNo">407</span>     *  &lt;dt&gt; "ptolemy.ptII.dirAsURL"<a name="line.407"></a>
+<span class="sourceLineNo">408</span>     *  &lt;dd&gt; Return $PTII as a URL.  For example, if $PTII was c:\ptII,<a name="line.408"></a>
+<span class="sourceLineNo">409</span>     *  then return file:/c:/ptII/.<a name="line.409"></a>
+<span class="sourceLineNo">410</span>     *  &lt;dt&gt; "user.dir"<a name="line.410"></a>
+<span class="sourceLineNo">411</span>     *  &lt;dd&gt; Return the canonical path name to the current working<a name="line.411"></a>
+<span class="sourceLineNo">412</span>     *  directory.  This is necessary because under Windows with<a name="line.412"></a>
+<span class="sourceLineNo">413</span>     *  JDK1.4.1, the System.getProperty() call returns<a name="line.413"></a>
+<span class="sourceLineNo">414</span>     *  &lt;code&gt;&lt;b&gt;c&lt;/b&gt;:/&lt;i&gt;foo&lt;/i&gt;&lt;/code&gt; whereas most of the other<a name="line.414"></a>
+<span class="sourceLineNo">415</span>     *  methods that operate on path names return<a name="line.415"></a>
+<span class="sourceLineNo">416</span>     *  &lt;code&gt;&lt;b&gt;C&lt;/b&gt;:/&lt;i&gt;foo&lt;/i&gt;&lt;/code&gt;.<a name="line.416"></a>
+<span class="sourceLineNo">417</span>     *  &lt;/dl&gt;<a name="line.417"></a>
+<span class="sourceLineNo">418</span>     *  @param propertyName The name of property.<a name="line.418"></a>
+<span class="sourceLineNo">419</span>     *  @return A String containing the string value of the property.<a name="line.419"></a>
+<span class="sourceLineNo">420</span>     *  If the property is not found, then we return the empty string.<a name="line.420"></a>
+<span class="sourceLineNo">421</span>     */<a name="line.421"></a>
+<span class="sourceLineNo">422</span>    public static String getProperty(String propertyName) {<a name="line.422"></a>
+<span class="sourceLineNo">423</span>        // NOTE: getProperty() will probably fail in applets, which<a name="line.423"></a>
+<span class="sourceLineNo">424</span>        // is why this is in a try block.<a name="line.424"></a>
+<span class="sourceLineNo">425</span>        String property = null;<a name="line.425"></a>
+<span class="sourceLineNo">426</span><a name="line.426"></a>
+<span class="sourceLineNo">427</span>        try {<a name="line.427"></a>
+<span class="sourceLineNo">428</span>            property = System.getProperty(propertyName);<a name="line.428"></a>
+<span class="sourceLineNo">429</span>        } catch (SecurityException ex) {<a name="line.429"></a>
+<span class="sourceLineNo">430</span>            if (!propertyName.equals("ptolemy.ptII.dir")) {<a name="line.430"></a>
+<span class="sourceLineNo">431</span>                // Constants.java depends on this when running with<a name="line.431"></a>
+<span class="sourceLineNo">432</span>                // -sandbox.<a name="line.432"></a>
+<span class="sourceLineNo">433</span>                SecurityException security = new SecurityException(<a name="line.433"></a>
+<span class="sourceLineNo">434</span>                        "Could not find '" + propertyName<a name="line.434"></a>
+<span class="sourceLineNo">435</span>                                + "' System property");<a name="line.435"></a>
+<span class="sourceLineNo">436</span>                security.initCause(ex);<a name="line.436"></a>
+<span class="sourceLineNo">437</span>                throw security;<a name="line.437"></a>
+<span class="sourceLineNo">438</span>            }<a name="line.438"></a>
+<span class="sourceLineNo">439</span>        }<a name="line.439"></a>
+<span class="sourceLineNo">440</span><a name="line.440"></a>
+<span class="sourceLineNo">441</span>        if (propertyName.equals("user.dir")) {<a name="line.441"></a>
+<span class="sourceLineNo">442</span>            try {<a name="line.442"></a>
+<span class="sourceLineNo">443</span>                if (property == null) {<a name="line.443"></a>
+<span class="sourceLineNo">444</span>                    return property;<a name="line.444"></a>
+<span class="sourceLineNo">445</span>                }<a name="line.445"></a>
+<span class="sourceLineNo">446</span>                File userDirFile = new File(property);<a name="line.446"></a>
+<span class="sourceLineNo">447</span>                return userDirFile.getCanonicalPath();<a name="line.447"></a>
+<span class="sourceLineNo">448</span>            } catch (IOException ex) {<a name="line.448"></a>
+<span class="sourceLineNo">449</span>                return property;<a name="line.449"></a>
+<span class="sourceLineNo">450</span>            }<a name="line.450"></a>
+<span class="sourceLineNo">451</span>        }<a name="line.451"></a>
+<span class="sourceLineNo">452</span><a name="line.452"></a>
+<span class="sourceLineNo">453</span>        // Check for cases where the ptII property starts with<a name="line.453"></a>
+<span class="sourceLineNo">454</span>        // the string "/cygdrive".  This can happen if the property<a name="line.454"></a>
+<span class="sourceLineNo">455</span>        // was set by doing "PTII=`pwd`" under Cygwin bash.<a name="line.455"></a>
+<span class="sourceLineNo">456</span>        if (property != null) {<a name="line.456"></a>
+<span class="sourceLineNo">457</span>            if (propertyName.equals("ptolemy.ptII.dir")<a name="line.457"></a>
+<span class="sourceLineNo">458</span>                    &amp;&amp; property.startsWith("/cygdrive")<a name="line.458"></a>
+<span class="sourceLineNo">459</span>                    &amp;&amp; !_printedCygwinWarning) {<a name="line.459"></a>
+<span class="sourceLineNo">460</span>                // This error only occurs when users build their own,<a name="line.460"></a>
+<span class="sourceLineNo">461</span>                // so it is safe to print to stderr<a name="line.461"></a>
+<span class="sourceLineNo">462</span>                _printedCygwinWarning = true;<a name="line.462"></a>
+<span class="sourceLineNo">463</span>                System.err.println("ptolemy.ptII.dir property = \"" + property<a name="line.463"></a>
+<span class="sourceLineNo">464</span>                        + "\", which contains \"cygdrive\". "<a name="line.464"></a>
+<span class="sourceLineNo">465</span>                        + "This is almost always an error under Cygwin that "<a name="line.465"></a>
+<span class="sourceLineNo">466</span>                        + "is occurs when one does PTII=`pwd`.  Instead, do "<a name="line.466"></a>
+<span class="sourceLineNo">467</span>                        + "PTII=c:/foo/ptII");<a name="line.467"></a>
+<span class="sourceLineNo">468</span>            }<a name="line.468"></a>
+<span class="sourceLineNo">469</span><a name="line.469"></a>
+<span class="sourceLineNo">470</span>            return property;<a name="line.470"></a>
+<span class="sourceLineNo">471</span>        } else {<a name="line.471"></a>
+<span class="sourceLineNo">472</span><a name="line.472"></a>
+<span class="sourceLineNo">473</span>            if (propertyName.equals("ptolemy.ptII.dirAsURL")) {<a name="line.473"></a>
+<span class="sourceLineNo">474</span>                // Return $PTII as a URL.  For example, if $PTII was c:\ptII,<a name="line.474"></a>
+<span class="sourceLineNo">475</span>                // then return file:/c:/ptII/<a name="line.475"></a>
+<span class="sourceLineNo">476</span>                File ptIIAsFile = new File(getProperty("ptolemy.ptII.dir"));<a name="line.476"></a>
+<span class="sourceLineNo">477</span><a name="line.477"></a>
+<span class="sourceLineNo">478</span>                try {<a name="line.478"></a>
+<span class="sourceLineNo">479</span>                    // Convert first to a URI, then to a URL so that we<a name="line.479"></a>
+<span class="sourceLineNo">480</span>                    // properly handle cases where $PTII has spaces in it.<a name="line.480"></a>
+<span class="sourceLineNo">481</span>                    URI ptIIAsURI = ptIIAsFile.toURI();<a name="line.481"></a>
+<span class="sourceLineNo">482</span>                    URL ptIIAsURL = ptIIAsURI.toURL();<a name="line.482"></a>
+<span class="sourceLineNo">483</span>                    return ptIIAsURL.toString();<a name="line.483"></a>
+<span class="sourceLineNo">484</span>                } catch (java.net.MalformedURLException malformed) {<a name="line.484"></a>
+<span class="sourceLineNo">485</span>                    throw new RuntimeException("While trying to find '"<a name="line.485"></a>
+<span class="sourceLineNo">486</span>                            + propertyName + "', could not convert '"<a name="line.486"></a>
+<span class="sourceLineNo">487</span>                            + ptIIAsFile + "' to a URL", malformed);<a name="line.487"></a>
+<span class="sourceLineNo">488</span>                }<a name="line.488"></a>
+<span class="sourceLineNo">489</span>            }<a name="line.489"></a>
+<span class="sourceLineNo">490</span><a name="line.490"></a>
+<span class="sourceLineNo">491</span>            if (propertyName.equals("ptolemy.ptII.dir")) {<a name="line.491"></a>
+<span class="sourceLineNo">492</span>                if (_ptolemyPtIIDir != null) {<a name="line.492"></a>
+<span class="sourceLineNo">493</span>                    // Return the previously calculated value<a name="line.493"></a>
+<span class="sourceLineNo">494</span>                    return _ptolemyPtIIDir;<a name="line.494"></a>
+<span class="sourceLineNo">495</span>                } else {<a name="line.495"></a>
+<span class="sourceLineNo">496</span>                    String stringUtilitiesPath = "ptolemy/util/StringUtilities.class";<a name="line.496"></a>
+<span class="sourceLineNo">497</span><a name="line.497"></a>
+<span class="sourceLineNo">498</span>                    // PTII variable was not set<a name="line.498"></a>
+<span class="sourceLineNo">499</span>                    URL namedObjURL = ClassUtilities<a name="line.499"></a>
+<span class="sourceLineNo">500</span>                            .getResource(stringUtilitiesPath);<a name="line.500"></a>
+<span class="sourceLineNo">501</span><a name="line.501"></a>
+<span class="sourceLineNo">502</span>                    if (namedObjURL != null) {<a name="line.502"></a>
+<span class="sourceLineNo">503</span>                        // Get the file portion of URL<a name="line.503"></a>
+<span class="sourceLineNo">504</span>                        String namedObjFileName = namedObjURL.getFile();<a name="line.504"></a>
+<span class="sourceLineNo">505</span><a name="line.505"></a>
+<span class="sourceLineNo">506</span>                        // FIXME: How do we get from a URL to a pathname?<a name="line.506"></a>
+<span class="sourceLineNo">507</span>                        if (namedObjFileName.startsWith("file:")) {<a name="line.507"></a>
+<span class="sourceLineNo">508</span>                            if (namedObjFileName.startsWith("file://")<a name="line.508"></a>
+<span class="sourceLineNo">509</span>                                    || namedObjFileName<a name="line.509"></a>
+<span class="sourceLineNo">510</span>                                            .startsWith("file:\\\\")) {<a name="line.510"></a>
+<span class="sourceLineNo">511</span>                                // We get rid of either file:/ or file:\<a name="line.511"></a>
+<span class="sourceLineNo">512</span>                                namedObjFileName = namedObjFileName<a name="line.512"></a>
+<span class="sourceLineNo">513</span>                                        .substring(6);<a name="line.513"></a>
+<span class="sourceLineNo">514</span>                            } else {<a name="line.514"></a>
+<span class="sourceLineNo">515</span>                                // Get rid of file:<a name="line.515"></a>
+<span class="sourceLineNo">516</span>                                namedObjFileName = namedObjFileName<a name="line.516"></a>
+<span class="sourceLineNo">517</span>                                        .substring(5);<a name="line.517"></a>
+<span class="sourceLineNo">518</span>                            }<a name="line.518"></a>
+<span class="sourceLineNo">519</span>                        }<a name="line.519"></a>
+<span class="sourceLineNo">520</span><a name="line.520"></a>
+<span class="sourceLineNo">521</span>                        String abnormalHome = namedObjFileName.substring(0,<a name="line.521"></a>
+<span class="sourceLineNo">522</span>                                namedObjFileName.length()<a name="line.522"></a>
+<span class="sourceLineNo">523</span>                                        - stringUtilitiesPath.length());<a name="line.523"></a>
+<span class="sourceLineNo">524</span><a name="line.524"></a>
+<span class="sourceLineNo">525</span>                        // abnormalHome will have values like: "/C:/ptII/"<a name="line.525"></a>
+<span class="sourceLineNo">526</span>                        // which cause no end of trouble, so we construct a File<a name="line.526"></a>
+<span class="sourceLineNo">527</span>                        // and call toString().<a name="line.527"></a>
+<span class="sourceLineNo">528</span>                        _ptolemyPtIIDir = new File(abnormalHome).toString();<a name="line.528"></a>
+<span class="sourceLineNo">529</span><a name="line.529"></a>
+<span class="sourceLineNo">530</span>                        // If we are running under Web Start, then strip off<a name="line.530"></a>
+<span class="sourceLineNo">531</span>                        // the trailing "!"<a name="line.531"></a>
+<span class="sourceLineNo">532</span>                        if (_ptolemyPtIIDir.endsWith("/!")<a name="line.532"></a>
+<span class="sourceLineNo">533</span>                                || _ptolemyPtIIDir.endsWith("\\!")) {<a name="line.533"></a>
+<span class="sourceLineNo">534</span>                            _ptolemyPtIIDir = _ptolemyPtIIDir.substring(0,<a name="line.534"></a>
+<span class="sourceLineNo">535</span>                                    _ptolemyPtIIDir.length() - 1);<a name="line.535"></a>
+<span class="sourceLineNo">536</span>                        }<a name="line.536"></a>
+<span class="sourceLineNo">537</span><a name="line.537"></a>
+<span class="sourceLineNo">538</span>                        // Web Start, we might have<a name="line.538"></a>
+<span class="sourceLineNo">539</span>                        // RMptsupport.jar or<a name="line.539"></a>
+<span class="sourceLineNo">540</span>                        // XMptsupport.jar1088483703686<a name="line.540"></a>
+<span class="sourceLineNo">541</span>                        String ptsupportJarName = File.separator + "DMptolemy"<a name="line.541"></a>
+<span class="sourceLineNo">542</span>                                + File.separator + "RMptsupport.jar";<a name="line.542"></a>
+<span class="sourceLineNo">543</span><a name="line.543"></a>
+<span class="sourceLineNo">544</span>                        if (_ptolemyPtIIDir.endsWith(ptsupportJarName)) {<a name="line.544"></a>
+<span class="sourceLineNo">545</span>                            _ptolemyPtIIDir = _ptolemyPtIIDir.substring(0,<a name="line.545"></a>
+<span class="sourceLineNo">546</span>                                    _ptolemyPtIIDir.length()<a name="line.546"></a>
+<span class="sourceLineNo">547</span>                                            - ptsupportJarName.length());<a name="line.547"></a>
+<span class="sourceLineNo">548</span>                        } else {<a name="line.548"></a>
+<span class="sourceLineNo">549</span>                            ptsupportJarName = "/DMptolemy/XMptsupport.jar";<a name="line.549"></a>
+<span class="sourceLineNo">550</span><a name="line.550"></a>
+<span class="sourceLineNo">551</span>                            if (_ptolemyPtIIDir<a name="line.551"></a>
+<span class="sourceLineNo">552</span>                                    .lastIndexOf(ptsupportJarName) != -1) {<a name="line.552"></a>
+<span class="sourceLineNo">553</span>                                _ptolemyPtIIDir = _ptolemyPtIIDir.substring(0,<a name="line.553"></a>
+<span class="sourceLineNo">554</span>                                        _ptolemyPtIIDir<a name="line.554"></a>
+<span class="sourceLineNo">555</span>                                                .lastIndexOf(ptsupportJarName));<a name="line.555"></a>
+<span class="sourceLineNo">556</span>                            } else {<a name="line.556"></a>
+<span class="sourceLineNo">557</span>                                // Ptolemy II 6.0.1 under Windows: remove<a name="line.557"></a>
+<span class="sourceLineNo">558</span>                                // "\ptolemy\ptsupport.jar!"<a name="line.558"></a>
+<span class="sourceLineNo">559</span>                                // If we don't do this, then ptolemy.ptII.dir<a name="line.559"></a>
+<span class="sourceLineNo">560</span>                                // is set incorrectly and then links to the javadoc<a name="line.560"></a>
+<span class="sourceLineNo">561</span>                                // files will not be found if the javadoc only<a name="line.561"></a>
+<span class="sourceLineNo">562</span>                                // exists in codeDoc.jar and lib/ptII.properties<a name="line.562"></a>
+<span class="sourceLineNo">563</span>                                // is not present.<a name="line.563"></a>
+<span class="sourceLineNo">564</span>                                ptsupportJarName = File.separator + "ptolemy"<a name="line.564"></a>
+<span class="sourceLineNo">565</span>                                        + File.separator + "ptsupport.jar";<a name="line.565"></a>
+<span class="sourceLineNo">566</span><a name="line.566"></a>
+<span class="sourceLineNo">567</span>                                if (_ptolemyPtIIDir<a name="line.567"></a>
+<span class="sourceLineNo">568</span>                                        .lastIndexOf(ptsupportJarName) != -1) {<a name="line.568"></a>
+<span class="sourceLineNo">569</span>                                    _ptolemyPtIIDir = _ptolemyPtIIDir.substring(<a name="line.569"></a>
+<span class="sourceLineNo">570</span>                                            0, _ptolemyPtIIDir.lastIndexOf(<a name="line.570"></a>
+<span class="sourceLineNo">571</span>                                                    ptsupportJarName));<a name="line.571"></a>
+<span class="sourceLineNo">572</span>                                }<a name="line.572"></a>
+<span class="sourceLineNo">573</span>                            }<a name="line.573"></a>
+<span class="sourceLineNo">574</span>                        }<a name="line.574"></a>
+<span class="sourceLineNo">575</span>                    }<a name="line.575"></a>
+<span class="sourceLineNo">576</span><a name="line.576"></a>
+<span class="sourceLineNo">577</span>                    // Convert %20 to spaces because if a URL has %20 in it,<a name="line.577"></a>
+<span class="sourceLineNo">578</span>                    // then we know we have a space, but file names do not<a name="line.578"></a>
+<span class="sourceLineNo">579</span>                    // recognize %20 as being a single space, instead file names<a name="line.579"></a>
+<span class="sourceLineNo">580</span>                    // see %20 as three characters: '%', '2', '0'.<a name="line.580"></a>
+<span class="sourceLineNo">581</span>                    if (_ptolemyPtIIDir != null) {<a name="line.581"></a>
+<span class="sourceLineNo">582</span>                        _ptolemyPtIIDir = StringUtilities<a name="line.582"></a>
+<span class="sourceLineNo">583</span>                                .substitute(_ptolemyPtIIDir, "%20", " ");<a name="line.583"></a>
+<span class="sourceLineNo">584</span>                    }<a name="line.584"></a>
+<span class="sourceLineNo">585</span>                    //*.class files are compiled into classes.dex file; therefore, check for StringUtilities.class fails<a name="line.585"></a>
+<span class="sourceLineNo">586</span>                    //it's OK to set _ptolemyPtIIDir to an empty string on Android<a name="line.586"></a>
+<span class="sourceLineNo">587</span>                    if (_ptolemyPtIIDir == null &amp;&amp; System<a name="line.587"></a>
+<span class="sourceLineNo">588</span>                            .getProperty("java.vm.name").equals("Dalvik")) {<a name="line.588"></a>
+<span class="sourceLineNo">589</span>                        _ptolemyPtIIDir = "";<a name="line.589"></a>
+<span class="sourceLineNo">590</span>                    }<a name="line.590"></a>
+<span class="sourceLineNo">591</span>                    if (_ptolemyPtIIDir == null) {<a name="line.591"></a>
+<span class="sourceLineNo">592</span>                        throw new RuntimeException("Could not find "<a name="line.592"></a>
+<span class="sourceLineNo">593</span>                                + "'ptolemy.ptII.dir'" + " property.  "<a name="line.593"></a>
+<span class="sourceLineNo">594</span>                                + "Also tried loading '" + stringUtilitiesPath<a name="line.594"></a>
+<span class="sourceLineNo">595</span>                                + "' as a resource and working from that. "<a name="line.595"></a>
+<span class="sourceLineNo">596</span>                                + "Vergil should be "<a name="line.596"></a>
+<span class="sourceLineNo">597</span>                                + "invoked with -Dptolemy.ptII.dir"<a name="line.597"></a>
+<span class="sourceLineNo">598</span>                                + "=\"$PTII\", "<a name="line.598"></a>
+<span class="sourceLineNo">599</span>                                + "otherwise the following features will not work: "<a name="line.599"></a>
+<span class="sourceLineNo">600</span>                                + "PtinyOS, Ptalon, the Python actor, "<a name="line.600"></a>
+<span class="sourceLineNo">601</span>                                + "actor document, cg code generation and possibly "<a name="line.601"></a>
+<span class="sourceLineNo">602</span>                                + "other features will not work.");<a name="line.602"></a>
+<span class="sourceLineNo">603</span>                    }<a name="line.603"></a>
+<span class="sourceLineNo">604</span><a name="line.604"></a>
+<span class="sourceLineNo">605</span>                    try {<a name="line.605"></a>
+<span class="sourceLineNo">606</span>                        // Here, we set the property so that future updates<a name="line.606"></a>
+<span class="sourceLineNo">607</span>                        // will get the correct value.<a name="line.607"></a>
+<span class="sourceLineNo">608</span>                        System.setProperty("ptolemy.ptII.dir", _ptolemyPtIIDir);<a name="line.608"></a>
+<span class="sourceLineNo">609</span>                    } catch (SecurityException security) {<a name="line.609"></a>
+<span class="sourceLineNo">610</span>                        // Ignore, we are probably running as an applet or -sandbox<a name="line.610"></a>
+<span class="sourceLineNo">611</span>                    }<a name="line.611"></a>
+<span class="sourceLineNo">612</span><a name="line.612"></a>
+<span class="sourceLineNo">613</span>                    return _ptolemyPtIIDir;<a name="line.613"></a>
+<span class="sourceLineNo">614</span>                }<a name="line.614"></a>
+<span class="sourceLineNo">615</span>            }<a name="line.615"></a>
+<span class="sourceLineNo">616</span><a name="line.616"></a>
+<span class="sourceLineNo">617</span>            // If the property is not set then we return the empty string.<a name="line.617"></a>
+<span class="sourceLineNo">618</span>            //if (property == null) {<a name="line.618"></a>
+<span class="sourceLineNo">619</span>            return "";<a name="line.619"></a>
+<span class="sourceLineNo">620</span>            //}<a name="line.620"></a>
+<span class="sourceLineNo">621</span>        }<a name="line.621"></a>
+<span class="sourceLineNo">622</span>    }<a name="line.622"></a>
+<span class="sourceLineNo">623</span><a name="line.623"></a>
+<span class="sourceLineNo">624</span>    /** Return true if we are in an applet.<a name="line.624"></a>
+<span class="sourceLineNo">625</span>     *  @return True if we are running in an applet.<a name="line.625"></a>
+<span class="sourceLineNo">626</span>     */<a name="line.626"></a>
+<span class="sourceLineNo">627</span>    public static boolean inApplet() {<a name="line.627"></a>
+<span class="sourceLineNo">628</span>        boolean inApplet = false;<a name="line.628"></a>
+<span class="sourceLineNo">629</span>        try {<a name="line.629"></a>
+<span class="sourceLineNo">630</span>            StringUtilities.getProperty("HOME");<a name="line.630"></a>
+<span class="sourceLineNo">631</span>        } catch (SecurityException ex) {<a name="line.631"></a>
+<span class="sourceLineNo">632</span>            inApplet = true;<a name="line.632"></a>
+<span class="sourceLineNo">633</span>        }<a name="line.633"></a>
+<span class="sourceLineNo">634</span>        return inApplet;<a name="line.634"></a>
+<span class="sourceLineNo">635</span>    }<a name="line.635"></a>
+<span class="sourceLineNo">636</span><a name="line.636"></a>
+<span class="sourceLineNo">637</span>    /** Test whether a string is a valid Java identifier.<a name="line.637"></a>
+<span class="sourceLineNo">638</span>     *  Section 3.8 of the Java language spec says:<a name="line.638"></a>
+<span class="sourceLineNo">639</span>     *  &lt;blockquote&gt;<a name="line.639"></a>
+<span class="sourceLineNo">640</span>     *  "An identifier is an unlimited-length sequence of Java letters<a name="line.640"></a>
+<span class="sourceLineNo">641</span>     *  and Java digits, the first of which must be a Java letter. An<a name="line.641"></a>
+<span class="sourceLineNo">642</span>     *  identifier cannot have the same spelling (Unicode character<a name="line.642"></a>
+<span class="sourceLineNo">643</span>     *  sequence) as a keyword (3.9), boolean literal (3.10.3), or<a name="line.643"></a>
+<span class="sourceLineNo">644</span>     *  the null literal (3.10.7)."<a name="line.644"></a>
+<span class="sourceLineNo">645</span>     *  &lt;/blockquote&gt;<a name="line.645"></a>
+<span class="sourceLineNo">646</span>     *  Java characters are A-Z, a-z, $ and _.<a name="line.646"></a>
+<span class="sourceLineNo">647</span>     *  &lt;p&gt; Characters that are not permitted in a Java identifier are changed<a name="line.647"></a>
+<span class="sourceLineNo">648</span>     *  to underscores.<a name="line.648"></a>
+<span class="sourceLineNo">649</span>     *  This method does not check whether the string is a keyword or literal.<a name="line.649"></a>
+<span class="sourceLineNo">650</span>     *  @param name The name to be checked.<a name="line.650"></a>
+<span class="sourceLineNo">651</span>     *  @return True if the given name is a valid Java identifier, or false otherwise.<a name="line.651"></a>
+<span class="sourceLineNo">652</span>     */<a name="line.652"></a>
+<span class="sourceLineNo">653</span>    public static boolean isValidIdentifier(String name) {<a name="line.653"></a>
+<span class="sourceLineNo">654</span>        char[] nameArray = name.toCharArray();<a name="line.654"></a>
+<span class="sourceLineNo">655</span>        if (nameArray.length == 0) {<a name="line.655"></a>
+<span class="sourceLineNo">656</span>            return false;<a name="line.656"></a>
+<span class="sourceLineNo">657</span>        }<a name="line.657"></a>
+<span class="sourceLineNo">658</span>        if (!Character.isJavaIdentifierStart(nameArray[0])) {<a name="line.658"></a>
+<span class="sourceLineNo">659</span>            return false;<a name="line.659"></a>
+<span class="sourceLineNo">660</span>        }<a name="line.660"></a>
+<span class="sourceLineNo">661</span>        for (int i = 1; i &lt; nameArray.length; i++) {<a name="line.661"></a>
+<span class="sourceLineNo">662</span>            if (!Character.isJavaIdentifierPart(nameArray[i])) {<a name="line.662"></a>
+<span class="sourceLineNo">663</span>                return false;<a name="line.663"></a>
+<span class="sourceLineNo">664</span>            }<a name="line.664"></a>
+<span class="sourceLineNo">665</span>        }<a name="line.665"></a>
+<span class="sourceLineNo">666</span>        return true;<a name="line.666"></a>
+<span class="sourceLineNo">667</span>    }<a name="line.667"></a>
+<span class="sourceLineNo">668</span><a name="line.668"></a>
+<span class="sourceLineNo">669</span>    /** Merge the properties in lib/ptII.properties with the current<a name="line.669"></a>
+<span class="sourceLineNo">670</span>     *  properties.  lib/ptII.properties is searched for in the<a name="line.670"></a>
+<span class="sourceLineNo">671</span>     *  classpath.  The value of properties listed in<a name="line.671"></a>
+<span class="sourceLineNo">672</span>     *  lib/ptII.properties do not override properties with the same<a name="line.672"></a>
+<span class="sourceLineNo">673</span>     *  name in the current properties.<a name="line.673"></a>
+<span class="sourceLineNo">674</span>     *  @exception IOException If thrown while looking for the<a name="line.674"></a>
+<span class="sourceLineNo">675</span>     *  $CLASSPATH/lib/ptII.properties file.<a name="line.675"></a>
+<span class="sourceLineNo">676</span>     */<a name="line.676"></a>
+<span class="sourceLineNo">677</span>    public static void mergePropertiesFile() throws IOException {<a name="line.677"></a>
+<span class="sourceLineNo">678</span>        Properties systemProperties = System.getProperties();<a name="line.678"></a>
+<span class="sourceLineNo">679</span>        // Fix for<a name="line.679"></a>
+<span class="sourceLineNo">680</span>        // "ptolemy.util.StringUtilities.mergePropertiesFile() deletes<a name="line.680"></a>
+<span class="sourceLineNo">681</span>        // properties" http://bugzilla.ecoinformatics.org/show_bug.cgi?id=3874<a name="line.681"></a>
+<span class="sourceLineNo">682</span>        // It turns out that the problem seems to be that<a name="line.682"></a>
+<span class="sourceLineNo">683</span>        // newProperties.putAll(systemProperties) does not work in Kepler.<a name="line.683"></a>
+<span class="sourceLineNo">684</span>        Properties newProperties = new Properties(systemProperties);<a name="line.684"></a>
+<span class="sourceLineNo">685</span>        String propertyFileName = "$CLASSPATH/lib/ptII.properties";<a name="line.685"></a>
+<span class="sourceLineNo">686</span><a name="line.686"></a>
+<span class="sourceLineNo">687</span>        URL propertyFileURL = FileUtilities<a name="line.687"></a>
+<span class="sourceLineNo">688</span>                .nameToURL("$CLASSPATH/lib/ptII.properties", null, null);<a name="line.688"></a>
+<span class="sourceLineNo">689</span><a name="line.689"></a>
+<span class="sourceLineNo">690</span>        if (propertyFileURL == null) {<a name="line.690"></a>
+<span class="sourceLineNo">691</span>            throw new IOException("Could not find " + propertyFileName);<a name="line.691"></a>
+<span class="sourceLineNo">692</span>        }<a name="line.692"></a>
+<span class="sourceLineNo">693</span><a name="line.693"></a>
+<span class="sourceLineNo">694</span>        newProperties.load(propertyFileURL.openStream());<a name="line.694"></a>
+<span class="sourceLineNo">695</span><a name="line.695"></a>
+<span class="sourceLineNo">696</span>        System.setProperties(newProperties);<a name="line.696"></a>
+<span class="sourceLineNo">697</span>    }<a name="line.697"></a>
+<span class="sourceLineNo">698</span><a name="line.698"></a>
+<span class="sourceLineNo">699</span>    /** Return a string representing the name of the file expected to<a name="line.699"></a>
+<span class="sourceLineNo">700</span>     *  contain the source code for the specified object.  This method<a name="line.700"></a>
+<span class="sourceLineNo">701</span>     *  simply replaces "." with "/" and appends ".java" to the class<a name="line.701"></a>
+<span class="sourceLineNo">702</span>     *  name.<a name="line.702"></a>
+<span class="sourceLineNo">703</span>     *  @param object The object.<a name="line.703"></a>
+<span class="sourceLineNo">704</span>     *  @return The expected source file name.<a name="line.704"></a>
+<span class="sourceLineNo">705</span>     */<a name="line.705"></a>
+<span class="sourceLineNo">706</span>    public static String objectToSourceFileName(Object object) {<a name="line.706"></a>
+<span class="sourceLineNo">707</span>        String sourceFileNameBase = object.getClass().getName().replace('.',<a name="line.707"></a>
+<span class="sourceLineNo">708</span>                '/');<a name="line.708"></a>
+<span class="sourceLineNo">709</span><a name="line.709"></a>
+<span class="sourceLineNo">710</span>        // Inner classes: Get rid of everything past the first $<a name="line.710"></a>
+<span class="sourceLineNo">711</span>        if (sourceFileNameBase.indexOf("$") != -1) {<a name="line.711"></a>
+<span class="sourceLineNo">712</span>            sourceFileNameBase = sourceFileNameBase.substring(0,<a name="line.712"></a>
+<span class="sourceLineNo">713</span>                    sourceFileNameBase.indexOf("$"));<a name="line.713"></a>
+<span class="sourceLineNo">714</span>        }<a name="line.714"></a>
+<span class="sourceLineNo">715</span><a name="line.715"></a>
+<span class="sourceLineNo">716</span>        return sourceFileNameBase + ".java";<a name="line.716"></a>
+<span class="sourceLineNo">717</span>    }<a name="line.717"></a>
+<span class="sourceLineNo">718</span><a name="line.718"></a>
+<span class="sourceLineNo">719</span>    /** Return the preferences directory, creating it if necessary.<a name="line.719"></a>
+<span class="sourceLineNo">720</span>     *  If the PTOLEMYII_DOT environment variable is set, then<a name="line.720"></a>
+<span class="sourceLineNo">721</span>     *  that value is used, otherwise the Java user.home property<a name="line.721"></a>
+<span class="sourceLineNo">722</span>     *  is used<a name="line.722"></a>
+<span class="sourceLineNo">723</span>     *<a name="line.723"></a>
+<span class="sourceLineNo">724</span>     *  The PTOLEMYII_DOT environment variable is used to support<a name="line.724"></a>
+<span class="sourceLineNo">725</span>     *  invoking multiple Kepler processes.<a name="line.725"></a>
+<span class="sourceLineNo">726</span>     *<a name="line.726"></a>
+<span class="sourceLineNo">727</span>     *  @return A string naming the preferences directory.  The last<a name="line.727"></a>
+<span class="sourceLineNo">728</span>     *  character of the string will have the file.separator character<a name="line.728"></a>
+<span class="sourceLineNo">729</span>     *  appended.<a name="line.729"></a>
+<span class="sourceLineNo">730</span>     *  @exception IOException If the directory could not be created.<a name="line.730"></a>
+<span class="sourceLineNo">731</span>     *  @see #PREFERENCES_DIRECTORY<a name="line.731"></a>
+<span class="sourceLineNo">732</span>     */<a name="line.732"></a>
+<span class="sourceLineNo">733</span>    public static String preferencesDirectory() throws IOException {<a name="line.733"></a>
+<span class="sourceLineNo">734</span>        String baseDirectory = System.getProperty("user.home");<a name="line.734"></a>
+<span class="sourceLineNo">735</span>        try {<a name="line.735"></a>
+<span class="sourceLineNo">736</span>            if (System.getenv("PTOLEMYII_DOT") != null) {<a name="line.736"></a>
+<span class="sourceLineNo">737</span>                baseDirectory = System.getenv("PTOLEMYII_DOT");<a name="line.737"></a>
+<span class="sourceLineNo">738</span>                if (baseDirectory.endsWith(File.separator)) {<a name="line.738"></a>
+<span class="sourceLineNo">739</span>                    baseDirectory = baseDirectory.substring(0,<a name="line.739"></a>
+<span class="sourceLineNo">740</span>                            baseDirectory.length() - 1);<a name="line.740"></a>
+<span class="sourceLineNo">741</span>                }<a name="line.741"></a>
+<span class="sourceLineNo">742</span>            }<a name="line.742"></a>
+<span class="sourceLineNo">743</span>        } catch (SecurityException ex) {<a name="line.743"></a>
+<span class="sourceLineNo">744</span>            // Ignore, we are probably in an applet.<a name="line.744"></a>
+<span class="sourceLineNo">745</span>        }<a name="line.745"></a>
+<span class="sourceLineNo">746</span>        String preferencesDirectoryName = baseDirectory + File.separator<a name="line.746"></a>
+<span class="sourceLineNo">747</span>                + StringUtilities.PREFERENCES_DIRECTORY + File.separator;<a name="line.747"></a>
+<span class="sourceLineNo">748</span><a name="line.748"></a>
+<span class="sourceLineNo">749</span>        File preferencesDirectory = new File(preferencesDirectoryName);<a name="line.749"></a>
+<span class="sourceLineNo">750</span><a name="line.750"></a>
+<span class="sourceLineNo">751</span>        if (!preferencesDirectory.isDirectory()) {<a name="line.751"></a>
+<span class="sourceLineNo">752</span>            if (preferencesDirectory.mkdirs() == false) {<a name="line.752"></a>
+<span class="sourceLineNo">753</span>                throw new IOException("Could not create user preferences "<a name="line.753"></a>
+<span class="sourceLineNo">754</span>                        + "directory '" + preferencesDirectoryName + "'");<a name="line.754"></a>
+<span class="sourceLineNo">755</span>            }<a name="line.755"></a>
+<span class="sourceLineNo">756</span>        }<a name="line.756"></a>
+<span class="sourceLineNo">757</span><a name="line.757"></a>
+<span class="sourceLineNo">758</span>        return preferencesDirectoryName;<a name="line.758"></a>
+<span class="sourceLineNo">759</span>    }<a name="line.759"></a>
+<span class="sourceLineNo">760</span><a name="line.760"></a>
+<span class="sourceLineNo">761</span>    /** Return the name of the properties file.<a name="line.761"></a>
+<span class="sourceLineNo">762</span>     *  The properties file is a file of a format suitable for<a name="line.762"></a>
+<span class="sourceLineNo">763</span>     *  java.util.properties.load(InputStream).<a name="line.763"></a>
+<span class="sourceLineNo">764</span>     *  The file is named "ptII.properties" and is found in the<a name="line.764"></a>
+<span class="sourceLineNo">765</span>     *  {@link #PREFERENCES_DIRECTORY} directory that is returned<a name="line.765"></a>
+<span class="sourceLineNo">766</span>     *  by {@link #preferencesDirectory()}.  Typically, this value<a name="line.766"></a>
+<span class="sourceLineNo">767</span>     *  is "$HOME/.ptolemyII/ptII.properties".<a name="line.767"></a>
+<span class="sourceLineNo">768</span>     *  @see #preferencesDirectory()<a name="line.768"></a>
+<span class="sourceLineNo">769</span>     *  @see #PREFERENCES_DIRECTORY<a name="line.769"></a>
+<span class="sourceLineNo">770</span>     *  @return The name of the properties file.<a name="line.770"></a>
+<span class="sourceLineNo">771</span>     *  @exception IOException If {@link #preferencesDirectory()} throws it.<a name="line.771"></a>
+<span class="sourceLineNo">772</span>     */<a name="line.772"></a>
+<span class="sourceLineNo">773</span>    public static String propertiesFileName() throws IOException {<a name="line.773"></a>
+<span class="sourceLineNo">774</span>        return preferencesDirectory() + "ptII.properties";<a name="line.774"></a>
+<span class="sourceLineNo">775</span>    }<a name="line.775"></a>
+<span class="sourceLineNo">776</span><a name="line.776"></a>
+<span class="sourceLineNo">777</span>    /** Return a LinkedList of the lines in a string that aren't comments.<a name="line.777"></a>
+<span class="sourceLineNo">778</span>     * @param lines A String containing the lines to be separated.<a name="line.778"></a>
+<span class="sourceLineNo">779</span>     * @return A LinkedList of the lines that aren't comments.<a name="line.779"></a>
+<span class="sourceLineNo">780</span>     * @exception IOException If thrown when reading from the input String.<a name="line.780"></a>
+<span class="sourceLineNo">781</span>     */<a name="line.781"></a>
+<span class="sourceLineNo">782</span>    public static LinkedList&lt;String&gt; readLines(String lines)<a name="line.782"></a>
+<span class="sourceLineNo">783</span>            throws IOException {<a name="line.783"></a>
+<span class="sourceLineNo">784</span>        BufferedReader bufferedReader = null;<a name="line.784"></a>
+<span class="sourceLineNo">785</span>        LinkedList&lt;String&gt; returnList = new LinkedList&lt;String&gt;();<a name="line.785"></a>
+<span class="sourceLineNo">786</span>        String line;<a name="line.786"></a>
+<span class="sourceLineNo">787</span>        bufferedReader = new BufferedReader(new StringReader(lines));<a name="line.787"></a>
+<span class="sourceLineNo">788</span>        try {<a name="line.788"></a>
+<span class="sourceLineNo">789</span>            // Read line by line, skipping comments.<a name="line.789"></a>
+<span class="sourceLineNo">790</span>            while ((line = bufferedReader.readLine()) != null) {<a name="line.790"></a>
+<span class="sourceLineNo">791</span>                line = line.trim();<a name="line.791"></a>
+<span class="sourceLineNo">792</span>                if (!(line.length() == 0 || line.startsWith("/*")<a name="line.792"></a>
+<span class="sourceLineNo">793</span>                        || line.startsWith("//"))) {<a name="line.793"></a>
+<span class="sourceLineNo">794</span>                    returnList.add(line);<a name="line.794"></a>
+<span class="sourceLineNo">795</span>                }<a name="line.795"></a>
+<span class="sourceLineNo">796</span>            }<a name="line.796"></a>
+<span class="sourceLineNo">797</span>        } finally {<a name="line.797"></a>
+<span class="sourceLineNo">798</span>            if (bufferedReader != null) {<a name="line.798"></a>
+<span class="sourceLineNo">799</span>                try {<a name="line.799"></a>
+<span class="sourceLineNo">800</span>                    bufferedReader.close();<a name="line.800"></a>
+<span class="sourceLineNo">801</span>                } catch (IOException ex) {<a name="line.801"></a>
+<span class="sourceLineNo">802</span>                    // Ignore<a name="line.802"></a>
+<span class="sourceLineNo">803</span>                    ex.printStackTrace();<a name="line.803"></a>
+<span class="sourceLineNo">804</span>                }<a name="line.804"></a>
+<span class="sourceLineNo">805</span>            }<a name="line.805"></a>
+<span class="sourceLineNo">806</span>        }<a name="line.806"></a>
+<span class="sourceLineNo">807</span>        return returnList;<a name="line.807"></a>
+<span class="sourceLineNo">808</span>    }<a name="line.808"></a>
+<span class="sourceLineNo">809</span><a name="line.809"></a>
+<span class="sourceLineNo">810</span>    /** Sanitize a String so that it can be used as a Java identifier.<a name="line.810"></a>
+<span class="sourceLineNo">811</span>     *  Section 3.8 of the Java language spec says:<a name="line.811"></a>
+<span class="sourceLineNo">812</span>     *  &lt;blockquote&gt;<a name="line.812"></a>
+<span class="sourceLineNo">813</span>     *  "An identifier is an unlimited-length sequence of Java letters<a name="line.813"></a>
+<span class="sourceLineNo">814</span>     *  and Java digits, the first of which must be a Java letter. An<a name="line.814"></a>
+<span class="sourceLineNo">815</span>     *  identifier cannot have the same spelling (Unicode character<a name="line.815"></a>
+<span class="sourceLineNo">816</span>     *  sequence) as a keyword (3.9), boolean literal (3.10.3), or<a name="line.816"></a>
+<span class="sourceLineNo">817</span>     *  the null literal (3.10.7)."<a name="line.817"></a>
+<span class="sourceLineNo">818</span>     *  &lt;/blockquote&gt;<a name="line.818"></a>
+<span class="sourceLineNo">819</span>     *  Java characters are A-Z, a-z, $ and _.<a name="line.819"></a>
+<span class="sourceLineNo">820</span>     *  &lt;p&gt; Characters that are not permitted in a Java identifier are changed<a name="line.820"></a>
+<span class="sourceLineNo">821</span>     *  to underscores.<a name="line.821"></a>
+<span class="sourceLineNo">822</span>     *  This method does not check that the returned string is a<a name="line.822"></a>
+<span class="sourceLineNo">823</span>     *  keyword or literal.<a name="line.823"></a>
+<span class="sourceLineNo">824</span>     *  Note that two different strings can sanitize to the same<a name="line.824"></a>
+<span class="sourceLineNo">825</span>     *  string.<a name="line.825"></a>
+<span class="sourceLineNo">826</span>     *  This method is commonly used during code generation to map the<a name="line.826"></a>
+<span class="sourceLineNo">827</span>     *  name of a ptolemy object to a valid identifier name.<a name="line.827"></a>
+<span class="sourceLineNo">828</span>     *  @param name A string with spaces and other characters that<a name="line.828"></a>
+<span class="sourceLineNo">829</span>     *  cannot be in a Java name.<a name="line.829"></a>
+<span class="sourceLineNo">830</span>     *  @return A String that follows the Java identifier rules.<a name="line.830"></a>
+<span class="sourceLineNo">831</span>     */<a name="line.831"></a>
+<span class="sourceLineNo">832</span>    public static String sanitizeName(String name) {<a name="line.832"></a>
+<span class="sourceLineNo">833</span>        char[] nameArray = name.toCharArray();<a name="line.833"></a>
+<span class="sourceLineNo">834</span><a name="line.834"></a>
+<span class="sourceLineNo">835</span>        for (int i = 0; i &lt; nameArray.length; i++) {<a name="line.835"></a>
+<span class="sourceLineNo">836</span>            if (!Character.isJavaIdentifierPart(nameArray[i])) {<a name="line.836"></a>
+<span class="sourceLineNo">837</span>                nameArray[i] = '_';<a name="line.837"></a>
+<span class="sourceLineNo">838</span>            }<a name="line.838"></a>
+<span class="sourceLineNo">839</span>        }<a name="line.839"></a>
+<span class="sourceLineNo">840</span><a name="line.840"></a>
+<span class="sourceLineNo">841</span>        if (nameArray.length == 0) {<a name="line.841"></a>
+<span class="sourceLineNo">842</span>            return "";<a name="line.842"></a>
+<span class="sourceLineNo">843</span>        } else {<a name="line.843"></a>
+<span class="sourceLineNo">844</span>            if (!Character.isJavaIdentifierStart(nameArray[0])) {<a name="line.844"></a>
+<span class="sourceLineNo">845</span>                return "_" + new String(nameArray);<a name="line.845"></a>
+<span class="sourceLineNo">846</span>            } else {<a name="line.846"></a>
+<span class="sourceLineNo">847</span>                return new String(nameArray);<a name="line.847"></a>
+<span class="sourceLineNo">848</span>            }<a name="line.848"></a>
+<span class="sourceLineNo">849</span>        }<a name="line.849"></a>
+<span class="sourceLineNo">850</span>    }<a name="line.850"></a>
+<span class="sourceLineNo">851</span><a name="line.851"></a>
+<span class="sourceLineNo">852</span>    /**  If the string is longer than 79 characters, split it up by<a name="line.852"></a>
+<span class="sourceLineNo">853</span>     *  adding newlines in all newline delimited substrings<a name="line.853"></a>
+<span class="sourceLineNo">854</span>     *  that are longer than 79 characters.<a name="line.854"></a>
+<span class="sourceLineNo">855</span>     *  If the &lt;i&gt;longName&lt;/i&gt; argument is null, then the string<a name="line.855"></a>
+<span class="sourceLineNo">856</span>     *  "&amp;gt;Unnamed&amp;lt;" is returned.<a name="line.856"></a>
+<span class="sourceLineNo">857</span>     *  @see #abbreviate(String)<a name="line.857"></a>
+<span class="sourceLineNo">858</span>     *  @see #split(String, int)<a name="line.858"></a>
+<span class="sourceLineNo">859</span>     *  @param longName The string to optionally split up<a name="line.859"></a>
+<span class="sourceLineNo">860</span>     *  @return Either the original string, or the string with newlines<a name="line.860"></a>
+<span class="sourceLineNo">861</span>     *  inserted.<a name="line.861"></a>
+<span class="sourceLineNo">862</span>     */<a name="line.862"></a>
+<span class="sourceLineNo">863</span>    public static String split(String longName) {<a name="line.863"></a>
+<span class="sourceLineNo">864</span>        return split(longName, 79);<a name="line.864"></a>
+<span class="sourceLineNo">865</span>    }<a name="line.865"></a>
+<span class="sourceLineNo">866</span><a name="line.866"></a>
+<span class="sourceLineNo">867</span>    /** If the string is longer than &lt;i&gt;length&lt;/i&gt; characters,<a name="line.867"></a>
+<span class="sourceLineNo">868</span>     *  split the string up by adding newlines in all<a name="line.868"></a>
+<span class="sourceLineNo">869</span>     *  newline delimited substrings that are longer than &lt;i&gt;length&lt;/i&gt;<a name="line.869"></a>
+<span class="sourceLineNo">870</span>     *  characters.<a name="line.870"></a>
+<span class="sourceLineNo">871</span>     *  If the &lt;i&gt;longName&lt;/i&gt; argument is null, then the string<a name="line.871"></a>
+<span class="sourceLineNo">872</span>     *  "&amp;gt;Unnamed&amp;lt;" is returned.<a name="line.872"></a>
+<span class="sourceLineNo">873</span>     *  @see #abbreviate(String)<a name="line.873"></a>
+<span class="sourceLineNo">874</span>     *  @see #split(String)<a name="line.874"></a>
+<span class="sourceLineNo">875</span>     *  @param longName The string to optionally split.<a name="line.875"></a>
+<span class="sourceLineNo">876</span>     *  @param length The maximum length of the sequence of characters<a name="line.876"></a>
+<span class="sourceLineNo">877</span>     *  before a newline is inserted.<a name="line.877"></a>
+<span class="sourceLineNo">878</span>     *  @return Either the original string, or the string with newlines<a name="line.878"></a>
+<span class="sourceLineNo">879</span>     *  inserted.<a name="line.879"></a>
+<span class="sourceLineNo">880</span>     */<a name="line.880"></a>
+<span class="sourceLineNo">881</span>    public static String split(String longName, int length) {<a name="line.881"></a>
+<span class="sourceLineNo">882</span>        if (longName == null) {<a name="line.882"></a>
+<span class="sourceLineNo">883</span>            return "&lt;Unnamed&gt;";<a name="line.883"></a>
+<span class="sourceLineNo">884</span>        }<a name="line.884"></a>
+<span class="sourceLineNo">885</span><a name="line.885"></a>
+<span class="sourceLineNo">886</span>        if (longName.length() &lt;= length) {<a name="line.886"></a>
+<span class="sourceLineNo">887</span>            return longName;<a name="line.887"></a>
+<span class="sourceLineNo">888</span>        }<a name="line.888"></a>
+<span class="sourceLineNo">889</span><a name="line.889"></a>
+<span class="sourceLineNo">890</span>        StringBuffer results = new StringBuffer();<a name="line.890"></a>
+<span class="sourceLineNo">891</span><a name="line.891"></a>
+<span class="sourceLineNo">892</span>        // The third argument is true, which means return the delimiters<a name="line.892"></a>
+<span class="sourceLineNo">893</span>        // as part of the tokens.<a name="line.893"></a>
+<span class="sourceLineNo">894</span>        StringTokenizer tokenizer = new StringTokenizer(longName,<a name="line.894"></a>
+<span class="sourceLineNo">895</span>                LINE_SEPARATOR, true);<a name="line.895"></a>
+<span class="sourceLineNo">896</span><a name="line.896"></a>
+<span class="sourceLineNo">897</span>        while (tokenizer.hasMoreTokens()) {<a name="line.897"></a>
+<span class="sourceLineNo">898</span>            String token = tokenizer.nextToken();<a name="line.898"></a>
+<span class="sourceLineNo">899</span>            int mark = 0;<a name="line.899"></a>
+<span class="sourceLineNo">900</span><a name="line.900"></a>
+<span class="sourceLineNo">901</span>            while (mark &lt; token.length() - length) {<a name="line.901"></a>
+<span class="sourceLineNo">902</span>                // We look for the space from the end of the first length<a name="line.902"></a>
+<span class="sourceLineNo">903</span>                // characters.  If we find one, then we use that<a name="line.903"></a>
+<span class="sourceLineNo">904</span>                // as the place to insert a newline.<a name="line.904"></a>
+<span class="sourceLineNo">905</span>                int lastSpaceIndex = token.substring(mark, mark + length)<a name="line.905"></a>
+<span class="sourceLineNo">906</span>                        .lastIndexOf(" ");<a name="line.906"></a>
+<span class="sourceLineNo">907</span><a name="line.907"></a>
+<span class="sourceLineNo">908</span>                if (lastSpaceIndex &lt; 0) {<a name="line.908"></a>
+<span class="sourceLineNo">909</span>                    // No space found, just insert a new line after length<a name="line.909"></a>
+<span class="sourceLineNo">910</span>                    results.append(token.substring(mark, mark + length)<a name="line.910"></a>
+<span class="sourceLineNo">911</span>                            + LINE_SEPARATOR);<a name="line.911"></a>
+<span class="sourceLineNo">912</span>                    mark += length;<a name="line.912"></a>
+<span class="sourceLineNo">913</span>                } else {<a name="line.913"></a>
+<span class="sourceLineNo">914</span>                    results.append(token.substring(mark, mark + lastSpaceIndex)<a name="line.914"></a>
+<span class="sourceLineNo">915</span>                            + LINE_SEPARATOR);<a name="line.915"></a>
+<span class="sourceLineNo">916</span>                    mark += lastSpaceIndex + 1;<a name="line.916"></a>
+<span class="sourceLineNo">917</span>                }<a name="line.917"></a>
+<span class="sourceLineNo">918</span>            }<a name="line.918"></a>
+<span class="sourceLineNo">919</span><a name="line.919"></a>
+<span class="sourceLineNo">920</span>            results.append(token.substring(mark));<a name="line.920"></a>
+<span class="sourceLineNo">921</span>        }<a name="line.921"></a>
+<span class="sourceLineNo">922</span><a name="line.922"></a>
+<span class="sourceLineNo">923</span>        return results.toString();<a name="line.923"></a>
+<span class="sourceLineNo">924</span>    }<a name="line.924"></a>
+<span class="sourceLineNo">925</span><a name="line.925"></a>
+<span class="sourceLineNo">926</span>    /** Given a file or URL name, return as a URL.  If the file name<a name="line.926"></a>
+<span class="sourceLineNo">927</span>     *  is relative, then it is interpreted as being relative to the<a name="line.927"></a>
+<span class="sourceLineNo">928</span>     *  specified base directory. If the name begins with<a name="line.928"></a>
+<span class="sourceLineNo">929</span>     *  "xxxxxxCLASSPATHxxxxxx" or "$CLASSPATH"<a name="line.929"></a>
+<span class="sourceLineNo">930</span>     *  then search for the file relative to the classpath.<a name="line.930"></a>
+<span class="sourceLineNo">931</span>     *  Note that this is the value of the globally defined constant<a name="line.931"></a>
+<span class="sourceLineNo">932</span>     *  $CLASSPATH available in the expression language.<a name="line.932"></a>
+<span class="sourceLineNo">933</span>     *  If no file is found, then throw an exception.<a name="line.933"></a>
+<span class="sourceLineNo">934</span>     *  @param name The name of a file or URL.<a name="line.934"></a>
+<span class="sourceLineNo">935</span>     *  @param baseDirectory The base directory for relative file names,<a name="line.935"></a>
+<span class="sourceLineNo">936</span>     *   or null to specify none.<a name="line.936"></a>
+<span class="sourceLineNo">937</span>     *  @param classLoader The class loader to use to locate system<a name="line.937"></a>
+<span class="sourceLineNo">938</span>     *   resources, or null to use the system class loader.<a name="line.938"></a>
+<span class="sourceLineNo">939</span>     *  @return A URL, or null if no file name or URL has been specified.<a name="line.939"></a>
+<span class="sourceLineNo">940</span>     *  @exception IOException If the file cannot be read, or<a name="line.940"></a>
+<span class="sourceLineNo">941</span>     *   if the file cannot be represented as a URL (e.g. System.in), or<a name="line.941"></a>
+<span class="sourceLineNo">942</span>     *   the name specification cannot be parsed.<a name="line.942"></a>
+<span class="sourceLineNo">943</span>     *  @exception MalformedURLException If the URL is malformed.<a name="line.943"></a>
+<span class="sourceLineNo">944</span>     *  @deprecated Use FileUtilities.nameToURL instead.<a name="line.944"></a>
+<span class="sourceLineNo">945</span>     */<a name="line.945"></a>
+<span class="sourceLineNo">946</span>    @Deprecated<a name="line.946"></a>
+<span class="sourceLineNo">947</span>    public static URL stringToURL(String name, URI baseDirectory,<a name="line.947"></a>
+<span class="sourceLineNo">948</span>            ClassLoader classLoader) throws IOException {<a name="line.948"></a>
+<span class="sourceLineNo">949</span>        return FileUtilities.nameToURL(name, baseDirectory, classLoader);<a name="line.949"></a>
+<span class="sourceLineNo">950</span>    }<a name="line.950"></a>
+<span class="sourceLineNo">951</span><a name="line.951"></a>
+<span class="sourceLineNo">952</span>    /** Replace all occurrences of &lt;i&gt;pattern&lt;/i&gt; in the specified<a name="line.952"></a>
+<span class="sourceLineNo">953</span>     *  string with &lt;i&gt;replacement&lt;/i&gt;.  Note that the pattern is NOT<a name="line.953"></a>
+<span class="sourceLineNo">954</span>     *  a regular expression, and that relative to the<a name="line.954"></a>
+<span class="sourceLineNo">955</span>     *  String.replaceAll() method in jdk1.4, this method is extremely<a name="line.955"></a>
+<span class="sourceLineNo">956</span>     *  slow.  This method does not work well with back slashes.<a name="line.956"></a>
+<span class="sourceLineNo">957</span>     *  @param string The string to edit.<a name="line.957"></a>
+<span class="sourceLineNo">958</span>     *  @param pattern The string to replace.<a name="line.958"></a>
+<span class="sourceLineNo">959</span>     *  @param replacement The string to replace it with.<a name="line.959"></a>
+<span class="sourceLineNo">960</span>     *  @return A new string with the specified replacements.<a name="line.960"></a>
+<span class="sourceLineNo">961</span>     */<a name="line.961"></a>
+<span class="sourceLineNo">962</span>    public static String substitute(String string, String pattern,<a name="line.962"></a>
+<span class="sourceLineNo">963</span>            String replacement) {<a name="line.963"></a>
+<span class="sourceLineNo">964</span>        if (string == null) {<a name="line.964"></a>
+<span class="sourceLineNo">965</span>            return null;<a name="line.965"></a>
+<span class="sourceLineNo">966</span>        }<a name="line.966"></a>
+<span class="sourceLineNo">967</span>        int start = string.indexOf(pattern);<a name="line.967"></a>
+<span class="sourceLineNo">968</span><a name="line.968"></a>
+<span class="sourceLineNo">969</span>        while (start != -1) {<a name="line.969"></a>
+<span class="sourceLineNo">970</span>            StringBuffer buffer = new StringBuffer(string);<a name="line.970"></a>
+<span class="sourceLineNo">971</span>            buffer.delete(start, start + pattern.length());<a name="line.971"></a>
+<span class="sourceLineNo">972</span>            buffer.insert(start, replacement);<a name="line.972"></a>
+<span class="sourceLineNo">973</span>            string = new String(buffer);<a name="line.973"></a>
+<span class="sourceLineNo">974</span>            start = string.indexOf(pattern, start + replacement.length());<a name="line.974"></a>
+<span class="sourceLineNo">975</span>        }<a name="line.975"></a>
+<span class="sourceLineNo">976</span><a name="line.976"></a>
+<span class="sourceLineNo">977</span>        return string;<a name="line.977"></a>
+<span class="sourceLineNo">978</span>    }<a name="line.978"></a>
+<span class="sourceLineNo">979</span><a name="line.979"></a>
+<span class="sourceLineNo">980</span>    /** Perform file prefix substitution.<a name="line.980"></a>
+<span class="sourceLineNo">981</span>     *  If &lt;i&gt;string&lt;/i&gt; starts with &lt;i&gt;prefix&lt;/i&gt;, then we return a<a name="line.981"></a>
+<span class="sourceLineNo">982</span>     *  new string that consists of the value or &lt;i&gt;replacement&lt;/i&gt;<a name="line.982"></a>
+<span class="sourceLineNo">983</span>     *  followed by the value of &lt;i&gt;string&lt;/i&gt; with the value of<a name="line.983"></a>
+<span class="sourceLineNo">984</span>     *  &lt;i&gt;prefix&lt;/i&gt; removed.  For example,<a name="line.984"></a>
+<span class="sourceLineNo">985</span>     *  substituteFilePrefix("c:/ptII", "c:/ptII/ptolemy, "$PTII")<a name="line.985"></a>
+<span class="sourceLineNo">986</span>     *  will return "$PTII/ptolemy"<a name="line.986"></a>
+<span class="sourceLineNo">987</span>     *<a name="line.987"></a>
+<span class="sourceLineNo">988</span>     *  &lt;p&gt;If &lt;i&gt;prefix&lt;/i&gt; is not a simple prefix of &lt;i&gt;string&lt;/i&gt;, then<a name="line.988"></a>
+<span class="sourceLineNo">989</span>     *  we use the file system to find the canonical names of the files.<a name="line.989"></a>
+<span class="sourceLineNo">990</span>     *  For this to work, &lt;i&gt;prefix&lt;/i&gt; and &lt;i&gt;string&lt;/i&gt; should name<a name="line.990"></a>
+<span class="sourceLineNo">991</span>     *  files that exist, see java.io.File.getCanonicalFile() for details.<a name="line.991"></a>
+<span class="sourceLineNo">992</span>     *<a name="line.992"></a>
+<span class="sourceLineNo">993</span>     *  &lt;p&gt;If &lt;i&gt;prefix&lt;/i&gt; is not a prefix of &lt;i&gt;string&lt;/i&gt;, then<a name="line.993"></a>
+<span class="sourceLineNo">994</span>     *  we return &lt;i&gt;string&lt;/i&gt;<a name="line.994"></a>
+<span class="sourceLineNo">995</span>     *<a name="line.995"></a>
+<span class="sourceLineNo">996</span>     *  @param prefix The prefix string, for example, "c:/ptII".<a name="line.996"></a>
+<span class="sourceLineNo">997</span>     *  @param string The string to be substituted, for example,<a name="line.997"></a>
+<span class="sourceLineNo">998</span>     *  "c:/ptII/ptolemy".<a name="line.998"></a>
+<span class="sourceLineNo">999</span>     *  @param replacement The replacement to be substituted in, for example,<a name="line.999"></a>
+<span class="sourceLineNo">1000</span>     *  "$PTII"<a name="line.1000"></a>
+<span class="sourceLineNo">1001</span>     *  @return The possibly substituted string.<a name="line.1001"></a>
+<span class="sourceLineNo">1002</span>     */<a name="line.1002"></a>
+<span class="sourceLineNo">1003</span>    public static String substituteFilePrefix(String prefix, String string,<a name="line.1003"></a>
+<span class="sourceLineNo">1004</span>            String replacement) {<a name="line.1004"></a>
+<span class="sourceLineNo">1005</span>        // This method is currently used by $PTII/util/testsuite/auto.tcl<a name="line.1005"></a>
+<span class="sourceLineNo">1006</span>        if (string.startsWith(prefix)) {<a name="line.1006"></a>
+<span class="sourceLineNo">1007</span>            // Hmm, what about file separators?<a name="line.1007"></a>
+<span class="sourceLineNo">1008</span>            return replacement + string.substring(prefix.length());<a name="line.1008"></a>
+<span class="sourceLineNo">1009</span>        } else {<a name="line.1009"></a>
+<span class="sourceLineNo">1010</span>            try {<a name="line.1010"></a>
+<span class="sourceLineNo">1011</span>                String prefixCanonicalPath = new File(prefix)<a name="line.1011"></a>
+<span class="sourceLineNo">1012</span>                        .getCanonicalPath();<a name="line.1012"></a>
+<span class="sourceLineNo">1013</span><a name="line.1013"></a>
+<span class="sourceLineNo">1014</span>                String stringCanonicalPath = new File(string)<a name="line.1014"></a>
+<span class="sourceLineNo">1015</span>                        .getCanonicalPath();<a name="line.1015"></a>
+<span class="sourceLineNo">1016</span><a name="line.1016"></a>
+<span class="sourceLineNo">1017</span>                if (stringCanonicalPath.startsWith(prefixCanonicalPath)) {<a name="line.1017"></a>
+<span class="sourceLineNo">1018</span>                    return replacement + stringCanonicalPath<a name="line.1018"></a>
+<span class="sourceLineNo">1019</span>                            .substring(prefixCanonicalPath.length());<a name="line.1019"></a>
+<span class="sourceLineNo">1020</span>                }<a name="line.1020"></a>
+<span class="sourceLineNo">1021</span>            } catch (Throwable throwable) {<a name="line.1021"></a>
+<span class="sourceLineNo">1022</span>                // ignore.<a name="line.1022"></a>
+<span class="sourceLineNo">1023</span>            }<a name="line.1023"></a>
+<span class="sourceLineNo">1024</span>        }<a name="line.1024"></a>
+<span class="sourceLineNo">1025</span><a name="line.1025"></a>
+<span class="sourceLineNo">1026</span>        return string;<a name="line.1026"></a>
+<span class="sourceLineNo">1027</span>    }<a name="line.1027"></a>
+<span class="sourceLineNo">1028</span><a name="line.1028"></a>
+<span class="sourceLineNo">1029</span>    /** Tokenize a String to an array of Strings for use with<a name="line.1029"></a>
+<span class="sourceLineNo">1030</span>     *  Runtime.exec(String []).<a name="line.1030"></a>
+<span class="sourceLineNo">1031</span>     *<a name="line.1031"></a>
+<span class="sourceLineNo">1032</span>     *  &lt;p&gt;Lines that begin with an octothorpe '#' are ignored.<a name="line.1032"></a>
+<span class="sourceLineNo">1033</span>     *  Substrings that start and end with a double quote are considered<a name="line.1033"></a>
+<span class="sourceLineNo">1034</span>     *  to be a single token and are returned as a single array element.<a name="line.1034"></a>
+<span class="sourceLineNo">1035</span>     *<a name="line.1035"></a>
+<span class="sourceLineNo">1036</span>     *  @param inputString  The String to tokenize<a name="line.1036"></a>
+<span class="sourceLineNo">1037</span>     *  @return An array of substrings.<a name="line.1037"></a>
+<span class="sourceLineNo">1038</span>     *  @exception IOException If StreamTokenizer.nextToken() throws it.<a name="line.1038"></a>
+<span class="sourceLineNo">1039</span>     */<a name="line.1039"></a>
+<span class="sourceLineNo">1040</span>    public static String[] tokenizeForExec(String inputString)<a name="line.1040"></a>
+<span class="sourceLineNo">1041</span>            throws IOException {<a name="line.1041"></a>
+<span class="sourceLineNo">1042</span>        // The java.lang.Runtime.exec(String command) call uses<a name="line.1042"></a>
+<span class="sourceLineNo">1043</span>        // java.util.StringTokenizer() to parse the command string.<a name="line.1043"></a>
+<span class="sourceLineNo">1044</span>        // Unfortunately, this means that double quotes are not handled<a name="line.1044"></a>
+<span class="sourceLineNo">1045</span>        // in the same way that the shell handles them in that 'ls "foo<a name="line.1045"></a>
+<span class="sourceLineNo">1046</span>        // 'bar"' will interpreted as three tokens 'ls', '"foo' and<a name="line.1046"></a>
+<span class="sourceLineNo">1047</span>        // 'bar"'.  In the shell, the string would be two tokens 'ls' and<a name="line.1047"></a>
+<span class="sourceLineNo">1048</span>        // '"foo bar"'.  What is worse is that the exec() behaviour is<a name="line.1048"></a>
+<span class="sourceLineNo">1049</span>        // slightly different under Windows and Unix.  To solve this<a name="line.1049"></a>
+<span class="sourceLineNo">1050</span>        // problem, we preprocess the command argument using<a name="line.1050"></a>
+<span class="sourceLineNo">1051</span>        // java.io.StreamTokenizer, which converts quoted substrings into<a name="line.1051"></a>
+<span class="sourceLineNo">1052</span>        // single tokens.  We then call java.lang.Runtime.exec(String []<a name="line.1052"></a>
+<span class="sourceLineNo">1053</span>        // commands);<a name="line.1053"></a>
+<span class="sourceLineNo">1054</span>        // Parse the command into tokens<a name="line.1054"></a>
+<span class="sourceLineNo">1055</span>        List&lt;String&gt; commandList = new LinkedList&lt;String&gt;();<a name="line.1055"></a>
+<span class="sourceLineNo">1056</span><a name="line.1056"></a>
+<span class="sourceLineNo">1057</span>        StreamTokenizer streamTokenizer = new StreamTokenizer(<a name="line.1057"></a>
+<span class="sourceLineNo">1058</span>                new StringReader(inputString));<a name="line.1058"></a>
+<span class="sourceLineNo">1059</span><a name="line.1059"></a>
+<span class="sourceLineNo">1060</span>        // We reset the syntax so that we don't convert to numbers,<a name="line.1060"></a>
+<span class="sourceLineNo">1061</span>        // otherwise, if PTII is "d:\\tmp\\ptII\ 2.0", then<a name="line.1061"></a>
+<span class="sourceLineNo">1062</span>        // we have no end of problems.<a name="line.1062"></a>
+<span class="sourceLineNo">1063</span>        streamTokenizer.resetSyntax();<a name="line.1063"></a>
+<span class="sourceLineNo">1064</span>        streamTokenizer.whitespaceChars(0, 32);<a name="line.1064"></a>
+<span class="sourceLineNo">1065</span>        streamTokenizer.wordChars(33, 127);<a name="line.1065"></a>
+<span class="sourceLineNo">1066</span><a name="line.1066"></a>
+<span class="sourceLineNo">1067</span>        // We can't use quoteChar here because it does backslash<a name="line.1067"></a>
+<span class="sourceLineNo">1068</span>        // substitution, so "c:\ptII" ends up as "c:ptII"<a name="line.1068"></a>
+<span class="sourceLineNo">1069</span>        // Substituting forward slashes for backward slashes seems like<a name="line.1069"></a>
+<span class="sourceLineNo">1070</span>        // overkill.<a name="line.1070"></a>
+<span class="sourceLineNo">1071</span>        // streamTokenizer.quoteChar('"');<a name="line.1071"></a>
+<span class="sourceLineNo">1072</span>        streamTokenizer.ordinaryChar('"');<a name="line.1072"></a>
+<span class="sourceLineNo">1073</span><a name="line.1073"></a>
+<span class="sourceLineNo">1074</span>        streamTokenizer.eolIsSignificant(true);<a name="line.1074"></a>
+<span class="sourceLineNo">1075</span><a name="line.1075"></a>
+<span class="sourceLineNo">1076</span>        streamTokenizer.commentChar('#');<a name="line.1076"></a>
+<span class="sourceLineNo">1077</span><a name="line.1077"></a>
+<span class="sourceLineNo">1078</span>        // Current token<a name="line.1078"></a>
+<span class="sourceLineNo">1079</span>        String token = "";<a name="line.1079"></a>
+<span class="sourceLineNo">1080</span><a name="line.1080"></a>
+<span class="sourceLineNo">1081</span>        // Single character token, usually a -<a name="line.1081"></a>
+<span class="sourceLineNo">1082</span>        String singleToken = "";<a name="line.1082"></a>
+<span class="sourceLineNo">1083</span><a name="line.1083"></a>
+<span class="sourceLineNo">1084</span>        // Set to true if we are inside a double quoted String.<a name="line.1084"></a>
+<span class="sourceLineNo">1085</span>        boolean inDoubleQuotedString = false;<a name="line.1085"></a>
+<span class="sourceLineNo">1086</span><a name="line.1086"></a>
+<span class="sourceLineNo">1087</span>        while (streamTokenizer.nextToken() != StreamTokenizer.TT_EOF) {<a name="line.1087"></a>
+<span class="sourceLineNo">1088</span>            switch (streamTokenizer.ttype) {<a name="line.1088"></a>
+<span class="sourceLineNo">1089</span>            case StreamTokenizer.TT_WORD:<a name="line.1089"></a>
+<span class="sourceLineNo">1090</span><a name="line.1090"></a>
+<span class="sourceLineNo">1091</span>                if (inDoubleQuotedString) {<a name="line.1091"></a>
+<span class="sourceLineNo">1092</span>                    if (token.length() &gt; 0) {<a name="line.1092"></a>
+<span class="sourceLineNo">1093</span>                        // FIXME: multiple spaces will get compacted here<a name="line.1093"></a>
+<span class="sourceLineNo">1094</span>                        token += " ";<a name="line.1094"></a>
+<span class="sourceLineNo">1095</span>                    }<a name="line.1095"></a>
+<span class="sourceLineNo">1096</span><a name="line.1096"></a>
+<span class="sourceLineNo">1097</span>                    token += singleToken + streamTokenizer.sval;<a name="line.1097"></a>
+<span class="sourceLineNo">1098</span>                } else {<a name="line.1098"></a>
+<span class="sourceLineNo">1099</span>                    token = singleToken + streamTokenizer.sval;<a name="line.1099"></a>
+<span class="sourceLineNo">1100</span>                    commandList.add(token);<a name="line.1100"></a>
+<span class="sourceLineNo">1101</span>                }<a name="line.1101"></a>
+<span class="sourceLineNo">1102</span><a name="line.1102"></a>
+<span class="sourceLineNo">1103</span>                singleToken = "";<a name="line.1103"></a>
+<span class="sourceLineNo">1104</span>                break;<a name="line.1104"></a>
+<span class="sourceLineNo">1105</span><a name="line.1105"></a>
+<span class="sourceLineNo">1106</span>            case StreamTokenizer.TT_NUMBER:<a name="line.1106"></a>
+<span class="sourceLineNo">1107</span>                throw new RuntimeException("Internal error: Found TT_NUMBER: '"<a name="line.1107"></a>
+<span class="sourceLineNo">1108</span>                        + streamTokenizer.nval + "'.  We should not be "<a name="line.1108"></a>
+<span class="sourceLineNo">1109</span>                        + "tokenizing numbers");<a name="line.1109"></a>
+<span class="sourceLineNo">1110</span><a name="line.1110"></a>
+<span class="sourceLineNo">1111</span>                //break;<a name="line.1111"></a>
+<span class="sourceLineNo">1112</span>            case StreamTokenizer.TT_EOL:<a name="line.1112"></a>
+<span class="sourceLineNo">1113</span>            case StreamTokenizer.TT_EOF:<a name="line.1113"></a>
+<span class="sourceLineNo">1114</span>                break;<a name="line.1114"></a>
+<span class="sourceLineNo">1115</span><a name="line.1115"></a>
+<span class="sourceLineNo">1116</span>            default:<a name="line.1116"></a>
+<span class="sourceLineNo">1117</span>                singleToken = Character.toString((char) streamTokenizer.ttype);<a name="line.1117"></a>
+<span class="sourceLineNo">1118</span><a name="line.1118"></a>
+<span class="sourceLineNo">1119</span>                if (singleToken.equals("\"")) {<a name="line.1119"></a>
+<span class="sourceLineNo">1120</span>                    if (inDoubleQuotedString) {<a name="line.1120"></a>
+<span class="sourceLineNo">1121</span>                        commandList.add(token);<a name="line.1121"></a>
+<span class="sourceLineNo">1122</span>                    }<a name="line.1122"></a>
+<span class="sourceLineNo">1123</span><a name="line.1123"></a>
+<span class="sourceLineNo">1124</span>                    inDoubleQuotedString = !inDoubleQuotedString;<a name="line.1124"></a>
+<span class="sourceLineNo">1125</span>                    singleToken = "";<a name="line.1125"></a>
+<span class="sourceLineNo">1126</span>                    token = "";<a name="line.1126"></a>
+<span class="sourceLineNo">1127</span>                }<a name="line.1127"></a>
+<span class="sourceLineNo">1128</span><a name="line.1128"></a>
+<span class="sourceLineNo">1129</span>                break;<a name="line.1129"></a>
+<span class="sourceLineNo">1130</span>            }<a name="line.1130"></a>
+<span class="sourceLineNo">1131</span>        }<a name="line.1131"></a>
+<span class="sourceLineNo">1132</span><a name="line.1132"></a>
+<span class="sourceLineNo">1133</span>        return commandList.toArray(new String[commandList.size()]);<a name="line.1133"></a>
+<span class="sourceLineNo">1134</span>    }<a name="line.1134"></a>
+<span class="sourceLineNo">1135</span><a name="line.1135"></a>
+<span class="sourceLineNo">1136</span>    /** Return a string with a maximum line length of &lt;i&gt;lineLength&lt;/i&gt;<a name="line.1136"></a>
+<span class="sourceLineNo">1137</span>     *  and a maximum number of lines &lt;i&gt;numberOfLines&lt;/i&gt;.<a name="line.1137"></a>
+<span class="sourceLineNo">1138</span>     *  Each line that exceeds the line length is replaced with a line that<a name="line.1138"></a>
+<span class="sourceLineNo">1139</span>     *  ends with "...". If the number of lines exceeds &lt;i&gt;numberOfLines&lt;/i&gt;,<a name="line.1139"></a>
+<span class="sourceLineNo">1140</span>     *  then the returned string will have exactly &lt;i&gt;numberOfLines&lt;/i&gt; lines<a name="line.1140"></a>
+<span class="sourceLineNo">1141</span>     *  where the last line is "...".<a name="line.1141"></a>
+<span class="sourceLineNo">1142</span>     *  @param string The string to truncate.<a name="line.1142"></a>
+<span class="sourceLineNo">1143</span>     *  @param lineLength The number of characters to which to truncate each line.<a name="line.1143"></a>
+<span class="sourceLineNo">1144</span>     *  @param numberOfLines The maximum number of lines.<a name="line.1144"></a>
+<span class="sourceLineNo">1145</span>     *  @return The possibly truncated string with ellipsis possibly added.<a name="line.1145"></a>
+<span class="sourceLineNo">1146</span>     */<a name="line.1146"></a>
+<span class="sourceLineNo">1147</span>    public static String truncateString(String string, int lineLength,<a name="line.1147"></a>
+<span class="sourceLineNo">1148</span>            int numberOfLines) {<a name="line.1148"></a>
+<span class="sourceLineNo">1149</span><a name="line.1149"></a>
+<span class="sourceLineNo">1150</span>        // Third argument being true means the delimiters (LINE_SEPARATOR) are<a name="line.1150"></a>
+<span class="sourceLineNo">1151</span>        // included in as tokens in the parsed results.<a name="line.1151"></a>
+<span class="sourceLineNo">1152</span>        StringTokenizer tokenizer = new StringTokenizer(string, LINE_SEPARATOR,<a name="line.1152"></a>
+<span class="sourceLineNo">1153</span>                true);<a name="line.1153"></a>
+<span class="sourceLineNo">1154</span><a name="line.1154"></a>
+<span class="sourceLineNo">1155</span>        StringBuffer results = new StringBuffer();<a name="line.1155"></a>
+<span class="sourceLineNo">1156</span>        // Count the lines + newlines.<a name="line.1156"></a>
+<span class="sourceLineNo">1157</span>        int lineCount = 0;<a name="line.1157"></a>
+<span class="sourceLineNo">1158</span>        while (tokenizer.hasMoreTokens()) {<a name="line.1158"></a>
+<span class="sourceLineNo">1159</span>            if (lineCount &gt;= numberOfLines * 2) {<a name="line.1159"></a>
+<span class="sourceLineNo">1160</span>                // Presumably, the last line is a line separator.<a name="line.1160"></a>
+<span class="sourceLineNo">1161</span>                // We append an additional line to indicate that there<a name="line.1161"></a>
+<span class="sourceLineNo">1162</span>                // are more lines.<a name="line.1162"></a>
+<span class="sourceLineNo">1163</span>                results.append("...");<a name="line.1163"></a>
+<span class="sourceLineNo">1164</span>                break;<a name="line.1164"></a>
+<span class="sourceLineNo">1165</span>            }<a name="line.1165"></a>
+<span class="sourceLineNo">1166</span>            lineCount++;<a name="line.1166"></a>
+<span class="sourceLineNo">1167</span>            String line = tokenizer.nextToken();<a name="line.1167"></a>
+<span class="sourceLineNo">1168</span>            if (line.length() &gt; lineLength) {<a name="line.1168"></a>
+<span class="sourceLineNo">1169</span>                line = line.substring(0, lineLength - 3) + "...";<a name="line.1169"></a>
+<span class="sourceLineNo">1170</span>            }<a name="line.1170"></a>
+<span class="sourceLineNo">1171</span>            results.append(line);<a name="line.1171"></a>
+<span class="sourceLineNo">1172</span>        }<a name="line.1172"></a>
+<span class="sourceLineNo">1173</span>        return results.toString();<a name="line.1173"></a>
+<span class="sourceLineNo">1174</span>    }<a name="line.1174"></a>
+<span class="sourceLineNo">1175</span><a name="line.1175"></a>
+<span class="sourceLineNo">1176</span>    /** Given a string, replace all the instances of XML entities<a name="line.1176"></a>
+<span class="sourceLineNo">1177</span>     *  with their corresponding XML special characters.  This is necessary to<a name="line.1177"></a>
+<span class="sourceLineNo">1178</span>     *  allow arbitrary strings to be encoded within XML.<a name="line.1178"></a>
+<span class="sourceLineNo">1179</span>     *<a name="line.1179"></a>
+<span class="sourceLineNo">1180</span>     *  &lt;p&gt;In this method, we make the following translations:<a name="line.1180"></a>
+<span class="sourceLineNo">1181</span>     *  &lt;pre&gt;<a name="line.1181"></a>
+<span class="sourceLineNo">1182</span>     *  &amp;amp;amp; becomes &amp;amp;<a name="line.1182"></a>
+<span class="sourceLineNo">1183</span>     *  &amp;amp;quot; becomes "<a name="line.1183"></a>
+<span class="sourceLineNo">1184</span>     *  &amp;amp;lt; becomes &amp;lt;<a name="line.1184"></a>
+<span class="sourceLineNo">1185</span>     *  &amp;amp;gt; becomes &amp;gt;<a name="line.1185"></a>
+<span class="sourceLineNo">1186</span>     *  &amp;amp;#10; becomes newline<a name="line.1186"></a>
+<span class="sourceLineNo">1187</span>     *  &amp;amp;#13; becomes carriage return<a name="line.1187"></a>
+<span class="sourceLineNo">1188</span>     *  &lt;/pre&gt;<a name="line.1188"></a>
+<span class="sourceLineNo">1189</span>     *  @see #escapeForXML(String)<a name="line.1189"></a>
+<span class="sourceLineNo">1190</span>     *<a name="line.1190"></a>
+<span class="sourceLineNo">1191</span>     *  @param string The string to escape.<a name="line.1191"></a>
+<span class="sourceLineNo">1192</span>     *  @return A new string with special characters replaced.<a name="line.1192"></a>
+<span class="sourceLineNo">1193</span>     */<a name="line.1193"></a>
+<span class="sourceLineNo">1194</span>    public static String unescapeForXML(String string) {<a name="line.1194"></a>
+<span class="sourceLineNo">1195</span>        if (string.indexOf("&amp;") != -1) {<a name="line.1195"></a>
+<span class="sourceLineNo">1196</span>            string = substitute(string, "&amp;amp;", "&amp;");<a name="line.1196"></a>
+<span class="sourceLineNo">1197</span>            string = substitute(string, "&amp;quot;", "\"");<a name="line.1197"></a>
+<span class="sourceLineNo">1198</span>            string = substitute(string, "&amp;lt;", "&lt;");<a name="line.1198"></a>
+<span class="sourceLineNo">1199</span>            string = substitute(string, "&amp;gt;", "&gt;");<a name="line.1199"></a>
+<span class="sourceLineNo">1200</span>            string = substitute(string, "&amp;#10;", "\n");<a name="line.1200"></a>
+<span class="sourceLineNo">1201</span>            string = substitute(string, "&amp;#13;", "\r");<a name="line.1201"></a>
+<span class="sourceLineNo">1202</span>        }<a name="line.1202"></a>
+<span class="sourceLineNo">1203</span>        return string;<a name="line.1203"></a>
+<span class="sourceLineNo">1204</span>    }<a name="line.1204"></a>
+<span class="sourceLineNo">1205</span><a name="line.1205"></a>
+<span class="sourceLineNo">1206</span>    /** Return a string that contains a description of how to use a<a name="line.1206"></a>
+<span class="sourceLineNo">1207</span>     *  class that calls this method.  For example, this method is<a name="line.1207"></a>
+<span class="sourceLineNo">1208</span>     *  called by "$PTII/bin/vergil -help".<a name="line.1208"></a>
+<span class="sourceLineNo">1209</span>     *  @param commandTemplate  A string naming the command and the<a name="line.1209"></a>
+<span class="sourceLineNo">1210</span>     *  format of the arguments, for example<a name="line.1210"></a>
+<span class="sourceLineNo">1211</span>     *  "moml [options] [file . . .]"<a name="line.1211"></a>
+<span class="sourceLineNo">1212</span>     *  @param commandOptions A 2xN array of Strings that list command-line<a name="line.1212"></a>
+<span class="sourceLineNo">1213</span>     *  options that take arguments where the first<a name="line.1213"></a>
+<span class="sourceLineNo">1214</span>     *  element is a String naming the command line option, and the<a name="line.1214"></a>
+<span class="sourceLineNo">1215</span>     *  second element is the argument, for example<a name="line.1215"></a>
+<span class="sourceLineNo">1216</span>     *  &lt;code&gt;{"-class", "&amp;lt;classname&amp;gt;")&lt;/code&gt;<a name="line.1216"></a>
+<span class="sourceLineNo">1217</span>     *  @param commandFlags An array of Strings that list command-line<a name="line.1217"></a>
+<span class="sourceLineNo">1218</span>     *  options that are either present or not.<a name="line.1218"></a>
+<span class="sourceLineNo">1219</span>     *  @return A string that describes the command.<a name="line.1219"></a>
+<span class="sourceLineNo">1220</span>     */<a name="line.1220"></a>
+<span class="sourceLineNo">1221</span>    public static String usageString(String commandTemplate,<a name="line.1221"></a>
+<span class="sourceLineNo">1222</span>            String[][] commandOptions, String[] commandFlags) {<a name="line.1222"></a>
+<span class="sourceLineNo">1223</span>        String[][] commandFlagsWithDescriptions = new String[commandFlags.length][2];<a name="line.1223"></a>
+<span class="sourceLineNo">1224</span>        for (int i = 0; i &lt; commandFlags.length; i++) {<a name="line.1224"></a>
+<span class="sourceLineNo">1225</span>            commandFlagsWithDescriptions[i][0] = commandFlags[i];<a name="line.1225"></a>
+<span class="sourceLineNo">1226</span>            commandFlagsWithDescriptions[i][1] = "";<a name="line.1226"></a>
+<span class="sourceLineNo">1227</span>        }<a name="line.1227"></a>
+<span class="sourceLineNo">1228</span>        return usageString(commandTemplate, commandOptions,<a name="line.1228"></a>
+<span class="sourceLineNo">1229</span>                commandFlagsWithDescriptions);<a name="line.1229"></a>
+<span class="sourceLineNo">1230</span>    }<a name="line.1230"></a>
+<span class="sourceLineNo">1231</span><a name="line.1231"></a>
+<span class="sourceLineNo">1232</span>    /** Return a string that contains a description of how to use a<a name="line.1232"></a>
+<span class="sourceLineNo">1233</span>     *  class that calls this method.  For example, this method is<a name="line.1233"></a>
+<span class="sourceLineNo">1234</span>     *  called by "$PTII/bin/vergil -help".<a name="line.1234"></a>
+<span class="sourceLineNo">1235</span>     *  @param commandTemplate  A string naming the command and the<a name="line.1235"></a>
+<span class="sourceLineNo">1236</span>     *  format of the arguments, for example<a name="line.1236"></a>
+<span class="sourceLineNo">1237</span>     *  "moml [options] [file . . .]"<a name="line.1237"></a>
+<span class="sourceLineNo">1238</span>     *  @param commandOptions A 2xN array of Strings that list command-line<a name="line.1238"></a>
+<span class="sourceLineNo">1239</span>     *  options that take arguments where the first<a name="line.1239"></a>
+<span class="sourceLineNo">1240</span>     *  element is a String naming the command line option, and the<a name="line.1240"></a>
+<span class="sourceLineNo">1241</span>     *  second element is the argument, for example<a name="line.1241"></a>
+<span class="sourceLineNo">1242</span>     *  &lt;code&gt;{"-class", "&amp;lt;classname&amp;gt;")&lt;/code&gt;<a name="line.1242"></a>
+<span class="sourceLineNo">1243</span>     *  @param commandFlagsWithDescriptions A 2xM array of Strings that list<a name="line.1243"></a>
+<span class="sourceLineNo">1244</span>     *  command-line options that are either present or not and a description<a name="line.1244"></a>
+<span class="sourceLineNo">1245</span>     *  of what the command line option does.<a name="line.1245"></a>
+<span class="sourceLineNo">1246</span>     *  @return A string that describes the command.<a name="line.1246"></a>
+<span class="sourceLineNo">1247</span>     */<a name="line.1247"></a>
+<span class="sourceLineNo">1248</span>    public static String usageString(String commandTemplate,<a name="line.1248"></a>
+<span class="sourceLineNo">1249</span>            String[][] commandOptions,<a name="line.1249"></a>
+<span class="sourceLineNo">1250</span>            String[][] commandFlagsWithDescriptions) {<a name="line.1250"></a>
+<span class="sourceLineNo">1251</span>        // This method is static so that we can reuse it in places<a name="line.1251"></a>
+<span class="sourceLineNo">1252</span>        // like copernicus/kernel/Copernicus and actor/gui/MoMLApplication<a name="line.1252"></a>
+<span class="sourceLineNo">1253</span>        StringBuffer result = new StringBuffer("Usage: " + commandTemplate<a name="line.1253"></a>
+<span class="sourceLineNo">1254</span>                + "\n\n" + "Options that take values:\n");<a name="line.1254"></a>
+<span class="sourceLineNo">1255</span><a name="line.1255"></a>
+<span class="sourceLineNo">1256</span>        int i;<a name="line.1256"></a>
+<span class="sourceLineNo">1257</span><a name="line.1257"></a>
+<span class="sourceLineNo">1258</span>        for (i = 0; i &lt; commandOptions.length; i++) {<a name="line.1258"></a>
+<span class="sourceLineNo">1259</span>            result.append(" " + commandOptions[i][0]);<a name="line.1259"></a>
+<span class="sourceLineNo">1260</span>            if (commandOptions[i][1].length() &gt; 0) {<a name="line.1260"></a>
+<span class="sourceLineNo">1261</span>                result.append(" " + commandOptions[i][1]);<a name="line.1261"></a>
+<span class="sourceLineNo">1262</span>            }<a name="line.1262"></a>
+<span class="sourceLineNo">1263</span>            result.append("\n");<a name="line.1263"></a>
+<span class="sourceLineNo">1264</span>        }<a name="line.1264"></a>
+<span class="sourceLineNo">1265</span><a name="line.1265"></a>
+<span class="sourceLineNo">1266</span>        result.append("\nBoolean flags:\n");<a name="line.1266"></a>
+<span class="sourceLineNo">1267</span><a name="line.1267"></a>
+<span class="sourceLineNo">1268</span>        for (i = 0; i &lt; commandFlagsWithDescriptions.length; i++) {<a name="line.1268"></a>
+<span class="sourceLineNo">1269</span>            result.append(" " + commandFlagsWithDescriptions[i][0]);<a name="line.1269"></a>
+<span class="sourceLineNo">1270</span>            if (commandFlagsWithDescriptions[i][1].length() &gt; 0) {<a name="line.1270"></a>
+<span class="sourceLineNo">1271</span>                result.append("\t" + commandFlagsWithDescriptions[i][1]);<a name="line.1271"></a>
+<span class="sourceLineNo">1272</span>            }<a name="line.1272"></a>
+<span class="sourceLineNo">1273</span>            result.append("\n");<a name="line.1273"></a>
+<span class="sourceLineNo">1274</span>        }<a name="line.1274"></a>
+<span class="sourceLineNo">1275</span><a name="line.1275"></a>
+<span class="sourceLineNo">1276</span>        return result.toString();<a name="line.1276"></a>
+<span class="sourceLineNo">1277</span>    }<a name="line.1277"></a>
+<span class="sourceLineNo">1278</span><a name="line.1278"></a>
+<span class="sourceLineNo">1279</span>    ///////////////////////////////////////////////////////////////////<a name="line.1279"></a>
+<span class="sourceLineNo">1280</span>    ////                         public variables                  ////<a name="line.1280"></a>
+<span class="sourceLineNo">1281</span>    // If you change these, be sure to try running vergil on<a name="line.1281"></a>
+<span class="sourceLineNo">1282</span>    // a HSIF moml file<a name="line.1282"></a>
+<span class="sourceLineNo">1283</span>    // vergil ../hsif/demo/SwimmingPool/SwimmingPool.xml<a name="line.1283"></a>
+<span class="sourceLineNo">1284</span><a name="line.1284"></a>
+<span class="sourceLineNo">1285</span>    /** Maximum length in characters of a long string before<a name="line.1285"></a>
+<span class="sourceLineNo">1286</span>     *  {@link #ellipsis(String, int)} truncates and add a<a name="line.1286"></a>
+<span class="sourceLineNo">1287</span>     *  trailing ". . .".  This variable is used by callers<a name="line.1287"></a>
+<span class="sourceLineNo">1288</span>     *  of ellipsis(String, int).<a name="line.1288"></a>
+<span class="sourceLineNo">1289</span>     */<a name="line.1289"></a>
+<span class="sourceLineNo">1290</span>    public static final int ELLIPSIS_LENGTH_LONG = 2000;<a name="line.1290"></a>
+<span class="sourceLineNo">1291</span><a name="line.1291"></a>
+<span class="sourceLineNo">1292</span>    /** Maximum length in characters of a short string before<a name="line.1292"></a>
+<span class="sourceLineNo">1293</span>     *  {@link #ellipsis(String, int)} truncates and add a<a name="line.1293"></a>
+<span class="sourceLineNo">1294</span>     *  trailing ". . .". This variable is used by callers<a name="line.1294"></a>
+<span class="sourceLineNo">1295</span>     *  of ellipsis(String, int).<a name="line.1295"></a>
+<span class="sourceLineNo">1296</span>     */<a name="line.1296"></a>
+<span class="sourceLineNo">1297</span>    public static final int ELLIPSIS_LENGTH_SHORT = 400;<a name="line.1297"></a>
+<span class="sourceLineNo">1298</span><a name="line.1298"></a>
+<span class="sourceLineNo">1299</span>    /** The line separator string.  Under Windows, this would<a name="line.1299"></a>
+<span class="sourceLineNo">1300</span>     *  be "\r\n"; under Unix, "\n"; Under Macintosh, "\r".<a name="line.1300"></a>
+<span class="sourceLineNo">1301</span>     */<a name="line.1301"></a>
+<span class="sourceLineNo">1302</span>    public static final String LINE_SEPARATOR = System<a name="line.1302"></a>
+<span class="sourceLineNo">1303</span>            .getProperty("line.separator");<a name="line.1303"></a>
+<span class="sourceLineNo">1304</span><a name="line.1304"></a>
+<span class="sourceLineNo">1305</span>    /** Location of Application preferences such as the user library.<a name="line.1305"></a>
+<span class="sourceLineNo">1306</span>     *  This field is not final in case other applications want to<a name="line.1306"></a>
+<span class="sourceLineNo">1307</span>     *  set it to a different directory.<a name="line.1307"></a>
+<span class="sourceLineNo">1308</span>     *  @see #preferencesDirectory()<a name="line.1308"></a>
+<span class="sourceLineNo">1309</span>     */<a name="line.1309"></a>
+<span class="sourceLineNo">1310</span>    public static final String PREFERENCES_DIRECTORY = ".ptolemyII";<a name="line.1310"></a>
+<span class="sourceLineNo">1311</span><a name="line.1311"></a>
+<span class="sourceLineNo">1312</span>    ///////////////////////////////////////////////////////////////////<a name="line.1312"></a>
+<span class="sourceLineNo">1313</span>    ////                         private variables                 ////<a name="line.1313"></a>
+<span class="sourceLineNo">1314</span><a name="line.1314"></a>
+<span class="sourceLineNo">1315</span>    /** Set to true if we print the cygwin warning in getProperty(). */<a name="line.1315"></a>
+<span class="sourceLineNo">1316</span>    private static boolean _printedCygwinWarning = false;<a name="line.1316"></a>
+<span class="sourceLineNo">1317</span><a name="line.1317"></a>
+<span class="sourceLineNo">1318</span>    /** Cached value of ptolemy.ptII.dir property. */<a name="line.1318"></a>
+<span class="sourceLineNo">1319</span>    private static String _ptolemyPtIIDir = null;<a name="line.1319"></a>
+<span class="sourceLineNo">1320</span>}<a name="line.1320"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

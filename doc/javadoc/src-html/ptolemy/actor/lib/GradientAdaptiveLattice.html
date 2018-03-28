@@ -1,0 +1,344 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../../stylesheet.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>/* An IIR filter actor that uses a direct form II implementation.<a name="line.1"></a>
+<span class="sourceLineNo">002</span><a name="line.2"></a>
+<span class="sourceLineNo">003</span> Copyright (c) 2003-2014 The Regents of the University of California and<a name="line.3"></a>
+<span class="sourceLineNo">004</span> Research in Motion Limited.<a name="line.4"></a>
+<span class="sourceLineNo">005</span> All rights reserved.<a name="line.5"></a>
+<span class="sourceLineNo">006</span> Permission is hereby granted, without written agreement and without<a name="line.6"></a>
+<span class="sourceLineNo">007</span> license or royalty fees, to use, copy, modify, and distribute this<a name="line.7"></a>
+<span class="sourceLineNo">008</span> software and its documentation for any purpose, provided that the above<a name="line.8"></a>
+<span class="sourceLineNo">009</span> copyright notice and the following two paragraphs appear in all copies<a name="line.9"></a>
+<span class="sourceLineNo">010</span> of this software.<a name="line.10"></a>
+<span class="sourceLineNo">011</span><a name="line.11"></a>
+<span class="sourceLineNo">012</span> IN NO EVENT SHALL THE UNIVERSITY OF CALIFORNIA OR RESEARCH IN MOTION<a name="line.12"></a>
+<span class="sourceLineNo">013</span> LIMITED BE LIABLE TO ANY PARTY FOR DIRECT, INDIRECT, SPECIAL,<a name="line.13"></a>
+<span class="sourceLineNo">014</span> INCIDENTAL, OR CONSEQUENTIAL DAMAGES ARISING OUT OF THE USE OF THIS<a name="line.14"></a>
+<span class="sourceLineNo">015</span> SOFTWARE AND ITS DOCUMENTATION, EVEN IF THE UNIVERSITY OF CALIFORNIA<a name="line.15"></a>
+<span class="sourceLineNo">016</span> OR RESEARCH IN MOTION LIMITED HAVE BEEN ADVISED OF THE POSSIBILITY OF<a name="line.16"></a>
+<span class="sourceLineNo">017</span> SUCH DAMAGE.<a name="line.17"></a>
+<span class="sourceLineNo">018</span><a name="line.18"></a>
+<span class="sourceLineNo">019</span> THE UNIVERSITY OF CALIFORNIA AND RESEARCH IN MOTION LIMITED<a name="line.19"></a>
+<span class="sourceLineNo">020</span> SPECIFICALLY DISCLAIM ANY WARRANTIES, INCLUDING, BUT NOT LIMITED TO,<a name="line.20"></a>
+<span class="sourceLineNo">021</span> THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A<a name="line.21"></a>
+<span class="sourceLineNo">022</span> PARTICULAR PURPOSE. THE SOFTWARE PROVIDED HEREUNDER IS ON AN "AS IS"<a name="line.22"></a>
+<span class="sourceLineNo">023</span> BASIS, AND THE UNIVERSITY OF CALIFORNIA AND RESEARCH IN MOTION<a name="line.23"></a>
+<span class="sourceLineNo">024</span> LIMITED HAVE NO OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT, UPDATES,<a name="line.24"></a>
+<span class="sourceLineNo">025</span> ENHANCEMENTS, OR MODIFICATIONS.<a name="line.25"></a>
+<span class="sourceLineNo">026</span> PT_COPYRIGHT_VERSION_2<a name="line.26"></a>
+<span class="sourceLineNo">027</span> COPYRIGHTENDKEY<a name="line.27"></a>
+<span class="sourceLineNo">028</span><a name="line.28"></a>
+<span class="sourceLineNo">029</span> */<a name="line.29"></a>
+<span class="sourceLineNo">030</span>package ptolemy.actor.lib;<a name="line.30"></a>
+<span class="sourceLineNo">031</span><a name="line.31"></a>
+<span class="sourceLineNo">032</span>import ptolemy.actor.TypedIOPort;<a name="line.32"></a>
+<span class="sourceLineNo">033</span>import ptolemy.data.ArrayToken;<a name="line.33"></a>
+<span class="sourceLineNo">034</span>import ptolemy.data.DoubleToken;<a name="line.34"></a>
+<span class="sourceLineNo">035</span>import ptolemy.data.expr.Parameter;<a name="line.35"></a>
+<span class="sourceLineNo">036</span>import ptolemy.data.type.ArrayType;<a name="line.36"></a>
+<span class="sourceLineNo">037</span>import ptolemy.data.type.BaseType;<a name="line.37"></a>
+<span class="sourceLineNo">038</span>import ptolemy.kernel.CompositeEntity;<a name="line.38"></a>
+<span class="sourceLineNo">039</span>import ptolemy.kernel.util.Attribute;<a name="line.39"></a>
+<span class="sourceLineNo">040</span>import ptolemy.kernel.util.IllegalActionException;<a name="line.40"></a>
+<span class="sourceLineNo">041</span>import ptolemy.kernel.util.NameDuplicationException;<a name="line.41"></a>
+<span class="sourceLineNo">042</span>import ptolemy.kernel.util.Workspace;<a name="line.42"></a>
+<span class="sourceLineNo">043</span><a name="line.43"></a>
+<span class="sourceLineNo">044</span>///////////////////////////////////////////////////////////////////<a name="line.44"></a>
+<span class="sourceLineNo">045</span>//// GradientAdaptiveLattice<a name="line.45"></a>
+<span class="sourceLineNo">046</span><a name="line.46"></a>
+<span class="sourceLineNo">047</span>/**<a name="line.47"></a>
+<span class="sourceLineNo">048</span> An adaptive FIR filter with a lattice structure.  This class extends<a name="line.48"></a>
+<span class="sourceLineNo">049</span> the base class to dynamically adapt the reflection coefficients to<a name="line.49"></a>
+<span class="sourceLineNo">050</span> minimize the power of the output sequence.  The output reflection<a name="line.50"></a>
+<span class="sourceLineNo">051</span> coefficients are guaranteed to lie between -1.0 and 1.0, ensuring that the<a name="line.51"></a>
+<span class="sourceLineNo">052</span> resulting filter is a minimum phase linear predictor.  The<a name="line.52"></a>
+<span class="sourceLineNo">053</span> reflectionCoefficients parameter is interpreted as the initial<a name="line.53"></a>
+<span class="sourceLineNo">054</span> coefficients.<a name="line.54"></a>
+<span class="sourceLineNo">055</span><a name="line.55"></a>
+<span class="sourceLineNo">056</span> @author Steve Neuendorffer<a name="line.56"></a>
+<span class="sourceLineNo">057</span> @version $Id$<a name="line.57"></a>
+<span class="sourceLineNo">058</span> @since Ptolemy II 4.0<a name="line.58"></a>
+<span class="sourceLineNo">059</span> @Pt.ProposedRating Red (vogel)<a name="line.59"></a>
+<span class="sourceLineNo">060</span> @Pt.AcceptedRating Red (cxh)<a name="line.60"></a>
+<span class="sourceLineNo">061</span> */<a name="line.61"></a>
+<span class="sourceLineNo">062</span>public class GradientAdaptiveLattice extends Lattice {<a name="line.62"></a>
+<span class="sourceLineNo">063</span>    /** Construct an actor with the given container and name.<a name="line.63"></a>
+<span class="sourceLineNo">064</span>     *  @param container The container.<a name="line.64"></a>
+<span class="sourceLineNo">065</span>     *  @param name The name of this actor.<a name="line.65"></a>
+<span class="sourceLineNo">066</span>     *  @exception IllegalActionException If the actor cannot be contained<a name="line.66"></a>
+<span class="sourceLineNo">067</span>     *   by the proposed container.<a name="line.67"></a>
+<span class="sourceLineNo">068</span>     *  @exception NameDuplicationException If the container already has an<a name="line.68"></a>
+<span class="sourceLineNo">069</span>     *   actor with this name.<a name="line.69"></a>
+<span class="sourceLineNo">070</span>     */<a name="line.70"></a>
+<span class="sourceLineNo">071</span>    public GradientAdaptiveLattice(CompositeEntity container, String name)<a name="line.71"></a>
+<span class="sourceLineNo">072</span>            throws NameDuplicationException, IllegalActionException {<a name="line.72"></a>
+<span class="sourceLineNo">073</span>        super(container, name);<a name="line.73"></a>
+<span class="sourceLineNo">074</span><a name="line.74"></a>
+<span class="sourceLineNo">075</span>        // Parameters<a name="line.75"></a>
+<span class="sourceLineNo">076</span>        timeConstant = new Parameter(this, "timeConstant");<a name="line.76"></a>
+<span class="sourceLineNo">077</span>        timeConstant.setExpression("1.0");<a name="line.77"></a>
+<span class="sourceLineNo">078</span>        timeConstant.setTypeEquals(BaseType.DOUBLE);<a name="line.78"></a>
+<span class="sourceLineNo">079</span>        timeConstant.validate();<a name="line.79"></a>
+<span class="sourceLineNo">080</span><a name="line.80"></a>
+<span class="sourceLineNo">081</span>        // The currently adapted reflection coefficients<a name="line.81"></a>
+<span class="sourceLineNo">082</span>        adaptedReflectionCoefficients = new TypedIOPort(this,<a name="line.82"></a>
+<span class="sourceLineNo">083</span>                "adaptedReflectionCoefficients", false, true);<a name="line.83"></a>
+<span class="sourceLineNo">084</span>        adaptedReflectionCoefficients<a name="line.84"></a>
+<span class="sourceLineNo">085</span>                .setTypeEquals(new ArrayType(BaseType.DOUBLE));<a name="line.85"></a>
+<span class="sourceLineNo">086</span><a name="line.86"></a>
+<span class="sourceLineNo">087</span>        output.setTypeAtLeast(input);<a name="line.87"></a>
+<span class="sourceLineNo">088</span>    }<a name="line.88"></a>
+<span class="sourceLineNo">089</span><a name="line.89"></a>
+<span class="sourceLineNo">090</span>    ///////////////////////////////////////////////////////////////////<a name="line.90"></a>
+<span class="sourceLineNo">091</span>    ////                     ports and parameters                  ////<a name="line.91"></a>
+<span class="sourceLineNo">092</span><a name="line.92"></a>
+<span class="sourceLineNo">093</span>    /** The output port that produces the current reflection<a name="line.93"></a>
+<span class="sourceLineNo">094</span>     * coefficients.  The port is of type array of double.<a name="line.94"></a>
+<span class="sourceLineNo">095</span>     */<a name="line.95"></a>
+<span class="sourceLineNo">096</span>    public TypedIOPort adaptedReflectionCoefficients;<a name="line.96"></a>
+<span class="sourceLineNo">097</span><a name="line.97"></a>
+<span class="sourceLineNo">098</span>    /** The time constant of the filter, which determines how fast the<a name="line.98"></a>
+<span class="sourceLineNo">099</span>     *  filter adapts.<a name="line.99"></a>
+<span class="sourceLineNo">100</span>     *  The default value of this parameter is 1.0.<a name="line.100"></a>
+<span class="sourceLineNo">101</span>     */<a name="line.101"></a>
+<span class="sourceLineNo">102</span>    public Parameter timeConstant;<a name="line.102"></a>
+<span class="sourceLineNo">103</span><a name="line.103"></a>
+<span class="sourceLineNo">104</span>    ///////////////////////////////////////////////////////////////////<a name="line.104"></a>
+<span class="sourceLineNo">105</span>    ////                         public methods                    ////<a name="line.105"></a>
+<span class="sourceLineNo">106</span><a name="line.106"></a>
+<span class="sourceLineNo">107</span>    /** Handle parameter change events on the<a name="line.107"></a>
+<span class="sourceLineNo">108</span>     *  &lt;i&gt;order&lt;/i&gt; and &lt;i&gt;timeConstant&lt;/i&gt; parameters. The<a name="line.108"></a>
+<span class="sourceLineNo">109</span>     *  filter state vector is reinitialized to zero state.<a name="line.109"></a>
+<span class="sourceLineNo">110</span>     *  @param attribute The attribute that changed.<a name="line.110"></a>
+<span class="sourceLineNo">111</span>     *  @exception IllegalActionException If this method is invoked<a name="line.111"></a>
+<span class="sourceLineNo">112</span>     *   with an unrecognized parameter.<a name="line.112"></a>
+<span class="sourceLineNo">113</span>     */<a name="line.113"></a>
+<span class="sourceLineNo">114</span>    @Override<a name="line.114"></a>
+<span class="sourceLineNo">115</span>    public void attributeChanged(Attribute attribute)<a name="line.115"></a>
+<span class="sourceLineNo">116</span>            throws IllegalActionException {<a name="line.116"></a>
+<span class="sourceLineNo">117</span>        if (attribute == timeConstant) {<a name="line.117"></a>
+<span class="sourceLineNo">118</span>            double timeConstantValue = ((DoubleToken) timeConstant.getToken())<a name="line.118"></a>
+<span class="sourceLineNo">119</span>                    .doubleValue();<a name="line.119"></a>
+<span class="sourceLineNo">120</span><a name="line.120"></a>
+<span class="sourceLineNo">121</span>            // FIXME: there is a bug in either the variable naming or the<a name="line.121"></a>
+<span class="sourceLineNo">122</span>            // two lines below.<a name="line.122"></a>
+<span class="sourceLineNo">123</span>            _oneMinusAlpha = (timeConstantValue - 1.0)<a name="line.123"></a>
+<span class="sourceLineNo">124</span>                    / (timeConstantValue + 1.0);<a name="line.124"></a>
+<span class="sourceLineNo">125</span>            _alpha = 1.0 - _oneMinusAlpha;<a name="line.125"></a>
+<span class="sourceLineNo">126</span>        }<a name="line.126"></a>
+<span class="sourceLineNo">127</span><a name="line.127"></a>
+<span class="sourceLineNo">128</span>        super.attributeChanged(attribute);<a name="line.128"></a>
+<span class="sourceLineNo">129</span>    }<a name="line.129"></a>
+<span class="sourceLineNo">130</span><a name="line.130"></a>
+<span class="sourceLineNo">131</span>    /** Clone the actor into the specified workspace. This calls the<a name="line.131"></a>
+<span class="sourceLineNo">132</span>     *  base class and then sets the type constraints.<a name="line.132"></a>
+<span class="sourceLineNo">133</span>     *  @param workspace The workspace for the new object.<a name="line.133"></a>
+<span class="sourceLineNo">134</span>     *  @return A new actor.<a name="line.134"></a>
+<span class="sourceLineNo">135</span>     *  @exception CloneNotSupportedException If a derived class has<a name="line.135"></a>
+<span class="sourceLineNo">136</span>     *   an attribute that cannot be cloned.<a name="line.136"></a>
+<span class="sourceLineNo">137</span>     */<a name="line.137"></a>
+<span class="sourceLineNo">138</span>    @Override<a name="line.138"></a>
+<span class="sourceLineNo">139</span>    public Object clone(Workspace workspace) throws CloneNotSupportedException {<a name="line.139"></a>
+<span class="sourceLineNo">140</span>        GradientAdaptiveLattice newObject = (GradientAdaptiveLattice) super.clone(<a name="line.140"></a>
+<span class="sourceLineNo">141</span>                workspace);<a name="line.141"></a>
+<span class="sourceLineNo">142</span>        newObject.output.setTypeAtLeast(newObject.input);<a name="line.142"></a>
+<span class="sourceLineNo">143</span><a name="line.143"></a>
+<span class="sourceLineNo">144</span>        newObject._estimatedErrorPower = new double[newObject._order + 1];<a name="line.144"></a>
+<span class="sourceLineNo">145</span>        System.arraycopy(newObject._estimatedErrorPower, 0,<a name="line.145"></a>
+<span class="sourceLineNo">146</span>                _estimatedErrorPower, 0, newObject._order + 1);<a name="line.146"></a>
+<span class="sourceLineNo">147</span><a name="line.147"></a>
+<span class="sourceLineNo">148</span>        newObject._estimatedErrorPowerCache = new double[newObject._order + 1];<a name="line.148"></a>
+<span class="sourceLineNo">149</span>        System.arraycopy(newObject._estimatedErrorPowerCache, 0,<a name="line.149"></a>
+<span class="sourceLineNo">150</span>                _estimatedErrorPowerCache, 0, newObject._order + 1);<a name="line.150"></a>
+<span class="sourceLineNo">151</span><a name="line.151"></a>
+<span class="sourceLineNo">152</span>        newObject._reflectionCoefficientsCache = new double[newObject._order];<a name="line.152"></a>
+<span class="sourceLineNo">153</span>        System.arraycopy(newObject._reflectionCoefficientsCache, 0,<a name="line.153"></a>
+<span class="sourceLineNo">154</span>                _reflectionCoefficientsCache, 0, newObject._order);<a name="line.154"></a>
+<span class="sourceLineNo">155</span>        return newObject;<a name="line.155"></a>
+<span class="sourceLineNo">156</span>    }<a name="line.156"></a>
+<span class="sourceLineNo">157</span><a name="line.157"></a>
+<span class="sourceLineNo">158</span>    /** Initialize the state of the filter.<a name="line.158"></a>
+<span class="sourceLineNo">159</span>     */<a name="line.159"></a>
+<span class="sourceLineNo">160</span>    @Override<a name="line.160"></a>
+<span class="sourceLineNo">161</span>    public void initialize() throws IllegalActionException {<a name="line.161"></a>
+<span class="sourceLineNo">162</span>        super.initialize();<a name="line.162"></a>
+<span class="sourceLineNo">163</span><a name="line.163"></a>
+<span class="sourceLineNo">164</span>        for (int i = 0; i &lt;= _order; i++) {<a name="line.164"></a>
+<span class="sourceLineNo">165</span>            _estimatedErrorPower[i] = 0.0;<a name="line.165"></a>
+<span class="sourceLineNo">166</span>            _estimatedErrorPowerCache[i] = 0.0;<a name="line.166"></a>
+<span class="sourceLineNo">167</span>            if (i &lt; _order) {<a name="line.167"></a>
+<span class="sourceLineNo">168</span>                _reflectionCoefficientsCache[i] = 0.0;<a name="line.168"></a>
+<span class="sourceLineNo">169</span>            }<a name="line.169"></a>
+<span class="sourceLineNo">170</span>        }<a name="line.170"></a>
+<span class="sourceLineNo">171</span><a name="line.171"></a>
+<span class="sourceLineNo">172</span>        // Reinitialize the reflection coefficients from the parameter value.<a name="line.172"></a>
+<span class="sourceLineNo">173</span>        ArrayToken value = (ArrayToken) reflectionCoefficients.getToken();<a name="line.173"></a>
+<span class="sourceLineNo">174</span>        for (int i = 0; i &lt; _order; i++) {<a name="line.174"></a>
+<span class="sourceLineNo">175</span>            _reflectionCoefficients[i] = ((DoubleToken) value.getElement(i))<a name="line.175"></a>
+<span class="sourceLineNo">176</span>                    .doubleValue();<a name="line.176"></a>
+<span class="sourceLineNo">177</span>        }<a name="line.177"></a>
+<span class="sourceLineNo">178</span>    }<a name="line.178"></a>
+<span class="sourceLineNo">179</span><a name="line.179"></a>
+<span class="sourceLineNo">180</span>    /** Update the filter state.<a name="line.180"></a>
+<span class="sourceLineNo">181</span>     *<a name="line.181"></a>
+<span class="sourceLineNo">182</span>     *  @exception IllegalActionException If the base class throws it.<a name="line.182"></a>
+<span class="sourceLineNo">183</span>     */<a name="line.183"></a>
+<span class="sourceLineNo">184</span>    @Override<a name="line.184"></a>
+<span class="sourceLineNo">185</span>    public boolean postfire() throws IllegalActionException {<a name="line.185"></a>
+<span class="sourceLineNo">186</span>        System.arraycopy(_estimatedErrorPowerCache, 0, _estimatedErrorPower, 0,<a name="line.186"></a>
+<span class="sourceLineNo">187</span>                _order + 1);<a name="line.187"></a>
+<span class="sourceLineNo">188</span>        System.arraycopy(_reflectionCoefficientsCache, 0,<a name="line.188"></a>
+<span class="sourceLineNo">189</span>                _reflectionCoefficients, 0, _order);<a name="line.189"></a>
+<span class="sourceLineNo">190</span>        return super.postfire();<a name="line.190"></a>
+<span class="sourceLineNo">191</span>    }<a name="line.191"></a>
+<span class="sourceLineNo">192</span><a name="line.192"></a>
+<span class="sourceLineNo">193</span>    ///////////////////////////////////////////////////////////////////<a name="line.193"></a>
+<span class="sourceLineNo">194</span>    ////                         protected methods                 ////<a name="line.194"></a>
+<span class="sourceLineNo">195</span>    // Compute the filter, updating the caches, based on the current<a name="line.195"></a>
+<span class="sourceLineNo">196</span>    // values.  Extend the base class to adapt the reflection coefficients<a name="line.196"></a>
+<span class="sourceLineNo">197</span>    @Override<a name="line.197"></a>
+<span class="sourceLineNo">198</span>    protected void _doFilter() throws IllegalActionException {<a name="line.198"></a>
+<span class="sourceLineNo">199</span>        double k;<a name="line.199"></a>
+<span class="sourceLineNo">200</span><a name="line.200"></a>
+<span class="sourceLineNo">201</span>        // NOTE: The following code is ported from Ptolemy Classic.<a name="line.201"></a>
+<span class="sourceLineNo">202</span>        // Update forward errors.<a name="line.202"></a>
+<span class="sourceLineNo">203</span>        for (int i = 0; i &lt; _order; i++) {<a name="line.203"></a>
+<span class="sourceLineNo">204</span>            k = _reflectionCoefficients[i];<a name="line.204"></a>
+<span class="sourceLineNo">205</span>            _forwardCache[i + 1] = -k * _backwardCache[i] + _forwardCache[i];<a name="line.205"></a>
+<span class="sourceLineNo">206</span>        }<a name="line.206"></a>
+<span class="sourceLineNo">207</span><a name="line.207"></a>
+<span class="sourceLineNo">208</span>        DoubleToken[] outputArray = new DoubleToken[_order];<a name="line.208"></a>
+<span class="sourceLineNo">209</span><a name="line.209"></a>
+<span class="sourceLineNo">210</span>        // Backward: Compute the weights for the next round Note:<a name="line.210"></a>
+<span class="sourceLineNo">211</span>        // strictly speaking, _backwardCache[_order] is not necessary<a name="line.211"></a>
+<span class="sourceLineNo">212</span>        // for computing the output.  It is computed for the use of<a name="line.212"></a>
+<span class="sourceLineNo">213</span>        // subclasses which adapt the reflection coefficients.<a name="line.213"></a>
+<span class="sourceLineNo">214</span>        for (int i = _order; i &gt; 0; i--) {<a name="line.214"></a>
+<span class="sourceLineNo">215</span>            k = _reflectionCoefficients[i - 1];<a name="line.215"></a>
+<span class="sourceLineNo">216</span>            _backwardCache[i] = -k * _forwardCache[i - 1]<a name="line.216"></a>
+<span class="sourceLineNo">217</span>                    + _backwardCache[i - 1];<a name="line.217"></a>
+<span class="sourceLineNo">218</span><a name="line.218"></a>
+<span class="sourceLineNo">219</span>            double fe_i = _forwardCache[i];<a name="line.219"></a>
+<span class="sourceLineNo">220</span>            double be_i = _backwardCache[i];<a name="line.220"></a>
+<span class="sourceLineNo">221</span>            double fe_ip = _forwardCache[i - 1];<a name="line.221"></a>
+<span class="sourceLineNo">222</span>            double be_ip = _backwardCache[i - 1];<a name="line.222"></a>
+<span class="sourceLineNo">223</span><a name="line.223"></a>
+<span class="sourceLineNo">224</span>            double newError = _estimatedErrorPower[i] * _oneMinusAlpha<a name="line.224"></a>
+<span class="sourceLineNo">225</span>                    + _alpha * (fe_ip * fe_ip + be_ip * be_ip);<a name="line.225"></a>
+<span class="sourceLineNo">226</span>            double newCoefficient = _reflectionCoefficients[i - 1];<a name="line.226"></a>
+<span class="sourceLineNo">227</span><a name="line.227"></a>
+<span class="sourceLineNo">228</span>            if (newError != 0.0) {<a name="line.228"></a>
+<span class="sourceLineNo">229</span>                newCoefficient += _alpha * (fe_i * be_ip + be_i * fe_ip)<a name="line.229"></a>
+<span class="sourceLineNo">230</span>                        / newError;<a name="line.230"></a>
+<span class="sourceLineNo">231</span><a name="line.231"></a>
+<span class="sourceLineNo">232</span>                if (newCoefficient &gt; 1.0) {<a name="line.232"></a>
+<span class="sourceLineNo">233</span>                    newCoefficient = 1.0;<a name="line.233"></a>
+<span class="sourceLineNo">234</span>                } else if (newCoefficient &lt; -1.0) {<a name="line.234"></a>
+<span class="sourceLineNo">235</span>                    newCoefficient = -1.0;<a name="line.235"></a>
+<span class="sourceLineNo">236</span>                }<a name="line.236"></a>
+<span class="sourceLineNo">237</span>            }<a name="line.237"></a>
+<span class="sourceLineNo">238</span><a name="line.238"></a>
+<span class="sourceLineNo">239</span>            outputArray[i - 1] = new DoubleToken(newCoefficient);<a name="line.239"></a>
+<span class="sourceLineNo">240</span>            _reflectionCoefficientsCache[i - 1] = newCoefficient;<a name="line.240"></a>
+<span class="sourceLineNo">241</span>            _estimatedErrorPowerCache[i] = newError;<a name="line.241"></a>
+<span class="sourceLineNo">242</span>        }<a name="line.242"></a>
+<span class="sourceLineNo">243</span><a name="line.243"></a>
+<span class="sourceLineNo">244</span>        adaptedReflectionCoefficients.send(0,<a name="line.244"></a>
+<span class="sourceLineNo">245</span>                new ArrayToken(BaseType.DOUBLE, outputArray));<a name="line.245"></a>
+<span class="sourceLineNo">246</span>    }<a name="line.246"></a>
+<span class="sourceLineNo">247</span><a name="line.247"></a>
+<span class="sourceLineNo">248</span>    // Reallocate the internal arrays. Extend the base class to<a name="line.248"></a>
+<span class="sourceLineNo">249</span>    // reallocate the power estimation array.<a name="line.249"></a>
+<span class="sourceLineNo">250</span>    @Override<a name="line.250"></a>
+<span class="sourceLineNo">251</span>    protected void _reallocate() {<a name="line.251"></a>
+<span class="sourceLineNo">252</span>        super._reallocate();<a name="line.252"></a>
+<span class="sourceLineNo">253</span>        _estimatedErrorPower = new double[_order + 1];<a name="line.253"></a>
+<span class="sourceLineNo">254</span>        _estimatedErrorPowerCache = new double[_order + 1];<a name="line.254"></a>
+<span class="sourceLineNo">255</span>        _reflectionCoefficientsCache = new double[_order];<a name="line.255"></a>
+<span class="sourceLineNo">256</span>    }<a name="line.256"></a>
+<span class="sourceLineNo">257</span><a name="line.257"></a>
+<span class="sourceLineNo">258</span>    ///////////////////////////////////////////////////////////////////<a name="line.258"></a>
+<span class="sourceLineNo">259</span>    ////                         private variables                 ////<a name="line.259"></a>
+<span class="sourceLineNo">260</span>    private double _alpha = 0.0;<a name="line.260"></a>
+<span class="sourceLineNo">261</span><a name="line.261"></a>
+<span class="sourceLineNo">262</span>    private double _oneMinusAlpha = 1.0;<a name="line.262"></a>
+<span class="sourceLineNo">263</span><a name="line.263"></a>
+<span class="sourceLineNo">264</span>    // The error power in the output signal.  The length is _order.<a name="line.264"></a>
+<span class="sourceLineNo">265</span>    private double[] _estimatedErrorPower;<a name="line.265"></a>
+<span class="sourceLineNo">266</span><a name="line.266"></a>
+<span class="sourceLineNo">267</span>    // Cache of the error power.  The length is _order.<a name="line.267"></a>
+<span class="sourceLineNo">268</span>    private double[] _estimatedErrorPowerCache;<a name="line.268"></a>
+<span class="sourceLineNo">269</span><a name="line.269"></a>
+<span class="sourceLineNo">270</span>    // Cache of the reflection coefficients.  The length is _order;<a name="line.270"></a>
+<span class="sourceLineNo">271</span>    private double[] _reflectionCoefficientsCache;<a name="line.271"></a>
+<span class="sourceLineNo">272</span>}<a name="line.272"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

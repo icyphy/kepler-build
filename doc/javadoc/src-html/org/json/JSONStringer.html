@@ -1,0 +1,153 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../stylesheet.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>package org.json;<a name="line.1"></a>
+<span class="sourceLineNo">002</span><a name="line.2"></a>
+<span class="sourceLineNo">003</span>/*<a name="line.3"></a>
+<span class="sourceLineNo">004</span>Copyright (c) 2006 JSON.org<a name="line.4"></a>
+<span class="sourceLineNo">005</span><a name="line.5"></a>
+<span class="sourceLineNo">006</span>Permission is hereby granted, free of charge, to any person obtaining a copy<a name="line.6"></a>
+<span class="sourceLineNo">007</span>of this software and associated documentation files (the "Software"), to deal<a name="line.7"></a>
+<span class="sourceLineNo">008</span>in the Software without restriction, including without limitation the rights<a name="line.8"></a>
+<span class="sourceLineNo">009</span>to use, copy, modify, merge, publish, distribute, sublicense, and/or sell<a name="line.9"></a>
+<span class="sourceLineNo">010</span>copies of the Software, and to permit persons to whom the Software is<a name="line.10"></a>
+<span class="sourceLineNo">011</span>furnished to do so, subject to the following conditions:<a name="line.11"></a>
+<span class="sourceLineNo">012</span><a name="line.12"></a>
+<span class="sourceLineNo">013</span>The above copyright notice and this permission notice shall be included in all<a name="line.13"></a>
+<span class="sourceLineNo">014</span>copies or substantial portions of the Software.<a name="line.14"></a>
+<span class="sourceLineNo">015</span><a name="line.15"></a>
+<span class="sourceLineNo">016</span>The Software shall be used for Good, not Evil.<a name="line.16"></a>
+<span class="sourceLineNo">017</span><a name="line.17"></a>
+<span class="sourceLineNo">018</span>THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR<a name="line.18"></a>
+<span class="sourceLineNo">019</span>IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,<a name="line.19"></a>
+<span class="sourceLineNo">020</span>FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE<a name="line.20"></a>
+<span class="sourceLineNo">021</span>AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER<a name="line.21"></a>
+<span class="sourceLineNo">022</span>LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,<a name="line.22"></a>
+<span class="sourceLineNo">023</span>OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE<a name="line.23"></a>
+<span class="sourceLineNo">024</span>SOFTWARE.<a name="line.24"></a>
+<span class="sourceLineNo">025</span> */<a name="line.25"></a>
+<span class="sourceLineNo">026</span><a name="line.26"></a>
+<span class="sourceLineNo">027</span>import java.io.StringWriter;<a name="line.27"></a>
+<span class="sourceLineNo">028</span><a name="line.28"></a>
+<span class="sourceLineNo">029</span>/**<a name="line.29"></a>
+<span class="sourceLineNo">030</span> * JSONStringer provides a quick and convenient way of producing JSON text.<a name="line.30"></a>
+<span class="sourceLineNo">031</span> * The texts produced strictly conform to JSON syntax rules. No whitespace is<a name="line.31"></a>
+<span class="sourceLineNo">032</span> * added, so the results are ready for transmission or storage. Each instance of<a name="line.32"></a>
+<span class="sourceLineNo">033</span> * JSONStringer can produce one JSON text.<a name="line.33"></a>
+<span class="sourceLineNo">034</span> * &lt;p&gt;<a name="line.34"></a>
+<span class="sourceLineNo">035</span> * A JSONStringer instance provides a &lt;code&gt;value&lt;/code&gt; method for appending<a name="line.35"></a>
+<span class="sourceLineNo">036</span> * values to the<a name="line.36"></a>
+<span class="sourceLineNo">037</span> * text, and a &lt;code&gt;key&lt;/code&gt;<a name="line.37"></a>
+<span class="sourceLineNo">038</span> * method for adding keys before values in objects. There are &lt;code&gt;array&lt;/code&gt;<a name="line.38"></a>
+<span class="sourceLineNo">039</span> * and &lt;code&gt;endArray&lt;/code&gt; methods that make and bound array values, and<a name="line.39"></a>
+<span class="sourceLineNo">040</span> * &lt;code&gt;object&lt;/code&gt; and &lt;code&gt;endObject&lt;/code&gt; methods which make and bound<a name="line.40"></a>
+<span class="sourceLineNo">041</span> * object values. All of these methods return the JSONWriter instance,<a name="line.41"></a>
+<span class="sourceLineNo">042</span> * permitting cascade style. For example, &lt;pre&gt;<a name="line.42"></a>
+<span class="sourceLineNo">043</span> * myString = new JSONStringer()<a name="line.43"></a>
+<span class="sourceLineNo">044</span> *     .object()<a name="line.44"></a>
+<span class="sourceLineNo">045</span> *         .key("JSON")<a name="line.45"></a>
+<span class="sourceLineNo">046</span> *         .value("Hello, World!")<a name="line.46"></a>
+<span class="sourceLineNo">047</span> *     .endObject()<a name="line.47"></a>
+<span class="sourceLineNo">048</span> *     .toString();&lt;/pre&gt; which produces the string &lt;pre&gt;<a name="line.48"></a>
+<span class="sourceLineNo">049</span> * {"JSON":"Hello, World!"}&lt;/pre&gt;<a name="line.49"></a>
+<span class="sourceLineNo">050</span> * &lt;p&gt;<a name="line.50"></a>
+<span class="sourceLineNo">051</span> * The first method called must be &lt;code&gt;array&lt;/code&gt; or &lt;code&gt;object&lt;/code&gt;.<a name="line.51"></a>
+<span class="sourceLineNo">052</span> * There are no methods for adding commas or colons. JSONStringer adds them for<a name="line.52"></a>
+<span class="sourceLineNo">053</span> * you. Objects and arrays can be nested up to 20 levels deep.<a name="line.53"></a>
+<span class="sourceLineNo">054</span> * &lt;p&gt;<a name="line.54"></a>
+<span class="sourceLineNo">055</span> * This can sometimes be easier than using a JSONObject to build a string.<a name="line.55"></a>
+<span class="sourceLineNo">056</span> * @author JSON.org<a name="line.56"></a>
+<span class="sourceLineNo">057</span>@version $Id$<a name="line.57"></a>
+<span class="sourceLineNo">058</span>@since Ptolemy II 10.0<a name="line.58"></a>
+<span class="sourceLineNo">059</span> * @version 2008-09-18<a name="line.59"></a>
+<span class="sourceLineNo">060</span> */<a name="line.60"></a>
+<span class="sourceLineNo">061</span>public class JSONStringer extends JSONWriter {<a name="line.61"></a>
+<span class="sourceLineNo">062</span>    /**<a name="line.62"></a>
+<span class="sourceLineNo">063</span>     * Make a fresh JSONStringer. It can be used to build one JSON text.<a name="line.63"></a>
+<span class="sourceLineNo">064</span>     */<a name="line.64"></a>
+<span class="sourceLineNo">065</span>    public JSONStringer() {<a name="line.65"></a>
+<span class="sourceLineNo">066</span>        super(new StringWriter());<a name="line.66"></a>
+<span class="sourceLineNo">067</span>    }<a name="line.67"></a>
+<span class="sourceLineNo">068</span><a name="line.68"></a>
+<span class="sourceLineNo">069</span>    /**<a name="line.69"></a>
+<span class="sourceLineNo">070</span>     * Return the JSON text. This method is used to obtain the product of the<a name="line.70"></a>
+<span class="sourceLineNo">071</span>     * JSONStringer instance. It will return &lt;code&gt;null&lt;/code&gt; if there was a<a name="line.71"></a>
+<span class="sourceLineNo">072</span>     * problem in the construction of the JSON text (such as the calls to<a name="line.72"></a>
+<span class="sourceLineNo">073</span>     * &lt;code&gt;array&lt;/code&gt; were not properly balanced with calls to<a name="line.73"></a>
+<span class="sourceLineNo">074</span>     * &lt;code&gt;endArray&lt;/code&gt;).<a name="line.74"></a>
+<span class="sourceLineNo">075</span>     * @return The JSON text.<a name="line.75"></a>
+<span class="sourceLineNo">076</span>     */<a name="line.76"></a>
+<span class="sourceLineNo">077</span>    @Override<a name="line.77"></a>
+<span class="sourceLineNo">078</span>    public String toString() {<a name="line.78"></a>
+<span class="sourceLineNo">079</span>        return this.mode == 'd' ? this.writer.toString() : null;<a name="line.79"></a>
+<span class="sourceLineNo">080</span>    }<a name="line.80"></a>
+<span class="sourceLineNo">081</span>}<a name="line.81"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

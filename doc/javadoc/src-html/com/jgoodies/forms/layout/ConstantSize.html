@@ -1,0 +1,460 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../../../stylesheet.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>/*<a name="line.1"></a>
+<span class="sourceLineNo">002</span> * Copyright (c) 2002-2007 JGoodies Karsten Lentzsch. All Rights Reserved.<a name="line.2"></a>
+<span class="sourceLineNo">003</span> *<a name="line.3"></a>
+<span class="sourceLineNo">004</span> * Redistribution and use in source and binary forms, with or without<a name="line.4"></a>
+<span class="sourceLineNo">005</span> * modification, are permitted provided that the following conditions are met:<a name="line.5"></a>
+<span class="sourceLineNo">006</span> *<a name="line.6"></a>
+<span class="sourceLineNo">007</span> *  o Redistributions of source code must retain the above copyright notice,<a name="line.7"></a>
+<span class="sourceLineNo">008</span> *    this list of conditions and the following disclaimer.<a name="line.8"></a>
+<span class="sourceLineNo">009</span> *<a name="line.9"></a>
+<span class="sourceLineNo">010</span> *  o Redistributions in binary form must reproduce the above copyright notice,<a name="line.10"></a>
+<span class="sourceLineNo">011</span> *    this list of conditions and the following disclaimer in the documentation<a name="line.11"></a>
+<span class="sourceLineNo">012</span> *    and/or other materials provided with the distribution.<a name="line.12"></a>
+<span class="sourceLineNo">013</span> *<a name="line.13"></a>
+<span class="sourceLineNo">014</span> *  o Neither the name of JGoodies Karsten Lentzsch nor the names of<a name="line.14"></a>
+<span class="sourceLineNo">015</span> *    its contributors may be used to endorse or promote products derived<a name="line.15"></a>
+<span class="sourceLineNo">016</span> *    from this software without specific prior written permission.<a name="line.16"></a>
+<span class="sourceLineNo">017</span> *<a name="line.17"></a>
+<span class="sourceLineNo">018</span> * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"<a name="line.18"></a>
+<span class="sourceLineNo">019</span> * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,<a name="line.19"></a>
+<span class="sourceLineNo">020</span> * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR<a name="line.20"></a>
+<span class="sourceLineNo">021</span> * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR<a name="line.21"></a>
+<span class="sourceLineNo">022</span> * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,<a name="line.22"></a>
+<span class="sourceLineNo">023</span> * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,<a name="line.23"></a>
+<span class="sourceLineNo">024</span> * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;<a name="line.24"></a>
+<span class="sourceLineNo">025</span> * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,<a name="line.25"></a>
+<span class="sourceLineNo">026</span> * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE<a name="line.26"></a>
+<span class="sourceLineNo">027</span> * OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,<a name="line.27"></a>
+<span class="sourceLineNo">028</span> * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.<a name="line.28"></a>
+<span class="sourceLineNo">029</span> */<a name="line.29"></a>
+<span class="sourceLineNo">030</span><a name="line.30"></a>
+<span class="sourceLineNo">031</span>package com.jgoodies.forms.layout;<a name="line.31"></a>
+<span class="sourceLineNo">032</span><a name="line.32"></a>
+<span class="sourceLineNo">033</span>import java.awt.Component;<a name="line.33"></a>
+<span class="sourceLineNo">034</span>import java.awt.Container;<a name="line.34"></a>
+<span class="sourceLineNo">035</span>import java.io.Serializable;<a name="line.35"></a>
+<span class="sourceLineNo">036</span>import java.util.List;<a name="line.36"></a>
+<span class="sourceLineNo">037</span>import java.util.Locale;<a name="line.37"></a>
+<span class="sourceLineNo">038</span><a name="line.38"></a>
+<span class="sourceLineNo">039</span>/**<a name="line.39"></a>
+<span class="sourceLineNo">040</span> * An implementation of the {@link Size} interface that represents constant<a name="line.40"></a>
+<span class="sourceLineNo">041</span> * sizes described by a value and unit, for example:<a name="line.41"></a>
+<span class="sourceLineNo">042</span> * 10&amp;nbsp;pixel, 15&amp;nbsp;point or 4&amp;nbsp;dialog units.<a name="line.42"></a>
+<span class="sourceLineNo">043</span> * You can get instances of &lt;code&gt;ConstantSize&lt;/code&gt; using<a name="line.43"></a>
+<span class="sourceLineNo">044</span> * the factory methods and constants in the {@link Sizes} class.<a name="line.44"></a>
+<span class="sourceLineNo">045</span> * Logical constant sizes that vary with the current layout style<a name="line.45"></a>
+<span class="sourceLineNo">046</span> * are delivered by the {@link com.jgoodies.forms.util.LayoutStyle} class.&lt;p&gt;<a name="line.46"></a>
+<span class="sourceLineNo">047</span> *<a name="line.47"></a>
+<span class="sourceLineNo">048</span> * This class supports different size units:<a name="line.48"></a>
+<span class="sourceLineNo">049</span> * &lt;table&gt;<a name="line.49"></a>
+<span class="sourceLineNo">050</span> * &lt;caption&gt;Size units&lt;/caption&gt;<a name="line.50"></a>
+<span class="sourceLineNo">051</span> * &lt;tr&gt;&lt;td&gt;&lt;b&gt;Unit&lt;/b&gt;&amp;nbsp;<a name="line.51"></a>
+<span class="sourceLineNo">052</span> * &lt;/td&gt;&lt;td&gt;&amp;nbsp;&lt;b&gt;Abbreviation&lt;/b&gt;&amp;nbsp;&lt;/td&gt;&lt;td&gt;&amp;nbsp;<a name="line.52"></a>
+<span class="sourceLineNo">053</span> * &lt;b&gt;Size&lt;/b&gt;&lt;/td&gt;&lt;/tr&gt;<a name="line.53"></a>
+<span class="sourceLineNo">054</span> * &lt;tr&gt;&lt;td&gt;Millimeter&lt;/td&gt;&lt;td&gt;mm&lt;/td&gt;&lt;td&gt;0.1 cm&lt;/td&gt;&lt;/tr&gt;<a name="line.54"></a>
+<span class="sourceLineNo">055</span> * &lt;tr&gt;&lt;td&gt;Centimeter&lt;/td&gt;&lt;td&gt;cm&lt;/td&gt;&lt;td&gt;10.0 mm&lt;/td&gt;&lt;/tr&gt;<a name="line.55"></a>
+<span class="sourceLineNo">056</span> * &lt;tr&gt;&lt;td&gt;Inch&lt;/td&gt;&lt;td&gt;in&lt;/td&gt;&lt;td&gt;25.4 mm&lt;/td&gt;&lt;/tr&gt;<a name="line.56"></a>
+<span class="sourceLineNo">057</span> * &lt;tr&gt;&lt;td&gt;DTP Point&lt;/td&gt;&lt;td&gt;pt&lt;/td&gt;&lt;td&gt;1/72 in&lt;/td&gt;&lt;/tr&gt;<a name="line.57"></a>
+<span class="sourceLineNo">058</span> * &lt;tr&gt;&lt;td&gt;Pixel&lt;/td&gt;&lt;td&gt;px&lt;/td&gt;&lt;td&gt;1/(resolution in dpi) in&lt;/td&gt;&lt;/tr&gt;<a name="line.58"></a>
+<span class="sourceLineNo">059</span> * &lt;tr&gt;&lt;td&gt;Dialog Unit&lt;/td&gt;&lt;td&gt;dlu&lt;/td&gt;&lt;td&gt;honors l&amp;amp;f, resolution, and<a name="line.59"></a>
+<span class="sourceLineNo">060</span> * dialog font size&lt;/td&gt;&lt;/tr&gt;<a name="line.60"></a>
+<span class="sourceLineNo">061</span> * &lt;/table&gt;&lt;p&gt;<a name="line.61"></a>
+<span class="sourceLineNo">062</span> *<a name="line.62"></a>
+<span class="sourceLineNo">063</span> * &lt;strong&gt;Examples:&lt;/strong&gt;&lt;pre&gt;<a name="line.63"></a>
+<span class="sourceLineNo">064</span> * Sizes.ZERO;<a name="line.64"></a>
+<span class="sourceLineNo">065</span> * Sizes.DLUX9;<a name="line.65"></a>
+<span class="sourceLineNo">066</span> * Sizes.dluX(42);<a name="line.66"></a>
+<span class="sourceLineNo">067</span> * Sizes.pixel(99);<a name="line.67"></a>
+<span class="sourceLineNo">068</span> * &lt;/pre&gt;<a name="line.68"></a>
+<span class="sourceLineNo">069</span> *<a name="line.69"></a>
+<span class="sourceLineNo">070</span> * @author Karsten Lentzsch<a name="line.70"></a>
+<span class="sourceLineNo">071</span> * @version $Revision$<a name="line.71"></a>
+<span class="sourceLineNo">072</span> *<a name="line.72"></a>
+<span class="sourceLineNo">073</span> * @see        Size<a name="line.73"></a>
+<span class="sourceLineNo">074</span> * @see        Sizes<a name="line.74"></a>
+<span class="sourceLineNo">075</span> */<a name="line.75"></a>
+<span class="sourceLineNo">076</span><a name="line.76"></a>
+<span class="sourceLineNo">077</span>@SuppressWarnings("serial")<a name="line.77"></a>
+<span class="sourceLineNo">078</span>public final class ConstantSize implements Size, Serializable {<a name="line.78"></a>
+<span class="sourceLineNo">079</span><a name="line.79"></a>
+<span class="sourceLineNo">080</span>    // Public Units *********************************************************<a name="line.80"></a>
+<span class="sourceLineNo">081</span><a name="line.81"></a>
+<span class="sourceLineNo">082</span>    public static final Unit PIXEL = new Unit("Pixel", "px", true);<a name="line.82"></a>
+<span class="sourceLineNo">083</span>    public static final Unit POINT = new Unit("Point", "pt", true);<a name="line.83"></a>
+<span class="sourceLineNo">084</span>    public static final Unit DIALOG_UNITS_X = new Unit("Dialog units X", "dluX",<a name="line.84"></a>
+<span class="sourceLineNo">085</span>            true);<a name="line.85"></a>
+<span class="sourceLineNo">086</span>    public static final Unit DLUX = DIALOG_UNITS_X;<a name="line.86"></a>
+<span class="sourceLineNo">087</span>    public static final Unit DIALOG_UNITS_Y = new Unit("Dialog units Y", "dluY",<a name="line.87"></a>
+<span class="sourceLineNo">088</span>            true);<a name="line.88"></a>
+<span class="sourceLineNo">089</span>    public static final Unit DLUY = DIALOG_UNITS_Y;<a name="line.89"></a>
+<span class="sourceLineNo">090</span>    public static final Unit MILLIMETER = new Unit("Millimeter", "mm", false);<a name="line.90"></a>
+<span class="sourceLineNo">091</span>    public static final Unit MM = MILLIMETER;<a name="line.91"></a>
+<span class="sourceLineNo">092</span>    public static final Unit CENTIMETER = new Unit("Centimeter", "cm", false);<a name="line.92"></a>
+<span class="sourceLineNo">093</span>    public static final Unit CM = CENTIMETER;<a name="line.93"></a>
+<span class="sourceLineNo">094</span>    public static final Unit INCH = new Unit("Inch", "in", false);<a name="line.94"></a>
+<span class="sourceLineNo">095</span>    public static final Unit IN = INCH;<a name="line.95"></a>
+<span class="sourceLineNo">096</span><a name="line.96"></a>
+<span class="sourceLineNo">097</span>    /**<a name="line.97"></a>
+<span class="sourceLineNo">098</span>     * An array of all enumeration values used to canonicalize<a name="line.98"></a>
+<span class="sourceLineNo">099</span>     * deserialized units.<a name="line.99"></a>
+<span class="sourceLineNo">100</span>     */<a name="line.100"></a>
+<span class="sourceLineNo">101</span>    private static final Unit[] VALUES = { PIXEL, POINT, DIALOG_UNITS_X,<a name="line.101"></a>
+<span class="sourceLineNo">102</span>            DIALOG_UNITS_Y, MILLIMETER, CENTIMETER, INCH };<a name="line.102"></a>
+<span class="sourceLineNo">103</span><a name="line.103"></a>
+<span class="sourceLineNo">104</span>    // Fields ***************************************************************<a name="line.104"></a>
+<span class="sourceLineNo">105</span><a name="line.105"></a>
+<span class="sourceLineNo">106</span>    private final double value;<a name="line.106"></a>
+<span class="sourceLineNo">107</span>    private final Unit unit;<a name="line.107"></a>
+<span class="sourceLineNo">108</span><a name="line.108"></a>
+<span class="sourceLineNo">109</span>    // Instance Creation ****************************************************<a name="line.109"></a>
+<span class="sourceLineNo">110</span><a name="line.110"></a>
+<span class="sourceLineNo">111</span>    /**<a name="line.111"></a>
+<span class="sourceLineNo">112</span>     * Constructs an instance of &lt;code&gt;ConstantSize&lt;/code&gt; from the given<a name="line.112"></a>
+<span class="sourceLineNo">113</span>     * encoded size and unit description.<a name="line.113"></a>
+<span class="sourceLineNo">114</span>     *<a name="line.114"></a>
+<span class="sourceLineNo">115</span>     * @param value        the size value interpreted in the given units<a name="line.115"></a>
+<span class="sourceLineNo">116</span>     * @param unit                the size's unit<a name="line.116"></a>
+<span class="sourceLineNo">117</span>     */<a name="line.117"></a>
+<span class="sourceLineNo">118</span>    ConstantSize(int value, Unit unit) {<a name="line.118"></a>
+<span class="sourceLineNo">119</span>        this.value = value;<a name="line.119"></a>
+<span class="sourceLineNo">120</span>        this.unit = unit;<a name="line.120"></a>
+<span class="sourceLineNo">121</span>    }<a name="line.121"></a>
+<span class="sourceLineNo">122</span><a name="line.122"></a>
+<span class="sourceLineNo">123</span>    /**<a name="line.123"></a>
+<span class="sourceLineNo">124</span>     * Constructs an instance of &lt;code&gt;ConstantSize&lt;/code&gt; from the given<a name="line.124"></a>
+<span class="sourceLineNo">125</span>     * encoded size and unit description.<a name="line.125"></a>
+<span class="sourceLineNo">126</span>     *<a name="line.126"></a>
+<span class="sourceLineNo">127</span>     * @param value     the size value interpreted in the given units<a name="line.127"></a>
+<span class="sourceLineNo">128</span>     * @param unit      the size's unit<a name="line.128"></a>
+<span class="sourceLineNo">129</span>     */<a name="line.129"></a>
+<span class="sourceLineNo">130</span>    ConstantSize(double value, Unit unit) {<a name="line.130"></a>
+<span class="sourceLineNo">131</span>        this.value = value;<a name="line.131"></a>
+<span class="sourceLineNo">132</span>        this.unit = unit;<a name="line.132"></a>
+<span class="sourceLineNo">133</span>    }<a name="line.133"></a>
+<span class="sourceLineNo">134</span><a name="line.134"></a>
+<span class="sourceLineNo">135</span>    /**<a name="line.135"></a>
+<span class="sourceLineNo">136</span>     * Constructs an instance of &lt;code&gt;ConstantSize&lt;/code&gt; from the given<a name="line.136"></a>
+<span class="sourceLineNo">137</span>     * encoded size and unit description.<a name="line.137"></a>
+<span class="sourceLineNo">138</span>     *<a name="line.138"></a>
+<span class="sourceLineNo">139</span>     * @param encodedValueAndUnit  the size's value and unit as string<a name="line.139"></a>
+<span class="sourceLineNo">140</span>     * @param horizontal                        true for horizontal, false for vertical<a name="line.140"></a>
+<span class="sourceLineNo">141</span>     * @return a constant size for the given encoding and unit description<a name="line.141"></a>
+<span class="sourceLineNo">142</span>     * @exception IllegalArgumentException   if the unit requires integer<a name="line.142"></a>
+<span class="sourceLineNo">143</span>     *    but the value is not an integer<a name="line.143"></a>
+<span class="sourceLineNo">144</span>     */<a name="line.144"></a>
+<span class="sourceLineNo">145</span>    static ConstantSize valueOf(String encodedValueAndUnit,<a name="line.145"></a>
+<span class="sourceLineNo">146</span>            boolean horizontal) {<a name="line.146"></a>
+<span class="sourceLineNo">147</span>        String split[] = ConstantSize.splitValueAndUnit(encodedValueAndUnit);<a name="line.147"></a>
+<span class="sourceLineNo">148</span>        String encodedValue = split[0];<a name="line.148"></a>
+<span class="sourceLineNo">149</span>        String encodedUnit = split[1];<a name="line.149"></a>
+<span class="sourceLineNo">150</span>        Unit unit = Unit.valueOf(encodedUnit, horizontal);<a name="line.150"></a>
+<span class="sourceLineNo">151</span>        double value = Double.parseDouble(encodedValue);<a name="line.151"></a>
+<span class="sourceLineNo">152</span>        if (unit.requiresIntegers) {<a name="line.152"></a>
+<span class="sourceLineNo">153</span>            if (value != (int) value) {<a name="line.153"></a>
+<span class="sourceLineNo">154</span>                throw new IllegalArgumentException(unit.toString() + " value "<a name="line.154"></a>
+<span class="sourceLineNo">155</span>                        + encodedValue + " must be an integer.");<a name="line.155"></a>
+<span class="sourceLineNo">156</span>            }<a name="line.156"></a>
+<span class="sourceLineNo">157</span>        }<a name="line.157"></a>
+<span class="sourceLineNo">158</span>        return new ConstantSize(value, unit);<a name="line.158"></a>
+<span class="sourceLineNo">159</span>    }<a name="line.159"></a>
+<span class="sourceLineNo">160</span><a name="line.160"></a>
+<span class="sourceLineNo">161</span>    /**<a name="line.161"></a>
+<span class="sourceLineNo">162</span>     * Returns an instance of &lt;code&gt;Size&lt;/code&gt; for the specified value<a name="line.162"></a>
+<span class="sourceLineNo">163</span>     * in horizontal dialog units.<a name="line.163"></a>
+<span class="sourceLineNo">164</span>     *<a name="line.164"></a>
+<span class="sourceLineNo">165</span>     * @param value        size value in horizontal dialog units<a name="line.165"></a>
+<span class="sourceLineNo">166</span>     * @return the associated Size instance<a name="line.166"></a>
+<span class="sourceLineNo">167</span>     */<a name="line.167"></a>
+<span class="sourceLineNo">168</span>    static ConstantSize dluX(int value) {<a name="line.168"></a>
+<span class="sourceLineNo">169</span>        return new ConstantSize(value, DLUX);<a name="line.169"></a>
+<span class="sourceLineNo">170</span>    }<a name="line.170"></a>
+<span class="sourceLineNo">171</span><a name="line.171"></a>
+<span class="sourceLineNo">172</span>    /**<a name="line.172"></a>
+<span class="sourceLineNo">173</span>     * Returns an instance of &lt;code&gt;Size&lt;/code&gt; for the specified value<a name="line.173"></a>
+<span class="sourceLineNo">174</span>     * in vertical dialog units.<a name="line.174"></a>
+<span class="sourceLineNo">175</span>     *<a name="line.175"></a>
+<span class="sourceLineNo">176</span>     * @param value    size value in vertical dialog units<a name="line.176"></a>
+<span class="sourceLineNo">177</span>     * @return the associated Size instance<a name="line.177"></a>
+<span class="sourceLineNo">178</span>     */<a name="line.178"></a>
+<span class="sourceLineNo">179</span>    static ConstantSize dluY(int value) {<a name="line.179"></a>
+<span class="sourceLineNo">180</span>        return new ConstantSize(value, DLUY);<a name="line.180"></a>
+<span class="sourceLineNo">181</span>    }<a name="line.181"></a>
+<span class="sourceLineNo">182</span><a name="line.182"></a>
+<span class="sourceLineNo">183</span>    // Accessing the Value **************************************************<a name="line.183"></a>
+<span class="sourceLineNo">184</span><a name="line.184"></a>
+<span class="sourceLineNo">185</span>    /**<a name="line.185"></a>
+<span class="sourceLineNo">186</span>     * Converts the size if necessary and returns the value in pixels.<a name="line.186"></a>
+<span class="sourceLineNo">187</span>     *<a name="line.187"></a>
+<span class="sourceLineNo">188</span>     * @param component  the associated component<a name="line.188"></a>
+<span class="sourceLineNo">189</span>     * @return the size in pixels<a name="line.189"></a>
+<span class="sourceLineNo">190</span>     */<a name="line.190"></a>
+<span class="sourceLineNo">191</span>    public int getPixelSize(Component component) {<a name="line.191"></a>
+<span class="sourceLineNo">192</span>        if (unit == PIXEL) {<a name="line.192"></a>
+<span class="sourceLineNo">193</span>            return intValue();<a name="line.193"></a>
+<span class="sourceLineNo">194</span>        } else if (unit == POINT) {<a name="line.194"></a>
+<span class="sourceLineNo">195</span>            return Sizes.pointAsPixel(intValue(), component);<a name="line.195"></a>
+<span class="sourceLineNo">196</span>        } else if (unit == INCH) {<a name="line.196"></a>
+<span class="sourceLineNo">197</span>            return Sizes.inchAsPixel(value, component);<a name="line.197"></a>
+<span class="sourceLineNo">198</span>        } else if (unit == MILLIMETER) {<a name="line.198"></a>
+<span class="sourceLineNo">199</span>            return Sizes.millimeterAsPixel(value, component);<a name="line.199"></a>
+<span class="sourceLineNo">200</span>        } else if (unit == CENTIMETER) {<a name="line.200"></a>
+<span class="sourceLineNo">201</span>            return Sizes.centimeterAsPixel(value, component);<a name="line.201"></a>
+<span class="sourceLineNo">202</span>        } else if (unit == DIALOG_UNITS_X) {<a name="line.202"></a>
+<span class="sourceLineNo">203</span>            return Sizes.dialogUnitXAsPixel(intValue(), component);<a name="line.203"></a>
+<span class="sourceLineNo">204</span>        } else if (unit == DIALOG_UNITS_Y) {<a name="line.204"></a>
+<span class="sourceLineNo">205</span>            return Sizes.dialogUnitYAsPixel(intValue(), component);<a name="line.205"></a>
+<span class="sourceLineNo">206</span>        } else {<a name="line.206"></a>
+<span class="sourceLineNo">207</span>            throw new IllegalStateException("Invalid unit " + unit);<a name="line.207"></a>
+<span class="sourceLineNo">208</span>        }<a name="line.208"></a>
+<span class="sourceLineNo">209</span>    }<a name="line.209"></a>
+<span class="sourceLineNo">210</span><a name="line.210"></a>
+<span class="sourceLineNo">211</span>    // Implementing the Size Interface **************************************<a name="line.211"></a>
+<span class="sourceLineNo">212</span><a name="line.212"></a>
+<span class="sourceLineNo">213</span>    /**<a name="line.213"></a>
+<span class="sourceLineNo">214</span>     * Returns this size as pixel size. Neither requires the component<a name="line.214"></a>
+<span class="sourceLineNo">215</span>     * list nor the specified measures.&lt;p&gt;<a name="line.215"></a>
+<span class="sourceLineNo">216</span>     *<a name="line.216"></a>
+<span class="sourceLineNo">217</span>     * Invoked by {@link com.jgoodies.forms.layout.FormSpec} to determine<a name="line.217"></a>
+<span class="sourceLineNo">218</span>     * the size of a column or row.<a name="line.218"></a>
+<span class="sourceLineNo">219</span>     *<a name="line.219"></a>
+<span class="sourceLineNo">220</span>     * @param container       the layout container<a name="line.220"></a>
+<span class="sourceLineNo">221</span>     * @param components      the list of components used to compute the size<a name="line.221"></a>
+<span class="sourceLineNo">222</span>     * @param minMeasure      the measure that determines the minimum sizes<a name="line.222"></a>
+<span class="sourceLineNo">223</span>     * @param prefMeasure     the measure that determines the preferred sizes<a name="line.223"></a>
+<span class="sourceLineNo">224</span>     * @param defaultMeasure  the measure that determines the default sizes<a name="line.224"></a>
+<span class="sourceLineNo">225</span>     * @return the computed maximum size in pixel<a name="line.225"></a>
+<span class="sourceLineNo">226</span>     */<a name="line.226"></a>
+<span class="sourceLineNo">227</span>    @Override<a name="line.227"></a>
+<span class="sourceLineNo">228</span>    public int maximumSize(Container container, List components,<a name="line.228"></a>
+<span class="sourceLineNo">229</span>            FormLayout.Measure minMeasure, FormLayout.Measure prefMeasure,<a name="line.229"></a>
+<span class="sourceLineNo">230</span>            FormLayout.Measure defaultMeasure) {<a name="line.230"></a>
+<span class="sourceLineNo">231</span>        return getPixelSize(container);<a name="line.231"></a>
+<span class="sourceLineNo">232</span>    }<a name="line.232"></a>
+<span class="sourceLineNo">233</span><a name="line.233"></a>
+<span class="sourceLineNo">234</span>    // Overriding Object Behavior *******************************************<a name="line.234"></a>
+<span class="sourceLineNo">235</span><a name="line.235"></a>
+<span class="sourceLineNo">236</span>    /**<a name="line.236"></a>
+<span class="sourceLineNo">237</span>     * Indicates whether some other ConstantSize is "equal to" this one.<a name="line.237"></a>
+<span class="sourceLineNo">238</span>     *<a name="line.238"></a>
+<span class="sourceLineNo">239</span>     * @param o   the Object with which to compare<a name="line.239"></a>
+<span class="sourceLineNo">240</span>     * @return &lt;code&gt;true&lt;/code&gt; if this object is the same as the obj<a name="line.240"></a>
+<span class="sourceLineNo">241</span>     * argument; &lt;code&gt;false&lt;/code&gt; otherwise.<a name="line.241"></a>
+<span class="sourceLineNo">242</span>     * @see     java.lang.Object#hashCode()<a name="line.242"></a>
+<span class="sourceLineNo">243</span>     * @see     java.util.Hashtable<a name="line.243"></a>
+<span class="sourceLineNo">244</span>     */<a name="line.244"></a>
+<span class="sourceLineNo">245</span>    @Override<a name="line.245"></a>
+<span class="sourceLineNo">246</span>    public boolean equals(Object o) {<a name="line.246"></a>
+<span class="sourceLineNo">247</span>        if (this == o) {<a name="line.247"></a>
+<span class="sourceLineNo">248</span>            return true;<a name="line.248"></a>
+<span class="sourceLineNo">249</span>        }<a name="line.249"></a>
+<span class="sourceLineNo">250</span>        if (!(o instanceof ConstantSize)) {<a name="line.250"></a>
+<span class="sourceLineNo">251</span>            return false;<a name="line.251"></a>
+<span class="sourceLineNo">252</span>        }<a name="line.252"></a>
+<span class="sourceLineNo">253</span>        ConstantSize size = (ConstantSize) o;<a name="line.253"></a>
+<span class="sourceLineNo">254</span>        return this.value == size.value &amp;&amp; this.unit == size.unit;<a name="line.254"></a>
+<span class="sourceLineNo">255</span>    }<a name="line.255"></a>
+<span class="sourceLineNo">256</span><a name="line.256"></a>
+<span class="sourceLineNo">257</span>    /**<a name="line.257"></a>
+<span class="sourceLineNo">258</span>     * Returns a hash code value for the object. This method is<a name="line.258"></a>
+<span class="sourceLineNo">259</span>     * supported for the benefit of hashtables such as those provided by<a name="line.259"></a>
+<span class="sourceLineNo">260</span>     * &lt;code&gt;java.util.Hashtable&lt;/code&gt;.<a name="line.260"></a>
+<span class="sourceLineNo">261</span>     *<a name="line.261"></a>
+<span class="sourceLineNo">262</span>     * @return  a hash code value for this object.<a name="line.262"></a>
+<span class="sourceLineNo">263</span>     * @see     java.lang.Object#equals(java.lang.Object)<a name="line.263"></a>
+<span class="sourceLineNo">264</span>     * @see     java.util.Hashtable<a name="line.264"></a>
+<span class="sourceLineNo">265</span>     */<a name="line.265"></a>
+<span class="sourceLineNo">266</span>    @Override<a name="line.266"></a>
+<span class="sourceLineNo">267</span>    public int hashCode() {<a name="line.267"></a>
+<span class="sourceLineNo">268</span>        return Double.valueOf(value).hashCode() + 37 * unit.hashCode();<a name="line.268"></a>
+<span class="sourceLineNo">269</span>    }<a name="line.269"></a>
+<span class="sourceLineNo">270</span><a name="line.270"></a>
+<span class="sourceLineNo">271</span>    /**<a name="line.271"></a>
+<span class="sourceLineNo">272</span>     * Returns a string representation of this size object.<a name="line.272"></a>
+<span class="sourceLineNo">273</span>     *<a name="line.273"></a>
+<span class="sourceLineNo">274</span>     * &lt;strong&gt;Note:&lt;/strong&gt; The string representation may change<a name="line.274"></a>
+<span class="sourceLineNo">275</span>     * at any time. It is strongly recommended to not use this string<a name="line.275"></a>
+<span class="sourceLineNo">276</span>     * for parsing purposes.<a name="line.276"></a>
+<span class="sourceLineNo">277</span>     *<a name="line.277"></a>
+<span class="sourceLineNo">278</span>     * @return  a string representation of the constant size<a name="line.278"></a>
+<span class="sourceLineNo">279</span>     */<a name="line.279"></a>
+<span class="sourceLineNo">280</span>    @Override<a name="line.280"></a>
+<span class="sourceLineNo">281</span>    public String toString() {<a name="line.281"></a>
+<span class="sourceLineNo">282</span>        return value == intValue()<a name="line.282"></a>
+<span class="sourceLineNo">283</span>                ? Integer.toString(intValue()) + unit.abbreviation()<a name="line.283"></a>
+<span class="sourceLineNo">284</span>                : Double.toString(value) + unit.abbreviation();<a name="line.284"></a>
+<span class="sourceLineNo">285</span>    }<a name="line.285"></a>
+<span class="sourceLineNo">286</span><a name="line.286"></a>
+<span class="sourceLineNo">287</span>    // Helper Code **********************************************************<a name="line.287"></a>
+<span class="sourceLineNo">288</span><a name="line.288"></a>
+<span class="sourceLineNo">289</span>    private int intValue() {<a name="line.289"></a>
+<span class="sourceLineNo">290</span>        return (int) Math.round(value);<a name="line.290"></a>
+<span class="sourceLineNo">291</span>    }<a name="line.291"></a>
+<span class="sourceLineNo">292</span><a name="line.292"></a>
+<span class="sourceLineNo">293</span>    /**<a name="line.293"></a>
+<span class="sourceLineNo">294</span>     * Splits a string that encodes size with unit into the size and unit<a name="line.294"></a>
+<span class="sourceLineNo">295</span>     * substrings. Returns an array of two strings.<a name="line.295"></a>
+<span class="sourceLineNo">296</span>     *<a name="line.296"></a>
+<span class="sourceLineNo">297</span>     * @param encodedValueAndUnit  a strings that represents a size with unit<a name="line.297"></a>
+<span class="sourceLineNo">298</span>     * @return the first element is size, the second is unit<a name="line.298"></a>
+<span class="sourceLineNo">299</span>     */<a name="line.299"></a>
+<span class="sourceLineNo">300</span>    static String[] splitValueAndUnit(String encodedValueAndUnit) {<a name="line.300"></a>
+<span class="sourceLineNo">301</span>        String[] result = new String[2];<a name="line.301"></a>
+<span class="sourceLineNo">302</span>        int len = encodedValueAndUnit.length();<a name="line.302"></a>
+<span class="sourceLineNo">303</span>        int firstLetterIndex = len;<a name="line.303"></a>
+<span class="sourceLineNo">304</span>        while (firstLetterIndex &gt; 0 &amp;&amp; Character<a name="line.304"></a>
+<span class="sourceLineNo">305</span>                .isLetter(encodedValueAndUnit.charAt(firstLetterIndex - 1))) {<a name="line.305"></a>
+<span class="sourceLineNo">306</span>            firstLetterIndex--;<a name="line.306"></a>
+<span class="sourceLineNo">307</span>        }<a name="line.307"></a>
+<span class="sourceLineNo">308</span>        result[0] = encodedValueAndUnit.substring(0, firstLetterIndex);<a name="line.308"></a>
+<span class="sourceLineNo">309</span>        result[1] = encodedValueAndUnit.substring(firstLetterIndex);<a name="line.309"></a>
+<span class="sourceLineNo">310</span>        return result;<a name="line.310"></a>
+<span class="sourceLineNo">311</span>    }<a name="line.311"></a>
+<span class="sourceLineNo">312</span><a name="line.312"></a>
+<span class="sourceLineNo">313</span>    // Helper Class *********************************************************<a name="line.313"></a>
+<span class="sourceLineNo">314</span><a name="line.314"></a>
+<span class="sourceLineNo">315</span>    /**<a name="line.315"></a>
+<span class="sourceLineNo">316</span>     * An ordinal-based serializable typesafe enumeration for units<a name="line.316"></a>
+<span class="sourceLineNo">317</span>     * as used in instances of {@link ConstantSize}.<a name="line.317"></a>
+<span class="sourceLineNo">318</span>     */<a name="line.318"></a>
+<span class="sourceLineNo">319</span>    public static final class Unit implements Serializable {<a name="line.319"></a>
+<span class="sourceLineNo">320</span><a name="line.320"></a>
+<span class="sourceLineNo">321</span>        private final transient String name;<a name="line.321"></a>
+<span class="sourceLineNo">322</span>        private final transient String abbreviation;<a name="line.322"></a>
+<span class="sourceLineNo">323</span>        final transient boolean requiresIntegers;<a name="line.323"></a>
+<span class="sourceLineNo">324</span><a name="line.324"></a>
+<span class="sourceLineNo">325</span>        private Unit(String name, String abbreviation,<a name="line.325"></a>
+<span class="sourceLineNo">326</span>                boolean requiresIntegers) {<a name="line.326"></a>
+<span class="sourceLineNo">327</span>            this.name = name;<a name="line.327"></a>
+<span class="sourceLineNo">328</span>            this.abbreviation = abbreviation;<a name="line.328"></a>
+<span class="sourceLineNo">329</span>            this.requiresIntegers = requiresIntegers;<a name="line.329"></a>
+<span class="sourceLineNo">330</span>        }<a name="line.330"></a>
+<span class="sourceLineNo">331</span><a name="line.331"></a>
+<span class="sourceLineNo">332</span>        /**<a name="line.332"></a>
+<span class="sourceLineNo">333</span>         * Returns an instance of &lt;code&gt;Unit&lt;/code&gt; that corresponds to the<a name="line.333"></a>
+<span class="sourceLineNo">334</span>         * specified string.<a name="line.334"></a>
+<span class="sourceLineNo">335</span>         *<a name="line.335"></a>
+<span class="sourceLineNo">336</span>         * @param str   the encoded unit<a name="line.336"></a>
+<span class="sourceLineNo">337</span>         * @param horizontal  true for a horizontal unit, false for vertical<a name="line.337"></a>
+<span class="sourceLineNo">338</span>         * @return the corresponding Unit<a name="line.338"></a>
+<span class="sourceLineNo">339</span>         * @exception IllegalArgumentException if no Unit exists for the string<a name="line.339"></a>
+<span class="sourceLineNo">340</span>         */<a name="line.340"></a>
+<span class="sourceLineNo">341</span>        static Unit valueOf(String str, boolean horizontal) {<a name="line.341"></a>
+<span class="sourceLineNo">342</span>            String lowerCase = str.toLowerCase(Locale.ENGLISH);<a name="line.342"></a>
+<span class="sourceLineNo">343</span>            if (lowerCase.equals("px") || lowerCase.length() == 0) {<a name="line.343"></a>
+<span class="sourceLineNo">344</span>                return PIXEL;<a name="line.344"></a>
+<span class="sourceLineNo">345</span>            } else if (lowerCase.equals("dlu")) {<a name="line.345"></a>
+<span class="sourceLineNo">346</span>                return horizontal ? DIALOG_UNITS_X : DIALOG_UNITS_Y;<a name="line.346"></a>
+<span class="sourceLineNo">347</span>            } else if (lowerCase.equals("pt")) {<a name="line.347"></a>
+<span class="sourceLineNo">348</span>                return POINT;<a name="line.348"></a>
+<span class="sourceLineNo">349</span>            } else if (lowerCase.equals("in")) {<a name="line.349"></a>
+<span class="sourceLineNo">350</span>                return INCH;<a name="line.350"></a>
+<span class="sourceLineNo">351</span>            } else if (lowerCase.equals("mm")) {<a name="line.351"></a>
+<span class="sourceLineNo">352</span>                return MILLIMETER;<a name="line.352"></a>
+<span class="sourceLineNo">353</span>            } else if (lowerCase.equals("cm")) {<a name="line.353"></a>
+<span class="sourceLineNo">354</span>                return CENTIMETER;<a name="line.354"></a>
+<span class="sourceLineNo">355</span>            } else {<a name="line.355"></a>
+<span class="sourceLineNo">356</span>                throw new IllegalArgumentException("Invalid unit name '" + str<a name="line.356"></a>
+<span class="sourceLineNo">357</span>                        + "'. Must be one of: " + "px, dlu, pt, mm, cm, in");<a name="line.357"></a>
+<span class="sourceLineNo">358</span>            }<a name="line.358"></a>
+<span class="sourceLineNo">359</span>        }<a name="line.359"></a>
+<span class="sourceLineNo">360</span><a name="line.360"></a>
+<span class="sourceLineNo">361</span>        @Override<a name="line.361"></a>
+<span class="sourceLineNo">362</span>        public String toString() {<a name="line.362"></a>
+<span class="sourceLineNo">363</span>            return name;<a name="line.363"></a>
+<span class="sourceLineNo">364</span>        }<a name="line.364"></a>
+<span class="sourceLineNo">365</span><a name="line.365"></a>
+<span class="sourceLineNo">366</span>        /**<a name="line.366"></a>
+<span class="sourceLineNo">367</span>         * Returns the first character of this Unit's name.<a name="line.367"></a>
+<span class="sourceLineNo">368</span>         * Used to identify it in short format strings.<a name="line.368"></a>
+<span class="sourceLineNo">369</span>         *<a name="line.369"></a>
+<span class="sourceLineNo">370</span>         * @return the first character of this Unit's name.<a name="line.370"></a>
+<span class="sourceLineNo">371</span>         */<a name="line.371"></a>
+<span class="sourceLineNo">372</span>        public String abbreviation() {<a name="line.372"></a>
+<span class="sourceLineNo">373</span>            return abbreviation;<a name="line.373"></a>
+<span class="sourceLineNo">374</span>        }<a name="line.374"></a>
+<span class="sourceLineNo">375</span><a name="line.375"></a>
+<span class="sourceLineNo">376</span>        // Serialization *****************************************************<a name="line.376"></a>
+<span class="sourceLineNo">377</span><a name="line.377"></a>
+<span class="sourceLineNo">378</span>        private static int nextOrdinal = 0;<a name="line.378"></a>
+<span class="sourceLineNo">379</span><a name="line.379"></a>
+<span class="sourceLineNo">380</span>        private final int ordinal = nextOrdinal++;<a name="line.380"></a>
+<span class="sourceLineNo">381</span><a name="line.381"></a>
+<span class="sourceLineNo">382</span>        private Object readResolve() {<a name="line.382"></a>
+<span class="sourceLineNo">383</span>            return VALUES[ordinal]; // Canonicalize<a name="line.383"></a>
+<span class="sourceLineNo">384</span>        }<a name="line.384"></a>
+<span class="sourceLineNo">385</span><a name="line.385"></a>
+<span class="sourceLineNo">386</span>    }<a name="line.386"></a>
+<span class="sourceLineNo">387</span><a name="line.387"></a>
+<span class="sourceLineNo">388</span>}<a name="line.388"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

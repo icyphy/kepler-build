@@ -1,0 +1,195 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../../../stylesheet.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>/*<a name="line.1"></a>
+<span class="sourceLineNo">002</span> * Copyright (c) 2004-2010 The Regents of the University of California.<a name="line.2"></a>
+<span class="sourceLineNo">003</span> * All rights reserved.<a name="line.3"></a>
+<span class="sourceLineNo">004</span> *<a name="line.4"></a>
+<span class="sourceLineNo">005</span> * '$Author: crawl $'<a name="line.5"></a>
+<span class="sourceLineNo">006</span> * '$Date: 2014-08-22 11:21:57 -0700 (Fri, 22 Aug 2014) $' <a name="line.6"></a>
+<span class="sourceLineNo">007</span> * '$Revision: 32916 $'<a name="line.7"></a>
+<span class="sourceLineNo">008</span> * <a name="line.8"></a>
+<span class="sourceLineNo">009</span> * Permission is hereby granted, without written agreement and without<a name="line.9"></a>
+<span class="sourceLineNo">010</span> * license or royalty fees, to use, copy, modify, and distribute this<a name="line.10"></a>
+<span class="sourceLineNo">011</span> * software and its documentation for any purpose, provided that the above<a name="line.11"></a>
+<span class="sourceLineNo">012</span> * copyright notice and the following two paragraphs appear in all copies<a name="line.12"></a>
+<span class="sourceLineNo">013</span> * of this software.<a name="line.13"></a>
+<span class="sourceLineNo">014</span> *<a name="line.14"></a>
+<span class="sourceLineNo">015</span> * IN NO EVENT SHALL THE UNIVERSITY OF CALIFORNIA BE LIABLE TO ANY PARTY<a name="line.15"></a>
+<span class="sourceLineNo">016</span> * FOR DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES<a name="line.16"></a>
+<span class="sourceLineNo">017</span> * ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION, EVEN IF<a name="line.17"></a>
+<span class="sourceLineNo">018</span> * THE UNIVERSITY OF CALIFORNIA HAS BEEN ADVISED OF THE POSSIBILITY OF<a name="line.18"></a>
+<span class="sourceLineNo">019</span> * SUCH DAMAGE.<a name="line.19"></a>
+<span class="sourceLineNo">020</span> *<a name="line.20"></a>
+<span class="sourceLineNo">021</span> * THE UNIVERSITY OF CALIFORNIA SPECIFICALLY DISCLAIMS ANY WARRANTIES,<a name="line.21"></a>
+<span class="sourceLineNo">022</span> * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF<a name="line.22"></a>
+<span class="sourceLineNo">023</span> * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE<a name="line.23"></a>
+<span class="sourceLineNo">024</span> * PROVIDED HEREUNDER IS ON AN "AS IS" BASIS, AND THE UNIVERSITY OF<a name="line.24"></a>
+<span class="sourceLineNo">025</span> * CALIFORNIA HAS NO OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT, UPDATES,<a name="line.25"></a>
+<span class="sourceLineNo">026</span> * ENHANCEMENTS, OR MODIFICATIONS.<a name="line.26"></a>
+<span class="sourceLineNo">027</span> *<a name="line.27"></a>
+<span class="sourceLineNo">028</span> */<a name="line.28"></a>
+<span class="sourceLineNo">029</span><a name="line.29"></a>
+<span class="sourceLineNo">030</span>package org.kepler.gui.kar;<a name="line.30"></a>
+<span class="sourceLineNo">031</span><a name="line.31"></a>
+<span class="sourceLineNo">032</span>import java.awt.Toolkit;<a name="line.32"></a>
+<span class="sourceLineNo">033</span>import java.awt.event.ActionEvent;<a name="line.33"></a>
+<span class="sourceLineNo">034</span><a name="line.34"></a>
+<span class="sourceLineNo">035</span>import javax.swing.KeyStroke;<a name="line.35"></a>
+<span class="sourceLineNo">036</span><a name="line.36"></a>
+<span class="sourceLineNo">037</span>import org.kepler.gui.ModelToFrameManager;<a name="line.37"></a>
+<span class="sourceLineNo">038</span>import org.kepler.kar.KARFile;<a name="line.38"></a>
+<span class="sourceLineNo">039</span>import org.kepler.kar.KARManager;<a name="line.39"></a>
+<span class="sourceLineNo">040</span><a name="line.40"></a>
+<span class="sourceLineNo">041</span>import ptolemy.actor.gui.PtolemyFrame;<a name="line.41"></a>
+<span class="sourceLineNo">042</span>import ptolemy.actor.gui.TableauFrame;<a name="line.42"></a>
+<span class="sourceLineNo">043</span>import ptolemy.kernel.util.NamedObj;<a name="line.43"></a>
+<span class="sourceLineNo">044</span>import ptolemy.vergil.toolbox.FigureAction;<a name="line.44"></a>
+<span class="sourceLineNo">045</span><a name="line.45"></a>
+<span class="sourceLineNo">046</span>/**<a name="line.46"></a>
+<span class="sourceLineNo">047</span> * This action attempts to save a KAR in place without user interaction using<a name="line.47"></a>
+<span class="sourceLineNo">048</span> * ExportArchiveAction. If this cannot be done, a Save As... is attempted using<a name="line.48"></a>
+<span class="sourceLineNo">049</span> * ExportArchiveAction.<a name="line.49"></a>
+<span class="sourceLineNo">050</span> */<a name="line.50"></a>
+<span class="sourceLineNo">051</span>public class SaveArchiveAction extends FigureAction {<a name="line.51"></a>
+<span class="sourceLineNo">052</span><a name="line.52"></a>
+<span class="sourceLineNo">053</span>        protected TableauFrame _parent;<a name="line.53"></a>
+<span class="sourceLineNo">054</span>        private static KeyStroke ACCELERATOR_KEYSTROKE = KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_S, <a name="line.54"></a>
+<span class="sourceLineNo">055</span>                        Toolkit.getDefaultToolkit().getMenuShortcutKeyMask());<a name="line.55"></a>
+<span class="sourceLineNo">056</span><a name="line.56"></a>
+<span class="sourceLineNo">057</span>        /**<a name="line.57"></a>
+<span class="sourceLineNo">058</span>         * Constructor<a name="line.58"></a>
+<span class="sourceLineNo">059</span>         * <a name="line.59"></a>
+<span class="sourceLineNo">060</span>         * @param parent<a name="line.60"></a>
+<span class="sourceLineNo">061</span>         *            the "frame" (derived from ptolemy.gui.Top) where the menu is<a name="line.61"></a>
+<span class="sourceLineNo">062</span>         *            being added.<a name="line.62"></a>
+<span class="sourceLineNo">063</span>         */<a name="line.63"></a>
+<span class="sourceLineNo">064</span>        public SaveArchiveAction(TableauFrame parent) {<a name="line.64"></a>
+<span class="sourceLineNo">065</span>                super("");<a name="line.65"></a>
+<span class="sourceLineNo">066</span>                <a name="line.66"></a>
+<span class="sourceLineNo">067</span>                putValue(ACCELERATOR_KEY, ACCELERATOR_KEYSTROKE);<a name="line.67"></a>
+<span class="sourceLineNo">068</span>                <a name="line.68"></a>
+<span class="sourceLineNo">069</span>                _parent = parent;<a name="line.69"></a>
+<span class="sourceLineNo">070</span><a name="line.70"></a>
+<span class="sourceLineNo">071</span>                if (parent == null) {<a name="line.71"></a>
+<span class="sourceLineNo">072</span>                        IllegalArgumentException iae = new IllegalArgumentException(<a name="line.72"></a>
+<span class="sourceLineNo">073</span>                                        "SaveArchiveAction constructor received NULL argument for TableauFrame");<a name="line.73"></a>
+<span class="sourceLineNo">074</span>                        iae.fillInStackTrace();<a name="line.74"></a>
+<span class="sourceLineNo">075</span>                        throw iae;<a name="line.75"></a>
+<span class="sourceLineNo">076</span>                }<a name="line.76"></a>
+<span class="sourceLineNo">077</span><a name="line.77"></a>
+<span class="sourceLineNo">078</span>        }<a name="line.78"></a>
+<span class="sourceLineNo">079</span><a name="line.79"></a>
+<span class="sourceLineNo">080</span>        @Override<a name="line.80"></a>
+<span class="sourceLineNo">081</span>    public void actionPerformed(ActionEvent e) {<a name="line.81"></a>
+<span class="sourceLineNo">082</span>                super.actionPerformed(e);<a name="line.82"></a>
+<span class="sourceLineNo">083</span><a name="line.83"></a>
+<span class="sourceLineNo">084</span>                TableauFrame _topFrame = _parent;<a name="line.84"></a>
+<span class="sourceLineNo">085</span>                <a name="line.85"></a>
+<span class="sourceLineNo">086</span>                // get the frame for the top level workflow<a name="line.86"></a>
+<span class="sourceLineNo">087</span>                if(_parent instanceof PtolemyFrame) {<a name="line.87"></a>
+<span class="sourceLineNo">088</span>                NamedObj workflow = ((PtolemyFrame)_parent).getModel();<a name="line.88"></a>
+<span class="sourceLineNo">089</span>                NamedObj topWorkflow = workflow.toplevel();<a name="line.89"></a>
+<span class="sourceLineNo">090</span>                if(workflow != topWorkflow) {<a name="line.90"></a>
+<span class="sourceLineNo">091</span>                    _topFrame = ModelToFrameManager.getInstance().getFrame(topWorkflow);<a name="line.91"></a>
+<span class="sourceLineNo">092</span>                }<a name="line.92"></a>
+<span class="sourceLineNo">093</span>                }<a name="line.93"></a>
+<span class="sourceLineNo">094</span>                <a name="line.94"></a>
+<span class="sourceLineNo">095</span>                KARFile karForTopWorkflowFile = KARManager.getInstance().get(_topFrame);<a name="line.95"></a>
+<span class="sourceLineNo">096</span><a name="line.96"></a>
+<span class="sourceLineNo">097</span>                ExportArchiveAction exportArchiveAction;<a name="line.97"></a>
+<span class="sourceLineNo">098</span>                <a name="line.98"></a>
+<span class="sourceLineNo">099</span>                // canWrite() checks if exists and writeable. We do in fact want<a name="line.99"></a>
+<span class="sourceLineNo">100</span>                // the existence check to occur, e.g. when we create tmp kar files<a name="line.100"></a>
+<span class="sourceLineNo">101</span>                // we sometimes delete them right after opening, and we want <a name="line.101"></a>
+<span class="sourceLineNo">102</span>                // the user to get a Save As... prompt when they attempt to Save it.<a name="line.102"></a>
+<span class="sourceLineNo">103</span>                if (karForTopWorkflowFile == null || !karForTopWorkflowFile.getFileLocation().canWrite()) {<a name="line.103"></a>
+<span class="sourceLineNo">104</span>                    // since the KAR does not exist, pass the current frame to ExportArchiveAction<a name="line.104"></a>
+<span class="sourceLineNo">105</span>                    // if the workflow is a sub-workflow, ExportArchiveAction will ask the user<a name="line.105"></a>
+<span class="sourceLineNo">106</span>                    // if they want to save only the sub-workflow.<a name="line.106"></a>
+<span class="sourceLineNo">107</span>                exportArchiveAction = new ExportArchiveAction(_parent);<a name="line.107"></a>
+<span class="sourceLineNo">108</span>                exportArchiveAction.actionPerformed(e);<a name="line.108"></a>
+<span class="sourceLineNo">109</span>                } else {<a name="line.109"></a>
+<span class="sourceLineNo">110</span>                    // a KAR file was found for this workflow, so it has already been saved.<a name="line.110"></a>
+<span class="sourceLineNo">111</span>                    // pass the top level frame to ExportArchiveAction so that the top level<a name="line.111"></a>
+<span class="sourceLineNo">112</span>                    // workflow is saved.<a name="line.112"></a>
+<span class="sourceLineNo">113</span>                exportArchiveAction = new ExportArchiveAction(_topFrame);<a name="line.113"></a>
+<span class="sourceLineNo">114</span>                exportArchiveAction.setRefreshFrameAfterSave(false); <a name="line.114"></a>
+<span class="sourceLineNo">115</span>                exportArchiveAction.setSaveFile(karForTopWorkflowFile.getFileLocation());<a name="line.115"></a>
+<span class="sourceLineNo">116</span>                exportArchiveAction.actionPerformed(e);<a name="line.116"></a>
+<span class="sourceLineNo">117</span>                }<a name="line.117"></a>
+<span class="sourceLineNo">118</span><a name="line.118"></a>
+<span class="sourceLineNo">119</span>                if (exportArchiveAction.saveSucceeded()) {<a name="line.119"></a>
+<span class="sourceLineNo">120</span>                        _parent.setModified(false);<a name="line.120"></a>
+<span class="sourceLineNo">121</span>                }<a name="line.121"></a>
+<span class="sourceLineNo">122</span>        }<a name="line.122"></a>
+<span class="sourceLineNo">123</span>}<a name="line.123"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

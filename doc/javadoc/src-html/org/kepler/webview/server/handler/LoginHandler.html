@@ -1,0 +1,255 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../../../../stylesheet.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>/*<a name="line.1"></a>
+<span class="sourceLineNo">002</span> * Copyright (c) 2017 The Regents of the University of California.<a name="line.2"></a>
+<span class="sourceLineNo">003</span> * All rights reserved.<a name="line.3"></a>
+<span class="sourceLineNo">004</span> *<a name="line.4"></a>
+<span class="sourceLineNo">005</span> * '$Author: crawl $'<a name="line.5"></a>
+<span class="sourceLineNo">006</span> * '$Date: 2017-08-23 22:42:39 -0700 (Wed, 23 Aug 2017) $' <a name="line.6"></a>
+<span class="sourceLineNo">007</span> * '$Revision: 1375 $'<a name="line.7"></a>
+<span class="sourceLineNo">008</span> * <a name="line.8"></a>
+<span class="sourceLineNo">009</span> * Permission is hereby granted, without written agreement and without<a name="line.9"></a>
+<span class="sourceLineNo">010</span> * license or royalty fees, to use, copy, modify, and distribute this<a name="line.10"></a>
+<span class="sourceLineNo">011</span> * software and its documentation for any purpose, provided that the above<a name="line.11"></a>
+<span class="sourceLineNo">012</span> * copyright notice and the following two paragraphs appear in all copies<a name="line.12"></a>
+<span class="sourceLineNo">013</span> * of this software.<a name="line.13"></a>
+<span class="sourceLineNo">014</span> *<a name="line.14"></a>
+<span class="sourceLineNo">015</span> * IN NO EVENT SHALL THE UNIVERSITY OF CALIFORNIA BE LIABLE TO ANY PARTY<a name="line.15"></a>
+<span class="sourceLineNo">016</span> * FOR DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES<a name="line.16"></a>
+<span class="sourceLineNo">017</span> * ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION, EVEN IF<a name="line.17"></a>
+<span class="sourceLineNo">018</span> * THE UNIVERSITY OF CALIFORNIA HAS BEEN ADVISED OF THE POSSIBILITY OF<a name="line.18"></a>
+<span class="sourceLineNo">019</span> * SUCH DAMAGE.<a name="line.19"></a>
+<span class="sourceLineNo">020</span> *<a name="line.20"></a>
+<span class="sourceLineNo">021</span> * THE UNIVERSITY OF CALIFORNIA SPECIFICALLY DISCLAIMS ANY WARRANTIES,<a name="line.21"></a>
+<span class="sourceLineNo">022</span> * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF<a name="line.22"></a>
+<span class="sourceLineNo">023</span> * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE<a name="line.23"></a>
+<span class="sourceLineNo">024</span> * PROVIDED HEREUNDER IS ON AN "AS IS" BASIS, AND THE UNIVERSITY OF<a name="line.24"></a>
+<span class="sourceLineNo">025</span> * CALIFORNIA HAS NO OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT, UPDATES,<a name="line.25"></a>
+<span class="sourceLineNo">026</span> * ENHANCEMENTS, OR MODIFICATIONS.<a name="line.26"></a>
+<span class="sourceLineNo">027</span> *<a name="line.27"></a>
+<span class="sourceLineNo">028</span> */<a name="line.28"></a>
+<span class="sourceLineNo">029</span>package org.kepler.webview.server.handler;<a name="line.29"></a>
+<span class="sourceLineNo">030</span><a name="line.30"></a>
+<span class="sourceLineNo">031</span>import java.net.HttpURLConnection;<a name="line.31"></a>
+<span class="sourceLineNo">032</span>import java.util.Set;<a name="line.32"></a>
+<span class="sourceLineNo">033</span><a name="line.33"></a>
+<span class="sourceLineNo">034</span>import org.kepler.webview.server.WebViewConfiguration;<a name="line.34"></a>
+<span class="sourceLineNo">035</span>import org.kepler.webview.server.WebViewServer;<a name="line.35"></a>
+<span class="sourceLineNo">036</span>import org.kepler.webview.server.auth.AuthUtilities;<a name="line.36"></a>
+<span class="sourceLineNo">037</span><a name="line.37"></a>
+<span class="sourceLineNo">038</span>import io.vertx.core.file.FileSystem;<a name="line.38"></a>
+<span class="sourceLineNo">039</span>import io.vertx.core.json.JsonArray;<a name="line.39"></a>
+<span class="sourceLineNo">040</span>import io.vertx.core.json.JsonObject;<a name="line.40"></a>
+<span class="sourceLineNo">041</span>import io.vertx.ext.web.RoutingContext;<a name="line.41"></a>
+<span class="sourceLineNo">042</span><a name="line.42"></a>
+<span class="sourceLineNo">043</span>/** Handler for logins.<a name="line.43"></a>
+<span class="sourceLineNo">044</span> * <a name="line.44"></a>
+<span class="sourceLineNo">045</span> * @author Daniel Crawl<a name="line.45"></a>
+<span class="sourceLineNo">046</span> * @version $Id: LoginHandler.java 1375 2017-08-24 05:42:39Z crawl $<a name="line.46"></a>
+<span class="sourceLineNo">047</span> */<a name="line.47"></a>
+<span class="sourceLineNo">048</span>public class LoginHandler extends BaseHandler {<a name="line.48"></a>
+<span class="sourceLineNo">049</span><a name="line.49"></a>
+<span class="sourceLineNo">050</span>    public LoginHandler(WebViewServer server) {<a name="line.50"></a>
+<span class="sourceLineNo">051</span>        super(server);<a name="line.51"></a>
+<span class="sourceLineNo">052</span>        _metadataFileName = WebViewConfiguration.getHttpServerMetadataFileName();<a name="line.52"></a>
+<span class="sourceLineNo">053</span>        _fileSystem = _server.getVertx().fileSystem();<a name="line.53"></a>
+<span class="sourceLineNo">054</span>    }<a name="line.54"></a>
+<span class="sourceLineNo">055</span><a name="line.55"></a>
+<span class="sourceLineNo">056</span>    @Override<a name="line.56"></a>
+<span class="sourceLineNo">057</span>    public void handle(RoutingContext context) {<a name="line.57"></a>
+<span class="sourceLineNo">058</span><a name="line.58"></a>
+<span class="sourceLineNo">059</span>        final long timestamp = System.currentTimeMillis();<a name="line.59"></a>
+<span class="sourceLineNo">060</span>        <a name="line.60"></a>
+<span class="sourceLineNo">061</span>        /*<a name="line.61"></a>
+<span class="sourceLineNo">062</span>        System.out.println("logged in " + <a name="line.62"></a>
+<span class="sourceLineNo">063</span>            context.user().principal().getString("username") + " " +<a name="line.63"></a>
+<span class="sourceLineNo">064</span>            context.session().id());<a name="line.64"></a>
+<span class="sourceLineNo">065</span>         */<a name="line.65"></a>
+<span class="sourceLineNo">066</span>        <a name="line.66"></a>
+<span class="sourceLineNo">067</span>        // get the last modified time of the metadata file.<a name="line.67"></a>
+<span class="sourceLineNo">068</span>        _fileSystem.props(_metadataFileName, propsResult -&gt; {<a name="line.68"></a>
+<span class="sourceLineNo">069</span>            if(propsResult.succeeded()) {<a name="line.69"></a>
+<span class="sourceLineNo">070</span>                // see if file was modified since we last read it<a name="line.70"></a>
+<span class="sourceLineNo">071</span>                if(propsResult.result().lastModifiedTime() &gt; _metadataLastModifiedTime || _metadataJson == null) {<a name="line.71"></a>
+<span class="sourceLineNo">072</span>                    _metadataLastModifiedTime = propsResult.result().lastModifiedTime();<a name="line.72"></a>
+<span class="sourceLineNo">073</span>                    <a name="line.73"></a>
+<span class="sourceLineNo">074</span>                    // read metadata file<a name="line.74"></a>
+<span class="sourceLineNo">075</span>                    _fileSystem.readFile(_metadataFileName, readResult -&gt; {<a name="line.75"></a>
+<span class="sourceLineNo">076</span>                        if(readResult.succeeded()) {<a name="line.76"></a>
+<span class="sourceLineNo">077</span>                            // update the cached json<a name="line.77"></a>
+<span class="sourceLineNo">078</span>                            try {<a name="line.78"></a>
+<span class="sourceLineNo">079</span>                                _metadataJson = readResult.result().toJsonObject();<a name="line.79"></a>
+<span class="sourceLineNo">080</span>                            } catch(Throwable t) {<a name="line.80"></a>
+<span class="sourceLineNo">081</span>                                context.response()<a name="line.81"></a>
+<span class="sourceLineNo">082</span>                                    .putHeader("Content-Type", "text/plain")<a name="line.82"></a>
+<span class="sourceLineNo">083</span>                                    .setStatusCode(HttpURLConnection.HTTP_INTERNAL_ERROR)<a name="line.83"></a>
+<span class="sourceLineNo">084</span>                                    .setStatusMessage("Could not access metadata.")<a name="line.84"></a>
+<span class="sourceLineNo">085</span>                                    .end();<a name="line.85"></a>
+<span class="sourceLineNo">086</span>                                System.err.println("Error reading metadata file " +<a name="line.86"></a>
+<span class="sourceLineNo">087</span>                                    _metadataFileName + ": " + t.getMessage());<a name="line.87"></a>
+<span class="sourceLineNo">088</span>                                _server.log(context.request(), context.user(), HttpURLConnection.HTTP_INTERNAL_ERROR, timestamp);<a name="line.88"></a>
+<span class="sourceLineNo">089</span>                                return;<a name="line.89"></a>
+<span class="sourceLineNo">090</span>                            }<a name="line.90"></a>
+<span class="sourceLineNo">091</span>                            // send metadata json in response<a name="line.91"></a>
+<span class="sourceLineNo">092</span>                            _sendMetadata(context, timestamp);<a name="line.92"></a>
+<span class="sourceLineNo">093</span>                        } else {<a name="line.93"></a>
+<span class="sourceLineNo">094</span>                            context.response()<a name="line.94"></a>
+<span class="sourceLineNo">095</span>                                .putHeader("Content-Type", "text/plain")<a name="line.95"></a>
+<span class="sourceLineNo">096</span>                                .setStatusCode(HttpURLConnection.HTTP_INTERNAL_ERROR)<a name="line.96"></a>
+<span class="sourceLineNo">097</span>                                .setStatusMessage("Could not access metadata.")<a name="line.97"></a>
+<span class="sourceLineNo">098</span>                                .end();<a name="line.98"></a>
+<span class="sourceLineNo">099</span>                            System.err.println("Could not read metadata " +<a name="line.99"></a>
+<span class="sourceLineNo">100</span>                                    _metadataFileName + ": " + readResult.cause().getMessage());<a name="line.100"></a>
+<span class="sourceLineNo">101</span>                            _server.log(context.request(), context.user(), HttpURLConnection.HTTP_INTERNAL_ERROR, timestamp);<a name="line.101"></a>
+<span class="sourceLineNo">102</span>                        }<a name="line.102"></a>
+<span class="sourceLineNo">103</span>                    });<a name="line.103"></a>
+<span class="sourceLineNo">104</span>                } else {<a name="line.104"></a>
+<span class="sourceLineNo">105</span>                    // send cached metadata json in response <a name="line.105"></a>
+<span class="sourceLineNo">106</span>                    _sendMetadata(context, timestamp);<a name="line.106"></a>
+<span class="sourceLineNo">107</span>                }                <a name="line.107"></a>
+<span class="sourceLineNo">108</span>            } else {<a name="line.108"></a>
+<span class="sourceLineNo">109</span>                context.response()<a name="line.109"></a>
+<span class="sourceLineNo">110</span>                    .putHeader("Content-Type", "text/plain")<a name="line.110"></a>
+<span class="sourceLineNo">111</span>                    .setStatusCode(HttpURLConnection.HTTP_INTERNAL_ERROR)<a name="line.111"></a>
+<span class="sourceLineNo">112</span>                    .setStatusMessage("Could not access metadata.")<a name="line.112"></a>
+<span class="sourceLineNo">113</span>                    .end();<a name="line.113"></a>
+<span class="sourceLineNo">114</span>                System.err.println("Could not get properties for metadata " +<a name="line.114"></a>
+<span class="sourceLineNo">115</span>                    _metadataFileName + ": " + propsResult.cause().getMessage());<a name="line.115"></a>
+<span class="sourceLineNo">116</span>                _server.log(context.request(), context.user(), HttpURLConnection.HTTP_INTERNAL_ERROR, timestamp);<a name="line.116"></a>
+<span class="sourceLineNo">117</span>            }                <a name="line.117"></a>
+<span class="sourceLineNo">118</span>        });<a name="line.118"></a>
+<span class="sourceLineNo">119</span>    }<a name="line.119"></a>
+<span class="sourceLineNo">120</span><a name="line.120"></a>
+<span class="sourceLineNo">121</span>    /** Send metadata JSON in response.<a name="line.121"></a>
+<span class="sourceLineNo">122</span>     * @param context The vertx routing context.<a name="line.122"></a>
+<span class="sourceLineNo">123</span>     * @param timestamp The timestamp of the request.<a name="line.123"></a>
+<span class="sourceLineNo">124</span>     */<a name="line.124"></a>
+<span class="sourceLineNo">125</span>    private void _sendMetadata(RoutingContext context, long timestamp) {<a name="line.125"></a>
+<span class="sourceLineNo">126</span>        <a name="line.126"></a>
+<span class="sourceLineNo">127</span>        // construct the response json<a name="line.127"></a>
+<span class="sourceLineNo">128</span>        <a name="line.128"></a>
+<span class="sourceLineNo">129</span>        JsonObject principal = context.user().principal();<a name="line.129"></a>
+<span class="sourceLineNo">130</span>        Set&lt;String&gt; userGroups = AuthUtilities.getGroups(context.user());        <a name="line.130"></a>
+<span class="sourceLineNo">131</span>        <a name="line.131"></a>
+<span class="sourceLineNo">132</span>        JsonObject returnJson = new JsonObject();<a name="line.132"></a>
+<span class="sourceLineNo">133</span>        <a name="line.133"></a>
+<span class="sourceLineNo">134</span>        // add the username<a name="line.134"></a>
+<span class="sourceLineNo">135</span>        returnJson.put("username", principal.getString("username"));<a name="line.135"></a>
+<span class="sourceLineNo">136</span>        returnJson.put("fullname", principal.getString("fullname"));<a name="line.136"></a>
+<span class="sourceLineNo">137</span>        <a name="line.137"></a>
+<span class="sourceLineNo">138</span>        // add the groups<a name="line.138"></a>
+<span class="sourceLineNo">139</span>        JsonArray groupsArray = new JsonArray();<a name="line.139"></a>
+<span class="sourceLineNo">140</span>        for(String groupName : userGroups) {<a name="line.140"></a>
+<span class="sourceLineNo">141</span>            groupsArray.add(groupName);<a name="line.141"></a>
+<span class="sourceLineNo">142</span>        }<a name="line.142"></a>
+<span class="sourceLineNo">143</span>        returnJson.put("groups", groupsArray);<a name="line.143"></a>
+<span class="sourceLineNo">144</span>        <a name="line.144"></a>
+<span class="sourceLineNo">145</span>        JsonObject returnGroupJson = new JsonObject();<a name="line.145"></a>
+<span class="sourceLineNo">146</span><a name="line.146"></a>
+<span class="sourceLineNo">147</span>        // add group data from the metadata file.<a name="line.147"></a>
+<span class="sourceLineNo">148</span>        JsonObject metadataGroupJson = _metadataJson.getJsonObject("group");<a name="line.148"></a>
+<span class="sourceLineNo">149</span>        if(metadataGroupJson != null) {<a name="line.149"></a>
+<span class="sourceLineNo">150</span>            // if user is admin, add all groups<a name="line.150"></a>
+<span class="sourceLineNo">151</span>            if(userGroups.contains("admin")) {<a name="line.151"></a>
+<span class="sourceLineNo">152</span>                returnJson.put("groupdata", metadataGroupJson.copy());<a name="line.152"></a>
+<span class="sourceLineNo">153</span>            } else {                <a name="line.153"></a>
+<span class="sourceLineNo">154</span>                returnJson.put("groupdata", returnGroupJson);<a name="line.154"></a>
+<span class="sourceLineNo">155</span>                // add group data only from group(s) that the user is in.<a name="line.155"></a>
+<span class="sourceLineNo">156</span>                for(String userGroup : userGroups) {<a name="line.156"></a>
+<span class="sourceLineNo">157</span>                    Object groupObject = metadataGroupJson.getValue(userGroup);<a name="line.157"></a>
+<span class="sourceLineNo">158</span>                    if(groupObject != null) {<a name="line.158"></a>
+<span class="sourceLineNo">159</span>                        returnGroupJson.put(userGroup, groupObject);<a name="line.159"></a>
+<span class="sourceLineNo">160</span>                    }<a name="line.160"></a>
+<span class="sourceLineNo">161</span>                }<a name="line.161"></a>
+<span class="sourceLineNo">162</span>            }<a name="line.162"></a>
+<span class="sourceLineNo">163</span>        }<a name="line.163"></a>
+<span class="sourceLineNo">164</span>               <a name="line.164"></a>
+<span class="sourceLineNo">165</span>        //System.out.println(returnJson.encodePrettily());<a name="line.165"></a>
+<span class="sourceLineNo">166</span>        <a name="line.166"></a>
+<span class="sourceLineNo">167</span>        context.response().putHeader("Content-Type", "application/json")<a name="line.167"></a>
+<span class="sourceLineNo">168</span>            .end(returnJson.encode());<a name="line.168"></a>
+<span class="sourceLineNo">169</span>        _server.log(context.request(), context.user(), HttpURLConnection.HTTP_OK, timestamp);<a name="line.169"></a>
+<span class="sourceLineNo">170</span>    }<a name="line.170"></a>
+<span class="sourceLineNo">171</span>    <a name="line.171"></a>
+<span class="sourceLineNo">172</span>    /** Vertx file system. */<a name="line.172"></a>
+<span class="sourceLineNo">173</span>    private FileSystem _fileSystem;<a name="line.173"></a>
+<span class="sourceLineNo">174</span>    <a name="line.174"></a>
+<span class="sourceLineNo">175</span>    /** Metadata file name. */<a name="line.175"></a>
+<span class="sourceLineNo">176</span>    private String _metadataFileName;<a name="line.176"></a>
+<span class="sourceLineNo">177</span>    <a name="line.177"></a>
+<span class="sourceLineNo">178</span>    /** Last modified time of metadata file. */<a name="line.178"></a>
+<span class="sourceLineNo">179</span>    private long _metadataLastModifiedTime = -1;<a name="line.179"></a>
+<span class="sourceLineNo">180</span>    <a name="line.180"></a>
+<span class="sourceLineNo">181</span>    /** Metadata JSON cached from reading metadata file. */<a name="line.181"></a>
+<span class="sourceLineNo">182</span>    private JsonObject _metadataJson;<a name="line.182"></a>
+<span class="sourceLineNo">183</span>}<a name="line.183"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

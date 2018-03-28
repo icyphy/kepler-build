@@ -1,0 +1,324 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../../../stylesheet.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>/* A base class for cached analyzers on graphs.<a name="line.1"></a>
+<span class="sourceLineNo">002</span><a name="line.2"></a>
+<span class="sourceLineNo">003</span> Copyright (c) 2003-2014 The University of Maryland. All rights reserved.<a name="line.3"></a>
+<span class="sourceLineNo">004</span> Permission is hereby granted, without written agreement and without<a name="line.4"></a>
+<span class="sourceLineNo">005</span> license or royalty fees, to use, copy, modify, and distribute this<a name="line.5"></a>
+<span class="sourceLineNo">006</span> software and its documentation for any purpose, provided that the above<a name="line.6"></a>
+<span class="sourceLineNo">007</span> copyright notice and the following two paragraphs appear in all copies<a name="line.7"></a>
+<span class="sourceLineNo">008</span> of this software.<a name="line.8"></a>
+<span class="sourceLineNo">009</span><a name="line.9"></a>
+<span class="sourceLineNo">010</span> IN NO EVENT SHALL THE UNIVERSITY OF MARYLAND BE LIABLE TO ANY PARTY<a name="line.10"></a>
+<span class="sourceLineNo">011</span> FOR DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES<a name="line.11"></a>
+<span class="sourceLineNo">012</span> ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION, EVEN IF<a name="line.12"></a>
+<span class="sourceLineNo">013</span> THE UNIVERSITY OF MARYLAND HAS BEEN ADVISED OF THE POSSIBILITY OF<a name="line.13"></a>
+<span class="sourceLineNo">014</span> SUCH DAMAGE.<a name="line.14"></a>
+<span class="sourceLineNo">015</span><a name="line.15"></a>
+<span class="sourceLineNo">016</span> THE UNIVERSITY OF MARYLAND SPECIFICALLY DISCLAIMS ANY WARRANTIES,<a name="line.16"></a>
+<span class="sourceLineNo">017</span> INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF<a name="line.17"></a>
+<span class="sourceLineNo">018</span> MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE<a name="line.18"></a>
+<span class="sourceLineNo">019</span> PROVIDED HEREUNDER IS ON AN "AS IS" BASIS, AND THE UNIVERSITY OF<a name="line.19"></a>
+<span class="sourceLineNo">020</span> MARYLAND HAS NO OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT, UPDATES,<a name="line.20"></a>
+<span class="sourceLineNo">021</span> ENHANCEMENTS, OR MODIFICATIONS.<a name="line.21"></a>
+<span class="sourceLineNo">022</span><a name="line.22"></a>
+<span class="sourceLineNo">023</span> */<a name="line.23"></a>
+<span class="sourceLineNo">024</span>package ptolemy.graph.analysis.strategy;<a name="line.24"></a>
+<span class="sourceLineNo">025</span><a name="line.25"></a>
+<span class="sourceLineNo">026</span>import ptolemy.graph.Graph;<a name="line.26"></a>
+<span class="sourceLineNo">027</span>import ptolemy.graph.analysis.analyzer.GraphAnalyzer;<a name="line.27"></a>
+<span class="sourceLineNo">028</span><a name="line.28"></a>
+<span class="sourceLineNo">029</span>///////////////////////////////////////////////////////////////////<a name="line.29"></a>
+<span class="sourceLineNo">030</span>//// CachedStrategy<a name="line.30"></a>
+<span class="sourceLineNo">031</span><a name="line.31"></a>
+<span class="sourceLineNo">032</span>/**<a name="line.32"></a>
+<span class="sourceLineNo">033</span> A base class for cached analyzers on graphs. To facilitate demand-driven<a name="line.33"></a>
+<span class="sourceLineNo">034</span> and incremental recomputation (e.g., see [1]) of analyzers, analyzer results<a name="line.34"></a>
+<span class="sourceLineNo">035</span> are cached internally (see {@link #getCachedResult()}), and are recomputed only<a name="line.35"></a>
+<span class="sourceLineNo">036</span> when the graph has changed since the last request (via {@link #_result()}) for<a name="line.36"></a>
+<span class="sourceLineNo">037</span> the strategy result.<a name="line.37"></a>
+<span class="sourceLineNo">038</span> The status of the cache content can be queried with the {@link #obsolete()}<a name="line.38"></a>
+<span class="sourceLineNo">039</span> method to determine if a subsequent invocation of {@link #_result()} by the<a name="line.39"></a>
+<span class="sourceLineNo">040</span> derived classes will trigger recomputation of the analysis.<a name="line.40"></a>
+<span class="sourceLineNo">041</span> &lt;p&gt;<a name="line.41"></a>
+<span class="sourceLineNo">042</span> The graph changes tracked by an analyzer are restricted to changes in the<a name="line.42"></a>
+<span class="sourceLineNo">043</span> graph topology (the set of nodes and edges). For example, changes to edge/node<a name="line.43"></a>
+<span class="sourceLineNo">044</span> weights that may affect the result of an analysis are not tracked, since<a name="line.44"></a>
+<span class="sourceLineNo">045</span> analyzers have no specific knowledge of weights.  In such cases, it is the<a name="line.45"></a>
+<span class="sourceLineNo">046</span> responsibility of the client (or derived analyzer class) to invalidate the<a name="line.46"></a>
+<span class="sourceLineNo">047</span> cached result (see {@link #reset()}) when changes to graph weights or other<a name="line.47"></a>
+<span class="sourceLineNo">048</span> non-topology information render the cached result obsolete.  For this reason,<a name="line.48"></a>
+<span class="sourceLineNo">049</span> some caution is generally required when using analyzers whose results depend on<a name="line.49"></a>
+<span class="sourceLineNo">050</span> more than just the graph topology.&lt;p&gt;<a name="line.50"></a>
+<span class="sourceLineNo">051</span> In these cases the client should check for data consistency<a name="line.51"></a>
+<span class="sourceLineNo">052</span> (through the {@link #valid()} method) as well as changes in them and<a name="line.52"></a>
+<span class="sourceLineNo">053</span> calling the {@link #reset()} method in case of data changes.<a name="line.53"></a>
+<span class="sourceLineNo">054</span><a name="line.54"></a>
+<span class="sourceLineNo">055</span> &lt;p&gt; [1] G. Ramalingam. &lt;em&gt;Bounded Incremental Computation&lt;/em&gt;. PhD thesis,<a name="line.55"></a>
+<span class="sourceLineNo">056</span> University of Wisconsin at Madison, August 1993.<a name="line.56"></a>
+<span class="sourceLineNo">057</span> @since Ptolemy II 4.0<a name="line.57"></a>
+<span class="sourceLineNo">058</span> @Pt.ProposedRating Red (cxh)<a name="line.58"></a>
+<span class="sourceLineNo">059</span> @Pt.AcceptedRating Red (cxh)<a name="line.59"></a>
+<span class="sourceLineNo">060</span> @author Shuvra S. Bhattacharyya, Ming Yung Ko and Shahrooz Shahparnia<a name="line.60"></a>
+<span class="sourceLineNo">061</span> @version $Id$<a name="line.61"></a>
+<span class="sourceLineNo">062</span> */<a name="line.62"></a>
+<span class="sourceLineNo">063</span>abstract public class CachedStrategy extends Strategy implements GraphAnalyzer {<a name="line.63"></a>
+<span class="sourceLineNo">064</span>    /** No instance of this object can be created as it is abstract.<a name="line.64"></a>
+<span class="sourceLineNo">065</span>     *  The derived classes will use it to initialize its internal data<a name="line.65"></a>
+<span class="sourceLineNo">066</span>     *  structures.<a name="line.66"></a>
+<span class="sourceLineNo">067</span>     *<a name="line.67"></a>
+<span class="sourceLineNo">068</span>     *  @param graph The graph which the analyzer is using to compute its<a name="line.68"></a>
+<span class="sourceLineNo">069</span>     *  result.<a name="line.69"></a>
+<span class="sourceLineNo">070</span>     */<a name="line.70"></a>
+<span class="sourceLineNo">071</span>    public CachedStrategy(Graph graph) {<a name="line.71"></a>
+<span class="sourceLineNo">072</span>        _graph = graph;<a name="line.72"></a>
+<span class="sourceLineNo">073</span>        reset();<a name="line.73"></a>
+<span class="sourceLineNo">074</span>    }<a name="line.74"></a>
+<span class="sourceLineNo">075</span><a name="line.75"></a>
+<span class="sourceLineNo">076</span>    ///////////////////////////////////////////////////////////////////<a name="line.76"></a>
+<span class="sourceLineNo">077</span>    ////                         public methods                    ////<a name="line.77"></a>
+<span class="sourceLineNo">078</span><a name="line.78"></a>
+<span class="sourceLineNo">079</span>    /** Return the caching status of the strategy.<a name="line.79"></a>
+<span class="sourceLineNo">080</span>     *<a name="line.80"></a>
+<span class="sourceLineNo">081</span>     *  @return True if caching is enabled (default on instantiation)<a name="line.81"></a>
+<span class="sourceLineNo">082</span>     */<a name="line.82"></a>
+<span class="sourceLineNo">083</span>    public boolean cachingStatus() {<a name="line.83"></a>
+<span class="sourceLineNo">084</span>        return _cachingEnabled;<a name="line.84"></a>
+<span class="sourceLineNo">085</span>    }<a name="line.85"></a>
+<span class="sourceLineNo">086</span><a name="line.86"></a>
+<span class="sourceLineNo">087</span>    /** Disable caching.<a name="line.87"></a>
+<span class="sourceLineNo">088</span>     *<a name="line.88"></a>
+<span class="sourceLineNo">089</span>     */<a name="line.89"></a>
+<span class="sourceLineNo">090</span>    public void disableCaching() {<a name="line.90"></a>
+<span class="sourceLineNo">091</span>        _cachingEnabled = false;<a name="line.91"></a>
+<span class="sourceLineNo">092</span>    }<a name="line.92"></a>
+<span class="sourceLineNo">093</span><a name="line.93"></a>
+<span class="sourceLineNo">094</span>    /** Enable caching.<a name="line.94"></a>
+<span class="sourceLineNo">095</span>     *<a name="line.95"></a>
+<span class="sourceLineNo">096</span>     */<a name="line.96"></a>
+<span class="sourceLineNo">097</span>    public void enableCaching() {<a name="line.97"></a>
+<span class="sourceLineNo">098</span>        _cachingEnabled = true;<a name="line.98"></a>
+<span class="sourceLineNo">099</span>    }<a name="line.99"></a>
+<span class="sourceLineNo">100</span><a name="line.100"></a>
+<span class="sourceLineNo">101</span>    /** The result of the most recent cached computation of the analysis,<a name="line.101"></a>
+<span class="sourceLineNo">102</span>     *  as determined by {@link #_compute()}, and without<a name="line.102"></a>
+<span class="sourceLineNo">103</span>     *  conversion by {@link #_convertResult(Object)}.<a name="line.103"></a>
+<span class="sourceLineNo">104</span>     *  @return The result of the most recent cached computation.<a name="line.104"></a>
+<span class="sourceLineNo">105</span>     *  @see #setCachedResult(CachedStrategy)<a name="line.105"></a>
+<span class="sourceLineNo">106</span>     */<a name="line.106"></a>
+<span class="sourceLineNo">107</span>    public Object getCachedResult() {<a name="line.107"></a>
+<span class="sourceLineNo">108</span>        return _cachedResult;<a name="line.108"></a>
+<span class="sourceLineNo">109</span>    }<a name="line.109"></a>
+<span class="sourceLineNo">110</span><a name="line.110"></a>
+<span class="sourceLineNo">111</span>    /** The graph associated with the Strategy. This association is made<a name="line.111"></a>
+<span class="sourceLineNo">112</span>     *  when the Strategy is constructed.<a name="line.112"></a>
+<span class="sourceLineNo">113</span>     *<a name="line.113"></a>
+<span class="sourceLineNo">114</span>     *  @return The input graph.<a name="line.114"></a>
+<span class="sourceLineNo">115</span>     */<a name="line.115"></a>
+<span class="sourceLineNo">116</span>    @Override<a name="line.116"></a>
+<span class="sourceLineNo">117</span>    public Graph graph() {<a name="line.117"></a>
+<span class="sourceLineNo">118</span>        return _graph;<a name="line.118"></a>
+<span class="sourceLineNo">119</span>    }<a name="line.119"></a>
+<span class="sourceLineNo">120</span><a name="line.120"></a>
+<span class="sourceLineNo">121</span>    /** Test whether or not the cached result of the analyzer is<a name="line.121"></a>
+<span class="sourceLineNo">122</span>     *  obsolete relative to the associated graph. In other words, test if the<a name="line.122"></a>
+<span class="sourceLineNo">123</span>     *  graph has changed<a name="line.123"></a>
+<span class="sourceLineNo">124</span>     *  since the last time the analyzer was executed with an enabled cache<a name="line.124"></a>
+<span class="sourceLineNo">125</span>     *  (i.e., since the most recent invocation of {@link #_result()}).<a name="line.125"></a>
+<span class="sourceLineNo">126</span>     *  If the cached result is obsolete and the cache is enabled,<a name="line.126"></a>
+<span class="sourceLineNo">127</span>     *  then a subsequent invocation of {@link #_result()}<a name="line.127"></a>
+<span class="sourceLineNo">128</span>     *  will trigger recomputation of the analysis.<a name="line.128"></a>
+<span class="sourceLineNo">129</span>     *  @return True if the cached result is obsolete relative to the<a name="line.129"></a>
+<span class="sourceLineNo">130</span>     *  associated graph.<a name="line.130"></a>
+<span class="sourceLineNo">131</span>     */<a name="line.131"></a>
+<span class="sourceLineNo">132</span>    public boolean obsolete() {<a name="line.132"></a>
+<span class="sourceLineNo">133</span>        return _lastComputation &lt; graph().changeCount();<a name="line.133"></a>
+<span class="sourceLineNo">134</span>    }<a name="line.134"></a>
+<span class="sourceLineNo">135</span><a name="line.135"></a>
+<span class="sourceLineNo">136</span>    /** Reset the analyzer to invalidate any cached value (i.e., to force<a name="line.136"></a>
+<span class="sourceLineNo">137</span>     *  recomputation the next time a result of the computation is needed).<a name="line.137"></a>
+<span class="sourceLineNo">138</span>     */<a name="line.138"></a>
+<span class="sourceLineNo">139</span>    public void reset() {<a name="line.139"></a>
+<span class="sourceLineNo">140</span>        _lastComputation = -1;<a name="line.140"></a>
+<span class="sourceLineNo">141</span>    }<a name="line.141"></a>
+<span class="sourceLineNo">142</span><a name="line.142"></a>
+<span class="sourceLineNo">143</span>    /** Set the cached value of this analyzer to the cached value of another<a name="line.143"></a>
+<span class="sourceLineNo">144</span>     *  analyzer.<a name="line.144"></a>
+<span class="sourceLineNo">145</span>     *  @param cacher The other analyzer.<a name="line.145"></a>
+<span class="sourceLineNo">146</span>     *  @see #getCachedResult()<a name="line.146"></a>
+<span class="sourceLineNo">147</span>     */<a name="line.147"></a>
+<span class="sourceLineNo">148</span>    public void setCachedResult(CachedStrategy cacher) {<a name="line.148"></a>
+<span class="sourceLineNo">149</span>        _cachedResult = cacher.getCachedResult();<a name="line.149"></a>
+<span class="sourceLineNo">150</span>    }<a name="line.150"></a>
+<span class="sourceLineNo">151</span><a name="line.151"></a>
+<span class="sourceLineNo">152</span>    /** Return a description of the strategy.<a name="line.152"></a>
+<span class="sourceLineNo">153</span>     *<a name="line.153"></a>
+<span class="sourceLineNo">154</span>     * @return Return a description of the strategy.<a name="line.154"></a>
+<span class="sourceLineNo">155</span>     */<a name="line.155"></a>
+<span class="sourceLineNo">156</span>    @Override<a name="line.156"></a>
+<span class="sourceLineNo">157</span>    public String toString() {<a name="line.157"></a>
+<span class="sourceLineNo">158</span>        return "Cached strategy.";<a name="line.158"></a>
+<span class="sourceLineNo">159</span>    }<a name="line.159"></a>
+<span class="sourceLineNo">160</span><a name="line.160"></a>
+<span class="sourceLineNo">161</span>    ///////////////////////////////////////////////////////////////////<a name="line.161"></a>
+<span class="sourceLineNo">162</span>    ////                         protected methods                 ////<a name="line.162"></a>
+<span class="sourceLineNo">163</span><a name="line.163"></a>
+<span class="sourceLineNo">164</span>    /** Perform the graph analysis and return the resulting value.<a name="line.164"></a>
+<span class="sourceLineNo">165</span>     *  Upon entry, {@link #getCachedResult()} provides the result of the<a name="line.165"></a>
+<span class="sourceLineNo">166</span>     *  previous invocation of the analysis; this value can be<a name="line.166"></a>
+<span class="sourceLineNo">167</span>     *  used, for example, to facilitate incremental analyses.<a name="line.167"></a>
+<span class="sourceLineNo">168</span>     *  This method just returns null, and will typically be overridden<a name="line.168"></a>
+<span class="sourceLineNo">169</span>     *  in each derived class to perform the appropriate graph analysis.<a name="line.169"></a>
+<span class="sourceLineNo">170</span>     *  @return The results of the graph analysis.  In this base class,<a name="line.170"></a>
+<span class="sourceLineNo">171</span>     *  null is returned.<a name="line.171"></a>
+<span class="sourceLineNo">172</span>     */<a name="line.172"></a>
+<span class="sourceLineNo">173</span>    protected Object _compute() {<a name="line.173"></a>
+<span class="sourceLineNo">174</span>        return null;<a name="line.174"></a>
+<span class="sourceLineNo">175</span>    }<a name="line.175"></a>
+<span class="sourceLineNo">176</span><a name="line.176"></a>
+<span class="sourceLineNo">177</span>    /** Convert the cached result ({@link #getCachedResult()})<a name="line.177"></a>
+<span class="sourceLineNo">178</span>     *  to a form that is<a name="line.178"></a>
+<span class="sourceLineNo">179</span>     *  suitable for the client to access (via {@link #_result()}).<a name="line.179"></a>
+<span class="sourceLineNo">180</span>     *  This base class method just returns a reference to the cached result.<a name="line.180"></a>
+<span class="sourceLineNo">181</span>     *  However, it may be appropriate for derived classes to override this<a name="line.181"></a>
+<span class="sourceLineNo">182</span>     *  method. For example, if the object returned by the analyzer is mutable,<a name="line.182"></a>
+<span class="sourceLineNo">183</span>     *  one may wish to override this method to copy the cached<a name="line.183"></a>
+<span class="sourceLineNo">184</span>     *  value (or convert it to some other form) before returning it.<a name="line.184"></a>
+<span class="sourceLineNo">185</span>     *  Then changes made by the client to the returned value will<a name="line.185"></a>
+<span class="sourceLineNo">186</span>     *  not affect the cached value in the analysis.<a name="line.186"></a>
+<span class="sourceLineNo">187</span>     *  This consideration is important for incremental analyzers that<a name="line.187"></a>
+<span class="sourceLineNo">188</span>     *  use the cached value across successive invocations of the<a name="line.188"></a>
+<span class="sourceLineNo">189</span>     *  analyzer.<a name="line.189"></a>
+<span class="sourceLineNo">190</span>     *  @param result The cached result to be converted.<a name="line.190"></a>
+<span class="sourceLineNo">191</span>     *  @return The form suitable for access via {@link #_result()}.<a name="line.191"></a>
+<span class="sourceLineNo">192</span>     */<a name="line.192"></a>
+<span class="sourceLineNo">193</span>    protected Object _convertResult(Object result) {<a name="line.193"></a>
+<span class="sourceLineNo">194</span>        return result;<a name="line.194"></a>
+<span class="sourceLineNo">195</span>    }<a name="line.195"></a>
+<span class="sourceLineNo">196</span><a name="line.196"></a>
+<span class="sourceLineNo">197</span>    /** Return the result (cached value) of the analyzer on the associated<a name="line.197"></a>
+<span class="sourceLineNo">198</span>     *  graph. The cached value is updated, through recomputation of<a name="line.198"></a>
+<span class="sourceLineNo">199</span>     *  the analysis (using {@link #_compute()}), if the graph<a name="line.199"></a>
+<span class="sourceLineNo">200</span>     *  has changed since the last time {@link #_result()} was invoked.<a name="line.200"></a>
+<span class="sourceLineNo">201</span>     *  Otherwise, the cache value is simply returned (in &lt;em&gt;O&lt;/em&gt;(1) time).<a name="line.201"></a>
+<span class="sourceLineNo">202</span>     *<a name="line.202"></a>
+<span class="sourceLineNo">203</span>     *  @return The result of the analysis.<a name="line.203"></a>
+<span class="sourceLineNo">204</span>     */<a name="line.204"></a>
+<span class="sourceLineNo">205</span>    protected final Object _result() {<a name="line.205"></a>
+<span class="sourceLineNo">206</span>        // Finality of this method is required to ensure analyzer computation<a name="line.206"></a>
+<span class="sourceLineNo">207</span>        // only happens when the graph changes, as specified in the<a name="line.207"></a>
+<span class="sourceLineNo">208</span>        // contract of the method comment. (when caching is on)<a name="line.208"></a>
+<span class="sourceLineNo">209</span>        Object result = null;<a name="line.209"></a>
+<span class="sourceLineNo">210</span><a name="line.210"></a>
+<span class="sourceLineNo">211</span>        if (_cachingEnabled &amp;&amp; obsolete()) {<a name="line.211"></a>
+<span class="sourceLineNo">212</span>            _cachedResult = _compute();<a name="line.212"></a>
+<span class="sourceLineNo">213</span>            _registerComputation();<a name="line.213"></a>
+<span class="sourceLineNo">214</span>            result = _cachedResult;<a name="line.214"></a>
+<span class="sourceLineNo">215</span>        } else if (_cachingEnabled) {<a name="line.215"></a>
+<span class="sourceLineNo">216</span>            result = _cachedResult;<a name="line.216"></a>
+<span class="sourceLineNo">217</span>        } else {<a name="line.217"></a>
+<span class="sourceLineNo">218</span>            // Do not call _registerComputation to keep the obsolete status as<a name="line.218"></a>
+<span class="sourceLineNo">219</span>            // it is.<a name="line.219"></a>
+<span class="sourceLineNo">220</span>            result = _compute();<a name="line.220"></a>
+<span class="sourceLineNo">221</span>        }<a name="line.221"></a>
+<span class="sourceLineNo">222</span><a name="line.222"></a>
+<span class="sourceLineNo">223</span>        return _convertResult(result);<a name="line.223"></a>
+<span class="sourceLineNo">224</span>    }<a name="line.224"></a>
+<span class="sourceLineNo">225</span><a name="line.225"></a>
+<span class="sourceLineNo">226</span>    ///////////////////////////////////////////////////////////////////<a name="line.226"></a>
+<span class="sourceLineNo">227</span>    ////                         private methods                   ////<a name="line.227"></a>
+<span class="sourceLineNo">228</span><a name="line.228"></a>
+<span class="sourceLineNo">229</span>    /** Notify the analyzer that the associated computation has been<a name="line.229"></a>
+<span class="sourceLineNo">230</span>     *  performed. This method should be called immediately after<a name="line.230"></a>
+<span class="sourceLineNo">231</span>     *  any invocation of the computation, if caching is enabled and the graph<a name="line.231"></a>
+<span class="sourceLineNo">232</span>     *  is changed.<a name="line.232"></a>
+<span class="sourceLineNo">233</span>     */<a name="line.233"></a>
+<span class="sourceLineNo">234</span>    private void _registerComputation() {<a name="line.234"></a>
+<span class="sourceLineNo">235</span>        _lastComputation = graph().changeCount();<a name="line.235"></a>
+<span class="sourceLineNo">236</span>    }<a name="line.236"></a>
+<span class="sourceLineNo">237</span><a name="line.237"></a>
+<span class="sourceLineNo">238</span>    ///////////////////////////////////////////////////////////////////<a name="line.238"></a>
+<span class="sourceLineNo">239</span>    ////                         private variables                 ////<a name="line.239"></a>
+<span class="sourceLineNo">240</span>    // The result of the most recent computation of the analysis, as determined<a name="line.240"></a>
+<span class="sourceLineNo">241</span>    // by _compute(), and without conversion by _convertResult().<a name="line.241"></a>
+<span class="sourceLineNo">242</span>    private Object _cachedResult = null;<a name="line.242"></a>
+<span class="sourceLineNo">243</span><a name="line.243"></a>
+<span class="sourceLineNo">244</span>    // The graph that this analysis is associated with.<a name="line.244"></a>
+<span class="sourceLineNo">245</span>    private Graph _graph;<a name="line.245"></a>
+<span class="sourceLineNo">246</span><a name="line.246"></a>
+<span class="sourceLineNo">247</span>    // The change count of the associated graph that was in effect when the<a name="line.247"></a>
+<span class="sourceLineNo">248</span>    // the analysis was last performed.<a name="line.248"></a>
+<span class="sourceLineNo">249</span>    private long _lastComputation;<a name="line.249"></a>
+<span class="sourceLineNo">250</span><a name="line.250"></a>
+<span class="sourceLineNo">251</span>    private boolean _cachingEnabled = true;<a name="line.251"></a>
+<span class="sourceLineNo">252</span>}<a name="line.252"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

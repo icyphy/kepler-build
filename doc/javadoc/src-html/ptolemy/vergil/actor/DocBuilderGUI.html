@@ -1,0 +1,309 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../../stylesheet.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>/* A GUI that builds the Java and Actor documentation.<a name="line.1"></a>
+<span class="sourceLineNo">002</span><a name="line.2"></a>
+<span class="sourceLineNo">003</span> Copyright (c) 2006-2014 The Regents of the University of California.<a name="line.3"></a>
+<span class="sourceLineNo">004</span> All rights reserved.<a name="line.4"></a>
+<span class="sourceLineNo">005</span> Permission is hereby granted, without written agreement and without<a name="line.5"></a>
+<span class="sourceLineNo">006</span> license or royalty fees, to use, copy, modify, and distribute this<a name="line.6"></a>
+<span class="sourceLineNo">007</span> software and its documentation for any purpose, provided that the above<a name="line.7"></a>
+<span class="sourceLineNo">008</span> copyright notice and the following two paragraphs appear in all copies<a name="line.8"></a>
+<span class="sourceLineNo">009</span> of this software.<a name="line.9"></a>
+<span class="sourceLineNo">010</span><a name="line.10"></a>
+<span class="sourceLineNo">011</span> IN NO EVENT SHALL THE UNIVERSITY OF CALIFORNIA BE LIABLE TO ANY PARTY<a name="line.11"></a>
+<span class="sourceLineNo">012</span> FOR DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES<a name="line.12"></a>
+<span class="sourceLineNo">013</span> ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION, EVEN IF<a name="line.13"></a>
+<span class="sourceLineNo">014</span> THE UNIVERSITY OF CALIFORNIA HAS BEEN ADVISED OF THE POSSIBILITY OF<a name="line.14"></a>
+<span class="sourceLineNo">015</span> SUCH DAMAGE.<a name="line.15"></a>
+<span class="sourceLineNo">016</span><a name="line.16"></a>
+<span class="sourceLineNo">017</span> THE UNIVERSITY OF CALIFORNIA SPECIFICALLY DISCLAIMS ANY WARRANTIES,<a name="line.17"></a>
+<span class="sourceLineNo">018</span> INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF<a name="line.18"></a>
+<span class="sourceLineNo">019</span> MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE<a name="line.19"></a>
+<span class="sourceLineNo">020</span> PROVIDED HEREUNDER IS ON AN "AS IS" BASIS, AND THE UNIVERSITY OF<a name="line.20"></a>
+<span class="sourceLineNo">021</span> CALIFORNIA HAS NO OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT, UPDATES,<a name="line.21"></a>
+<span class="sourceLineNo">022</span> ENHANCEMENTS, OR MODIFICATIONS.<a name="line.22"></a>
+<span class="sourceLineNo">023</span><a name="line.23"></a>
+<span class="sourceLineNo">024</span> PT_COPYRIGHT_VERSION_2<a name="line.24"></a>
+<span class="sourceLineNo">025</span> COPYRIGHTENDKEY<a name="line.25"></a>
+<span class="sourceLineNo">026</span><a name="line.26"></a>
+<span class="sourceLineNo">027</span> */<a name="line.27"></a>
+<span class="sourceLineNo">028</span>package ptolemy.vergil.actor;<a name="line.28"></a>
+<span class="sourceLineNo">029</span><a name="line.29"></a>
+<span class="sourceLineNo">030</span>import java.awt.BorderLayout;<a name="line.30"></a>
+<span class="sourceLineNo">031</span>import java.awt.Dimension;<a name="line.31"></a>
+<span class="sourceLineNo">032</span>import java.awt.GridLayout;<a name="line.32"></a>
+<span class="sourceLineNo">033</span>import java.awt.event.ActionEvent;<a name="line.33"></a>
+<span class="sourceLineNo">034</span>import java.awt.event.ActionListener;<a name="line.34"></a>
+<span class="sourceLineNo">035</span>import java.net.URL;<a name="line.35"></a>
+<span class="sourceLineNo">036</span><a name="line.36"></a>
+<span class="sourceLineNo">037</span>import javax.swing.BorderFactory;<a name="line.37"></a>
+<span class="sourceLineNo">038</span>import javax.swing.BoxLayout;<a name="line.38"></a>
+<span class="sourceLineNo">039</span>import javax.swing.JButton;<a name="line.39"></a>
+<span class="sourceLineNo">040</span>import javax.swing.JPanel;<a name="line.40"></a>
+<span class="sourceLineNo">041</span>import javax.swing.JScrollPane;<a name="line.41"></a>
+<span class="sourceLineNo">042</span>import javax.swing.JSplitPane;<a name="line.42"></a>
+<span class="sourceLineNo">043</span>import javax.swing.JTextArea;<a name="line.43"></a>
+<span class="sourceLineNo">044</span><a name="line.44"></a>
+<span class="sourceLineNo">045</span>import ptolemy.actor.gui.Configuration;<a name="line.45"></a>
+<span class="sourceLineNo">046</span>import ptolemy.actor.gui.Configurer;<a name="line.46"></a>
+<span class="sourceLineNo">047</span>import ptolemy.actor.gui.PtolemyFrame;<a name="line.47"></a>
+<span class="sourceLineNo">048</span>import ptolemy.actor.gui.Tableau;<a name="line.48"></a>
+<span class="sourceLineNo">049</span>import ptolemy.gui.JTextAreaExec;<a name="line.49"></a>
+<span class="sourceLineNo">050</span>import ptolemy.kernel.util.IllegalActionException;<a name="line.50"></a>
+<span class="sourceLineNo">051</span>import ptolemy.kernel.util.InternalErrorException;<a name="line.51"></a>
+<span class="sourceLineNo">052</span>import ptolemy.kernel.util.NameDuplicationException;<a name="line.52"></a>
+<span class="sourceLineNo">053</span>import ptolemy.kernel.util.StringAttribute;<a name="line.53"></a>
+<span class="sourceLineNo">054</span>import ptolemy.util.ClassUtilities;<a name="line.54"></a>
+<span class="sourceLineNo">055</span>import ptolemy.util.MessageHandler;<a name="line.55"></a>
+<span class="sourceLineNo">056</span><a name="line.56"></a>
+<span class="sourceLineNo">057</span>//////////////////////////////////////////////////////////////////////////<a name="line.57"></a>
+<span class="sourceLineNo">058</span>//// DocBuilderGUI<a name="line.58"></a>
+<span class="sourceLineNo">059</span><a name="line.59"></a>
+<span class="sourceLineNo">060</span>/**<a name="line.60"></a>
+<span class="sourceLineNo">061</span> A PtolemyFrame that builds the Java and Actor documentation.<a name="line.61"></a>
+<span class="sourceLineNo">062</span><a name="line.62"></a>
+<span class="sourceLineNo">063</span> @author Christopher Brooks<a name="line.63"></a>
+<span class="sourceLineNo">064</span> @version $Id$<a name="line.64"></a>
+<span class="sourceLineNo">065</span> @since Ptolemy II 5.2<a name="line.65"></a>
+<span class="sourceLineNo">066</span> @Pt.ProposedRating Green (cxh)<a name="line.66"></a>
+<span class="sourceLineNo">067</span> @Pt.AcceptedRating Red (eal)<a name="line.67"></a>
+<span class="sourceLineNo">068</span> */<a name="line.68"></a>
+<span class="sourceLineNo">069</span>@SuppressWarnings("serial")<a name="line.69"></a>
+<span class="sourceLineNo">070</span>public class DocBuilderGUI extends PtolemyFrame {<a name="line.70"></a>
+<span class="sourceLineNo">071</span><a name="line.71"></a>
+<span class="sourceLineNo">072</span>    /** Construct a frame to build the Java and Actor documentation.<a name="line.72"></a>
+<span class="sourceLineNo">073</span>     *  After constructing this, it is necessary to<a name="line.73"></a>
+<span class="sourceLineNo">074</span>     *  call setVisible(true) to make the frame appear.  This is<a name="line.74"></a>
+<span class="sourceLineNo">075</span>     *  typically accomplished by calling show() on enclosing tableau.<a name="line.75"></a>
+<span class="sourceLineNo">076</span>     *<a name="line.76"></a>
+<span class="sourceLineNo">077</span>     *  @param docBuilder The doc builder object associated with this builder.<a name="line.77"></a>
+<span class="sourceLineNo">078</span>     *  @param tableau The tableau responsible for this frame.<a name="line.78"></a>
+<span class="sourceLineNo">079</span>     *  @exception IllegalActionException If the model rejects the<a name="line.79"></a>
+<span class="sourceLineNo">080</span>     *   configuration attribute.<a name="line.80"></a>
+<span class="sourceLineNo">081</span>     *  @exception NameDuplicationException If a name collision occurs.<a name="line.81"></a>
+<span class="sourceLineNo">082</span>     */<a name="line.82"></a>
+<span class="sourceLineNo">083</span>    public DocBuilderGUI(final DocBuilder docBuilder, Tableau tableau)<a name="line.83"></a>
+<span class="sourceLineNo">084</span>            throws IllegalActionException, NameDuplicationException {<a name="line.84"></a>
+<span class="sourceLineNo">085</span>        super(docBuilder, tableau);<a name="line.85"></a>
+<span class="sourceLineNo">086</span><a name="line.86"></a>
+<span class="sourceLineNo">087</span>        setTitle("Ptolemy II Java and Actor Documentation Builder");<a name="line.87"></a>
+<span class="sourceLineNo">088</span><a name="line.88"></a>
+<span class="sourceLineNo">089</span>        if (getEffigy() == null) {<a name="line.89"></a>
+<span class="sourceLineNo">090</span>            throw new InternalErrorException("Cannot get an effigy!");<a name="line.90"></a>
+<span class="sourceLineNo">091</span>        }<a name="line.91"></a>
+<span class="sourceLineNo">092</span><a name="line.92"></a>
+<span class="sourceLineNo">093</span>        // Caveats panel.<a name="line.93"></a>
+<span class="sourceLineNo">094</span>        JPanel caveatsPanel = new JPanel();<a name="line.94"></a>
+<span class="sourceLineNo">095</span>        caveatsPanel.setBorder(BorderFactory.createEmptyBorder(5, 0, 0, 0));<a name="line.95"></a>
+<span class="sourceLineNo">096</span>        caveatsPanel.setLayout(new BoxLayout(caveatsPanel, BoxLayout.X_AXIS));<a name="line.96"></a>
+<span class="sourceLineNo">097</span><a name="line.97"></a>
+<span class="sourceLineNo">098</span>        // We handle the applicationName specially so that we create<a name="line.98"></a>
+<span class="sourceLineNo">099</span>        // only the docs for the app we are running.<a name="line.99"></a>
+<span class="sourceLineNo">100</span>        Configuration configuration = getConfiguration();<a name="line.100"></a>
+<span class="sourceLineNo">101</span><a name="line.101"></a>
+<span class="sourceLineNo">102</span>        try {<a name="line.102"></a>
+<span class="sourceLineNo">103</span>            StringAttribute applicationNameAttribute = (StringAttribute) configuration<a name="line.103"></a>
+<span class="sourceLineNo">104</span>                    .getAttribute("_applicationName", StringAttribute.class);<a name="line.104"></a>
+<span class="sourceLineNo">105</span><a name="line.105"></a>
+<span class="sourceLineNo">106</span>            if (applicationNameAttribute != null) {<a name="line.106"></a>
+<span class="sourceLineNo">107</span>                _applicationName = applicationNameAttribute.getExpression();<a name="line.107"></a>
+<span class="sourceLineNo">108</span>            }<a name="line.108"></a>
+<span class="sourceLineNo">109</span>        } catch (Throwable throwable) {<a name="line.109"></a>
+<span class="sourceLineNo">110</span>            // Ignore and use the default applicationName<a name="line.110"></a>
+<span class="sourceLineNo">111</span>        }<a name="line.111"></a>
+<span class="sourceLineNo">112</span><a name="line.112"></a>
+<span class="sourceLineNo">113</span>        JTextArea messageArea = new JTextArea(<a name="line.113"></a>
+<span class="sourceLineNo">114</span>                "NOTE: Use this tool to build the Java"<a name="line.114"></a>
+<span class="sourceLineNo">115</span>                        + " and Actor Documentation"<a name="line.115"></a>
+<span class="sourceLineNo">116</span>                        + (_applicationName != null ? "for " + _applicationName<a name="line.116"></a>
+<span class="sourceLineNo">117</span>                                : "")<a name="line.117"></a>
+<span class="sourceLineNo">118</span>                        + ".");<a name="line.118"></a>
+<span class="sourceLineNo">119</span>        messageArea.setEditable(false);<a name="line.119"></a>
+<span class="sourceLineNo">120</span>        messageArea.setBorder(BorderFactory.createEtchedBorder());<a name="line.120"></a>
+<span class="sourceLineNo">121</span>        messageArea.setLineWrap(true);<a name="line.121"></a>
+<span class="sourceLineNo">122</span>        messageArea.setWrapStyleWord(true);<a name="line.122"></a>
+<span class="sourceLineNo">123</span>        caveatsPanel.add(messageArea);<a name="line.123"></a>
+<span class="sourceLineNo">124</span><a name="line.124"></a>
+<span class="sourceLineNo">125</span>        JButton moreInfoButton = new JButton("More Info");<a name="line.125"></a>
+<span class="sourceLineNo">126</span>        moreInfoButton.addActionListener(new ActionListener() {<a name="line.126"></a>
+<span class="sourceLineNo">127</span>            @Override<a name="line.127"></a>
+<span class="sourceLineNo">128</span>            public void actionPerformed(ActionEvent evt) {<a name="line.128"></a>
+<span class="sourceLineNo">129</span>                String infoFile = "ptolemy/vergil/actor/docViewerHelp.htm";<a name="line.129"></a>
+<span class="sourceLineNo">130</span>                try {<a name="line.130"></a>
+<span class="sourceLineNo">131</span>                    Configuration configuration = getConfiguration();<a name="line.131"></a>
+<span class="sourceLineNo">132</span><a name="line.132"></a>
+<span class="sourceLineNo">133</span>                    // FIXME: Help should bring this up as well.<a name="line.133"></a>
+<span class="sourceLineNo">134</span>                    URL infoURL = ClassUtilities.getResource(infoFile);<a name="line.134"></a>
+<span class="sourceLineNo">135</span>                    configuration.openModel(null, infoURL,<a name="line.135"></a>
+<span class="sourceLineNo">136</span>                            infoURL.toExternalForm());<a name="line.136"></a>
+<span class="sourceLineNo">137</span>                } catch (Exception ex) {<a name="line.137"></a>
+<span class="sourceLineNo">138</span>                    throw new InternalErrorException(docBuilder, ex,<a name="line.138"></a>
+<span class="sourceLineNo">139</span>                            "Failed to open " + infoFile);<a name="line.139"></a>
+<span class="sourceLineNo">140</span>                }<a name="line.140"></a>
+<span class="sourceLineNo">141</span>            }<a name="line.141"></a>
+<span class="sourceLineNo">142</span>        });<a name="line.142"></a>
+<span class="sourceLineNo">143</span>        caveatsPanel.add(moreInfoButton);<a name="line.143"></a>
+<span class="sourceLineNo">144</span><a name="line.144"></a>
+<span class="sourceLineNo">145</span>        JPanel left = new JPanel();<a name="line.145"></a>
+<span class="sourceLineNo">146</span>        left.setLayout(new BoxLayout(left, BoxLayout.Y_AXIS));<a name="line.146"></a>
+<span class="sourceLineNo">147</span>        caveatsPanel.setMaximumSize(new Dimension(500, 100));<a name="line.147"></a>
+<span class="sourceLineNo">148</span>        left.add(caveatsPanel);<a name="line.148"></a>
+<span class="sourceLineNo">149</span><a name="line.149"></a>
+<span class="sourceLineNo">150</span>        // Panel for push buttons.<a name="line.150"></a>
+<span class="sourceLineNo">151</span>        JPanel buttonPanel = new JPanel();<a name="line.151"></a>
+<span class="sourceLineNo">152</span>        buttonPanel.setLayout(new GridLayout(1, 4));<a name="line.152"></a>
+<span class="sourceLineNo">153</span><a name="line.153"></a>
+<span class="sourceLineNo">154</span>        JButton goButton = new JButton("Generate");<a name="line.154"></a>
+<span class="sourceLineNo">155</span>        goButton.setToolTipText("Generate documentation");<a name="line.155"></a>
+<span class="sourceLineNo">156</span>        buttonPanel.add(goButton);<a name="line.156"></a>
+<span class="sourceLineNo">157</span><a name="line.157"></a>
+<span class="sourceLineNo">158</span>        JButton stopButton = new JButton("Cancel");<a name="line.158"></a>
+<span class="sourceLineNo">159</span>        stopButton.setToolTipText("Terminate executing processes");<a name="line.159"></a>
+<span class="sourceLineNo">160</span>        buttonPanel.add(stopButton);<a name="line.160"></a>
+<span class="sourceLineNo">161</span><a name="line.161"></a>
+<span class="sourceLineNo">162</span>        JButton clearButton = new JButton("Clear");<a name="line.162"></a>
+<span class="sourceLineNo">163</span>        clearButton.setToolTipText("Clear Log");<a name="line.163"></a>
+<span class="sourceLineNo">164</span>        buttonPanel.add(clearButton);<a name="line.164"></a>
+<span class="sourceLineNo">165</span><a name="line.165"></a>
+<span class="sourceLineNo">166</span>        buttonPanel.setMaximumSize(new Dimension(500, 50));<a name="line.166"></a>
+<span class="sourceLineNo">167</span>        left.add(buttonPanel);<a name="line.167"></a>
+<span class="sourceLineNo">168</span><a name="line.168"></a>
+<span class="sourceLineNo">169</span>        Configurer configurer = new Configurer(docBuilder);<a name="line.169"></a>
+<span class="sourceLineNo">170</span>        JPanel controlPanel = new JPanel();<a name="line.170"></a>
+<span class="sourceLineNo">171</span>        controlPanel.add(configurer);<a name="line.171"></a>
+<span class="sourceLineNo">172</span><a name="line.172"></a>
+<span class="sourceLineNo">173</span>        JScrollPane scrollPane = new JScrollPane(controlPanel);<a name="line.173"></a>
+<span class="sourceLineNo">174</span><a name="line.174"></a>
+<span class="sourceLineNo">175</span>        left.add(scrollPane, BorderLayout.CENTER);<a name="line.175"></a>
+<span class="sourceLineNo">176</span><a name="line.176"></a>
+<span class="sourceLineNo">177</span>        // Create a JTextAreaExec without Start and Cancel buttons.<a name="line.177"></a>
+<span class="sourceLineNo">178</span>        final JTextAreaExec exec = new JTextAreaExec(<a name="line.178"></a>
+<span class="sourceLineNo">179</span>                "Documentation Builder" + " Commands", false);<a name="line.179"></a>
+<span class="sourceLineNo">180</span><a name="line.180"></a>
+<span class="sourceLineNo">181</span>        exec.setPreferredSize(new Dimension(500, 300));<a name="line.181"></a>
+<span class="sourceLineNo">182</span><a name="line.182"></a>
+<span class="sourceLineNo">183</span>        docBuilder.setConfiguration(configuration);<a name="line.183"></a>
+<span class="sourceLineNo">184</span><a name="line.184"></a>
+<span class="sourceLineNo">185</span>        // If we execute any commands, print the output in the text area.<a name="line.185"></a>
+<span class="sourceLineNo">186</span>        docBuilder.setExecuteCommands(exec);<a name="line.186"></a>
+<span class="sourceLineNo">187</span><a name="line.187"></a>
+<span class="sourceLineNo">188</span>        JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, left,<a name="line.188"></a>
+<span class="sourceLineNo">189</span>                exec);<a name="line.189"></a>
+<span class="sourceLineNo">190</span>        splitPane.setOneTouchExpandable(true);<a name="line.190"></a>
+<span class="sourceLineNo">191</span><a name="line.191"></a>
+<span class="sourceLineNo">192</span>        // Adjust the divider so that the control panel does not<a name="line.192"></a>
+<span class="sourceLineNo">193</span>        // have a horizontal scrollbar.<a name="line.193"></a>
+<span class="sourceLineNo">194</span>        Dimension preferred = left.getPreferredSize();<a name="line.194"></a>
+<span class="sourceLineNo">195</span>        splitPane.setDividerLocation(preferred.width + 20);<a name="line.195"></a>
+<span class="sourceLineNo">196</span><a name="line.196"></a>
+<span class="sourceLineNo">197</span>        getContentPane().add(splitPane, BorderLayout.CENTER);<a name="line.197"></a>
+<span class="sourceLineNo">198</span><a name="line.198"></a>
+<span class="sourceLineNo">199</span>        stopButton.addActionListener(new ActionListener() {<a name="line.199"></a>
+<span class="sourceLineNo">200</span>            @Override<a name="line.200"></a>
+<span class="sourceLineNo">201</span>            public void actionPerformed(ActionEvent evt) {<a name="line.201"></a>
+<span class="sourceLineNo">202</span>                exec.cancel();<a name="line.202"></a>
+<span class="sourceLineNo">203</span>            }<a name="line.203"></a>
+<span class="sourceLineNo">204</span>        });<a name="line.204"></a>
+<span class="sourceLineNo">205</span><a name="line.205"></a>
+<span class="sourceLineNo">206</span>        clearButton.addActionListener(new ActionListener() {<a name="line.206"></a>
+<span class="sourceLineNo">207</span>            @Override<a name="line.207"></a>
+<span class="sourceLineNo">208</span>            public void actionPerformed(ActionEvent evt) {<a name="line.208"></a>
+<span class="sourceLineNo">209</span>                exec.clear();<a name="line.209"></a>
+<span class="sourceLineNo">210</span>            }<a name="line.210"></a>
+<span class="sourceLineNo">211</span>        });<a name="line.211"></a>
+<span class="sourceLineNo">212</span><a name="line.212"></a>
+<span class="sourceLineNo">213</span>        goButton.addActionListener(new ActionListener() {<a name="line.213"></a>
+<span class="sourceLineNo">214</span>            @Override<a name="line.214"></a>
+<span class="sourceLineNo">215</span>            public void actionPerformed(ActionEvent evt) {<a name="line.215"></a>
+<span class="sourceLineNo">216</span>                try {<a name="line.216"></a>
+<span class="sourceLineNo">217</span>                    exec.updateStatusBar("// Starting Doc Building"<a name="line.217"></a>
+<span class="sourceLineNo">218</span>                            + (_applicationName != null<a name="line.218"></a>
+<span class="sourceLineNo">219</span>                                    ? " for " + _applicationName<a name="line.219"></a>
+<span class="sourceLineNo">220</span>                                    : ""));<a name="line.220"></a>
+<span class="sourceLineNo">221</span><a name="line.221"></a>
+<span class="sourceLineNo">222</span>                    docBuilder.buildDocs();<a name="line.222"></a>
+<span class="sourceLineNo">223</span><a name="line.223"></a>
+<span class="sourceLineNo">224</span>                    exec.updateStatusBar(" ");<a name="line.224"></a>
+<span class="sourceLineNo">225</span>                } catch (Exception ex) {<a name="line.225"></a>
+<span class="sourceLineNo">226</span>                    MessageHandler.error("Doc Building failed.", ex);<a name="line.226"></a>
+<span class="sourceLineNo">227</span>                }<a name="line.227"></a>
+<span class="sourceLineNo">228</span>            }<a name="line.228"></a>
+<span class="sourceLineNo">229</span>        });<a name="line.229"></a>
+<span class="sourceLineNo">230</span>    }<a name="line.230"></a>
+<span class="sourceLineNo">231</span><a name="line.231"></a>
+<span class="sourceLineNo">232</span>    /** The name of the application, usually from the _applicationName<a name="line.232"></a>
+<span class="sourceLineNo">233</span>     *  StringAttribute in configuration.xml.<a name="line.233"></a>
+<span class="sourceLineNo">234</span>     *  If null, then use the default documentation in doc/codeDoc.<a name="line.234"></a>
+<span class="sourceLineNo">235</span>     */<a name="line.235"></a>
+<span class="sourceLineNo">236</span>    private String _applicationName;<a name="line.236"></a>
+<span class="sourceLineNo">237</span>}<a name="line.237"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

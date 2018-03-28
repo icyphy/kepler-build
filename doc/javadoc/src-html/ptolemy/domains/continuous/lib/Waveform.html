@@ -1,0 +1,500 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../../../stylesheet.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>/* An interpolator for a specified array of times and values.<a name="line.1"></a>
+<span class="sourceLineNo">002</span><a name="line.2"></a>
+<span class="sourceLineNo">003</span> Copyright (c) 1998-2014 The Regents of the University of California.<a name="line.3"></a>
+<span class="sourceLineNo">004</span> All rights reserved.<a name="line.4"></a>
+<span class="sourceLineNo">005</span> Permission is hereby granted, without written agreement and without<a name="line.5"></a>
+<span class="sourceLineNo">006</span> license or royalty fees, to use, copy, modify, and distribute this<a name="line.6"></a>
+<span class="sourceLineNo">007</span> software and its documentation for any purpose, provided that the above<a name="line.7"></a>
+<span class="sourceLineNo">008</span> copyright notice and the following two paragraphs appear in all copies<a name="line.8"></a>
+<span class="sourceLineNo">009</span> of this software.<a name="line.9"></a>
+<span class="sourceLineNo">010</span><a name="line.10"></a>
+<span class="sourceLineNo">011</span> IN NO EVENT SHALL THE UNIVERSITY OF CALIFORNIA BE LIABLE TO ANY PARTY<a name="line.11"></a>
+<span class="sourceLineNo">012</span> FOR DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES<a name="line.12"></a>
+<span class="sourceLineNo">013</span> ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION, EVEN IF<a name="line.13"></a>
+<span class="sourceLineNo">014</span> THE UNIVERSITY OF CALIFORNIA HAS BEEN ADVISED OF THE POSSIBILITY OF<a name="line.14"></a>
+<span class="sourceLineNo">015</span> SUCH DAMAGE.<a name="line.15"></a>
+<span class="sourceLineNo">016</span><a name="line.16"></a>
+<span class="sourceLineNo">017</span> THE UNIVERSITY OF CALIFORNIA SPECIFICALLY DISCLAIMS ANY WARRANTIES,<a name="line.17"></a>
+<span class="sourceLineNo">018</span> INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF<a name="line.18"></a>
+<span class="sourceLineNo">019</span> MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE<a name="line.19"></a>
+<span class="sourceLineNo">020</span> PROVIDED HEREUNDER IS ON AN "AS IS" BASIS, AND THE UNIVERSITY OF<a name="line.20"></a>
+<span class="sourceLineNo">021</span> CALIFORNIA HAS NO OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT, UPDATES,<a name="line.21"></a>
+<span class="sourceLineNo">022</span> ENHANCEMENTS, OR MODIFICATIONS.<a name="line.22"></a>
+<span class="sourceLineNo">023</span><a name="line.23"></a>
+<span class="sourceLineNo">024</span> PT_COPYRIGHT_VERSION_2<a name="line.24"></a>
+<span class="sourceLineNo">025</span> COPYRIGHTENDKEY<a name="line.25"></a>
+<span class="sourceLineNo">026</span><a name="line.26"></a>
+<span class="sourceLineNo">027</span> */<a name="line.27"></a>
+<span class="sourceLineNo">028</span>package ptolemy.domains.continuous.lib;<a name="line.28"></a>
+<span class="sourceLineNo">029</span><a name="line.29"></a>
+<span class="sourceLineNo">030</span>import ptolemy.actor.lib.DiscreteClock;<a name="line.30"></a>
+<span class="sourceLineNo">031</span>import ptolemy.actor.util.Time;<a name="line.31"></a>
+<span class="sourceLineNo">032</span>import ptolemy.data.DoubleToken;<a name="line.32"></a>
+<span class="sourceLineNo">033</span>import ptolemy.data.Token;<a name="line.33"></a>
+<span class="sourceLineNo">034</span>import ptolemy.data.expr.Parameter;<a name="line.34"></a>
+<span class="sourceLineNo">035</span>import ptolemy.data.expr.SingletonParameter;<a name="line.35"></a>
+<span class="sourceLineNo">036</span>import ptolemy.data.expr.StringParameter;<a name="line.36"></a>
+<span class="sourceLineNo">037</span>import ptolemy.data.type.ArrayType;<a name="line.37"></a>
+<span class="sourceLineNo">038</span>import ptolemy.data.type.BaseType;<a name="line.38"></a>
+<span class="sourceLineNo">039</span>import ptolemy.kernel.CompositeEntity;<a name="line.39"></a>
+<span class="sourceLineNo">040</span>import ptolemy.kernel.util.Attribute;<a name="line.40"></a>
+<span class="sourceLineNo">041</span>import ptolemy.kernel.util.IllegalActionException;<a name="line.41"></a>
+<span class="sourceLineNo">042</span>import ptolemy.kernel.util.NameDuplicationException;<a name="line.42"></a>
+<span class="sourceLineNo">043</span>import ptolemy.math.DoubleMatrixMath;<a name="line.43"></a>
+<span class="sourceLineNo">044</span><a name="line.44"></a>
+<span class="sourceLineNo">045</span>///////////////////////////////////////////////////////////////////<a name="line.45"></a>
+<span class="sourceLineNo">046</span>//// Waveform<a name="line.46"></a>
+<span class="sourceLineNo">047</span><a name="line.47"></a>
+<span class="sourceLineNo">048</span>/**<a name="line.48"></a>
+<span class="sourceLineNo">049</span> This actor produces a periodic continuous-time signal defined by a<a name="line.49"></a>
+<span class="sourceLineNo">050</span> periodic sequence of samples and an interpolation method.<a name="line.50"></a>
+<span class="sourceLineNo">051</span> The &lt;i&gt;interpolation&lt;/i&gt; parameter specifies the interpolation method,<a name="line.51"></a>
+<span class="sourceLineNo">052</span> which is either "linear",   which indicates linear interpolation, or "hermite",<a name="line.52"></a>
+<span class="sourceLineNo">053</span> which indicates  third order interpolation based on the Hermite curves in chapter<a name="line.53"></a>
+<span class="sourceLineNo">054</span> 11 of "Computer Graphic, Principles and Practice", by Foley, van Dam, Feiner<a name="line.54"></a>
+<span class="sourceLineNo">055</span> and Hughes, 2nd ed. in C, 1996. Interpolation is calculated assuming that<a name="line.55"></a>
+<span class="sourceLineNo">056</span> the waveform is periodic.<a name="line.56"></a>
+<span class="sourceLineNo">057</span> &lt;p&gt;<a name="line.57"></a>
+<span class="sourceLineNo">058</span> At the beginning of each time interval of length given by &lt;i&gt;period&lt;/i&gt;,<a name="line.58"></a>
+<span class="sourceLineNo">059</span> starting from the time at which initialize() is invoked,<a name="line.59"></a>
+<span class="sourceLineNo">060</span> this actor initiates a continuous output that passes through the values given by<a name="line.60"></a>
+<span class="sourceLineNo">061</span> &lt;i&gt;values&lt;/i&gt; at the time offsets into the period given by &lt;i&gt;offsets&lt;/i&gt;.<a name="line.61"></a>
+<span class="sourceLineNo">062</span> These parameters contain arrays, which are required to have the same length.<a name="line.62"></a>
+<span class="sourceLineNo">063</span> The &lt;i&gt;offsets&lt;/i&gt; array contains doubles, which<a name="line.63"></a>
+<span class="sourceLineNo">064</span> must be nondecreasing and nonnegative,<a name="line.64"></a>
+<span class="sourceLineNo">065</span> or an exception will be thrown when it is set.<a name="line.65"></a>
+<span class="sourceLineNo">066</span> &lt;p&gt;<a name="line.66"></a>
+<span class="sourceLineNo">067</span> You can provide a finite &lt;i&gt;stopTime&lt;/i&gt;. Upon reaching that stop time,<a name="line.67"></a>
+<span class="sourceLineNo">068</span> postfire() returns false, which requests that the director<a name="line.68"></a>
+<span class="sourceLineNo">069</span> not fire this actor again. The output will be absent after that time.<a name="line.69"></a>
+<span class="sourceLineNo">070</span> The clock can also be started and stopped repeatedly<a name="line.70"></a>
+<span class="sourceLineNo">071</span> during an execution. A token at the &lt;i&gt;start&lt;/i&gt; input will start the clock<a name="line.71"></a>
+<span class="sourceLineNo">072</span> at the beginning of a period. A token<a name="line.72"></a>
+<span class="sourceLineNo">073</span> at the &lt;i&gt;stop&lt;/i&gt; input will stop the clock, if it is still running.<a name="line.73"></a>
+<span class="sourceLineNo">074</span> If both &lt;i&gt;start&lt;/i&gt; and &lt;i&gt;stop&lt;/i&gt; are received simultaneously, then<a name="line.74"></a>
+<span class="sourceLineNo">075</span> the clock will be stopped. When the clock is stopped, the output is absent.<a name="line.75"></a>
+<span class="sourceLineNo">076</span> &lt;p&gt;<a name="line.76"></a>
+<span class="sourceLineNo">077</span> The &lt;i&gt;values&lt;/i&gt; parameter by default<a name="line.77"></a>
+<span class="sourceLineNo">078</span> contains the array {1.0, -1.0}.  The default<a name="line.78"></a>
+<span class="sourceLineNo">079</span> &lt;i&gt;offsets&lt;/i&gt; array is {0.0, 1.0}.<a name="line.79"></a>
+<span class="sourceLineNo">080</span> The default period is 2.0. This results in a triangle<a name="line.80"></a>
+<span class="sourceLineNo">081</span> wave (for linear interpolation) and a smooth sinusoid-like<a name="line.81"></a>
+<span class="sourceLineNo">082</span> waveform (for hermite interpolation).<a name="line.82"></a>
+<span class="sourceLineNo">083</span> &lt;p&gt;<a name="line.83"></a>
+<span class="sourceLineNo">084</span> The type of the output is double.<a name="line.84"></a>
+<span class="sourceLineNo">085</span> &lt;p&gt;<a name="line.85"></a>
+<span class="sourceLineNo">086</span> If two offsets are equal, or if one is equal to the period,<a name="line.86"></a>
+<span class="sourceLineNo">087</span> then two events will be produced at the same time, but with<a name="line.87"></a>
+<span class="sourceLineNo">088</span> different microsteps. This will cause strange effects with<a name="line.88"></a>
+<span class="sourceLineNo">089</span> hermite interpolation, and hence is not recommended. But<a name="line.89"></a>
+<span class="sourceLineNo">090</span> it can sometimes be useful with linear interpolation to get<a name="line.90"></a>
+<span class="sourceLineNo">091</span> discontinuous outputs.<a name="line.91"></a>
+<span class="sourceLineNo">092</span> &lt;p&gt;<a name="line.92"></a>
+<span class="sourceLineNo">093</span> If the &lt;i&gt;period&lt;/i&gt; is changed at any time, either by<a name="line.93"></a>
+<span class="sourceLineNo">094</span> provided by an input or by changing the parameter, then the<a name="line.94"></a>
+<span class="sourceLineNo">095</span> new period will take effect immediately if the new period<a name="line.95"></a>
+<span class="sourceLineNo">096</span> is provided at the same time (including the<a name="line.96"></a>
+<span class="sourceLineNo">097</span> microstep) that the current cycle starts,<a name="line.97"></a>
+<span class="sourceLineNo">098</span> or after the current cycle completes otherwise.<a name="line.98"></a>
+<span class="sourceLineNo">099</span><a name="line.99"></a>
+<span class="sourceLineNo">100</span> @author Sarah Packman, Yuhong Xiong, Edward A. Lee<a name="line.100"></a>
+<span class="sourceLineNo">101</span> @version $Id$<a name="line.101"></a>
+<span class="sourceLineNo">102</span> @since Ptolemy II 10.0<a name="line.102"></a>
+<span class="sourceLineNo">103</span> @Pt.ProposedRating Yellow (yuhong)<a name="line.103"></a>
+<span class="sourceLineNo">104</span> @Pt.AcceptedRating Yellow (yuhong)<a name="line.104"></a>
+<span class="sourceLineNo">105</span> @see ptolemy.math.Interpolation<a name="line.105"></a>
+<span class="sourceLineNo">106</span> */<a name="line.106"></a>
+<span class="sourceLineNo">107</span>public class Waveform extends DiscreteClock {<a name="line.107"></a>
+<span class="sourceLineNo">108</span>    /** Construct an actor with the specified container and name.<a name="line.108"></a>
+<span class="sourceLineNo">109</span>     *  @param container The container.<a name="line.109"></a>
+<span class="sourceLineNo">110</span>     *  @param name The name of this actor.<a name="line.110"></a>
+<span class="sourceLineNo">111</span>     *  @exception IllegalActionException If the entity cannot be contained<a name="line.111"></a>
+<span class="sourceLineNo">112</span>     *   by the proposed container.<a name="line.112"></a>
+<span class="sourceLineNo">113</span>     *  @exception NameDuplicationException If the container already has an<a name="line.113"></a>
+<span class="sourceLineNo">114</span>     *   actor with this name.<a name="line.114"></a>
+<span class="sourceLineNo">115</span>     */<a name="line.115"></a>
+<span class="sourceLineNo">116</span>    public Waveform(CompositeEntity container, String name)<a name="line.116"></a>
+<span class="sourceLineNo">117</span>            throws NameDuplicationException, IllegalActionException {<a name="line.117"></a>
+<span class="sourceLineNo">118</span>        super(container, name);<a name="line.118"></a>
+<span class="sourceLineNo">119</span><a name="line.119"></a>
+<span class="sourceLineNo">120</span>        interpolation = new StringParameter(this, "interpolation");<a name="line.120"></a>
+<span class="sourceLineNo">121</span>        interpolation.setExpression("linear");<a name="line.121"></a>
+<span class="sourceLineNo">122</span>        interpolation.addChoice("linear");<a name="line.122"></a>
+<span class="sourceLineNo">123</span>        interpolation.addChoice("hermite");<a name="line.123"></a>
+<span class="sourceLineNo">124</span>        attributeChanged(interpolation);<a name="line.124"></a>
+<span class="sourceLineNo">125</span><a name="line.125"></a>
+<span class="sourceLineNo">126</span>        // Constrain the values to be doubles and change defaults.<a name="line.126"></a>
+<span class="sourceLineNo">127</span>        values.setExpression("{1.0, -1.0}");<a name="line.127"></a>
+<span class="sourceLineNo">128</span>        values.setTypeEquals(new ArrayType(BaseType.DOUBLE));<a name="line.128"></a>
+<span class="sourceLineNo">129</span><a name="line.129"></a>
+<span class="sourceLineNo">130</span>        period.setExpression("2.0");<a name="line.130"></a>
+<span class="sourceLineNo">131</span><a name="line.131"></a>
+<span class="sourceLineNo">132</span>        offsets.setExpression("{0.0, 1.0}");<a name="line.132"></a>
+<span class="sourceLineNo">133</span><a name="line.133"></a>
+<span class="sourceLineNo">134</span>        // Trigger is not supported.<a name="line.134"></a>
+<span class="sourceLineNo">135</span>        Parameter hide = new SingletonParameter(trigger, "_hide");<a name="line.135"></a>
+<span class="sourceLineNo">136</span>        hide.setExpression("true");<a name="line.136"></a>
+<span class="sourceLineNo">137</span><a name="line.137"></a>
+<span class="sourceLineNo">138</span>        _attachText("_iconDescription", "&lt;svg&gt;\n" + "&lt;rect x=\"-20\" y=\"-20\" "<a name="line.138"></a>
+<span class="sourceLineNo">139</span>                + "width=\"40\" height=\"40\" " + "style=\"fill:lightGrey\"/&gt;\n"<a name="line.139"></a>
+<span class="sourceLineNo">140</span>                + "&lt;line x1=\"-20\" y1=\"-15\" x2=\"-10\" y2=\"15\"/&gt;\n"<a name="line.140"></a>
+<span class="sourceLineNo">141</span>                + "&lt;line x1=\"-10\" y1=\"15\" x2=\"0\" y2=\"-15\"/&gt;\n"<a name="line.141"></a>
+<span class="sourceLineNo">142</span>                + "&lt;line x1=\"0\" y1=\"-15\" x2=\"10\" y2=\"15\"/&gt;\n"<a name="line.142"></a>
+<span class="sourceLineNo">143</span>                + "&lt;line x1=\"10\" y1=\"15\" x2=\"20\" y2=\"-15\"/&gt;\n"<a name="line.143"></a>
+<span class="sourceLineNo">144</span>                + "&lt;/svg&gt;\n");<a name="line.144"></a>
+<span class="sourceLineNo">145</span>    }<a name="line.145"></a>
+<span class="sourceLineNo">146</span><a name="line.146"></a>
+<span class="sourceLineNo">147</span>    ///////////////////////////////////////////////////////////////////<a name="line.147"></a>
+<span class="sourceLineNo">148</span>    ////                         public variables                  ////<a name="line.148"></a>
+<span class="sourceLineNo">149</span><a name="line.149"></a>
+<span class="sourceLineNo">150</span>    /** The interpolation method, which must be "linear" or "hermite". */<a name="line.150"></a>
+<span class="sourceLineNo">151</span>    public StringParameter interpolation;<a name="line.151"></a>
+<span class="sourceLineNo">152</span><a name="line.152"></a>
+<span class="sourceLineNo">153</span>    ///////////////////////////////////////////////////////////////////<a name="line.153"></a>
+<span class="sourceLineNo">154</span>    ////                         public methods                    ////<a name="line.154"></a>
+<span class="sourceLineNo">155</span><a name="line.155"></a>
+<span class="sourceLineNo">156</span>    /** Check the validity of the parameter.<a name="line.156"></a>
+<span class="sourceLineNo">157</span>     *  @param attribute The attribute that changed.<a name="line.157"></a>
+<span class="sourceLineNo">158</span>     *  @exception IllegalActionException If the argument is the<a name="line.158"></a>
+<span class="sourceLineNo">159</span>     *   &lt;i&gt;values&lt;/i&gt; parameter and it does not contain an one dimensional<a name="line.159"></a>
+<span class="sourceLineNo">160</span>     *   array; or the argument is the &lt;i&gt;times&lt;/i&gt; parameter and it does<a name="line.160"></a>
+<span class="sourceLineNo">161</span>     *   not contain an one dimensional array or is not increasing and<a name="line.161"></a>
+<span class="sourceLineNo">162</span>     *   non-negative; or the argument is the &lt;i&gt;period&lt;/i&gt; parameter and is<a name="line.162"></a>
+<span class="sourceLineNo">163</span>     *   negative; or the argument is the &lt;i&gt;order&lt;/i&gt; parameter and the order<a name="line.163"></a>
+<span class="sourceLineNo">164</span>     *   is not supported by the Interpolation class.<a name="line.164"></a>
+<span class="sourceLineNo">165</span>     */<a name="line.165"></a>
+<span class="sourceLineNo">166</span>    @Override<a name="line.166"></a>
+<span class="sourceLineNo">167</span>    public void attributeChanged(Attribute attribute)<a name="line.167"></a>
+<span class="sourceLineNo">168</span>            throws IllegalActionException {<a name="line.168"></a>
+<span class="sourceLineNo">169</span>        if (attribute == interpolation) {<a name="line.169"></a>
+<span class="sourceLineNo">170</span>            _interpolation = _LINEAR;<a name="line.170"></a>
+<span class="sourceLineNo">171</span>            String interpolationValue = interpolation.stringValue();<a name="line.171"></a>
+<span class="sourceLineNo">172</span>            if (interpolationValue.equals("hermite")) {<a name="line.172"></a>
+<span class="sourceLineNo">173</span>                _interpolation = _HERMITE;<a name="line.173"></a>
+<span class="sourceLineNo">174</span>            }<a name="line.174"></a>
+<span class="sourceLineNo">175</span>        } else if (attribute == period) {<a name="line.175"></a>
+<span class="sourceLineNo">176</span>            double periodValue = ((DoubleToken) period.getToken())<a name="line.176"></a>
+<span class="sourceLineNo">177</span>                    .doubleValue();<a name="line.177"></a>
+<span class="sourceLineNo">178</span>            if (periodValue == Double.POSITIVE_INFINITY) {<a name="line.178"></a>
+<span class="sourceLineNo">179</span>                throw new IllegalActionException(this,<a name="line.179"></a>
+<span class="sourceLineNo">180</span>                        "Period is required to be finite.  " + "Period given: "<a name="line.180"></a>
+<span class="sourceLineNo">181</span>                                + periodValue);<a name="line.181"></a>
+<span class="sourceLineNo">182</span>            }<a name="line.182"></a>
+<span class="sourceLineNo">183</span>            super.attributeChanged(attribute);<a name="line.183"></a>
+<span class="sourceLineNo">184</span>        } else {<a name="line.184"></a>
+<span class="sourceLineNo">185</span>            super.attributeChanged(attribute);<a name="line.185"></a>
+<span class="sourceLineNo">186</span>        }<a name="line.186"></a>
+<span class="sourceLineNo">187</span>    }<a name="line.187"></a>
+<span class="sourceLineNo">188</span><a name="line.188"></a>
+<span class="sourceLineNo">189</span>    /** Override the base class to set the output microstep to zero.<a name="line.189"></a>
+<span class="sourceLineNo">190</span>     *  @exception IllegalActionException If the parent class throws it,<a name="line.190"></a>
+<span class="sourceLineNo">191</span>     *   or if the &lt;i&gt;values&lt;/i&gt; parameter is not a row vector, or if the<a name="line.191"></a>
+<span class="sourceLineNo">192</span>     *   fireAt() method of the director throws it, or if the director does not<a name="line.192"></a>
+<span class="sourceLineNo">193</span>     *   agree to fire the actor at the specified time.<a name="line.193"></a>
+<span class="sourceLineNo">194</span>     */<a name="line.194"></a>
+<span class="sourceLineNo">195</span>    @Override<a name="line.195"></a>
+<span class="sourceLineNo">196</span>    public synchronized void initialize() throws IllegalActionException {<a name="line.196"></a>
+<span class="sourceLineNo">197</span>        super.initialize();<a name="line.197"></a>
+<span class="sourceLineNo">198</span>        _nextOutputIndex = 0;<a name="line.198"></a>
+<span class="sourceLineNo">199</span>    }<a name="line.199"></a>
+<span class="sourceLineNo">200</span><a name="line.200"></a>
+<span class="sourceLineNo">201</span>    ///////////////////////////////////////////////////////////////////<a name="line.201"></a>
+<span class="sourceLineNo">202</span>    ////                         protected methods                 ////<a name="line.202"></a>
+<span class="sourceLineNo">203</span><a name="line.203"></a>
+<span class="sourceLineNo">204</span>    /** Return the Hermite curve interpolation.<a name="line.204"></a>
+<span class="sourceLineNo">205</span>     *  @param index The interpolation point index.<a name="line.205"></a>
+<span class="sourceLineNo">206</span>     *  @param startTime The time of the starting reference point.<a name="line.206"></a>
+<span class="sourceLineNo">207</span>     *  @param startValue The value of the starting reference point.<a name="line.207"></a>
+<span class="sourceLineNo">208</span>     *  @param tanStart The tangent of the starting reference point.<a name="line.208"></a>
+<span class="sourceLineNo">209</span>     *  @param endTime The time of the ending reference point.<a name="line.209"></a>
+<span class="sourceLineNo">210</span>     *  @param endValue The value of the ending reference point.<a name="line.210"></a>
+<span class="sourceLineNo">211</span>     *  @param tanEnd The tangent of the ending reference point.<a name="line.211"></a>
+<span class="sourceLineNo">212</span>     *  @return The Hermite curve interpolation.<a name="line.212"></a>
+<span class="sourceLineNo">213</span>     */<a name="line.213"></a>
+<span class="sourceLineNo">214</span>    protected double _hermite(double index, double startTime, double startValue,<a name="line.214"></a>
+<span class="sourceLineNo">215</span>            double tanStart, double endTime, double endValue, double tanEnd) {<a name="line.215"></a>
+<span class="sourceLineNo">216</span>        // forming the Hermite matrix M<a name="line.216"></a>
+<span class="sourceLineNo">217</span>        double[][] M = new double[4][4];<a name="line.217"></a>
+<span class="sourceLineNo">218</span>        double iStartSqr = startTime * startTime;<a name="line.218"></a>
+<span class="sourceLineNo">219</span>        double iEndSqr = endTime * endTime;<a name="line.219"></a>
+<span class="sourceLineNo">220</span>        M[0][0] = iStartSqr * startTime;<a name="line.220"></a>
+<span class="sourceLineNo">221</span>        M[0][1] = iStartSqr;<a name="line.221"></a>
+<span class="sourceLineNo">222</span>        M[0][2] = startTime;<a name="line.222"></a>
+<span class="sourceLineNo">223</span>        M[0][3] = 1;<a name="line.223"></a>
+<span class="sourceLineNo">224</span><a name="line.224"></a>
+<span class="sourceLineNo">225</span>        M[1][0] = iEndSqr * endTime;<a name="line.225"></a>
+<span class="sourceLineNo">226</span>        M[1][1] = iEndSqr;<a name="line.226"></a>
+<span class="sourceLineNo">227</span>        M[1][2] = endTime;<a name="line.227"></a>
+<span class="sourceLineNo">228</span>        M[1][3] = 1;<a name="line.228"></a>
+<span class="sourceLineNo">229</span><a name="line.229"></a>
+<span class="sourceLineNo">230</span>        M[2][0] = 3 * iStartSqr;<a name="line.230"></a>
+<span class="sourceLineNo">231</span>        M[2][1] = 2 * startTime;<a name="line.231"></a>
+<span class="sourceLineNo">232</span>        M[2][2] = 1;<a name="line.232"></a>
+<span class="sourceLineNo">233</span>        M[2][3] = 0;<a name="line.233"></a>
+<span class="sourceLineNo">234</span><a name="line.234"></a>
+<span class="sourceLineNo">235</span>        M[3][0] = 3 * iEndSqr;<a name="line.235"></a>
+<span class="sourceLineNo">236</span>        M[3][1] = 2 * endTime;<a name="line.236"></a>
+<span class="sourceLineNo">237</span>        M[3][2] = 1;<a name="line.237"></a>
+<span class="sourceLineNo">238</span>        M[3][3] = 0;<a name="line.238"></a>
+<span class="sourceLineNo">239</span><a name="line.239"></a>
+<span class="sourceLineNo">240</span>        double[][] MInverse = DoubleMatrixMath.inverse(M);<a name="line.240"></a>
+<span class="sourceLineNo">241</span><a name="line.241"></a>
+<span class="sourceLineNo">242</span>        // forming the column vector of values and tangents<a name="line.242"></a>
+<span class="sourceLineNo">243</span>        double[] Gh = new double[4];<a name="line.243"></a>
+<span class="sourceLineNo">244</span>        Gh[0] = startValue;<a name="line.244"></a>
+<span class="sourceLineNo">245</span>        Gh[1] = endValue;<a name="line.245"></a>
+<span class="sourceLineNo">246</span>        Gh[2] = tanStart;<a name="line.246"></a>
+<span class="sourceLineNo">247</span>        Gh[3] = tanEnd;<a name="line.247"></a>
+<span class="sourceLineNo">248</span><a name="line.248"></a>
+<span class="sourceLineNo">249</span>        // compute the coefficients vector coef[a, b, c, d] or the 3rd order<a name="line.249"></a>
+<span class="sourceLineNo">250</span>        // curve.<a name="line.250"></a>
+<span class="sourceLineNo">251</span>        double[] coef = DoubleMatrixMath.multiply(Gh, MInverse);<a name="line.251"></a>
+<span class="sourceLineNo">252</span><a name="line.252"></a>
+<span class="sourceLineNo">253</span>        // compute the interpolated value<a name="line.253"></a>
+<span class="sourceLineNo">254</span>        double indexSqr = index * index;<a name="line.254"></a>
+<span class="sourceLineNo">255</span>        return coef[0] * indexSqr * index + coef[1] * indexSqr + coef[2] * index<a name="line.255"></a>
+<span class="sourceLineNo">256</span>                + coef[3];<a name="line.256"></a>
+<span class="sourceLineNo">257</span>    }<a name="line.257"></a>
+<span class="sourceLineNo">258</span><a name="line.258"></a>
+<span class="sourceLineNo">259</span>    /** Return the interpolation result for the current model time.<a name="line.259"></a>
+<span class="sourceLineNo">260</span>     *  @return A double.<a name="line.260"></a>
+<span class="sourceLineNo">261</span>     *  @exception IllegalActionException If the values parameter is malformed.<a name="line.261"></a>
+<span class="sourceLineNo">262</span>     *  @exception IllegalStateException If the index and value arrays<a name="line.262"></a>
+<span class="sourceLineNo">263</span>     *   do not have the same length, or the period is not 0 and not<a name="line.263"></a>
+<span class="sourceLineNo">264</span>     *   greater than the largest index.<a name="line.264"></a>
+<span class="sourceLineNo">265</span>     */<a name="line.265"></a>
+<span class="sourceLineNo">266</span>    private Token _interpolate() throws IllegalActionException {<a name="line.266"></a>
+<span class="sourceLineNo">267</span>        int numRefPoints = _offsets.length;<a name="line.267"></a>
+<span class="sourceLineNo">268</span><a name="line.268"></a>
+<span class="sourceLineNo">269</span>        // index is now within [0, period-1]. If it is outside the range of<a name="line.269"></a>
+<span class="sourceLineNo">270</span>        // the smallest and the largest index, values must be periodic.<a name="line.270"></a>
+<span class="sourceLineNo">271</span>        // Handle a special case where the number of reference points is<a name="line.271"></a>
+<span class="sourceLineNo">272</span>        // 1. The code for order 3 later won't work for this case.<a name="line.272"></a>
+<span class="sourceLineNo">273</span>        if (numRefPoints == 1) {<a name="line.273"></a>
+<span class="sourceLineNo">274</span>            return _getValue(0);<a name="line.274"></a>
+<span class="sourceLineNo">275</span>        }<a name="line.275"></a>
+<span class="sourceLineNo">276</span><a name="line.276"></a>
+<span class="sourceLineNo">277</span>        // Time into the current cycle.<a name="line.277"></a>
+<span class="sourceLineNo">278</span>        Time currentTime = getDirector().getModelTime();<a name="line.278"></a>
+<span class="sourceLineNo">279</span>        double time = currentTime.subtract(_cycleStartTime).getDoubleValue();<a name="line.279"></a>
+<span class="sourceLineNo">280</span><a name="line.280"></a>
+<span class="sourceLineNo">281</span>        // indexIndexStart is the index to _offsets whose entry is the<a name="line.281"></a>
+<span class="sourceLineNo">282</span>        // index to the left of the interpolation point.<a name="line.282"></a>
+<span class="sourceLineNo">283</span>        int indexIndexStart = _phase - 1;<a name="line.283"></a>
+<span class="sourceLineNo">284</span><a name="line.284"></a>
+<span class="sourceLineNo">285</span>        double periodValue = ((DoubleToken) period.getToken()).doubleValue();<a name="line.285"></a>
+<span class="sourceLineNo">286</span><a name="line.286"></a>
+<span class="sourceLineNo">287</span>        // Need at least the two points surrounding<a name="line.287"></a>
+<span class="sourceLineNo">288</span>        // the interpolation point.<a name="line.288"></a>
+<span class="sourceLineNo">289</span>        double startTime;<a name="line.289"></a>
+<span class="sourceLineNo">290</span>        double endTime;<a name="line.290"></a>
+<span class="sourceLineNo">291</span>        double startValue;<a name="line.291"></a>
+<span class="sourceLineNo">292</span>        double endValue;<a name="line.292"></a>
+<span class="sourceLineNo">293</span><a name="line.293"></a>
+<span class="sourceLineNo">294</span>        if (indexIndexStart == -1) {<a name="line.294"></a>
+<span class="sourceLineNo">295</span>            startTime = _offsets[numRefPoints - 1] - periodValue;<a name="line.295"></a>
+<span class="sourceLineNo">296</span>            startValue = ((DoubleToken) _getValue(numRefPoints - 1))<a name="line.296"></a>
+<span class="sourceLineNo">297</span>                    .doubleValue();<a name="line.297"></a>
+<span class="sourceLineNo">298</span>        } else {<a name="line.298"></a>
+<span class="sourceLineNo">299</span>            startTime = _offsets[indexIndexStart];<a name="line.299"></a>
+<span class="sourceLineNo">300</span>            startValue = ((DoubleToken) _getValue(indexIndexStart))<a name="line.300"></a>
+<span class="sourceLineNo">301</span>                    .doubleValue();<a name="line.301"></a>
+<span class="sourceLineNo">302</span>        }<a name="line.302"></a>
+<span class="sourceLineNo">303</span><a name="line.303"></a>
+<span class="sourceLineNo">304</span>        if (indexIndexStart == numRefPoints - 1) {<a name="line.304"></a>
+<span class="sourceLineNo">305</span>            endTime = _offsets[0] + periodValue;<a name="line.305"></a>
+<span class="sourceLineNo">306</span>            endValue = ((DoubleToken) _getValue(0)).doubleValue();<a name="line.306"></a>
+<span class="sourceLineNo">307</span>        } else {<a name="line.307"></a>
+<span class="sourceLineNo">308</span>            endTime = _offsets[indexIndexStart + 1];<a name="line.308"></a>
+<span class="sourceLineNo">309</span>            endValue = ((DoubleToken) _getValue(indexIndexStart + 1))<a name="line.309"></a>
+<span class="sourceLineNo">310</span>                    .doubleValue();<a name="line.310"></a>
+<span class="sourceLineNo">311</span>        }<a name="line.311"></a>
+<span class="sourceLineNo">312</span><a name="line.312"></a>
+<span class="sourceLineNo">313</span>        if (_interpolation == _LINEAR) {<a name="line.313"></a>
+<span class="sourceLineNo">314</span>            return new DoubleToken(startValue + (time - startTime)<a name="line.314"></a>
+<span class="sourceLineNo">315</span>                    * (endValue - startValue) / (endTime - startTime));<a name="line.315"></a>
+<span class="sourceLineNo">316</span>        }<a name="line.316"></a>
+<span class="sourceLineNo">317</span><a name="line.317"></a>
+<span class="sourceLineNo">318</span>        // order is 3. Need the points before Start and the point after End<a name="line.318"></a>
+<span class="sourceLineNo">319</span>        // to compute the tangent at Start and End.<a name="line.319"></a>
+<span class="sourceLineNo">320</span>        double timeBeforeStart;<a name="line.320"></a>
+<span class="sourceLineNo">321</span>        double timeAfterEnd;<a name="line.321"></a>
+<span class="sourceLineNo">322</span>        double valueBeforeStart;<a name="line.322"></a>
+<span class="sourceLineNo">323</span>        double valueAfterEnd;<a name="line.323"></a>
+<span class="sourceLineNo">324</span><a name="line.324"></a>
+<span class="sourceLineNo">325</span>        if (indexIndexStart == -1) {<a name="line.325"></a>
+<span class="sourceLineNo">326</span>            timeBeforeStart = _offsets[numRefPoints - 2] - periodValue;<a name="line.326"></a>
+<span class="sourceLineNo">327</span>            valueBeforeStart = ((DoubleToken) _getValue(numRefPoints - 2))<a name="line.327"></a>
+<span class="sourceLineNo">328</span>                    .doubleValue();<a name="line.328"></a>
+<span class="sourceLineNo">329</span>        } else if (indexIndexStart == 0) {<a name="line.329"></a>
+<span class="sourceLineNo">330</span>            if (periodValue &gt; 0) {<a name="line.330"></a>
+<span class="sourceLineNo">331</span>                timeBeforeStart = _offsets[numRefPoints - 1] - periodValue;<a name="line.331"></a>
+<span class="sourceLineNo">332</span>                valueBeforeStart = ((DoubleToken) _getValue(numRefPoints - 1))<a name="line.332"></a>
+<span class="sourceLineNo">333</span>                        .doubleValue();<a name="line.333"></a>
+<span class="sourceLineNo">334</span>            } else {<a name="line.334"></a>
+<span class="sourceLineNo">335</span>                // Not periodic<a name="line.335"></a>
+<span class="sourceLineNo">336</span>                timeBeforeStart = _offsets[0] - 1;<a name="line.336"></a>
+<span class="sourceLineNo">337</span>                valueBeforeStart = 0.0;<a name="line.337"></a>
+<span class="sourceLineNo">338</span>            }<a name="line.338"></a>
+<span class="sourceLineNo">339</span>        } else {<a name="line.339"></a>
+<span class="sourceLineNo">340</span>            timeBeforeStart = _offsets[indexIndexStart - 1];<a name="line.340"></a>
+<span class="sourceLineNo">341</span>            valueBeforeStart = ((DoubleToken) _getValue(indexIndexStart - 1))<a name="line.341"></a>
+<span class="sourceLineNo">342</span>                    .doubleValue();<a name="line.342"></a>
+<span class="sourceLineNo">343</span>        }<a name="line.343"></a>
+<span class="sourceLineNo">344</span><a name="line.344"></a>
+<span class="sourceLineNo">345</span>        if (indexIndexStart == numRefPoints - 1) {<a name="line.345"></a>
+<span class="sourceLineNo">346</span>            timeAfterEnd = _offsets[1] + periodValue;<a name="line.346"></a>
+<span class="sourceLineNo">347</span>            valueAfterEnd = ((DoubleToken) _getValue(1)).doubleValue();<a name="line.347"></a>
+<span class="sourceLineNo">348</span>        } else if (indexIndexStart == numRefPoints - 2) {<a name="line.348"></a>
+<span class="sourceLineNo">349</span>            if (periodValue &gt; 0 &amp;&amp; periodValue != Double.POSITIVE_INFINITY) {<a name="line.349"></a>
+<span class="sourceLineNo">350</span>                timeAfterEnd = _offsets[0] + periodValue;<a name="line.350"></a>
+<span class="sourceLineNo">351</span>                valueAfterEnd = ((DoubleToken) _getValue(0)).doubleValue();<a name="line.351"></a>
+<span class="sourceLineNo">352</span>            } else {<a name="line.352"></a>
+<span class="sourceLineNo">353</span>                // Not periodic<a name="line.353"></a>
+<span class="sourceLineNo">354</span>                timeAfterEnd = _offsets[numRefPoints - 1] + 1;<a name="line.354"></a>
+<span class="sourceLineNo">355</span>                // FIXME: Assuming 0.0 doesn't seem right.<a name="line.355"></a>
+<span class="sourceLineNo">356</span>                valueAfterEnd = 0.0;<a name="line.356"></a>
+<span class="sourceLineNo">357</span>            }<a name="line.357"></a>
+<span class="sourceLineNo">358</span>        } else {<a name="line.358"></a>
+<span class="sourceLineNo">359</span>            timeAfterEnd = _offsets[indexIndexStart + 2];<a name="line.359"></a>
+<span class="sourceLineNo">360</span>            valueAfterEnd = ((DoubleToken) _getValue(indexIndexStart + 2))<a name="line.360"></a>
+<span class="sourceLineNo">361</span>                    .doubleValue();<a name="line.361"></a>
+<span class="sourceLineNo">362</span>        }<a name="line.362"></a>
+<span class="sourceLineNo">363</span><a name="line.363"></a>
+<span class="sourceLineNo">364</span>        // Compute the tangent at Start and End.<a name="line.364"></a>
+<span class="sourceLineNo">365</span>        double tanBefore2Start = (startValue - valueBeforeStart)<a name="line.365"></a>
+<span class="sourceLineNo">366</span>                / (startTime - timeBeforeStart);<a name="line.366"></a>
+<span class="sourceLineNo">367</span>        double tanStart2End = (endValue - startValue) / (endTime - startTime);<a name="line.367"></a>
+<span class="sourceLineNo">368</span>        double tanEnd2After = (valueAfterEnd - endValue)<a name="line.368"></a>
+<span class="sourceLineNo">369</span>                / (timeAfterEnd - endTime);<a name="line.369"></a>
+<span class="sourceLineNo">370</span><a name="line.370"></a>
+<span class="sourceLineNo">371</span>        double tanStart = 0.5 * (tanBefore2Start + tanStart2End);<a name="line.371"></a>
+<span class="sourceLineNo">372</span>        double tanEnd = 0.5 * (tanStart2End + tanEnd2After);<a name="line.372"></a>
+<span class="sourceLineNo">373</span><a name="line.373"></a>
+<span class="sourceLineNo">374</span>        return new DoubleToken(_hermite(time, startTime, startValue, tanStart,<a name="line.374"></a>
+<span class="sourceLineNo">375</span>                endTime, endValue, tanEnd));<a name="line.375"></a>
+<span class="sourceLineNo">376</span>    }<a name="line.376"></a>
+<span class="sourceLineNo">377</span><a name="line.377"></a>
+<span class="sourceLineNo">378</span>    /** Produce the output required at times between the specified times<a name="line.378"></a>
+<span class="sourceLineNo">379</span>     *  using the specified interpolation method.<a name="line.379"></a>
+<span class="sourceLineNo">380</span>     *  @exception IllegalActionException If sending the output fails.<a name="line.380"></a>
+<span class="sourceLineNo">381</span>     */<a name="line.381"></a>
+<span class="sourceLineNo">382</span>    @Override<a name="line.382"></a>
+<span class="sourceLineNo">383</span>    protected void _produceIntermediateOutput() throws IllegalActionException {<a name="line.383"></a>
+<span class="sourceLineNo">384</span>        if (!_enabled) {<a name="line.384"></a>
+<span class="sourceLineNo">385</span>            output.sendClear(0);<a name="line.385"></a>
+<span class="sourceLineNo">386</span>            return;<a name="line.386"></a>
+<span class="sourceLineNo">387</span>        }<a name="line.387"></a>
+<span class="sourceLineNo">388</span>        if (_debugging) {<a name="line.388"></a>
+<span class="sourceLineNo">389</span>            _debug("Interpolating output.");<a name="line.389"></a>
+<span class="sourceLineNo">390</span>        }<a name="line.390"></a>
+<span class="sourceLineNo">391</span>        output.send(0, _interpolate());<a name="line.391"></a>
+<span class="sourceLineNo">392</span>    }<a name="line.392"></a>
+<span class="sourceLineNo">393</span><a name="line.393"></a>
+<span class="sourceLineNo">394</span>    /** Skip the current firing phase and request a refiring at the<a name="line.394"></a>
+<span class="sourceLineNo">395</span>     *  time of the next one.<a name="line.395"></a>
+<span class="sourceLineNo">396</span>     *  @exception IllegalActionException If the period cannot be evaluated.<a name="line.396"></a>
+<span class="sourceLineNo">397</span>     */<a name="line.397"></a>
+<span class="sourceLineNo">398</span>    @Override<a name="line.398"></a>
+<span class="sourceLineNo">399</span>    protected void _skipToNextPhase() throws IllegalActionException {<a name="line.399"></a>
+<span class="sourceLineNo">400</span>        _phase++;<a name="line.400"></a>
+<span class="sourceLineNo">401</span>        if (_phase &gt;= _offsets.length) {<a name="line.401"></a>
+<span class="sourceLineNo">402</span>            double periodValue = ((DoubleToken) period.getToken())<a name="line.402"></a>
+<span class="sourceLineNo">403</span>                    .doubleValue();<a name="line.403"></a>
+<span class="sourceLineNo">404</span>            _phase = 0;<a name="line.404"></a>
+<span class="sourceLineNo">405</span>            _cycleStartTime = _cycleStartTime.add(periodValue);<a name="line.405"></a>
+<span class="sourceLineNo">406</span>        }<a name="line.406"></a>
+<span class="sourceLineNo">407</span>        Time nextOutputTime = _cycleStartTime.add(_offsets[_phase]);<a name="line.407"></a>
+<span class="sourceLineNo">408</span>        if (_nextOutputTime.equals(nextOutputTime)) {<a name="line.408"></a>
+<span class="sourceLineNo">409</span>            _nextOutputIndex++;<a name="line.409"></a>
+<span class="sourceLineNo">410</span>        } else {<a name="line.410"></a>
+<span class="sourceLineNo">411</span>            _nextOutputTime = nextOutputTime;<a name="line.411"></a>
+<span class="sourceLineNo">412</span>            _nextOutputIndex = 0;<a name="line.412"></a>
+<span class="sourceLineNo">413</span>        }<a name="line.413"></a>
+<span class="sourceLineNo">414</span>        _fireAt(_nextOutputTime);<a name="line.414"></a>
+<span class="sourceLineNo">415</span>    }<a name="line.415"></a>
+<span class="sourceLineNo">416</span><a name="line.416"></a>
+<span class="sourceLineNo">417</span>    ///////////////////////////////////////////////////////////////////<a name="line.417"></a>
+<span class="sourceLineNo">418</span>    ////                         private variables                 ////<a name="line.418"></a>
+<span class="sourceLineNo">419</span><a name="line.419"></a>
+<span class="sourceLineNo">420</span>    /** Indicator for third order interpolation. */<a name="line.420"></a>
+<span class="sourceLineNo">421</span>    private static final int _HERMITE = 1;<a name="line.421"></a>
+<span class="sourceLineNo">422</span><a name="line.422"></a>
+<span class="sourceLineNo">423</span>    /** The value of the interpolation parameter. */<a name="line.423"></a>
+<span class="sourceLineNo">424</span>    private int _interpolation = _LINEAR;<a name="line.424"></a>
+<span class="sourceLineNo">425</span><a name="line.425"></a>
+<span class="sourceLineNo">426</span>    /** Indicator for linear interpolation. */<a name="line.426"></a>
+<span class="sourceLineNo">427</span>    private static final int _LINEAR = 0;<a name="line.427"></a>
+<span class="sourceLineNo">428</span>}<a name="line.428"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

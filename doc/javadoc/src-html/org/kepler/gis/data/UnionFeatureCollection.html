@@ -1,0 +1,311 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../../../stylesheet.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>/*<a name="line.1"></a>
+<span class="sourceLineNo">002</span> *    GeoTools - The Open Source Java GIS Toolkit<a name="line.2"></a>
+<span class="sourceLineNo">003</span> *    http://geotools.org<a name="line.3"></a>
+<span class="sourceLineNo">004</span> *<a name="line.4"></a>
+<span class="sourceLineNo">005</span> *    (C) 2011, Open Source Geospatial Foundation (OSGeo)<a name="line.5"></a>
+<span class="sourceLineNo">006</span> *    (C) 2001-2007 TOPP - www.openplans.org.<a name="line.6"></a>
+<span class="sourceLineNo">007</span> *<a name="line.7"></a>
+<span class="sourceLineNo">008</span> *    This library is free software; you can redistribute it and/or<a name="line.8"></a>
+<span class="sourceLineNo">009</span> *    modify it under the terms of the GNU Lesser General Public<a name="line.9"></a>
+<span class="sourceLineNo">010</span> *    License as published by the Free Software Foundation;<a name="line.10"></a>
+<span class="sourceLineNo">011</span> *    version 2.1 of the License.<a name="line.11"></a>
+<span class="sourceLineNo">012</span> *<a name="line.12"></a>
+<span class="sourceLineNo">013</span> *    This library is distributed in the hope that it will be useful,<a name="line.13"></a>
+<span class="sourceLineNo">014</span> *    but WITHOUT ANY WARRANTY; without even the implied warranty of<a name="line.14"></a>
+<span class="sourceLineNo">015</span> *    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU<a name="line.15"></a>
+<span class="sourceLineNo">016</span> *    Lesser General Public License for more details.<a name="line.16"></a>
+<span class="sourceLineNo">017</span> */<a name="line.17"></a>
+<span class="sourceLineNo">018</span>package org.kepler.gis.data;<a name="line.18"></a>
+<span class="sourceLineNo">019</span><a name="line.19"></a>
+<span class="sourceLineNo">020</span>import java.util.NoSuchElementException;<a name="line.20"></a>
+<span class="sourceLineNo">021</span><a name="line.21"></a>
+<span class="sourceLineNo">022</span>import org.geotools.data.simple.SimpleFeatureCollection;<a name="line.22"></a>
+<span class="sourceLineNo">023</span>import org.geotools.data.simple.SimpleFeatureIterator;<a name="line.23"></a>
+<span class="sourceLineNo">024</span>import org.geotools.feature.AttributeTypeBuilder;<a name="line.24"></a>
+<span class="sourceLineNo">025</span>import org.geotools.feature.collection.DecoratingSimpleFeatureCollection;<a name="line.25"></a>
+<span class="sourceLineNo">026</span>import org.geotools.feature.simple.SimpleFeatureBuilder;<a name="line.26"></a>
+<span class="sourceLineNo">027</span>import org.geotools.feature.simple.SimpleFeatureTypeBuilder;<a name="line.27"></a>
+<span class="sourceLineNo">028</span>import org.geotools.geometry.jts.ReferencedEnvelope;<a name="line.28"></a>
+<span class="sourceLineNo">029</span>import org.geotools.process.ProcessException;<a name="line.29"></a>
+<span class="sourceLineNo">030</span>import org.geotools.process.factory.DescribeParameter;<a name="line.30"></a>
+<span class="sourceLineNo">031</span>import org.geotools.process.factory.DescribeProcess;<a name="line.31"></a>
+<span class="sourceLineNo">032</span>import org.geotools.process.factory.DescribeResult;<a name="line.32"></a>
+<span class="sourceLineNo">033</span>import org.geotools.process.vector.VectorProcess;<a name="line.33"></a>
+<span class="sourceLineNo">034</span>import org.opengis.feature.simple.SimpleFeature;<a name="line.34"></a>
+<span class="sourceLineNo">035</span>import org.opengis.feature.simple.SimpleFeatureType;<a name="line.35"></a>
+<span class="sourceLineNo">036</span>import org.opengis.feature.type.AttributeDescriptor;<a name="line.36"></a>
+<span class="sourceLineNo">037</span>import org.opengis.feature.type.PropertyDescriptor;<a name="line.37"></a>
+<span class="sourceLineNo">038</span>import org.opengis.filter.Filter;<a name="line.38"></a>
+<span class="sourceLineNo">039</span><a name="line.39"></a>
+<span class="sourceLineNo">040</span>/**<a name="line.40"></a>
+<span class="sourceLineNo">041</span> * A process providing the union between two feature collections<a name="line.41"></a>
+<span class="sourceLineNo">042</span> * <a name="line.42"></a>
+<span class="sourceLineNo">043</span> * @author Gianni Barrotta - Sinergis<a name="line.43"></a>
+<span class="sourceLineNo">044</span> * @author Andrea Di Nora - Sinergis<a name="line.44"></a>
+<span class="sourceLineNo">045</span> * @author Pietro Arena - Sinergis<a name="line.45"></a>
+<span class="sourceLineNo">046</span> */<a name="line.46"></a>
+<span class="sourceLineNo">047</span>@DescribeProcess(title = "Union Feature Collections", description = "Returns single feature collection containing all features from two input feature collections.  The output attribute schema is a combination of the attributes from the inputs.  Attributes with same name but different types will be converted to strings.")<a name="line.47"></a>
+<span class="sourceLineNo">048</span>public class UnionFeatureCollection implements VectorProcess {<a name="line.48"></a>
+<span class="sourceLineNo">049</span><a name="line.49"></a>
+<span class="sourceLineNo">050</span>    static final String SCHEMA_NAME = "Union_Layer";<a name="line.50"></a>
+<span class="sourceLineNo">051</span><a name="line.51"></a>
+<span class="sourceLineNo">052</span>    @DescribeResult(name = "result", description = "Output feature collection")<a name="line.52"></a>
+<span class="sourceLineNo">053</span>    public SimpleFeatureCollection execute(<a name="line.53"></a>
+<span class="sourceLineNo">054</span>            @DescribeParameter(name = "first", description = "First input feature collection") SimpleFeatureCollection firstFeatures,<a name="line.54"></a>
+<span class="sourceLineNo">055</span>            @DescribeParameter(name = "second", description = "Second feature collection") SimpleFeatureCollection secondFeatures)<a name="line.55"></a>
+<span class="sourceLineNo">056</span>            throws ClassNotFoundException {<a name="line.56"></a>
+<span class="sourceLineNo">057</span>        try (SimpleFeatureIterator firstIterator = firstFeatures.features();<a name="line.57"></a>
+<span class="sourceLineNo">058</span>                SimpleFeatureIterator secondIterator = secondFeatures<a name="line.58"></a>
+<span class="sourceLineNo">059</span>                        .features();) {<a name="line.59"></a>
+<span class="sourceLineNo">060</span>            if (!(firstIterator.next().getDefaultGeometry().getClass()<a name="line.60"></a>
+<span class="sourceLineNo">061</span>                    .equals(secondIterator.next().getDefaultGeometry()<a name="line.61"></a>
+<span class="sourceLineNo">062</span>                            .getClass()))) {<a name="line.62"></a>
+<span class="sourceLineNo">063</span>                throw new ProcessException(<a name="line.63"></a>
+<span class="sourceLineNo">064</span>                        "Different default geometries, cannot perform union");<a name="line.64"></a>
+<span class="sourceLineNo">065</span>            }<a name="line.65"></a>
+<span class="sourceLineNo">066</span>        }<a name="line.66"></a>
+<span class="sourceLineNo">067</span>        return new UnitedFeatureCollection(firstFeatures, secondFeatures);<a name="line.67"></a>
+<span class="sourceLineNo">068</span>    }<a name="line.68"></a>
+<span class="sourceLineNo">069</span><a name="line.69"></a>
+<span class="sourceLineNo">070</span>    static class UnitedFeatureCollection extends DecoratingSimpleFeatureCollection {<a name="line.70"></a>
+<span class="sourceLineNo">071</span><a name="line.71"></a>
+<span class="sourceLineNo">072</span>        SimpleFeatureCollection features;<a name="line.72"></a>
+<span class="sourceLineNo">073</span><a name="line.73"></a>
+<span class="sourceLineNo">074</span>        SimpleFeatureType schema;<a name="line.74"></a>
+<span class="sourceLineNo">075</span><a name="line.75"></a>
+<span class="sourceLineNo">076</span>        public UnitedFeatureCollection(SimpleFeatureCollection delegate,<a name="line.76"></a>
+<span class="sourceLineNo">077</span>                SimpleFeatureCollection features) throws ClassNotFoundException {<a name="line.77"></a>
+<span class="sourceLineNo">078</span>            super(delegate);<a name="line.78"></a>
+<span class="sourceLineNo">079</span>            this.features = features;<a name="line.79"></a>
+<span class="sourceLineNo">080</span><a name="line.80"></a>
+<span class="sourceLineNo">081</span>            // Create schema containing the attributes from both the feature collections<a name="line.81"></a>
+<span class="sourceLineNo">082</span>            SimpleFeatureTypeBuilder tb = new SimpleFeatureTypeBuilder();<a name="line.82"></a>
+<span class="sourceLineNo">083</span>            for (AttributeDescriptor descriptor : delegate.getSchema().getAttributeDescriptors()) {<a name="line.83"></a>
+<span class="sourceLineNo">084</span>                if (sameNames(features.getSchema(), descriptor)<a name="line.84"></a>
+<span class="sourceLineNo">085</span>                        &amp;&amp; !sameTypes(features.getSchema(), descriptor)) {<a name="line.85"></a>
+<span class="sourceLineNo">086</span>                    AttributeTypeBuilder builder = new AttributeTypeBuilder();<a name="line.86"></a>
+<span class="sourceLineNo">087</span>                    builder.setName(descriptor.getLocalName());<a name="line.87"></a>
+<span class="sourceLineNo">088</span>                    builder.setNillable(descriptor.isNillable());<a name="line.88"></a>
+<span class="sourceLineNo">089</span>                    builder.setBinding(String.class);<a name="line.89"></a>
+<span class="sourceLineNo">090</span>                    builder.setMinOccurs(descriptor.getMinOccurs());<a name="line.90"></a>
+<span class="sourceLineNo">091</span>                    builder.setMaxOccurs(descriptor.getMaxOccurs());<a name="line.91"></a>
+<span class="sourceLineNo">092</span>                    builder.setDefaultValue(descriptor.getDefaultValue());<a name="line.92"></a>
+<span class="sourceLineNo">093</span>                    try (SimpleFeatureIterator delegateIterator = this.delegate<a name="line.93"></a>
+<span class="sourceLineNo">094</span>                            .features();) {<a name="line.94"></a>
+<span class="sourceLineNo">095</span>                        builder.setCRS(delegateIterator.next().getFeatureType()<a name="line.95"></a>
+<span class="sourceLineNo">096</span>                                .getCoordinateReferenceSystem());<a name="line.96"></a>
+<span class="sourceLineNo">097</span>                    }<a name="line.97"></a>
+<span class="sourceLineNo">098</span>                    AttributeDescriptor attributeDescriptor = builder.buildDescriptor(descriptor<a name="line.98"></a>
+<span class="sourceLineNo">099</span>                            .getName(), builder.buildType());<a name="line.99"></a>
+<span class="sourceLineNo">100</span>                    tb.add(attributeDescriptor);<a name="line.100"></a>
+<span class="sourceLineNo">101</span>                } else {<a name="line.101"></a>
+<span class="sourceLineNo">102</span>                    tb.add(descriptor);<a name="line.102"></a>
+<span class="sourceLineNo">103</span>                }<a name="line.103"></a>
+<span class="sourceLineNo">104</span>            }<a name="line.104"></a>
+<span class="sourceLineNo">105</span>            for (AttributeDescriptor descriptor : features.getSchema().getAttributeDescriptors()) {<a name="line.105"></a>
+<span class="sourceLineNo">106</span>                if (!sameNames(delegate.getSchema(), descriptor)<a name="line.106"></a>
+<span class="sourceLineNo">107</span>                        &amp;&amp; !sameTypes(delegate.getSchema(), descriptor)) {<a name="line.107"></a>
+<span class="sourceLineNo">108</span>                    tb.add(descriptor);<a name="line.108"></a>
+<span class="sourceLineNo">109</span>                }<a name="line.109"></a>
+<span class="sourceLineNo">110</span>            }<a name="line.110"></a>
+<span class="sourceLineNo">111</span><a name="line.111"></a>
+<span class="sourceLineNo">112</span>            tb.setCRS(delegate.getSchema().getCoordinateReferenceSystem());<a name="line.112"></a>
+<span class="sourceLineNo">113</span>            tb.setNamespaceURI(delegate.getSchema().getName().getNamespaceURI());<a name="line.113"></a>
+<span class="sourceLineNo">114</span>            tb.setName(delegate.getSchema().getName());<a name="line.114"></a>
+<span class="sourceLineNo">115</span>            this.schema = tb.buildFeatureType();<a name="line.115"></a>
+<span class="sourceLineNo">116</span>        }<a name="line.116"></a>
+<span class="sourceLineNo">117</span><a name="line.117"></a>
+<span class="sourceLineNo">118</span>        @Override<a name="line.118"></a>
+<span class="sourceLineNo">119</span>        public SimpleFeatureIterator features() {<a name="line.119"></a>
+<span class="sourceLineNo">120</span>            return new UnitedFeatureIterator(delegate.features(), delegate, features.features(),<a name="line.120"></a>
+<span class="sourceLineNo">121</span>                    features, getSchema());<a name="line.121"></a>
+<span class="sourceLineNo">122</span>        }<a name="line.122"></a>
+<span class="sourceLineNo">123</span>        <a name="line.123"></a>
+<span class="sourceLineNo">124</span>        @Override<a name="line.124"></a>
+<span class="sourceLineNo">125</span>        public ReferencedEnvelope getBounds() {<a name="line.125"></a>
+<span class="sourceLineNo">126</span>            ReferencedEnvelope envelope = ReferencedEnvelope.create(super.getBounds());<a name="line.126"></a>
+<span class="sourceLineNo">127</span>            envelope.expandToInclude(features.getBounds());<a name="line.127"></a>
+<span class="sourceLineNo">128</span>            return envelope;<a name="line.128"></a>
+<span class="sourceLineNo">129</span>        }<a name="line.129"></a>
+<span class="sourceLineNo">130</span>        <a name="line.130"></a>
+<span class="sourceLineNo">131</span>        @Override<a name="line.131"></a>
+<span class="sourceLineNo">132</span>        public SimpleFeatureType getSchema() {<a name="line.132"></a>
+<span class="sourceLineNo">133</span>            return this.schema;<a name="line.133"></a>
+<span class="sourceLineNo">134</span>        }<a name="line.134"></a>
+<span class="sourceLineNo">135</span><a name="line.135"></a>
+<span class="sourceLineNo">136</span>        @Override<a name="line.136"></a>
+<span class="sourceLineNo">137</span>        public int size() {<a name="line.137"></a>
+<span class="sourceLineNo">138</span>            return super.size() + features.size(); <a name="line.138"></a>
+<span class="sourceLineNo">139</span>        }<a name="line.139"></a>
+<span class="sourceLineNo">140</span><a name="line.140"></a>
+<span class="sourceLineNo">141</span>        @Override<a name="line.141"></a>
+<span class="sourceLineNo">142</span>        public SimpleFeatureCollection subCollection(Filter filter) {<a name="line.142"></a>
+<span class="sourceLineNo">143</span>            try {<a name="line.143"></a>
+<span class="sourceLineNo">144</span>                return new UnitedFeatureCollection(super.subCollection(filter),<a name="line.144"></a>
+<span class="sourceLineNo">145</span>                        features.subCollection(filter));<a name="line.145"></a>
+<span class="sourceLineNo">146</span>            } catch (ClassNotFoundException e) {<a name="line.146"></a>
+<span class="sourceLineNo">147</span>                throw new RuntimeException("ClassNotFoundException", e);<a name="line.147"></a>
+<span class="sourceLineNo">148</span>            }<a name="line.148"></a>
+<span class="sourceLineNo">149</span>        }<a name="line.149"></a>
+<span class="sourceLineNo">150</span><a name="line.150"></a>
+<span class="sourceLineNo">151</span>        private boolean sameNames(SimpleFeatureType schema, AttributeDescriptor f) {<a name="line.151"></a>
+<span class="sourceLineNo">152</span>            for (AttributeDescriptor descriptor : schema.getAttributeDescriptors()) {<a name="line.152"></a>
+<span class="sourceLineNo">153</span>                if (descriptor.getName().equals(f.getName())) {<a name="line.153"></a>
+<span class="sourceLineNo">154</span>                    return true;<a name="line.154"></a>
+<span class="sourceLineNo">155</span>                }<a name="line.155"></a>
+<span class="sourceLineNo">156</span>            }<a name="line.156"></a>
+<span class="sourceLineNo">157</span>            return false;<a name="line.157"></a>
+<span class="sourceLineNo">158</span>        }<a name="line.158"></a>
+<span class="sourceLineNo">159</span><a name="line.159"></a>
+<span class="sourceLineNo">160</span>        private boolean sameTypes(SimpleFeatureType schema, AttributeDescriptor f) {<a name="line.160"></a>
+<span class="sourceLineNo">161</span>            for (AttributeDescriptor descriptor : schema.getAttributeDescriptors()) {<a name="line.161"></a>
+<span class="sourceLineNo">162</span>                if (descriptor.getType().equals(f.getType())) {<a name="line.162"></a>
+<span class="sourceLineNo">163</span>                    return true;<a name="line.163"></a>
+<span class="sourceLineNo">164</span>                }<a name="line.164"></a>
+<span class="sourceLineNo">165</span>            }<a name="line.165"></a>
+<span class="sourceLineNo">166</span>            return false;<a name="line.166"></a>
+<span class="sourceLineNo">167</span>        }<a name="line.167"></a>
+<span class="sourceLineNo">168</span>    }<a name="line.168"></a>
+<span class="sourceLineNo">169</span><a name="line.169"></a>
+<span class="sourceLineNo">170</span>    static class UnitedFeatureIterator implements SimpleFeatureIterator {<a name="line.170"></a>
+<span class="sourceLineNo">171</span><a name="line.171"></a>
+<span class="sourceLineNo">172</span>        SimpleFeatureIterator firstDelegate;<a name="line.172"></a>
+<span class="sourceLineNo">173</span><a name="line.173"></a>
+<span class="sourceLineNo">174</span>        SimpleFeatureIterator secondDelegate;<a name="line.174"></a>
+<span class="sourceLineNo">175</span><a name="line.175"></a>
+<span class="sourceLineNo">176</span>        SimpleFeatureCollection firstCollection;<a name="line.176"></a>
+<span class="sourceLineNo">177</span><a name="line.177"></a>
+<span class="sourceLineNo">178</span>        SimpleFeatureCollection secondCollection;<a name="line.178"></a>
+<span class="sourceLineNo">179</span><a name="line.179"></a>
+<span class="sourceLineNo">180</span>        SimpleFeatureBuilder fb;<a name="line.180"></a>
+<span class="sourceLineNo">181</span><a name="line.181"></a>
+<span class="sourceLineNo">182</span>        SimpleFeature next;<a name="line.182"></a>
+<span class="sourceLineNo">183</span><a name="line.183"></a>
+<span class="sourceLineNo">184</span>        int iterationIndex = 0;<a name="line.184"></a>
+<span class="sourceLineNo">185</span><a name="line.185"></a>
+<span class="sourceLineNo">186</span>        public UnitedFeatureIterator(SimpleFeatureIterator firstDelegate,<a name="line.186"></a>
+<span class="sourceLineNo">187</span>                SimpleFeatureCollection firstCollection, SimpleFeatureIterator secondDelegate,<a name="line.187"></a>
+<span class="sourceLineNo">188</span>                SimpleFeatureCollection secondCollection, SimpleFeatureType schema) {<a name="line.188"></a>
+<span class="sourceLineNo">189</span>            this.firstDelegate = firstDelegate;<a name="line.189"></a>
+<span class="sourceLineNo">190</span>            this.secondDelegate = secondDelegate;<a name="line.190"></a>
+<span class="sourceLineNo">191</span>            this.firstCollection = firstCollection;<a name="line.191"></a>
+<span class="sourceLineNo">192</span>            this.secondCollection = secondCollection;<a name="line.192"></a>
+<span class="sourceLineNo">193</span>            fb = new SimpleFeatureBuilder(schema);<a name="line.193"></a>
+<span class="sourceLineNo">194</span>        }<a name="line.194"></a>
+<span class="sourceLineNo">195</span><a name="line.195"></a>
+<span class="sourceLineNo">196</span>        @Override<a name="line.196"></a>
+<span class="sourceLineNo">197</span>        public void close() {<a name="line.197"></a>
+<span class="sourceLineNo">198</span>            firstDelegate.close();<a name="line.198"></a>
+<span class="sourceLineNo">199</span>            secondDelegate.close();<a name="line.199"></a>
+<span class="sourceLineNo">200</span>        }<a name="line.200"></a>
+<span class="sourceLineNo">201</span><a name="line.201"></a>
+<span class="sourceLineNo">202</span>        @Override<a name="line.202"></a>
+<span class="sourceLineNo">203</span>        public boolean hasNext() {<a name="line.203"></a>
+<span class="sourceLineNo">204</span><a name="line.204"></a>
+<span class="sourceLineNo">205</span>            while (next == null &amp;&amp; firstDelegate.hasNext()) {<a name="line.205"></a>
+<span class="sourceLineNo">206</span>                SimpleFeature f = firstDelegate.next();<a name="line.206"></a>
+<span class="sourceLineNo">207</span>                for (PropertyDescriptor property : fb.getFeatureType().getDescriptors()) {<a name="line.207"></a>
+<span class="sourceLineNo">208</span>                    fb.set(property.getName(), f.getAttribute(property.getName()));<a name="line.208"></a>
+<span class="sourceLineNo">209</span><a name="line.209"></a>
+<span class="sourceLineNo">210</span>                }<a name="line.210"></a>
+<span class="sourceLineNo">211</span>                next = fb.buildFeature(Integer.toString(iterationIndex));<a name="line.211"></a>
+<span class="sourceLineNo">212</span>                fb.reset();<a name="line.212"></a>
+<span class="sourceLineNo">213</span>                iterationIndex++;<a name="line.213"></a>
+<span class="sourceLineNo">214</span>            }<a name="line.214"></a>
+<span class="sourceLineNo">215</span>            while (next == null &amp;&amp; secondDelegate.hasNext() &amp;&amp; !firstDelegate.hasNext()) {<a name="line.215"></a>
+<span class="sourceLineNo">216</span>                SimpleFeature f = secondDelegate.next();<a name="line.216"></a>
+<span class="sourceLineNo">217</span>                for (PropertyDescriptor property : fb.getFeatureType().getDescriptors()) {<a name="line.217"></a>
+<span class="sourceLineNo">218</span>                    fb.set(property.getName(), f.getAttribute(property.getName()));<a name="line.218"></a>
+<span class="sourceLineNo">219</span>                }<a name="line.219"></a>
+<span class="sourceLineNo">220</span>                next = fb.buildFeature(Integer.toString(iterationIndex));<a name="line.220"></a>
+<span class="sourceLineNo">221</span>                fb.reset();<a name="line.221"></a>
+<span class="sourceLineNo">222</span>                iterationIndex++;<a name="line.222"></a>
+<span class="sourceLineNo">223</span>            }<a name="line.223"></a>
+<span class="sourceLineNo">224</span>            return next != null;<a name="line.224"></a>
+<span class="sourceLineNo">225</span>        }<a name="line.225"></a>
+<span class="sourceLineNo">226</span><a name="line.226"></a>
+<span class="sourceLineNo">227</span>        @Override<a name="line.227"></a>
+<span class="sourceLineNo">228</span>        public SimpleFeature next() throws NoSuchElementException {<a name="line.228"></a>
+<span class="sourceLineNo">229</span>            if (!hasNext()) {<a name="line.229"></a>
+<span class="sourceLineNo">230</span>                throw new NoSuchElementException("hasNext() returned false!");<a name="line.230"></a>
+<span class="sourceLineNo">231</span>            }<a name="line.231"></a>
+<span class="sourceLineNo">232</span><a name="line.232"></a>
+<span class="sourceLineNo">233</span>            SimpleFeature result = next;<a name="line.233"></a>
+<span class="sourceLineNo">234</span>            next = null;<a name="line.234"></a>
+<span class="sourceLineNo">235</span>            return result;<a name="line.235"></a>
+<span class="sourceLineNo">236</span>        }<a name="line.236"></a>
+<span class="sourceLineNo">237</span><a name="line.237"></a>
+<span class="sourceLineNo">238</span>    }<a name="line.238"></a>
+<span class="sourceLineNo">239</span>}<a name="line.239"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

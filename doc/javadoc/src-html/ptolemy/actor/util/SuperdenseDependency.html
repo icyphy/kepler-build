@@ -1,0 +1,348 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../../stylesheet.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>/* Interface representing a dependency between ports.<a name="line.1"></a>
+<span class="sourceLineNo">002</span><a name="line.2"></a>
+<span class="sourceLineNo">003</span> Copyright (c) 2008-2014 The Regents of the University of California.<a name="line.3"></a>
+<span class="sourceLineNo">004</span> All rights reserved.<a name="line.4"></a>
+<span class="sourceLineNo">005</span> Permission is hereby granted, without written agreement and without<a name="line.5"></a>
+<span class="sourceLineNo">006</span> license or royalty fees, to use, copy, modify, and distribute this<a name="line.6"></a>
+<span class="sourceLineNo">007</span> software and its documentation for any purpose, provided that the above<a name="line.7"></a>
+<span class="sourceLineNo">008</span> copyright notice and the following two paragraphs appear in all copies<a name="line.8"></a>
+<span class="sourceLineNo">009</span> of this software.<a name="line.9"></a>
+<span class="sourceLineNo">010</span><a name="line.10"></a>
+<span class="sourceLineNo">011</span> IN NO EVENT SHALL THE UNIVERSITY OF CALIFORNIA BE LIABLE TO ANY PARTY<a name="line.11"></a>
+<span class="sourceLineNo">012</span> FOR DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES<a name="line.12"></a>
+<span class="sourceLineNo">013</span> ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION, EVEN IF<a name="line.13"></a>
+<span class="sourceLineNo">014</span> THE UNIVERSITY OF CALIFORNIA HAS BEEN ADVISED OF THE POSSIBILITY OF<a name="line.14"></a>
+<span class="sourceLineNo">015</span> SUCH DAMAGE.<a name="line.15"></a>
+<span class="sourceLineNo">016</span><a name="line.16"></a>
+<span class="sourceLineNo">017</span> THE UNIVERSITY OF CALIFORNIA SPECIFICALLY DISCLAIMS ANY WARRANTIES,<a name="line.17"></a>
+<span class="sourceLineNo">018</span> INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF<a name="line.18"></a>
+<span class="sourceLineNo">019</span> MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE<a name="line.19"></a>
+<span class="sourceLineNo">020</span> PROVIDED HEREUNDER IS ON AN "AS IS" BASIS, AND THE UNIVERSITY OF<a name="line.20"></a>
+<span class="sourceLineNo">021</span> CALIFORNIA HAS NO OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT, UPDATES,<a name="line.21"></a>
+<span class="sourceLineNo">022</span> ENHANCEMENTS, OR MODIFICATIONS.<a name="line.22"></a>
+<span class="sourceLineNo">023</span><a name="line.23"></a>
+<span class="sourceLineNo">024</span> PT_COPYRIGHT_VERSION_2<a name="line.24"></a>
+<span class="sourceLineNo">025</span> COPYRIGHTENDKEY<a name="line.25"></a>
+<span class="sourceLineNo">026</span><a name="line.26"></a>
+<span class="sourceLineNo">027</span> */<a name="line.27"></a>
+<span class="sourceLineNo">028</span>package ptolemy.actor.util;<a name="line.28"></a>
+<span class="sourceLineNo">029</span><a name="line.29"></a>
+<span class="sourceLineNo">030</span>///////////////////////////////////////////////////////////////////<a name="line.30"></a>
+<span class="sourceLineNo">031</span>//// SuperdenseDependency<a name="line.31"></a>
+<span class="sourceLineNo">032</span><a name="line.32"></a>
+<span class="sourceLineNo">033</span>/**<a name="line.33"></a>
+<span class="sourceLineNo">034</span> This dependency represents causal relationships that have a real value<a name="line.34"></a>
+<span class="sourceLineNo">035</span> and a superdense time index. If the real value is infinite, this<a name="line.35"></a>
+<span class="sourceLineNo">036</span> represents the lack of a causal relationship.<a name="line.36"></a>
+<span class="sourceLineNo">037</span> A finite positive real value represents a causal dependency with (typically)<a name="line.37"></a>
+<span class="sourceLineNo">038</span> a time delay. A zero value represents no time delay, but whether there is<a name="line.38"></a>
+<span class="sourceLineNo">039</span> an immediate causal relationship depends on the index. If the index is 0,<a name="line.39"></a>
+<span class="sourceLineNo">040</span> then there is an immediate causal relationship. Otherwise, there is not.<a name="line.40"></a>
+<span class="sourceLineNo">041</span> See the paper "Causality Interfaces for Actor Networks" by Ye Zhou and<a name="line.41"></a>
+<span class="sourceLineNo">042</span> Edward A. Lee, ACM Transactions on Embedded Computing Systems (TECS),<a name="line.42"></a>
+<span class="sourceLineNo">043</span> April 2008, as available as &lt;a href="http://www.eecs.berkeley.edu/Pubs/TechRpts/2006/EECS-2006-148.pdf"&gt;<a name="line.43"></a>
+<span class="sourceLineNo">044</span> Technical Report No. UCB/EECS-2006-148&lt;/a&gt;,<a name="line.44"></a>
+<span class="sourceLineNo">045</span> November 16, 2006.<a name="line.45"></a>
+<span class="sourceLineNo">046</span><a name="line.46"></a>
+<span class="sourceLineNo">047</span> @author Edward A. Lee, Slobodan Matic, Jia Zou<a name="line.47"></a>
+<span class="sourceLineNo">048</span> @version $Id$<a name="line.48"></a>
+<span class="sourceLineNo">049</span> @since Ptolemy II 8.0<a name="line.49"></a>
+<span class="sourceLineNo">050</span> @Pt.ProposedRating Yellow (eal)<a name="line.50"></a>
+<span class="sourceLineNo">051</span> @Pt.AcceptedRating Red (eal)<a name="line.51"></a>
+<span class="sourceLineNo">052</span> */<a name="line.52"></a>
+<span class="sourceLineNo">053</span>public class SuperdenseDependency extends BooleanDependency {<a name="line.53"></a>
+<span class="sourceLineNo">054</span><a name="line.54"></a>
+<span class="sourceLineNo">055</span>    /** Construct a dependency with the specified value.<a name="line.55"></a>
+<span class="sourceLineNo">056</span>     *  The constructor is private. Use valueOf() to construct<a name="line.56"></a>
+<span class="sourceLineNo">057</span>     *  an instance.<a name="line.57"></a>
+<span class="sourceLineNo">058</span>     *  @param time The real part of the dependency.<a name="line.58"></a>
+<span class="sourceLineNo">059</span>     *  @param index The supersense index part of the dependency.<a name="line.59"></a>
+<span class="sourceLineNo">060</span>     */<a name="line.60"></a>
+<span class="sourceLineNo">061</span>    private SuperdenseDependency(double time, int index) {<a name="line.61"></a>
+<span class="sourceLineNo">062</span>        super(time != Double.POSITIVE_INFINITY);<a name="line.62"></a>
+<span class="sourceLineNo">063</span>        _time = time;<a name="line.63"></a>
+<span class="sourceLineNo">064</span>        _index = index;<a name="line.64"></a>
+<span class="sourceLineNo">065</span>    }<a name="line.65"></a>
+<span class="sourceLineNo">066</span><a name="line.66"></a>
+<span class="sourceLineNo">067</span>    ///////////////////////////////////////////////////////////////////<a name="line.67"></a>
+<span class="sourceLineNo">068</span>    ////                         public methods                    ////<a name="line.68"></a>
+<span class="sourceLineNo">069</span><a name="line.69"></a>
+<span class="sourceLineNo">070</span>    /** Return Dependency.LESS_THAN, EQUALS, or GREATER_THAN depending<a name="line.70"></a>
+<span class="sourceLineNo">071</span>     *  on whether the argument is less than, equal to, or greater than<a name="line.71"></a>
+<span class="sourceLineNo">072</span>     *  this dependency. Real dependencies are totally ordered, so<a name="line.72"></a>
+<span class="sourceLineNo">073</span>     *  this never returns Dependency.INCOMPARABLE. The order is the<a name="line.73"></a>
+<span class="sourceLineNo">074</span>     *  usual numerical ordering of doubles, with Double.POSITIVE_INFINITY<a name="line.74"></a>
+<span class="sourceLineNo">075</span>     *  on top.<a name="line.75"></a>
+<span class="sourceLineNo">076</span>     *  &lt;p&gt;<a name="line.76"></a>
+<span class="sourceLineNo">077</span>     *  In the case where both dependencies have _time value equal to<a name="line.77"></a>
+<span class="sourceLineNo">078</span>     *  Double.POSITIVE_INFINITY, these two dependencies are equal, even<a name="line.78"></a>
+<span class="sourceLineNo">079</span>     *  though its indices may differ. This conforms with valueOf() method.<a name="line.79"></a>
+<span class="sourceLineNo">080</span>     *  @see #valueOf(double, int)<a name="line.80"></a>
+<span class="sourceLineNo">081</span>     *  @param dependency The dependency to compare against.<a name="line.81"></a>
+<span class="sourceLineNo">082</span>     *  @return The result of comparison.<a name="line.82"></a>
+<span class="sourceLineNo">083</span>     *  @exception ClassCastException If the argument is not an instance<a name="line.83"></a>
+<span class="sourceLineNo">084</span>     *   of SuperdenseDependency.<a name="line.84"></a>
+<span class="sourceLineNo">085</span>     */<a name="line.85"></a>
+<span class="sourceLineNo">086</span>    @Override<a name="line.86"></a>
+<span class="sourceLineNo">087</span>    public int compareTo(Dependency dependency) {<a name="line.87"></a>
+<span class="sourceLineNo">088</span>        if (equals(dependency)) {<a name="line.88"></a>
+<span class="sourceLineNo">089</span>            return Dependency.EQUALS;<a name="line.89"></a>
+<span class="sourceLineNo">090</span>        }<a name="line.90"></a>
+<span class="sourceLineNo">091</span>        if (((SuperdenseDependency) dependency)._time == Double.POSITIVE_INFINITY<a name="line.91"></a>
+<span class="sourceLineNo">092</span>                &amp;&amp; _time == Double.POSITIVE_INFINITY) {<a name="line.92"></a>
+<span class="sourceLineNo">093</span>            return Dependency.EQUALS;<a name="line.93"></a>
+<span class="sourceLineNo">094</span>        }<a name="line.94"></a>
+<span class="sourceLineNo">095</span>        if (_time &lt; ((SuperdenseDependency) dependency)._time) {<a name="line.95"></a>
+<span class="sourceLineNo">096</span>            return Dependency.LESS_THAN;<a name="line.96"></a>
+<span class="sourceLineNo">097</span>        }<a name="line.97"></a>
+<span class="sourceLineNo">098</span>        if (_time == ((SuperdenseDependency) dependency)._time<a name="line.98"></a>
+<span class="sourceLineNo">099</span>                &amp;&amp; _index &lt; ((SuperdenseDependency) dependency)._index) {<a name="line.99"></a>
+<span class="sourceLineNo">100</span>            return Dependency.LESS_THAN;<a name="line.100"></a>
+<span class="sourceLineNo">101</span>        }<a name="line.101"></a>
+<span class="sourceLineNo">102</span>        return Dependency.GREATER_THAN;<a name="line.102"></a>
+<span class="sourceLineNo">103</span>    }<a name="line.103"></a>
+<span class="sourceLineNo">104</span><a name="line.104"></a>
+<span class="sourceLineNo">105</span>    /** Return true if the value of this dependency equals that<a name="line.105"></a>
+<span class="sourceLineNo">106</span>     *  of the specified one, and the specified one is an instance<a name="line.106"></a>
+<span class="sourceLineNo">107</span>     *  of RealDependency.<a name="line.107"></a>
+<span class="sourceLineNo">108</span>     *  &lt;p&gt;<a name="line.108"></a>
+<span class="sourceLineNo">109</span>     *  In the case where both dependencies have _time value equal to<a name="line.109"></a>
+<span class="sourceLineNo">110</span>     *  Double.POSITIVE_INFINITY, these two dependencies are equal, even<a name="line.110"></a>
+<span class="sourceLineNo">111</span>     *  though its indices may differ. This conforms with valueOf() method.<a name="line.111"></a>
+<span class="sourceLineNo">112</span>     *  @see #valueOf(double, int)<a name="line.112"></a>
+<span class="sourceLineNo">113</span>     *  @param object The object to compare against.<a name="line.113"></a>
+<span class="sourceLineNo">114</span>     *  @return true if this object is the same as the object argument.<a name="line.114"></a>
+<span class="sourceLineNo">115</span>     */<a name="line.115"></a>
+<span class="sourceLineNo">116</span>    @Override<a name="line.116"></a>
+<span class="sourceLineNo">117</span>    public boolean equals(Object object) {<a name="line.117"></a>
+<span class="sourceLineNo">118</span>        // See http://www.technofundo.com/tech/java/equalhash.html<a name="line.118"></a>
+<span class="sourceLineNo">119</span>        if (object == this) {<a name="line.119"></a>
+<span class="sourceLineNo">120</span>            return true;<a name="line.120"></a>
+<span class="sourceLineNo">121</span>        }<a name="line.121"></a>
+<span class="sourceLineNo">122</span>        if (object == null || object.getClass() != getClass()) {<a name="line.122"></a>
+<span class="sourceLineNo">123</span>            return false;<a name="line.123"></a>
+<span class="sourceLineNo">124</span>        } else {<a name="line.124"></a>
+<span class="sourceLineNo">125</span>            if (((SuperdenseDependency) object)._time == Double.POSITIVE_INFINITY<a name="line.125"></a>
+<span class="sourceLineNo">126</span>                    &amp;&amp; _time == Double.POSITIVE_INFINITY) {<a name="line.126"></a>
+<span class="sourceLineNo">127</span>                return true;<a name="line.127"></a>
+<span class="sourceLineNo">128</span>            }<a name="line.128"></a>
+<span class="sourceLineNo">129</span>            return _time == ((SuperdenseDependency) object)._time<a name="line.129"></a>
+<span class="sourceLineNo">130</span>                    &amp;&amp; _index == ((SuperdenseDependency) object)._index;<a name="line.130"></a>
+<span class="sourceLineNo">131</span>        }<a name="line.131"></a>
+<span class="sourceLineNo">132</span>    }<a name="line.132"></a>
+<span class="sourceLineNo">133</span><a name="line.133"></a>
+<span class="sourceLineNo">134</span>    /** Return the same hashCode that that Java Double object would<a name="line.134"></a>
+<span class="sourceLineNo">135</span>     *  return had it the same value as the real part of the value<a name="line.135"></a>
+<span class="sourceLineNo">136</span>     *  of this dependency.<a name="line.136"></a>
+<span class="sourceLineNo">137</span>     */<a name="line.137"></a>
+<span class="sourceLineNo">138</span>    @Override<a name="line.138"></a>
+<span class="sourceLineNo">139</span>    public int hashCode() {<a name="line.139"></a>
+<span class="sourceLineNo">140</span>        long v = Double.doubleToLongBits(_time);<a name="line.140"></a>
+<span class="sourceLineNo">141</span>        return (int) (v ^ v &gt;&gt;&gt; 32);<a name="line.141"></a>
+<span class="sourceLineNo">142</span>    }<a name="line.142"></a>
+<span class="sourceLineNo">143</span><a name="line.143"></a>
+<span class="sourceLineNo">144</span>    /** Return the index value of this dependency.<a name="line.144"></a>
+<span class="sourceLineNo">145</span>     *  @return The index part of the dependency.<a name="line.145"></a>
+<span class="sourceLineNo">146</span>     */<a name="line.146"></a>
+<span class="sourceLineNo">147</span>    public int indexValue() {<a name="line.147"></a>
+<span class="sourceLineNo">148</span>        return _index;<a name="line.148"></a>
+<span class="sourceLineNo">149</span>    }<a name="line.149"></a>
+<span class="sourceLineNo">150</span><a name="line.150"></a>
+<span class="sourceLineNo">151</span>    /** Return a dependency that results from parallel composition of<a name="line.151"></a>
+<span class="sourceLineNo">152</span>     *  this one and the specified one.<a name="line.152"></a>
+<span class="sourceLineNo">153</span>     *  @param dependency The dependency to add.<a name="line.153"></a>
+<span class="sourceLineNo">154</span>     *  @return A dependency whose value is the minimum of the two dependency<a name="line.154"></a>
+<span class="sourceLineNo">155</span>     *   values.<a name="line.155"></a>
+<span class="sourceLineNo">156</span>     *  @exception ClassCastException if dependency is not a SuperdenseDependency.<a name="line.156"></a>
+<span class="sourceLineNo">157</span>     */<a name="line.157"></a>
+<span class="sourceLineNo">158</span>    @Override<a name="line.158"></a>
+<span class="sourceLineNo">159</span>    public Dependency oPlus(Dependency dependency) {<a name="line.159"></a>
+<span class="sourceLineNo">160</span>        // NOTE: Findbugs reports this as an Unchecked/unconfirmed cast<a name="line.160"></a>
+<span class="sourceLineNo">161</span>        if (((SuperdenseDependency) dependency)._time &lt; _time<a name="line.161"></a>
+<span class="sourceLineNo">162</span>                || ((SuperdenseDependency) dependency)._time == _time<a name="line.162"></a>
+<span class="sourceLineNo">163</span>                        &amp;&amp; ((SuperdenseDependency) dependency)._index &lt; _index) {<a name="line.163"></a>
+<span class="sourceLineNo">164</span>            return dependency;<a name="line.164"></a>
+<span class="sourceLineNo">165</span>        }<a name="line.165"></a>
+<span class="sourceLineNo">166</span>        return this;<a name="line.166"></a>
+<span class="sourceLineNo">167</span>    }<a name="line.167"></a>
+<span class="sourceLineNo">168</span><a name="line.168"></a>
+<span class="sourceLineNo">169</span>    /** Return the dependency that when added to any other<a name="line.169"></a>
+<span class="sourceLineNo">170</span>     *  dependency using oPlus() yields the other dependency.<a name="line.170"></a>
+<span class="sourceLineNo">171</span>     *  @return The additive identity.<a name="line.171"></a>
+<span class="sourceLineNo">172</span>     */<a name="line.172"></a>
+<span class="sourceLineNo">173</span>    @Override<a name="line.173"></a>
+<span class="sourceLineNo">174</span>    public Dependency oPlusIdentity() {<a name="line.174"></a>
+<span class="sourceLineNo">175</span>        return OPLUS_IDENTITY;<a name="line.175"></a>
+<span class="sourceLineNo">176</span>    }<a name="line.176"></a>
+<span class="sourceLineNo">177</span><a name="line.177"></a>
+<span class="sourceLineNo">178</span>    /** Return a dependency that results from serial composition of<a name="line.178"></a>
+<span class="sourceLineNo">179</span>     *  this one and the specified one. The real part of the result<a name="line.179"></a>
+<span class="sourceLineNo">180</span>     *  is the sum of the real parts of this and the specified dependency.<a name="line.180"></a>
+<span class="sourceLineNo">181</span>     *  The index, however, will be nonzero only if the specified<a name="line.181"></a>
+<span class="sourceLineNo">182</span>     *  dependency has a real part equal to 0.0. In that case,<a name="line.182"></a>
+<span class="sourceLineNo">183</span>     *  the index of the result will be the sum of indices of<a name="line.183"></a>
+<span class="sourceLineNo">184</span>     *  this and the specified dependency.<a name="line.184"></a>
+<span class="sourceLineNo">185</span>     *  NOTE: This implementation of oTimes is not commutative.<a name="line.185"></a>
+<span class="sourceLineNo">186</span>     *  Fortunately, the theory does not require it to be.<a name="line.186"></a>
+<span class="sourceLineNo">187</span>     *  @param dependency The dependency to multiply.<a name="line.187"></a>
+<span class="sourceLineNo">188</span>     *  @return A dependency whose value is the sum of the value of<a name="line.188"></a>
+<span class="sourceLineNo">189</span>     *   this one and the specified one.<a name="line.189"></a>
+<span class="sourceLineNo">190</span>     *  @exception ClassCastException if dependency is not a RealDependency.<a name="line.190"></a>
+<span class="sourceLineNo">191</span>     */<a name="line.191"></a>
+<span class="sourceLineNo">192</span>    @Override<a name="line.192"></a>
+<span class="sourceLineNo">193</span>    public Dependency oTimes(Dependency dependency) {<a name="line.193"></a>
+<span class="sourceLineNo">194</span>        int index = 0;<a name="line.194"></a>
+<span class="sourceLineNo">195</span>        // NOTE: Findbugs reports this as an Unchecked/unconfirmed cast<a name="line.195"></a>
+<span class="sourceLineNo">196</span>        if (((SuperdenseDependency) dependency)._time == 0.0) {<a name="line.196"></a>
+<span class="sourceLineNo">197</span>            index = _index + ((SuperdenseDependency) dependency)._index;<a name="line.197"></a>
+<span class="sourceLineNo">198</span>        }<a name="line.198"></a>
+<span class="sourceLineNo">199</span>        return new SuperdenseDependency(<a name="line.199"></a>
+<span class="sourceLineNo">200</span>                _time + ((SuperdenseDependency) dependency)._time, index);<a name="line.200"></a>
+<span class="sourceLineNo">201</span>    }<a name="line.201"></a>
+<span class="sourceLineNo">202</span><a name="line.202"></a>
+<span class="sourceLineNo">203</span>    /** Return the dependency that when multiplied by any other<a name="line.203"></a>
+<span class="sourceLineNo">204</span>     *  dependency using oTimes() yields the other dependency.<a name="line.204"></a>
+<span class="sourceLineNo">205</span>     *  @return The multiplicative identity.<a name="line.205"></a>
+<span class="sourceLineNo">206</span>     */<a name="line.206"></a>
+<span class="sourceLineNo">207</span>    @Override<a name="line.207"></a>
+<span class="sourceLineNo">208</span>    public Dependency oTimesIdentity() {<a name="line.208"></a>
+<span class="sourceLineNo">209</span>        return OTIMES_IDENTITY;<a name="line.209"></a>
+<span class="sourceLineNo">210</span>    }<a name="line.210"></a>
+<span class="sourceLineNo">211</span><a name="line.211"></a>
+<span class="sourceLineNo">212</span>    /** Return the time value of this dependency.<a name="line.212"></a>
+<span class="sourceLineNo">213</span>     *  @return The real part of the dependency.<a name="line.213"></a>
+<span class="sourceLineNo">214</span>     */<a name="line.214"></a>
+<span class="sourceLineNo">215</span>    public double timeValue() {<a name="line.215"></a>
+<span class="sourceLineNo">216</span>        return _time;<a name="line.216"></a>
+<span class="sourceLineNo">217</span>    }<a name="line.217"></a>
+<span class="sourceLineNo">218</span><a name="line.218"></a>
+<span class="sourceLineNo">219</span>    /** Return a string representation in the form<a name="line.219"></a>
+<span class="sourceLineNo">220</span>     *  "SuperdenseDependency(_time, _index)".<a name="line.220"></a>
+<span class="sourceLineNo">221</span>     *  @return A string representation.<a name="line.221"></a>
+<span class="sourceLineNo">222</span>     */<a name="line.222"></a>
+<span class="sourceLineNo">223</span>    @Override<a name="line.223"></a>
+<span class="sourceLineNo">224</span>    public String toString() {<a name="line.224"></a>
+<span class="sourceLineNo">225</span>        return "SuperdenseDependency(" + _time + ", " + _index + ")";<a name="line.225"></a>
+<span class="sourceLineNo">226</span>    }<a name="line.226"></a>
+<span class="sourceLineNo">227</span><a name="line.227"></a>
+<span class="sourceLineNo">228</span>    /** Return an instance of SuperdenseDependency with the specified<a name="line.228"></a>
+<span class="sourceLineNo">229</span>     *  time and index value. This is preferable to use over the constructor<a name="line.229"></a>
+<span class="sourceLineNo">230</span>     *  because it uses the same instances for the most common<a name="line.230"></a>
+<span class="sourceLineNo">231</span>     *  values.<a name="line.231"></a>
+<span class="sourceLineNo">232</span>     *  @param time The time value.<a name="line.232"></a>
+<span class="sourceLineNo">233</span>     *  @param index The index value.<a name="line.233"></a>
+<span class="sourceLineNo">234</span>     *  @return an instance of RealDependency, if value<a name="line.234"></a>
+<span class="sourceLineNo">235</span>     *  is (0.0, 0) then {@link #OTIMES_IDENTITY} is returned, if<a name="line.235"></a>
+<span class="sourceLineNo">236</span>     *  value is (Double.POSITIVE_INFINITY, n) for any n,<a name="line.236"></a>
+<span class="sourceLineNo">237</span>     *  then {@link #OPLUS_IDENTITY}<a name="line.237"></a>
+<span class="sourceLineNo">238</span>     *  is returned.  Otherwise the SuperdenseDependency constructor<a name="line.238"></a>
+<span class="sourceLineNo">239</span>     *  is called.<a name="line.239"></a>
+<span class="sourceLineNo">240</span>     */<a name="line.240"></a>
+<span class="sourceLineNo">241</span>    public static SuperdenseDependency valueOf(double time, int index) {<a name="line.241"></a>
+<span class="sourceLineNo">242</span>        if (time == 0.0 &amp;&amp; index == 0) {<a name="line.242"></a>
+<span class="sourceLineNo">243</span>            return OTIMES_IDENTITY;<a name="line.243"></a>
+<span class="sourceLineNo">244</span>        } else if (time == Double.POSITIVE_INFINITY) {<a name="line.244"></a>
+<span class="sourceLineNo">245</span>            return OPLUS_IDENTITY;<a name="line.245"></a>
+<span class="sourceLineNo">246</span>        }<a name="line.246"></a>
+<span class="sourceLineNo">247</span>        return new SuperdenseDependency(time, index);<a name="line.247"></a>
+<span class="sourceLineNo">248</span>    }<a name="line.248"></a>
+<span class="sourceLineNo">249</span><a name="line.249"></a>
+<span class="sourceLineNo">250</span>    ///////////////////////////////////////////////////////////////////<a name="line.250"></a>
+<span class="sourceLineNo">251</span>    ////                         public variables                  ////<a name="line.251"></a>
+<span class="sourceLineNo">252</span><a name="line.252"></a>
+<span class="sourceLineNo">253</span>    // NOTE: FindBugs suggests that both these fields be final<a name="line.253"></a>
+<span class="sourceLineNo">254</span>    // "MS: Field isn't final but should be (MS_SHOULD_BE_FINAL)<a name="line.254"></a>
+<span class="sourceLineNo">255</span>    // A mutable static field could be changed by malicious code or by<a name="line.255"></a>
+<span class="sourceLineNo">256</span>    // accident from another package. The field could be made final to avoid<a name="line.256"></a>
+<span class="sourceLineNo">257</span>    // this vulnerability."<a name="line.257"></a>
+<span class="sourceLineNo">258</span><a name="line.258"></a>
+<span class="sourceLineNo">259</span>    /** The additive identity. */<a name="line.259"></a>
+<span class="sourceLineNo">260</span>    public static final SuperdenseDependency OPLUS_IDENTITY = new SuperdenseDependency(<a name="line.260"></a>
+<span class="sourceLineNo">261</span>            Double.POSITIVE_INFINITY, 0);<a name="line.261"></a>
+<span class="sourceLineNo">262</span><a name="line.262"></a>
+<span class="sourceLineNo">263</span>    /** The multiplicative identity. */<a name="line.263"></a>
+<span class="sourceLineNo">264</span>    public static final SuperdenseDependency OTIMES_IDENTITY = new SuperdenseDependency(<a name="line.264"></a>
+<span class="sourceLineNo">265</span>            0.0, 0);<a name="line.265"></a>
+<span class="sourceLineNo">266</span><a name="line.266"></a>
+<span class="sourceLineNo">267</span>    ///////////////////////////////////////////////////////////////////<a name="line.267"></a>
+<span class="sourceLineNo">268</span>    ////                         private variables                 ////<a name="line.268"></a>
+<span class="sourceLineNo">269</span><a name="line.269"></a>
+<span class="sourceLineNo">270</span>    /** The superdense time index. */<a name="line.270"></a>
+<span class="sourceLineNo">271</span>    private int _index;<a name="line.271"></a>
+<span class="sourceLineNo">272</span><a name="line.272"></a>
+<span class="sourceLineNo">273</span>    /** The real (time) value. */<a name="line.273"></a>
+<span class="sourceLineNo">274</span>    private double _time;<a name="line.274"></a>
+<span class="sourceLineNo">275</span><a name="line.275"></a>
+<span class="sourceLineNo">276</span>}<a name="line.276"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

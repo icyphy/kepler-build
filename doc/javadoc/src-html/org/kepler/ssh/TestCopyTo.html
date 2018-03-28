@@ -1,0 +1,186 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../../stylesheet.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>/*<a name="line.1"></a>
+<span class="sourceLineNo">002</span> * Copyright (c) 2004-2010 The Regents of the University of California.<a name="line.2"></a>
+<span class="sourceLineNo">003</span> * All rights reserved.<a name="line.3"></a>
+<span class="sourceLineNo">004</span> *<a name="line.4"></a>
+<span class="sourceLineNo">005</span> * '$Author: welker $'<a name="line.5"></a>
+<span class="sourceLineNo">006</span> * '$Date: 2010-05-05 22:21:26 -0700 (Wed, 05 May 2010) $' <a name="line.6"></a>
+<span class="sourceLineNo">007</span> * '$Revision: 24234 $'<a name="line.7"></a>
+<span class="sourceLineNo">008</span> * <a name="line.8"></a>
+<span class="sourceLineNo">009</span> * Permission is hereby granted, without written agreement and without<a name="line.9"></a>
+<span class="sourceLineNo">010</span> * license or royalty fees, to use, copy, modify, and distribute this<a name="line.10"></a>
+<span class="sourceLineNo">011</span> * software and its documentation for any purpose, provided that the above<a name="line.11"></a>
+<span class="sourceLineNo">012</span> * copyright notice and the following two paragraphs appear in all copies<a name="line.12"></a>
+<span class="sourceLineNo">013</span> * of this software.<a name="line.13"></a>
+<span class="sourceLineNo">014</span> *<a name="line.14"></a>
+<span class="sourceLineNo">015</span> * IN NO EVENT SHALL THE UNIVERSITY OF CALIFORNIA BE LIABLE TO ANY PARTY<a name="line.15"></a>
+<span class="sourceLineNo">016</span> * FOR DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES<a name="line.16"></a>
+<span class="sourceLineNo">017</span> * ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION, EVEN IF<a name="line.17"></a>
+<span class="sourceLineNo">018</span> * THE UNIVERSITY OF CALIFORNIA HAS BEEN ADVISED OF THE POSSIBILITY OF<a name="line.18"></a>
+<span class="sourceLineNo">019</span> * SUCH DAMAGE.<a name="line.19"></a>
+<span class="sourceLineNo">020</span> *<a name="line.20"></a>
+<span class="sourceLineNo">021</span> * THE UNIVERSITY OF CALIFORNIA SPECIFICALLY DISCLAIMS ANY WARRANTIES,<a name="line.21"></a>
+<span class="sourceLineNo">022</span> * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF<a name="line.22"></a>
+<span class="sourceLineNo">023</span> * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE<a name="line.23"></a>
+<span class="sourceLineNo">024</span> * PROVIDED HEREUNDER IS ON AN "AS IS" BASIS, AND THE UNIVERSITY OF<a name="line.24"></a>
+<span class="sourceLineNo">025</span> * CALIFORNIA HAS NO OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT, UPDATES,<a name="line.25"></a>
+<span class="sourceLineNo">026</span> * ENHANCEMENTS, OR MODIFICATIONS.<a name="line.26"></a>
+<span class="sourceLineNo">027</span> *<a name="line.27"></a>
+<span class="sourceLineNo">028</span> */<a name="line.28"></a>
+<span class="sourceLineNo">029</span><a name="line.29"></a>
+<span class="sourceLineNo">030</span>package org.kepler.ssh;<a name="line.30"></a>
+<span class="sourceLineNo">031</span><a name="line.31"></a>
+<span class="sourceLineNo">032</span>import java.io.File;<a name="line.32"></a>
+<span class="sourceLineNo">033</span>import java.util.Iterator;<a name="line.33"></a>
+<span class="sourceLineNo">034</span>import java.util.Vector;<a name="line.34"></a>
+<span class="sourceLineNo">035</span><a name="line.35"></a>
+<span class="sourceLineNo">036</span>/** Scp several local files to a remote site */<a name="line.36"></a>
+<span class="sourceLineNo">037</span>public class TestCopyTo {<a name="line.37"></a>
+<span class="sourceLineNo">038</span><a name="line.38"></a>
+<span class="sourceLineNo">039</span>        public static void main(String[] arg) throws ExecException {<a name="line.39"></a>
+<span class="sourceLineNo">040</span><a name="line.40"></a>
+<span class="sourceLineNo">041</span>                // process arguments<a name="line.41"></a>
+<span class="sourceLineNo">042</span>                if (arg.length &lt; 3) {<a name="line.42"></a>
+<span class="sourceLineNo">043</span>                        System.err<a name="line.43"></a>
+<span class="sourceLineNo">044</span>                                        .println("Usage: ... [user@]host localFile1 [localFile2 ... localFileN] remotePath");<a name="line.44"></a>
+<span class="sourceLineNo">045</span>                        System.err<a name="line.45"></a>
+<span class="sourceLineNo">046</span>                                        .println("localFile can be a directory or file pattern as well");<a name="line.46"></a>
+<span class="sourceLineNo">047</span>                        System.err<a name="line.47"></a>
+<span class="sourceLineNo">048</span>                                        .println("If there is a directory, the copy will be recursively done");<a name="line.48"></a>
+<span class="sourceLineNo">049</span>                        System.exit(1);<a name="line.49"></a>
+<span class="sourceLineNo">050</span>                }<a name="line.50"></a>
+<span class="sourceLineNo">051</span><a name="line.51"></a>
+<span class="sourceLineNo">052</span>                System.out.println("arg length = " + arg.length);<a name="line.52"></a>
+<span class="sourceLineNo">053</span>                String target = arg.length &gt; 0 ? arg[0] : "pnorbert@localhost";<a name="line.53"></a>
+<span class="sourceLineNo">054</span><a name="line.54"></a>
+<span class="sourceLineNo">055</span>                boolean recursive = false;<a name="line.55"></a>
+<span class="sourceLineNo">056</span><a name="line.56"></a>
+<span class="sourceLineNo">057</span>                Vector files = new Vector();<a name="line.57"></a>
+<span class="sourceLineNo">058</span>                for (int i = 1; i &lt; arg.length - 1; i++) {<a name="line.58"></a>
+<span class="sourceLineNo">059</span>                        File f = new File(arg[i]);<a name="line.59"></a>
+<span class="sourceLineNo">060</span>                        if (f.isDirectory())<a name="line.60"></a>
+<span class="sourceLineNo">061</span>                                recursive = true;<a name="line.61"></a>
+<span class="sourceLineNo">062</span>                        // else if ( ! f.isFile() ) {<a name="line.62"></a>
+<span class="sourceLineNo">063</span>                        // System.err.println("Argument source file " + arg[i] +<a name="line.63"></a>
+<span class="sourceLineNo">064</span>                        // " is not a file");<a name="line.64"></a>
+<span class="sourceLineNo">065</span>                        // System.exit(2);<a name="line.65"></a>
+<span class="sourceLineNo">066</span>                        // }<a name="line.66"></a>
+<span class="sourceLineNo">067</span>                        files.add(f);<a name="line.67"></a>
+<span class="sourceLineNo">068</span>                }<a name="line.68"></a>
+<span class="sourceLineNo">069</span>                String rpath = arg[arg.length - 1];<a name="line.69"></a>
+<span class="sourceLineNo">070</span><a name="line.70"></a>
+<span class="sourceLineNo">071</span>                // determine user and host from argument 'target'<a name="line.71"></a>
+<span class="sourceLineNo">072</span>                String user, host;<a name="line.72"></a>
+<span class="sourceLineNo">073</span>                int atPos = target.indexOf('@');<a name="line.73"></a>
+<span class="sourceLineNo">074</span>                if (atPos &gt;= 0)<a name="line.74"></a>
+<span class="sourceLineNo">075</span>                        user = target.substring(0, target.indexOf('@'));<a name="line.75"></a>
+<span class="sourceLineNo">076</span>                else<a name="line.76"></a>
+<span class="sourceLineNo">077</span>                        user = System.getProperty("user.name");<a name="line.77"></a>
+<span class="sourceLineNo">078</span><a name="line.78"></a>
+<span class="sourceLineNo">079</span>                host = target.substring(atPos + 1);<a name="line.79"></a>
+<span class="sourceLineNo">080</span><a name="line.80"></a>
+<span class="sourceLineNo">081</span>                // print what is to be done<a name="line.81"></a>
+<span class="sourceLineNo">082</span>                if (host.equals("local"))<a name="line.82"></a>
+<span class="sourceLineNo">083</span>                        System.out.print("cp ");<a name="line.83"></a>
+<span class="sourceLineNo">084</span>                else<a name="line.84"></a>
+<span class="sourceLineNo">085</span>                        System.out.print("scp ");<a name="line.85"></a>
+<span class="sourceLineNo">086</span>                Iterator it = files.iterator();<a name="line.86"></a>
+<span class="sourceLineNo">087</span>                while (it.hasNext())<a name="line.87"></a>
+<span class="sourceLineNo">088</span>                        System.out.print(it.next() + " ");<a name="line.88"></a>
+<span class="sourceLineNo">089</span>                System.out.println(target + ":" + rpath);<a name="line.89"></a>
+<span class="sourceLineNo">090</span>                System.out.println("Recursive copy: " + recursive);<a name="line.90"></a>
+<span class="sourceLineNo">091</span><a name="line.91"></a>
+<span class="sourceLineNo">092</span>                // open ssh connection<a name="line.92"></a>
+<span class="sourceLineNo">093</span>                ExecInterface eo;<a name="line.93"></a>
+<span class="sourceLineNo">094</span>                if (host.equals("local"))<a name="line.94"></a>
+<span class="sourceLineNo">095</span>                        eo = new LocalExec();<a name="line.95"></a>
+<span class="sourceLineNo">096</span>                else {<a name="line.96"></a>
+<span class="sourceLineNo">097</span>                        SshExec ssh = new SshExec(user, host);<a name="line.97"></a>
+<span class="sourceLineNo">098</span>                        ssh.addIdentity(System.getProperty("user.home") + File.separator<a name="line.98"></a>
+<span class="sourceLineNo">099</span>                                        + ".ssh" + File.separator + "id_dsa");<a name="line.99"></a>
+<span class="sourceLineNo">100</span>                        ssh.openConnection();<a name="line.100"></a>
+<span class="sourceLineNo">101</span>                        eo = ssh;<a name="line.101"></a>
+<span class="sourceLineNo">102</span>                }<a name="line.102"></a>
+<span class="sourceLineNo">103</span><a name="line.103"></a>
+<span class="sourceLineNo">104</span>                // do copy<a name="line.104"></a>
+<span class="sourceLineNo">105</span>                int n = eo.copyTo(files, rpath, recursive);<a name="line.105"></a>
+<span class="sourceLineNo">106</span>                System.out.println(n + " files have been copied successfully");<a name="line.106"></a>
+<span class="sourceLineNo">107</span>                if (!host.equals("local"))<a name="line.107"></a>
+<span class="sourceLineNo">108</span>                        ((SshExec) eo).closeConnection();<a name="line.108"></a>
+<span class="sourceLineNo">109</span><a name="line.109"></a>
+<span class="sourceLineNo">110</span>                System.exit(0);<a name="line.110"></a>
+<span class="sourceLineNo">111</span><a name="line.111"></a>
+<span class="sourceLineNo">112</span>        }<a name="line.112"></a>
+<span class="sourceLineNo">113</span><a name="line.113"></a>
+<span class="sourceLineNo">114</span>}<a name="line.114"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

@@ -1,0 +1,291 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../../stylesheet.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>// XmlHandler.java: the callback interface.<a name="line.1"></a>
+<span class="sourceLineNo">002</span>// NO WARRANTY! See README, and copyright below.<a name="line.2"></a>
+<span class="sourceLineNo">003</span>// $Id$<a name="line.3"></a>
+<span class="sourceLineNo">004</span>package com.microstar.xml;<a name="line.4"></a>
+<span class="sourceLineNo">005</span><a name="line.5"></a>
+<span class="sourceLineNo">006</span>/**<a name="line.6"></a>
+<span class="sourceLineNo">007</span> * XML Processing Interface.<a name="line.7"></a>
+<span class="sourceLineNo">008</span> * &lt;p&gt;Whenever you parse an XML document, you must provide an object<a name="line.8"></a>
+<span class="sourceLineNo">009</span> * from a class that implements this interface to receive the parsing<a name="line.9"></a>
+<span class="sourceLineNo">010</span> * events.<a name="line.10"></a>
+<span class="sourceLineNo">011</span> * &lt;p&gt;If you do not want to implement this entire interface, you<a name="line.11"></a>
+<span class="sourceLineNo">012</span> * can extend the &lt;code&gt;HandlerBase&lt;/code&gt; convenience class and<a name="line.12"></a>
+<span class="sourceLineNo">013</span> * then implement only what you need.<a name="line.13"></a>
+<span class="sourceLineNo">014</span> * &lt;p&gt;If you are using SAX, you should implement the SAX handler<a name="line.14"></a>
+<span class="sourceLineNo">015</span> * interfaces rather than this one.<a name="line.15"></a>
+<span class="sourceLineNo">016</span> * @author Copyright (c) 1997, 1998 by Microstar Software Ltd.<a name="line.16"></a>
+<span class="sourceLineNo">017</span> * @author written by David Megginson &amp;lt;dmeggins@microstar.com&amp;gt;<a name="line.17"></a>
+<span class="sourceLineNo">018</span> * @version 1.1<a name="line.18"></a>
+<span class="sourceLineNo">019</span> * @since Ptolemy II 0.2<a name="line.19"></a>
+<span class="sourceLineNo">020</span> * @see XmlParser<a name="line.20"></a>
+<span class="sourceLineNo">021</span> * @see HandlerBase<a name="line.21"></a>
+<span class="sourceLineNo">022</span> */<a name="line.22"></a>
+<span class="sourceLineNo">023</span>public interface XmlHandler {<a name="line.23"></a>
+<span class="sourceLineNo">024</span>    /**<a name="line.24"></a>
+<span class="sourceLineNo">025</span>     * Start the document.<a name="line.25"></a>
+<span class="sourceLineNo">026</span>     * &lt;p&gt;&amp;AElig;lfred will call this method just before it<a name="line.26"></a>
+<span class="sourceLineNo">027</span>     * attempts to read the first entity (the root of the document).<a name="line.27"></a>
+<span class="sourceLineNo">028</span>     * It is guaranteed that this will be the first method called.<a name="line.28"></a>
+<span class="sourceLineNo">029</span>     * @exception java.lang.Exception The handler may throw any exception.<a name="line.29"></a>
+<span class="sourceLineNo">030</span>     * @see #endDocument<a name="line.30"></a>
+<span class="sourceLineNo">031</span>     */<a name="line.31"></a>
+<span class="sourceLineNo">032</span>    public void startDocument() throws java.lang.Exception;<a name="line.32"></a>
+<span class="sourceLineNo">033</span><a name="line.33"></a>
+<span class="sourceLineNo">034</span>    /**<a name="line.34"></a>
+<span class="sourceLineNo">035</span>     * End the document.<a name="line.35"></a>
+<span class="sourceLineNo">036</span>     * &lt;p&gt;&amp;AElig;lfred will call this method once, when it has<a name="line.36"></a>
+<span class="sourceLineNo">037</span>     * finished parsing the XML document.<a name="line.37"></a>
+<span class="sourceLineNo">038</span>     * It is guaranteed that this will be the last method called.<a name="line.38"></a>
+<span class="sourceLineNo">039</span>     * @exception java.lang.Exception The handler may throw any exception.<a name="line.39"></a>
+<span class="sourceLineNo">040</span>     * @see #startDocument<a name="line.40"></a>
+<span class="sourceLineNo">041</span>     */<a name="line.41"></a>
+<span class="sourceLineNo">042</span>    public void endDocument() throws java.lang.Exception;<a name="line.42"></a>
+<span class="sourceLineNo">043</span><a name="line.43"></a>
+<span class="sourceLineNo">044</span>    /**<a name="line.44"></a>
+<span class="sourceLineNo">045</span>     * Resolve an External Entity.<a name="line.45"></a>
+<span class="sourceLineNo">046</span>     * &lt;p&gt;Give the handler a chance to redirect external entities<a name="line.46"></a>
+<span class="sourceLineNo">047</span>     * to different URIs.  &amp;AElig;lfred will call this method for the<a name="line.47"></a>
+<span class="sourceLineNo">048</span>     * top-level document entity, for external text (XML) entities,<a name="line.48"></a>
+<span class="sourceLineNo">049</span>     * and the external DTD subset (if any).<a name="line.49"></a>
+<span class="sourceLineNo">050</span>     * @param publicId The public identifier, or null if none was supplied.<a name="line.50"></a>
+<span class="sourceLineNo">051</span>     * @param systemId The system identifier.<a name="line.51"></a>
+<span class="sourceLineNo">052</span>     * @return The replacement system identifier, or null to use<a name="line.52"></a>
+<span class="sourceLineNo">053</span>     *         the default.<a name="line.53"></a>
+<span class="sourceLineNo">054</span>     * @exception java.lang.Exception The handler may throw any exception.<a name="line.54"></a>
+<span class="sourceLineNo">055</span>     * @see #startExternalEntity<a name="line.55"></a>
+<span class="sourceLineNo">056</span>     * @see #endExternalEntity<a name="line.56"></a>
+<span class="sourceLineNo">057</span>     */<a name="line.57"></a>
+<span class="sourceLineNo">058</span>    public Object resolveEntity(String publicId, String systemId)<a name="line.58"></a>
+<span class="sourceLineNo">059</span>            throws java.lang.Exception;<a name="line.59"></a>
+<span class="sourceLineNo">060</span><a name="line.60"></a>
+<span class="sourceLineNo">061</span>    /**<a name="line.61"></a>
+<span class="sourceLineNo">062</span>     * Begin an external entity.<a name="line.62"></a>
+<span class="sourceLineNo">063</span>     * &lt;p&gt;&amp;AElig;lfred will call this method at the beginning of<a name="line.63"></a>
+<span class="sourceLineNo">064</span>     * each external entity, including the top-level document entity<a name="line.64"></a>
+<span class="sourceLineNo">065</span>     * and the external DTD subset (if any).<a name="line.65"></a>
+<span class="sourceLineNo">066</span>     * &lt;p&gt;If necessary, you can use this method to track the location<a name="line.66"></a>
+<span class="sourceLineNo">067</span>     * of the current entity so that you can resolve relative URIs<a name="line.67"></a>
+<span class="sourceLineNo">068</span>     * correctly.<a name="line.68"></a>
+<span class="sourceLineNo">069</span>     * @param systemId The URI of the external entity that is starting.<a name="line.69"></a>
+<span class="sourceLineNo">070</span>     * @exception java.lang.Exception The handler may throw any exception.<a name="line.70"></a>
+<span class="sourceLineNo">071</span>     * @see #endExternalEntity<a name="line.71"></a>
+<span class="sourceLineNo">072</span>     * @see #resolveEntity<a name="line.72"></a>
+<span class="sourceLineNo">073</span>     */<a name="line.73"></a>
+<span class="sourceLineNo">074</span>    public void startExternalEntity(String systemId) throws java.lang.Exception;<a name="line.74"></a>
+<span class="sourceLineNo">075</span><a name="line.75"></a>
+<span class="sourceLineNo">076</span>    /**<a name="line.76"></a>
+<span class="sourceLineNo">077</span>     * End an external entity.<a name="line.77"></a>
+<span class="sourceLineNo">078</span>     * &lt;p&gt;&amp;AElig;lfred will call this method at the end of<a name="line.78"></a>
+<span class="sourceLineNo">079</span>     * each external entity, including the top-level document entity<a name="line.79"></a>
+<span class="sourceLineNo">080</span>     * and the external DTD subset.<a name="line.80"></a>
+<span class="sourceLineNo">081</span>     * &lt;p&gt;If necessary, you can use this method to track the location<a name="line.81"></a>
+<span class="sourceLineNo">082</span>     * of the current entity so that you can resolve relative URIs<a name="line.82"></a>
+<span class="sourceLineNo">083</span>     * correctly.<a name="line.83"></a>
+<span class="sourceLineNo">084</span>     * @param systemId The URI of the external entity that is ending.<a name="line.84"></a>
+<span class="sourceLineNo">085</span>     * @exception java.lang.Exception The handler may throw any exception.<a name="line.85"></a>
+<span class="sourceLineNo">086</span>     * @see #startExternalEntity<a name="line.86"></a>
+<span class="sourceLineNo">087</span>     * @see #resolveEntity<a name="line.87"></a>
+<span class="sourceLineNo">088</span>     */<a name="line.88"></a>
+<span class="sourceLineNo">089</span>    public void endExternalEntity(String systemId) throws java.lang.Exception;<a name="line.89"></a>
+<span class="sourceLineNo">090</span><a name="line.90"></a>
+<span class="sourceLineNo">091</span>    /**<a name="line.91"></a>
+<span class="sourceLineNo">092</span>     * Document type declaration.<a name="line.92"></a>
+<span class="sourceLineNo">093</span>     * &lt;p&gt;&amp;AElig;lfred will call this method when or if it encounters<a name="line.93"></a>
+<span class="sourceLineNo">094</span>     * the document type (DOCTYPE) declaration.<a name="line.94"></a>
+<span class="sourceLineNo">095</span>     * &lt;p&gt;Please note that the public and system identifiers will<a name="line.95"></a>
+<span class="sourceLineNo">096</span>     * not always be a reliable indication of the DTD in use.<a name="line.96"></a>
+<span class="sourceLineNo">097</span>     * @param name The document type name.<a name="line.97"></a>
+<span class="sourceLineNo">098</span>     * @param publicId The public identifier, or null if unspecified.<a name="line.98"></a>
+<span class="sourceLineNo">099</span>     * @param systemId The system identifier, or null if unspecified.<a name="line.99"></a>
+<span class="sourceLineNo">100</span>     * @exception java.lang.Exception The handler may throw any exception.<a name="line.100"></a>
+<span class="sourceLineNo">101</span>     */<a name="line.101"></a>
+<span class="sourceLineNo">102</span>    public void doctypeDecl(String name, String publicId, String systemId)<a name="line.102"></a>
+<span class="sourceLineNo">103</span>            throws java.lang.Exception;<a name="line.103"></a>
+<span class="sourceLineNo">104</span><a name="line.104"></a>
+<span class="sourceLineNo">105</span>    /**<a name="line.105"></a>
+<span class="sourceLineNo">106</span>     * Attribute.<a name="line.106"></a>
+<span class="sourceLineNo">107</span>     * &lt;p&gt;&amp;AElig;lfred will call this method once for each attribute<a name="line.107"></a>
+<span class="sourceLineNo">108</span>     * (specified or defaulted) before reporting a startElement event.<a name="line.108"></a>
+<span class="sourceLineNo">109</span>     * It is up to your handler to collect the attributes, if<a name="line.109"></a>
+<span class="sourceLineNo">110</span>     * necessary.<a name="line.110"></a>
+<span class="sourceLineNo">111</span>     * &lt;p&gt;You may use XmlParser.getAttributeType() to find the attribute's<a name="line.111"></a>
+<span class="sourceLineNo">112</span>     * declared type.<a name="line.112"></a>
+<span class="sourceLineNo">113</span>     * @param aname The name of the attribute.<a name="line.113"></a>
+<span class="sourceLineNo">114</span>     * @param value The value of the attribute, or null if the attribute<a name="line.114"></a>
+<span class="sourceLineNo">115</span>     *        is &lt;code&gt;#IMPLIED&lt;/code&gt;.<a name="line.115"></a>
+<span class="sourceLineNo">116</span>     * @param isSpecified True if the value was specified, false if it<a name="line.116"></a>
+<span class="sourceLineNo">117</span>     *       was defaulted from the DTD.<a name="line.117"></a>
+<span class="sourceLineNo">118</span>     * @exception java.lang.Exception The handler may throw any exception.<a name="line.118"></a>
+<span class="sourceLineNo">119</span>     * @see #startElement<a name="line.119"></a>
+<span class="sourceLineNo">120</span>     * @see XmlParser#declaredAttributes<a name="line.120"></a>
+<span class="sourceLineNo">121</span>     * @see XmlParser#getAttributeType<a name="line.121"></a>
+<span class="sourceLineNo">122</span>     * @see XmlParser#getAttributeDefaultValue<a name="line.122"></a>
+<span class="sourceLineNo">123</span>     */<a name="line.123"></a>
+<span class="sourceLineNo">124</span>    public void attribute(String aname, String value, boolean isSpecified)<a name="line.124"></a>
+<span class="sourceLineNo">125</span>            throws java.lang.Exception;<a name="line.125"></a>
+<span class="sourceLineNo">126</span><a name="line.126"></a>
+<span class="sourceLineNo">127</span>    /**<a name="line.127"></a>
+<span class="sourceLineNo">128</span>     * Start an element.<a name="line.128"></a>
+<span class="sourceLineNo">129</span>     * &lt;p&gt;&amp;AElig;lfred will call this method at the beginning of each<a name="line.129"></a>
+<span class="sourceLineNo">130</span>     * element.  By the time this is called, all of the attributes<a name="line.130"></a>
+<span class="sourceLineNo">131</span>     * for the element will already have been reported using the<a name="line.131"></a>
+<span class="sourceLineNo">132</span>     * &lt;code&gt;attribute&lt;/code&gt; method.<a name="line.132"></a>
+<span class="sourceLineNo">133</span>     * @param elname The element type name.<a name="line.133"></a>
+<span class="sourceLineNo">134</span>     * @exception java.lang.Exception The handler may throw any exception.<a name="line.134"></a>
+<span class="sourceLineNo">135</span>     * @see #attribute<a name="line.135"></a>
+<span class="sourceLineNo">136</span>     * @see #endElement<a name="line.136"></a>
+<span class="sourceLineNo">137</span>     * @see XmlParser#declaredElements<a name="line.137"></a>
+<span class="sourceLineNo">138</span>     * @see XmlParser#getElementContentType<a name="line.138"></a>
+<span class="sourceLineNo">139</span>     */<a name="line.139"></a>
+<span class="sourceLineNo">140</span>    public void startElement(String elname) throws java.lang.Exception;<a name="line.140"></a>
+<span class="sourceLineNo">141</span><a name="line.141"></a>
+<span class="sourceLineNo">142</span>    /**<a name="line.142"></a>
+<span class="sourceLineNo">143</span>     * End an element.<a name="line.143"></a>
+<span class="sourceLineNo">144</span>     * &lt;p&gt;&amp;AElig;lfred will call this method at the end of each element<a name="line.144"></a>
+<span class="sourceLineNo">145</span>     * (including EMPTY elements).<a name="line.145"></a>
+<span class="sourceLineNo">146</span>     * @param elname The element type name.<a name="line.146"></a>
+<span class="sourceLineNo">147</span>     * @exception java.lang.Exception The handler may throw any exception.<a name="line.147"></a>
+<span class="sourceLineNo">148</span>     * @see #startElement<a name="line.148"></a>
+<span class="sourceLineNo">149</span>     * @see XmlParser#declaredElements<a name="line.149"></a>
+<span class="sourceLineNo">150</span>     * @see XmlParser#getElementContentType<a name="line.150"></a>
+<span class="sourceLineNo">151</span>     */<a name="line.151"></a>
+<span class="sourceLineNo">152</span>    public void endElement(String elname) throws java.lang.Exception;<a name="line.152"></a>
+<span class="sourceLineNo">153</span><a name="line.153"></a>
+<span class="sourceLineNo">154</span>    /**<a name="line.154"></a>
+<span class="sourceLineNo">155</span>     * Character data.<a name="line.155"></a>
+<span class="sourceLineNo">156</span>     * &lt;p&gt;&amp;AElig;lfred will call this method once for each chunk of<a name="line.156"></a>
+<span class="sourceLineNo">157</span>     * character data found in the contents of elements.  Note that<a name="line.157"></a>
+<span class="sourceLineNo">158</span>     * the parser may break up a long sequence of characters into<a name="line.158"></a>
+<span class="sourceLineNo">159</span>     * smaller chunks and call this method once for each chunk.<a name="line.159"></a>
+<span class="sourceLineNo">160</span>     * &lt;p&gt;Do &lt;em&gt;not&lt;/em&gt; attempt to read more than &lt;var&gt;length&lt;/var&gt;<a name="line.160"></a>
+<span class="sourceLineNo">161</span>     * characters from the array, or to read before the<a name="line.161"></a>
+<span class="sourceLineNo">162</span>     * &lt;var&gt;start&lt;/var&gt; position.<a name="line.162"></a>
+<span class="sourceLineNo">163</span>     * @param ch The character data.<a name="line.163"></a>
+<span class="sourceLineNo">164</span>     * @param start The starting position in the array.<a name="line.164"></a>
+<span class="sourceLineNo">165</span>     * @param length The number of characters available.<a name="line.165"></a>
+<span class="sourceLineNo">166</span>     * @exception java.lang.Exception The handler may throw any exception.<a name="line.166"></a>
+<span class="sourceLineNo">167</span>     */<a name="line.167"></a>
+<span class="sourceLineNo">168</span>    public void charData(char[] ch, int start, int length)<a name="line.168"></a>
+<span class="sourceLineNo">169</span>            throws java.lang.Exception;<a name="line.169"></a>
+<span class="sourceLineNo">170</span><a name="line.170"></a>
+<span class="sourceLineNo">171</span>    /**<a name="line.171"></a>
+<span class="sourceLineNo">172</span>     * Ignorable whitespace.<a name="line.172"></a>
+<span class="sourceLineNo">173</span>     * &lt;p&gt;&amp;AElig;lfred will call this method once for each sequence<a name="line.173"></a>
+<span class="sourceLineNo">174</span>     * of ignorable whitespace in element content (never in mixed content).<a name="line.174"></a>
+<span class="sourceLineNo">175</span>     * &lt;p&gt;For details, see section 2.10 of the XML 1.0 recommendation.<a name="line.175"></a>
+<span class="sourceLineNo">176</span>     * &lt;p&gt;Do &lt;em&gt;not&lt;/em&gt; attempt to read more than &lt;var&gt;length&lt;/var&gt;<a name="line.176"></a>
+<span class="sourceLineNo">177</span>     * characters from the array or to read before the &lt;var&gt;start&lt;/var&gt;<a name="line.177"></a>
+<span class="sourceLineNo">178</span>     * position.<a name="line.178"></a>
+<span class="sourceLineNo">179</span>     * @param ch The literal whitespace characters.<a name="line.179"></a>
+<span class="sourceLineNo">180</span>     * @param start The starting position in the array.<a name="line.180"></a>
+<span class="sourceLineNo">181</span>     * @param length The number of whitespace characters available.<a name="line.181"></a>
+<span class="sourceLineNo">182</span>     * @exception java.lang.Exception The handler may throw any exception.<a name="line.182"></a>
+<span class="sourceLineNo">183</span>     */<a name="line.183"></a>
+<span class="sourceLineNo">184</span>    public void ignorableWhitespace(char[] ch, int start, int length)<a name="line.184"></a>
+<span class="sourceLineNo">185</span>            throws java.lang.Exception;<a name="line.185"></a>
+<span class="sourceLineNo">186</span><a name="line.186"></a>
+<span class="sourceLineNo">187</span>    /**<a name="line.187"></a>
+<span class="sourceLineNo">188</span>     * Processing instruction.<a name="line.188"></a>
+<span class="sourceLineNo">189</span>     * &lt;p&gt;&amp;AElig;lfred will call this method once for each<a name="line.189"></a>
+<span class="sourceLineNo">190</span>     * processing instruction.  Note that processing instructions may<a name="line.190"></a>
+<span class="sourceLineNo">191</span>     * appear outside of the top-level element.  The<a name="line.191"></a>
+<span class="sourceLineNo">192</span>     * @param target The target (the name at the start of the PI).<a name="line.192"></a>
+<span class="sourceLineNo">193</span>     * @param data The data, if any (the rest of the PI).<a name="line.193"></a>
+<span class="sourceLineNo">194</span>     * @exception java.lang.Exception The handler may throw any exception.<a name="line.194"></a>
+<span class="sourceLineNo">195</span>     */<a name="line.195"></a>
+<span class="sourceLineNo">196</span>    public void processingInstruction(String target, String data)<a name="line.196"></a>
+<span class="sourceLineNo">197</span>            throws java.lang.Exception;<a name="line.197"></a>
+<span class="sourceLineNo">198</span><a name="line.198"></a>
+<span class="sourceLineNo">199</span>    /**<a name="line.199"></a>
+<span class="sourceLineNo">200</span>     * Fatal XML parsing error.<a name="line.200"></a>
+<span class="sourceLineNo">201</span>     * &lt;p&gt;&amp;AElig;lfred will call this method whenever it encounters<a name="line.201"></a>
+<span class="sourceLineNo">202</span>     * a serious error.  The parser will attempt to continue past this<a name="line.202"></a>
+<span class="sourceLineNo">203</span>     * point so that you can find more possible error points, but if<a name="line.203"></a>
+<span class="sourceLineNo">204</span>     * this method is called you should assume that the document is<a name="line.204"></a>
+<span class="sourceLineNo">205</span>     * corrupt and you should not try to use its contents.<a name="line.205"></a>
+<span class="sourceLineNo">206</span>     * &lt;p&gt;Note that you can use the &lt;code&gt;XmlException&lt;/code&gt; class<a name="line.206"></a>
+<span class="sourceLineNo">207</span>     * to encapsulate all of the information provided, though the<a name="line.207"></a>
+<span class="sourceLineNo">208</span>     * use of the class is not mandatory.<a name="line.208"></a>
+<span class="sourceLineNo">209</span>     * @param message The error message.<a name="line.209"></a>
+<span class="sourceLineNo">210</span>     * @param systemId The system identifier of the entity that<a name="line.210"></a>
+<span class="sourceLineNo">211</span>     *        contains the error.<a name="line.211"></a>
+<span class="sourceLineNo">212</span>     * @param line The approximate line number of the error.<a name="line.212"></a>
+<span class="sourceLineNo">213</span>     * @param column The approximate column number of the error.<a name="line.213"></a>
+<span class="sourceLineNo">214</span>     * @exception java.lang.Exception The handler may throw any exception.<a name="line.214"></a>
+<span class="sourceLineNo">215</span>     * @see XmlException<a name="line.215"></a>
+<span class="sourceLineNo">216</span>     */<a name="line.216"></a>
+<span class="sourceLineNo">217</span>    public void error(String message, String systemId, int line, int column)<a name="line.217"></a>
+<span class="sourceLineNo">218</span>            throws java.lang.Exception;<a name="line.218"></a>
+<span class="sourceLineNo">219</span>}<a name="line.219"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

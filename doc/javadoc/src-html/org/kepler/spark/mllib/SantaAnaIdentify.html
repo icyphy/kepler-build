@@ -1,0 +1,373 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../../../stylesheet.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>/* <a name="line.1"></a>
+<span class="sourceLineNo">002</span> * Copyright (c) 2016-2017 The Regents of the University of California.<a name="line.2"></a>
+<span class="sourceLineNo">003</span> * All rights reserved.<a name="line.3"></a>
+<span class="sourceLineNo">004</span> *<a name="line.4"></a>
+<span class="sourceLineNo">005</span> * '$Author: crawl $'<a name="line.5"></a>
+<span class="sourceLineNo">006</span> * '$Date: 2018-02-06 17:00:17 -0800 (Tue, 06 Feb 2018) $' <a name="line.6"></a>
+<span class="sourceLineNo">007</span> * '$Revision: 34658 $'<a name="line.7"></a>
+<span class="sourceLineNo">008</span> * <a name="line.8"></a>
+<span class="sourceLineNo">009</span> * Permission is hereby granted, without written agreement and without<a name="line.9"></a>
+<span class="sourceLineNo">010</span> * license or royalty fees, to use, copy, modify, and distribute this<a name="line.10"></a>
+<span class="sourceLineNo">011</span> * software and its documentation for any purpose, provided that the above<a name="line.11"></a>
+<span class="sourceLineNo">012</span> * copyright notice and the following two paragraphs appear in all copies<a name="line.12"></a>
+<span class="sourceLineNo">013</span> * of this software.<a name="line.13"></a>
+<span class="sourceLineNo">014</span> *<a name="line.14"></a>
+<span class="sourceLineNo">015</span> * IN NO EVENT SHALL THE UNIVERSITY OF CALIFORNIA BE LIABLE TO ANY PARTY<a name="line.15"></a>
+<span class="sourceLineNo">016</span> * FOR DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES<a name="line.16"></a>
+<span class="sourceLineNo">017</span> * ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION, EVEN IF<a name="line.17"></a>
+<span class="sourceLineNo">018</span> * THE UNIVERSITY OF CALIFORNIA HAS BEEN ADVISED OF THE POSSIBILITY OF<a name="line.18"></a>
+<span class="sourceLineNo">019</span> * SUCH DAMAGE.<a name="line.19"></a>
+<span class="sourceLineNo">020</span> *<a name="line.20"></a>
+<span class="sourceLineNo">021</span> * THE UNIVERSITY OF CALIFORNIA SPECIFICALLY DISCLAIMS ANY WARRANTIES,<a name="line.21"></a>
+<span class="sourceLineNo">022</span> * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF<a name="line.22"></a>
+<span class="sourceLineNo">023</span> * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE<a name="line.23"></a>
+<span class="sourceLineNo">024</span> * PROVIDED HEREUNDER IS ON AN "AS IS" BASIS, AND THE UNIVERSITY OF<a name="line.24"></a>
+<span class="sourceLineNo">025</span> * CALIFORNIA HAS NO OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT, UPDATES,<a name="line.25"></a>
+<span class="sourceLineNo">026</span> * ENHANCEMENTS, OR MODIFICATIONS.<a name="line.26"></a>
+<span class="sourceLineNo">027</span> *<a name="line.27"></a>
+<span class="sourceLineNo">028</span> */<a name="line.28"></a>
+<span class="sourceLineNo">029</span><a name="line.29"></a>
+<span class="sourceLineNo">030</span>package org.kepler.spark.mllib;<a name="line.30"></a>
+<span class="sourceLineNo">031</span><a name="line.31"></a>
+<span class="sourceLineNo">032</span>import java.io.BufferedReader;<a name="line.32"></a>
+<span class="sourceLineNo">033</span>import java.io.FileInputStream;<a name="line.33"></a>
+<span class="sourceLineNo">034</span>import java.io.InputStreamReader;<a name="line.34"></a>
+<span class="sourceLineNo">035</span>import java.io.PrintWriter;<a name="line.35"></a>
+<span class="sourceLineNo">036</span>import java.util.Set;<a name="line.36"></a>
+<span class="sourceLineNo">037</span><a name="line.37"></a>
+<span class="sourceLineNo">038</span>import org.kepler.spark.actor.SparkBaseActor;<a name="line.38"></a>
+<span class="sourceLineNo">039</span><a name="line.39"></a>
+<span class="sourceLineNo">040</span>import io.vertx.core.json.JsonArray;<a name="line.40"></a>
+<span class="sourceLineNo">041</span>import io.vertx.core.json.JsonObject;<a name="line.41"></a>
+<span class="sourceLineNo">042</span>import ptolemy.actor.TypedIOPort;<a name="line.42"></a>
+<span class="sourceLineNo">043</span>import ptolemy.actor.parameters.PortParameter;<a name="line.43"></a>
+<span class="sourceLineNo">044</span>import ptolemy.data.DoubleToken;<a name="line.44"></a>
+<span class="sourceLineNo">045</span>import ptolemy.data.StringToken;<a name="line.45"></a>
+<span class="sourceLineNo">046</span>import ptolemy.data.expr.StringParameter;<a name="line.46"></a>
+<span class="sourceLineNo">047</span>import ptolemy.data.type.BaseType;<a name="line.47"></a>
+<span class="sourceLineNo">048</span>import ptolemy.kernel.CompositeEntity;<a name="line.48"></a>
+<span class="sourceLineNo">049</span>import ptolemy.kernel.util.IllegalActionException;<a name="line.49"></a>
+<span class="sourceLineNo">050</span>import ptolemy.kernel.util.NameDuplicationException;<a name="line.50"></a>
+<span class="sourceLineNo">051</span>import ptolemy.kernel.util.SingletonAttribute;<a name="line.51"></a>
+<span class="sourceLineNo">052</span><a name="line.52"></a>
+<span class="sourceLineNo">053</span>/**<a name="line.53"></a>
+<span class="sourceLineNo">054</span> * @author Jiaxin Li<a name="line.54"></a>
+<span class="sourceLineNo">055</span> *<a name="line.55"></a>
+<span class="sourceLineNo">056</span> * Identifies the Santa Ana cluster from the input array of cluster centers. <a name="line.56"></a>
+<span class="sourceLineNo">057</span> * Requires a JSON array string as input. Writes results to a user-specified <a name="line.57"></a>
+<span class="sourceLineNo">058</span> * JSON file.<a name="line.58"></a>
+<span class="sourceLineNo">059</span> */<a name="line.59"></a>
+<span class="sourceLineNo">060</span>public class SantaAnaIdentify extends SparkBaseActor {<a name="line.60"></a>
+<span class="sourceLineNo">061</span><a name="line.61"></a>
+<span class="sourceLineNo">062</span>    public SantaAnaIdentify(CompositeEntity container, String name)<a name="line.62"></a>
+<span class="sourceLineNo">063</span>        throws IllegalActionException, NameDuplicationException {<a name="line.63"></a>
+<span class="sourceLineNo">064</span>        super(container, name);<a name="line.64"></a>
+<span class="sourceLineNo">065</span><a name="line.65"></a>
+<span class="sourceLineNo">066</span>        inData = new TypedIOPort(this, "inData", true, false);<a name="line.66"></a>
+<span class="sourceLineNo">067</span>        inData.setTypeEquals(BaseType.STRING);<a name="line.67"></a>
+<span class="sourceLineNo">068</span>        new SingletonAttribute(inData, "_showName");<a name="line.68"></a>
+<span class="sourceLineNo">069</span><a name="line.69"></a>
+<span class="sourceLineNo">070</span>        outFilepath = new StringParameter(this, "outFilepath");<a name="line.70"></a>
+<span class="sourceLineNo">071</span>        outFilepath.setToken("saClusters.json");<a name="line.71"></a>
+<span class="sourceLineNo">072</span><a name="line.72"></a>
+<span class="sourceLineNo">073</span>        thrsWindSpeed = new PortParameter(this, "thrsWindSpeed");<a name="line.73"></a>
+<span class="sourceLineNo">074</span>        thrsWindSpeed.setTypeEquals(BaseType.DOUBLE);<a name="line.74"></a>
+<span class="sourceLineNo">075</span>        thrsWindSpeed.getPort().setTypeEquals(BaseType.DOUBLE);<a name="line.75"></a>
+<span class="sourceLineNo">076</span>        new SingletonAttribute(thrsWindSpeed.getPort(), "_showName");<a name="line.76"></a>
+<span class="sourceLineNo">077</span><a name="line.77"></a>
+<span class="sourceLineNo">078</span>        thrsWindDirection=new PortParameter(this, "thrsWindDirection");<a name="line.78"></a>
+<span class="sourceLineNo">079</span>        thrsWindDirection.setTypeEquals(BaseType.DOUBLE);<a name="line.79"></a>
+<span class="sourceLineNo">080</span>        thrsWindDirection.getPort().setTypeEquals(BaseType.DOUBLE);<a name="line.80"></a>
+<span class="sourceLineNo">081</span>        new SingletonAttribute(thrsWindDirection.getPort(), "_showName");<a name="line.81"></a>
+<span class="sourceLineNo">082</span><a name="line.82"></a>
+<span class="sourceLineNo">083</span>        thrsRelHum = new PortParameter(this, "thrsRelHum");<a name="line.83"></a>
+<span class="sourceLineNo">084</span>        thrsRelHum.setTypeEquals(BaseType.DOUBLE);<a name="line.84"></a>
+<span class="sourceLineNo">085</span>        thrsRelHum.getPort().setTypeEquals(BaseType.DOUBLE);<a name="line.85"></a>
+<span class="sourceLineNo">086</span>        new SingletonAttribute(thrsRelHum.getPort(), "_showName");<a name="line.86"></a>
+<span class="sourceLineNo">087</span><a name="line.87"></a>
+<span class="sourceLineNo">088</span>    }<a name="line.88"></a>
+<span class="sourceLineNo">089</span><a name="line.89"></a>
+<span class="sourceLineNo">090</span>    /* <a name="line.90"></a>
+<span class="sourceLineNo">091</span>     * Initialize:<a name="line.91"></a>
+<span class="sourceLineNo">092</span>     * sets up the top-level JsonObject<a name="line.92"></a>
+<span class="sourceLineNo">093</span>     */<a name="line.93"></a>
+<span class="sourceLineNo">094</span>    @Override<a name="line.94"></a>
+<span class="sourceLineNo">095</span>    public void initialize() throws IllegalActionException {<a name="line.95"></a>
+<span class="sourceLineNo">096</span><a name="line.96"></a>
+<span class="sourceLineNo">097</span>        super.initialize();<a name="line.97"></a>
+<span class="sourceLineNo">098</span><a name="line.98"></a>
+<span class="sourceLineNo">099</span>        // initialize JsonObject to exist throughout actor's lifetime<a name="line.99"></a>
+<span class="sourceLineNo">100</span>        _fileObj = new JsonObject();<a name="line.100"></a>
+<span class="sourceLineNo">101</span>    }<a name="line.101"></a>
+<span class="sourceLineNo">102</span><a name="line.102"></a>
+<span class="sourceLineNo">103</span>    /*<a name="line.103"></a>
+<span class="sourceLineNo">104</span>     * fire:<a name="line.104"></a>
+<span class="sourceLineNo">105</span>     * process incoming dataframe<a name="line.105"></a>
+<span class="sourceLineNo">106</span>     */<a name="line.106"></a>
+<span class="sourceLineNo">107</span>    @Override<a name="line.107"></a>
+<span class="sourceLineNo">108</span>    public void fire() throws IllegalActionException {<a name="line.108"></a>
+<span class="sourceLineNo">109</span><a name="line.109"></a>
+<span class="sourceLineNo">110</span>        super.fire();<a name="line.110"></a>
+<span class="sourceLineNo">111</span><a name="line.111"></a>
+<span class="sourceLineNo">112</span>        /* Get entryId; read cluster center data as Double[][] */<a name="line.112"></a>
+<span class="sourceLineNo">113</span>        String inString =<a name="line.113"></a>
+<span class="sourceLineNo">114</span>            (String)((StringToken)inData.get(0)).stringValue();<a name="line.114"></a>
+<span class="sourceLineNo">115</span>        JsonObject inObj = new JsonObject(inString);<a name="line.115"></a>
+<span class="sourceLineNo">116</span>        String entryId = inObj.getString("name");<a name="line.116"></a>
+<span class="sourceLineNo">117</span>        JsonArray inputArray = inObj.getJsonArray("clusterCenters");<a name="line.117"></a>
+<span class="sourceLineNo">118</span><a name="line.118"></a>
+<span class="sourceLineNo">119</span>        int numClusters = inputArray.size();<a name="line.119"></a>
+<span class="sourceLineNo">120</span>        int clusterDim;<a name="line.120"></a>
+<span class="sourceLineNo">121</span>        try {<a name="line.121"></a>
+<span class="sourceLineNo">122</span>            clusterDim = inputArray.getJsonArray(0).size();<a name="line.122"></a>
+<span class="sourceLineNo">123</span>        } catch(NullPointerException e) {<a name="line.123"></a>
+<span class="sourceLineNo">124</span>            System.err.println("ERROR: empty cluster center input!");<a name="line.124"></a>
+<span class="sourceLineNo">125</span>            throw e;  // passing on NPE, only adding an error message  <a name="line.125"></a>
+<span class="sourceLineNo">126</span>        }<a name="line.126"></a>
+<span class="sourceLineNo">127</span><a name="line.127"></a>
+<span class="sourceLineNo">128</span>        _clusterCenters = new Double[numClusters][clusterDim];<a name="line.128"></a>
+<span class="sourceLineNo">129</span>        for(int i = 0; i &lt; numClusters; i++)<a name="line.129"></a>
+<span class="sourceLineNo">130</span>            for(int j = 0; j &lt; clusterDim; j++)<a name="line.130"></a>
+<span class="sourceLineNo">131</span>                _clusterCenters[i][j]=inputArray.getJsonArray(i).getDouble(j);<a name="line.131"></a>
+<span class="sourceLineNo">132</span><a name="line.132"></a>
+<span class="sourceLineNo">133</span>        // DEBUG output<a name="line.133"></a>
+<span class="sourceLineNo">134</span>        if(_debugging) {<a name="line.134"></a>
+<span class="sourceLineNo">135</span>            System.out.println("SantaAnaIdentify: " + entryId);<a name="line.135"></a>
+<span class="sourceLineNo">136</span>            //System.out.println("SantaAnaIdentify: " +<a name="line.136"></a>
+<span class="sourceLineNo">137</span>            //                   inputArray.encodePrettily());<a name="line.137"></a>
+<span class="sourceLineNo">138</span>        }<a name="line.138"></a>
+<span class="sourceLineNo">139</span><a name="line.139"></a>
+<span class="sourceLineNo">140</span>        <a name="line.140"></a>
+<span class="sourceLineNo">141</span>        // init cluster center index to -1 (no SA cluster)<a name="line.141"></a>
+<span class="sourceLineNo">142</span>        int index = -1;<a name="line.142"></a>
+<span class="sourceLineNo">143</span>        /* Find SA cluster center */<a name="line.143"></a>
+<span class="sourceLineNo">144</span>        double tWindSpeed =<a name="line.144"></a>
+<span class="sourceLineNo">145</span>            (double)((DoubleToken)thrsWindSpeed.getToken()).doubleValue();<a name="line.145"></a>
+<span class="sourceLineNo">146</span>        double tWindDir =<a name="line.146"></a>
+<span class="sourceLineNo">147</span>            (double)((DoubleToken)thrsWindDirection.getToken()).doubleValue();<a name="line.147"></a>
+<span class="sourceLineNo">148</span>        double tRelHum =<a name="line.148"></a>
+<span class="sourceLineNo">149</span>            (double)((DoubleToken)thrsRelHum.getToken()).doubleValue();<a name="line.149"></a>
+<span class="sourceLineNo">150</span>        for(int i = 0; i &lt; numClusters; i++) {<a name="line.150"></a>
+<span class="sourceLineNo">151</span>            // using thresholds on three values<a name="line.151"></a>
+<span class="sourceLineNo">152</span>            // NOTE: wind direction should be in a range (from east to west)?<a name="line.152"></a>
+<span class="sourceLineNo">153</span>            if(_clusterCenters[i][IDX_AVG_WIND_SPEED] &gt; tWindSpeed &amp;&amp;<a name="line.153"></a>
+<span class="sourceLineNo">154</span>               _clusterCenters[i][IDX_AVG_WIND_DIRECTION] &lt; tWindDir &amp;&amp;<a name="line.154"></a>
+<span class="sourceLineNo">155</span>               _clusterCenters[i][IDX_RELATIVE_HUMIDITY] &lt; tRelHum) {<a name="line.155"></a>
+<span class="sourceLineNo">156</span><a name="line.156"></a>
+<span class="sourceLineNo">157</span>                //DEBUG<a name="line.157"></a>
+<span class="sourceLineNo">158</span>                if(_debugging)<a name="line.158"></a>
+<span class="sourceLineNo">159</span>                    System.out.printf("SantaAnaIdentify.fire: %d, %f, %f, %f\n", i,<a name="line.159"></a>
+<span class="sourceLineNo">160</span>                                      _clusterCenters[i][IDX_AVG_WIND_SPEED],<a name="line.160"></a>
+<span class="sourceLineNo">161</span>                                      _clusterCenters[i][IDX_AVG_WIND_DIRECTION],<a name="line.161"></a>
+<span class="sourceLineNo">162</span>                                      _clusterCenters[i][IDX_RELATIVE_HUMIDITY]);<a name="line.162"></a>
+<span class="sourceLineNo">163</span>                <a name="line.163"></a>
+<span class="sourceLineNo">164</span>                // catch case where more than one center fits criteria<a name="line.164"></a>
+<span class="sourceLineNo">165</span>                // compararison: using a linear-scale scoring system.<a name="line.165"></a>
+<span class="sourceLineNo">166</span>                //     If the current cluster has more extreme values than the<a name="line.166"></a>
+<span class="sourceLineNo">167</span>                //     previouscluster, use the current as SA cluster<a name="line.167"></a>
+<span class="sourceLineNo">168</span>                if(index != -1) {<a name="line.168"></a>
+<span class="sourceLineNo">169</span>                    double dWindSpeed =<a name="line.169"></a>
+<span class="sourceLineNo">170</span>                        _clusterCenters[i][IDX_AVG_WIND_SPEED]<a name="line.170"></a>
+<span class="sourceLineNo">171</span>                        - _clusterCenters[index][IDX_AVG_WIND_SPEED];<a name="line.171"></a>
+<span class="sourceLineNo">172</span>                    double dWindDirection =<a name="line.172"></a>
+<span class="sourceLineNo">173</span>                        _clusterCenters[i][IDX_AVG_WIND_DIRECTION]<a name="line.173"></a>
+<span class="sourceLineNo">174</span>                        - _clusterCenters[index][IDX_AVG_WIND_DIRECTION];<a name="line.174"></a>
+<span class="sourceLineNo">175</span>                    double dRelativeHumidity =<a name="line.175"></a>
+<span class="sourceLineNo">176</span>                        _clusterCenters[i][IDX_RELATIVE_HUMIDITY]<a name="line.176"></a>
+<span class="sourceLineNo">177</span>                        - _clusterCenters[index][IDX_RELATIVE_HUMIDITY];<a name="line.177"></a>
+<span class="sourceLineNo">178</span>                    <a name="line.178"></a>
+<span class="sourceLineNo">179</span>                    if(dWindSpeed+(-dWindDirection)+(-dRelativeHumidity) &gt; 0)<a name="line.179"></a>
+<span class="sourceLineNo">180</span>                        index = i; <a name="line.180"></a>
+<span class="sourceLineNo">181</span>                }<a name="line.181"></a>
+<span class="sourceLineNo">182</span>                else <a name="line.182"></a>
+<span class="sourceLineNo">183</span>                    index = i;<a name="line.183"></a>
+<span class="sourceLineNo">184</span>            }<a name="line.184"></a>
+<span class="sourceLineNo">185</span>        }<a name="line.185"></a>
+<span class="sourceLineNo">186</span><a name="line.186"></a>
+<span class="sourceLineNo">187</span>        <a name="line.187"></a>
+<span class="sourceLineNo">188</span>        /* After identifying the SA cluster, write to _fileObj */<a name="line.188"></a>
+<span class="sourceLineNo">189</span>        JsonObject entryObj = new JsonObject();  // create station object<a name="line.189"></a>
+<span class="sourceLineNo">190</span>        entryObj.put("saCluster", index);<a name="line.190"></a>
+<span class="sourceLineNo">191</span>        _fileObj.put(entryId, entryObj);  // add station object to file object<a name="line.191"></a>
+<span class="sourceLineNo">192</span><a name="line.192"></a>
+<span class="sourceLineNo">193</span>        //DEBUG<a name="line.193"></a>
+<span class="sourceLineNo">194</span>        if(_debugging)<a name="line.194"></a>
+<span class="sourceLineNo">195</span>            System.out.println("SantaAnaIdentify.fire ends!");<a name="line.195"></a>
+<span class="sourceLineNo">196</span><a name="line.196"></a>
+<span class="sourceLineNo">197</span>    }<a name="line.197"></a>
+<span class="sourceLineNo">198</span><a name="line.198"></a>
+<span class="sourceLineNo">199</span><a name="line.199"></a>
+<span class="sourceLineNo">200</span>    /* <a name="line.200"></a>
+<span class="sourceLineNo">201</span>     * wrap-up:<a name="line.201"></a>
+<span class="sourceLineNo">202</span>     * writes _fileObj to buffer, then flush and close the file.<a name="line.202"></a>
+<span class="sourceLineNo">203</span>     * NOTE: opens file only after the workflow is complete<a name="line.203"></a>
+<span class="sourceLineNo">204</span>     */<a name="line.204"></a>
+<span class="sourceLineNo">205</span>    @Override<a name="line.205"></a>
+<span class="sourceLineNo">206</span>    public void wrapup() throws IllegalActionException {<a name="line.206"></a>
+<span class="sourceLineNo">207</span><a name="line.207"></a>
+<span class="sourceLineNo">208</span>        super.wrapup();<a name="line.208"></a>
+<span class="sourceLineNo">209</span><a name="line.209"></a>
+<span class="sourceLineNo">210</span>        PrintWriter writer;<a name="line.210"></a>
+<span class="sourceLineNo">211</span><a name="line.211"></a>
+<span class="sourceLineNo">212</span>        // try to read in existing file and overwrite it with new data. If no<a name="line.212"></a>
+<span class="sourceLineNo">213</span>        // original files exist, create a new file.<a name="line.213"></a>
+<span class="sourceLineNo">214</span>        try {<a name="line.214"></a>
+<span class="sourceLineNo">215</span><a name="line.215"></a>
+<span class="sourceLineNo">216</span>            // read in existing file, is possible<a name="line.216"></a>
+<span class="sourceLineNo">217</span>            FileInputStream is =<a name="line.217"></a>
+<span class="sourceLineNo">218</span>                new FileInputStream(outFilepath.getValueAsString());<a name="line.218"></a>
+<span class="sourceLineNo">219</span>            BufferedReader reader =<a name="line.219"></a>
+<span class="sourceLineNo">220</span>                new BufferedReader(new InputStreamReader(is));<a name="line.220"></a>
+<span class="sourceLineNo">221</span><a name="line.221"></a>
+<span class="sourceLineNo">222</span>            // read in the entire file as a single string, for JsonObject<a name="line.222"></a>
+<span class="sourceLineNo">223</span>            StringBuilder sb = new StringBuilder();<a name="line.223"></a>
+<span class="sourceLineNo">224</span>            String line = reader.readLine();<a name="line.224"></a>
+<span class="sourceLineNo">225</span>            while (line != null) {<a name="line.225"></a>
+<span class="sourceLineNo">226</span>                sb.append(line);<a name="line.226"></a>
+<span class="sourceLineNo">227</span>                line = reader.readLine();<a name="line.227"></a>
+<span class="sourceLineNo">228</span>            }<a name="line.228"></a>
+<span class="sourceLineNo">229</span>            reader.close(); // close file for writing<a name="line.229"></a>
+<span class="sourceLineNo">230</span><a name="line.230"></a>
+<span class="sourceLineNo">231</span><a name="line.231"></a>
+<span class="sourceLineNo">232</span>            // file read in, construct JSON object for contents in orig file<a name="line.232"></a>
+<span class="sourceLineNo">233</span>            JsonObject origFileObj = new JsonObject(sb.toString());<a name="line.233"></a>
+<span class="sourceLineNo">234</span>            // get list of all station names from the new JSON object<a name="line.234"></a>
+<span class="sourceLineNo">235</span>            Set&lt;String&gt; stationList = _fileObj.fieldNames();<a name="line.235"></a>
+<span class="sourceLineNo">236</span><a name="line.236"></a>
+<span class="sourceLineNo">237</span>            // replace old station data with new data<a name="line.237"></a>
+<span class="sourceLineNo">238</span>            for (String station : stationList) {<a name="line.238"></a>
+<span class="sourceLineNo">239</span>                origFileObj.remove(station);  // ignored if station DNE<a name="line.239"></a>
+<span class="sourceLineNo">240</span>                origFileObj.put(station, _fileObj.getJsonObject(station));<a name="line.240"></a>
+<span class="sourceLineNo">241</span>            }<a name="line.241"></a>
+<span class="sourceLineNo">242</span><a name="line.242"></a>
+<span class="sourceLineNo">243</span><a name="line.243"></a>
+<span class="sourceLineNo">244</span>            // write updated origFileObj to file.<a name="line.244"></a>
+<span class="sourceLineNo">245</span>            try {<a name="line.245"></a>
+<span class="sourceLineNo">246</span>                // open file<a name="line.246"></a>
+<span class="sourceLineNo">247</span>                writer = new PrintWriter(outFilepath.getValueAsString());<a name="line.247"></a>
+<span class="sourceLineNo">248</span>                // write _fileObj<a name="line.248"></a>
+<span class="sourceLineNo">249</span>                writer.println(origFileObj.encodePrettily()); // updated data<a name="line.249"></a>
+<span class="sourceLineNo">250</span>                // flush and close the writer's file<a name="line.250"></a>
+<span class="sourceLineNo">251</span>                writer.flush();<a name="line.251"></a>
+<span class="sourceLineNo">252</span>                writer.close();<a name="line.252"></a>
+<span class="sourceLineNo">253</span>            }catch(Exception ei1){System.err.println("Failed to open file!");}<a name="line.253"></a>
+<span class="sourceLineNo">254</span><a name="line.254"></a>
+<span class="sourceLineNo">255</span>        } catch (Exception fe) {  // if error, create/write to new file<a name="line.255"></a>
+<span class="sourceLineNo">256</span><a name="line.256"></a>
+<span class="sourceLineNo">257</span>            System.out.println("No original data file found.");<a name="line.257"></a>
+<span class="sourceLineNo">258</span><a name="line.258"></a>
+<span class="sourceLineNo">259</span>            try {<a name="line.259"></a>
+<span class="sourceLineNo">260</span>                // open file<a name="line.260"></a>
+<span class="sourceLineNo">261</span>                writer = new PrintWriter(outFilepath.getValueAsString());<a name="line.261"></a>
+<span class="sourceLineNo">262</span>                // write _fileObj<a name="line.262"></a>
+<span class="sourceLineNo">263</span>                writer.println(_fileObj.encodePrettily());<a name="line.263"></a>
+<span class="sourceLineNo">264</span>                // flush and close the writer's file<a name="line.264"></a>
+<span class="sourceLineNo">265</span>                writer.flush();<a name="line.265"></a>
+<span class="sourceLineNo">266</span>                writer.close();<a name="line.266"></a>
+<span class="sourceLineNo">267</span>            }catch(Exception ei2){System.err.println("Failed to open file!");}<a name="line.267"></a>
+<span class="sourceLineNo">268</span>        }<a name="line.268"></a>
+<span class="sourceLineNo">269</span><a name="line.269"></a>
+<span class="sourceLineNo">270</span>    }<a name="line.270"></a>
+<span class="sourceLineNo">271</span><a name="line.271"></a>
+<span class="sourceLineNo">272</span><a name="line.272"></a>
+<span class="sourceLineNo">273</span>    /** Input data as JSON Array (string format). */<a name="line.273"></a>
+<span class="sourceLineNo">274</span>    public TypedIOPort inData;<a name="line.274"></a>
+<span class="sourceLineNo">275</span><a name="line.275"></a>
+<span class="sourceLineNo">276</span>    /** Parameter to store string for output JSON file **/<a name="line.276"></a>
+<span class="sourceLineNo">277</span>    public StringParameter outFilepath;<a name="line.277"></a>
+<span class="sourceLineNo">278</span><a name="line.278"></a>
+<span class="sourceLineNo">279</span>    /** Wind speed threshold */<a name="line.279"></a>
+<span class="sourceLineNo">280</span>    public PortParameter thrsWindSpeed;<a name="line.280"></a>
+<span class="sourceLineNo">281</span><a name="line.281"></a>
+<span class="sourceLineNo">282</span>    /** Wind direction threshold */<a name="line.282"></a>
+<span class="sourceLineNo">283</span>    public PortParameter thrsWindDirection;<a name="line.283"></a>
+<span class="sourceLineNo">284</span><a name="line.284"></a>
+<span class="sourceLineNo">285</span>    /** Relative humidity threshold */<a name="line.285"></a>
+<span class="sourceLineNo">286</span>    public PortParameter thrsRelHum;<a name="line.286"></a>
+<span class="sourceLineNo">287</span><a name="line.287"></a>
+<span class="sourceLineNo">288</span>    /* private fields */<a name="line.288"></a>
+<span class="sourceLineNo">289</span>    private JsonObject _fileObj;<a name="line.289"></a>
+<span class="sourceLineNo">290</span>    private Double[][] _clusterCenters;<a name="line.290"></a>
+<span class="sourceLineNo">291</span><a name="line.291"></a>
+<span class="sourceLineNo">292</span>    /* constants for values indices in measurement vectors */<a name="line.292"></a>
+<span class="sourceLineNo">293</span>    private final int IDX_AIR_PRESSURE = 0;<a name="line.293"></a>
+<span class="sourceLineNo">294</span>    private final int IDX_AIR_TEMP = 1;<a name="line.294"></a>
+<span class="sourceLineNo">295</span>    private final int IDX_AVG_WIND_DIRECTION = 2;<a name="line.295"></a>
+<span class="sourceLineNo">296</span>    private final int IDX_AVG_WIND_SPEED = 3;<a name="line.296"></a>
+<span class="sourceLineNo">297</span>    private final int IDX_MAX_WIND_DIRECTION = 4;<a name="line.297"></a>
+<span class="sourceLineNo">298</span>    private final int IDX_MAX_WIND_SPEED = 5;<a name="line.298"></a>
+<span class="sourceLineNo">299</span>    private final int IDX_RELATIVE_HUMIDITY = 6;<a name="line.299"></a>
+<span class="sourceLineNo">300</span><a name="line.300"></a>
+<span class="sourceLineNo">301</span>}<a name="line.301"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

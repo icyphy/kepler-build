@@ -1,0 +1,260 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../../stylesheet.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>/* An abstract menu factory that creates context menus using item factories<a name="line.1"></a>
+<span class="sourceLineNo">002</span><a name="line.2"></a>
+<span class="sourceLineNo">003</span> Copyright (c) 2003-2016 The Regents of the University of California.<a name="line.3"></a>
+<span class="sourceLineNo">004</span> All rights reserved.<a name="line.4"></a>
+<span class="sourceLineNo">005</span> Permission is hereby granted, without written agreement and without<a name="line.5"></a>
+<span class="sourceLineNo">006</span> license or royalty fees, to use, copy, modify, and distribute this<a name="line.6"></a>
+<span class="sourceLineNo">007</span> software and its documentation for any purpose, provided that the above<a name="line.7"></a>
+<span class="sourceLineNo">008</span> copyright notice and the following two paragraphs appear in all copies<a name="line.8"></a>
+<span class="sourceLineNo">009</span> of this software.<a name="line.9"></a>
+<span class="sourceLineNo">010</span><a name="line.10"></a>
+<span class="sourceLineNo">011</span> IN NO EVENT SHALL THE UNIVERSITY OF CALIFORNIA BE LIABLE TO ANY PARTY<a name="line.11"></a>
+<span class="sourceLineNo">012</span> FOR DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES<a name="line.12"></a>
+<span class="sourceLineNo">013</span> ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION, EVEN IF<a name="line.13"></a>
+<span class="sourceLineNo">014</span> THE UNIVERSITY OF CALIFORNIA HAS BEEN ADVISED OF THE POSSIBILITY OF<a name="line.14"></a>
+<span class="sourceLineNo">015</span> SUCH DAMAGE.<a name="line.15"></a>
+<span class="sourceLineNo">016</span><a name="line.16"></a>
+<span class="sourceLineNo">017</span> THE UNIVERSITY OF CALIFORNIA SPECIFICALLY DISCLAIMS ANY WARRANTIES,<a name="line.17"></a>
+<span class="sourceLineNo">018</span> INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF<a name="line.18"></a>
+<span class="sourceLineNo">019</span> MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE<a name="line.19"></a>
+<span class="sourceLineNo">020</span> PROVIDED HEREUNDER IS ON AN "AS IS" BASIS, AND THE UNIVERSITY OF<a name="line.20"></a>
+<span class="sourceLineNo">021</span> CALIFORNIA HAS NO OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT, UPDATES,<a name="line.21"></a>
+<span class="sourceLineNo">022</span> ENHANCEMENTS, OR MODIFICATIONS.<a name="line.22"></a>
+<span class="sourceLineNo">023</span><a name="line.23"></a>
+<span class="sourceLineNo">024</span> PT_COPYRIGHT_VERSION_2<a name="line.24"></a>
+<span class="sourceLineNo">025</span> COPYRIGHTENDKEY<a name="line.25"></a>
+<span class="sourceLineNo">026</span><a name="line.26"></a>
+<span class="sourceLineNo">027</span> */<a name="line.27"></a>
+<span class="sourceLineNo">028</span>package ptolemy.vergil.tree;<a name="line.28"></a>
+<span class="sourceLineNo">029</span><a name="line.29"></a>
+<span class="sourceLineNo">030</span>import java.awt.event.MouseAdapter;<a name="line.30"></a>
+<span class="sourceLineNo">031</span>import java.awt.event.MouseEvent;<a name="line.31"></a>
+<span class="sourceLineNo">032</span>import java.util.Collections;<a name="line.32"></a>
+<span class="sourceLineNo">033</span>import java.util.Iterator;<a name="line.33"></a>
+<span class="sourceLineNo">034</span>import java.util.LinkedList;<a name="line.34"></a>
+<span class="sourceLineNo">035</span>import java.util.List;<a name="line.35"></a>
+<span class="sourceLineNo">036</span><a name="line.36"></a>
+<span class="sourceLineNo">037</span>import javax.swing.tree.TreePath;<a name="line.37"></a>
+<span class="sourceLineNo">038</span><a name="line.38"></a>
+<span class="sourceLineNo">039</span>import diva.gui.toolbox.JContextMenu;<a name="line.39"></a>
+<span class="sourceLineNo">040</span>import ptolemy.kernel.util.NamedObj;<a name="line.40"></a>
+<span class="sourceLineNo">041</span>import ptolemy.vergil.toolbox.MenuItemFactory;<a name="line.41"></a>
+<span class="sourceLineNo">042</span><a name="line.42"></a>
+<span class="sourceLineNo">043</span>///////////////////////////////////////////////////////////////////<a name="line.43"></a>
+<span class="sourceLineNo">044</span>//// PTreeMenuCreator<a name="line.44"></a>
+<span class="sourceLineNo">045</span><a name="line.45"></a>
+<span class="sourceLineNo">046</span>/**<a name="line.46"></a>
+<span class="sourceLineNo">047</span> A mouse listener that creates context menus for a PTree using menu<a name="line.47"></a>
+<span class="sourceLineNo">048</span> item factories.  When asked to create a context menu, This class<a name="line.48"></a>
+<span class="sourceLineNo">049</span> determines the ptolemy object associated with the point in the tree<a name="line.49"></a>
+<span class="sourceLineNo">050</span> that was clicked on.  Then it passes the ptolemy object to each menu<a name="line.50"></a>
+<span class="sourceLineNo">051</span> item factory that it contains to add the menu items.  Lastly, it pops<a name="line.51"></a>
+<span class="sourceLineNo">052</span> up the resulting menu.<a name="line.52"></a>
+<span class="sourceLineNo">053</span><a name="line.53"></a>
+<span class="sourceLineNo">054</span> @author Steve Neuendorffer<a name="line.54"></a>
+<span class="sourceLineNo">055</span> @version $Id$<a name="line.55"></a>
+<span class="sourceLineNo">056</span> @since Ptolemy II 4.0<a name="line.56"></a>
+<span class="sourceLineNo">057</span> @Pt.ProposedRating Red (eal)<a name="line.57"></a>
+<span class="sourceLineNo">058</span> @Pt.AcceptedRating Red (johnr)<a name="line.58"></a>
+<span class="sourceLineNo">059</span> */<a name="line.59"></a>
+<span class="sourceLineNo">060</span>public class PTreeMenuCreator extends MouseAdapter {<a name="line.60"></a>
+<span class="sourceLineNo">061</span>    /** Create a new menu factory that contains no menu item factories.<a name="line.61"></a>
+<span class="sourceLineNo">062</span>     */<a name="line.62"></a>
+<span class="sourceLineNo">063</span>    public PTreeMenuCreator() {<a name="line.63"></a>
+<span class="sourceLineNo">064</span>        _factoryList = new LinkedList();<a name="line.64"></a>
+<span class="sourceLineNo">065</span>    }<a name="line.65"></a>
+<span class="sourceLineNo">066</span><a name="line.66"></a>
+<span class="sourceLineNo">067</span>    ///////////////////////////////////////////////////////////////////<a name="line.67"></a>
+<span class="sourceLineNo">068</span>    ////                         public methods                    ////<a name="line.68"></a>
+<span class="sourceLineNo">069</span><a name="line.69"></a>
+<span class="sourceLineNo">070</span>    /** Add a menu item factory to this creator.<a name="line.70"></a>
+<span class="sourceLineNo">071</span>     *  @param factory The menu item factory to add.<a name="line.71"></a>
+<span class="sourceLineNo">072</span>     */<a name="line.72"></a>
+<span class="sourceLineNo">073</span>    public void addMenuItemFactory(MenuItemFactory factory) {<a name="line.73"></a>
+<span class="sourceLineNo">074</span>        _factoryList.add(factory);<a name="line.74"></a>
+<span class="sourceLineNo">075</span>    }<a name="line.75"></a>
+<span class="sourceLineNo">076</span><a name="line.76"></a>
+<span class="sourceLineNo">077</span>    /** Create an instance of the menu associated with this factory.<a name="line.77"></a>
+<span class="sourceLineNo">078</span>     *  @param e The mouse event.  If the mouse event is<a name="line.78"></a>
+<span class="sourceLineNo">079</span>     *  a popup event, then menu is created and shown.<a name="line.79"></a>
+<span class="sourceLineNo">080</span>     */<a name="line.80"></a>
+<span class="sourceLineNo">081</span>    @Override<a name="line.81"></a>
+<span class="sourceLineNo">082</span>    public void mousePressed(MouseEvent e) {<a name="line.82"></a>
+<span class="sourceLineNo">083</span>        _doEvent(e);<a name="line.83"></a>
+<span class="sourceLineNo">084</span>    }<a name="line.84"></a>
+<span class="sourceLineNo">085</span><a name="line.85"></a>
+<span class="sourceLineNo">086</span>    /** Create an instance of the menu associated with this factory.<a name="line.86"></a>
+<span class="sourceLineNo">087</span>     *  @param e The mouse event.  If the mouse event is<a name="line.87"></a>
+<span class="sourceLineNo">088</span>     *  a popup event, then menu is created and shown.<a name="line.88"></a>
+<span class="sourceLineNo">089</span>     */<a name="line.89"></a>
+<span class="sourceLineNo">090</span>    @Override<a name="line.90"></a>
+<span class="sourceLineNo">091</span>    public void mouseReleased(MouseEvent e) {<a name="line.91"></a>
+<span class="sourceLineNo">092</span>        _doEvent(e);<a name="line.92"></a>
+<span class="sourceLineNo">093</span>    }<a name="line.93"></a>
+<span class="sourceLineNo">094</span><a name="line.94"></a>
+<span class="sourceLineNo">095</span>    /** Return the list of menu item factories.<a name="line.95"></a>
+<span class="sourceLineNo">096</span>     * @return An unmodifiable list.<a name="line.96"></a>
+<span class="sourceLineNo">097</span>     */<a name="line.97"></a>
+<span class="sourceLineNo">098</span>    public List menuItemFactoryList() {<a name="line.98"></a>
+<span class="sourceLineNo">099</span>        return Collections.unmodifiableList(_factoryList);<a name="line.99"></a>
+<span class="sourceLineNo">100</span>    }<a name="line.100"></a>
+<span class="sourceLineNo">101</span><a name="line.101"></a>
+<span class="sourceLineNo">102</span>    /** Remove the given menu item factory from the factory list.<a name="line.102"></a>
+<span class="sourceLineNo">103</span>     *  @param factory The factory to be removed.<a name="line.103"></a>
+<span class="sourceLineNo">104</span>     */<a name="line.104"></a>
+<span class="sourceLineNo">105</span>    public void removeMenuItemFactory(MenuItemFactory factory) {<a name="line.105"></a>
+<span class="sourceLineNo">106</span>        _factoryList.remove(factory);<a name="line.106"></a>
+<span class="sourceLineNo">107</span>    }<a name="line.107"></a>
+<span class="sourceLineNo">108</span><a name="line.108"></a>
+<span class="sourceLineNo">109</span>    /** Remove all MenuItemFactories from the factory list.<a name="line.109"></a>
+<span class="sourceLineNo">110</span>     */<a name="line.110"></a>
+<span class="sourceLineNo">111</span>    public void clear() {<a name="line.111"></a>
+<span class="sourceLineNo">112</span>        _factoryList.clear();<a name="line.112"></a>
+<span class="sourceLineNo">113</span>    }<a name="line.113"></a>
+<span class="sourceLineNo">114</span><a name="line.114"></a>
+<span class="sourceLineNo">115</span>    ///////////////////////////////////////////////////////////////////<a name="line.115"></a>
+<span class="sourceLineNo">116</span>    ////                         private methods                   ////<a name="line.116"></a>
+<span class="sourceLineNo">117</span><a name="line.117"></a>
+<span class="sourceLineNo">118</span>    /** Process a mousePressed or mouseReleased event.<a name="line.118"></a>
+<span class="sourceLineNo">119</span>     */<a name="line.119"></a>
+<span class="sourceLineNo">120</span>    private void _doEvent(MouseEvent e) {<a name="line.120"></a>
+<span class="sourceLineNo">121</span>        if (!e.isPopupTrigger()) {<a name="line.121"></a>
+<span class="sourceLineNo">122</span>            return;<a name="line.122"></a>
+<span class="sourceLineNo">123</span>        }<a name="line.123"></a>
+<span class="sourceLineNo">124</span><a name="line.124"></a>
+<span class="sourceLineNo">125</span>        PTree tree = (PTree) e.getComponent();<a name="line.125"></a>
+<span class="sourceLineNo">126</span>        TreePath treePath = tree.getPathForLocation(e.getX(), e.getY());<a name="line.126"></a>
+<span class="sourceLineNo">127</span>        if (treePath == null) {<a name="line.127"></a>
+<span class="sourceLineNo">128</span>            // On the Mac under Java 1.5.0_22, treePath can be null.<a name="line.128"></a>
+<span class="sourceLineNo">129</span>            // 1) Start vergil<a name="line.129"></a>
+<span class="sourceLineNo">130</span>            // 2) Open Actors -&gt; Sources -&gt; GenericSources<a name="line.130"></a>
+<span class="sourceLineNo">131</span>            // 3) Drag a Const into the canvas<a name="line.131"></a>
+<span class="sourceLineNo">132</span>            // 4) Place the mouse over the Const actor and quickly<a name="line.132"></a>
+<span class="sourceLineNo">133</span>            // use two finger to signal a right click.<a name="line.133"></a>
+<span class="sourceLineNo">134</span><a name="line.134"></a>
+<span class="sourceLineNo">135</span>            // An exception appears:<a name="line.135"></a>
+<span class="sourceLineNo">136</span>            // Exception in thread "AWT-EventQueue-0" java.lang.NullPointerException<a name="line.136"></a>
+<span class="sourceLineNo">137</span>            //         at ptolemy.vergil.tree.PTreeMenuCreator._doEvent(PTreeMenuCreator.java:119)<a name="line.137"></a>
+<span class="sourceLineNo">138</span>            //         at ptolemy.vergil.tree.PTreeMenuCreator.mousePressed(PTreeMenuCreator.java:82)<a name="line.138"></a>
+<span class="sourceLineNo">139</span>            //         at java.awt.AWTEventMulticaster.mousePressed(AWTEventMulticaster.java:222)<a name="line.139"></a>
+<span class="sourceLineNo">140</span>            //         at java.awt.Component.processMouseEvent(Component.java:5599)<a name="line.140"></a>
+<span class="sourceLineNo">141</span>            //         at javax.swing.JComponent.processMouseEvent(JComponent.java:3129)<a name="line.141"></a>
+<span class="sourceLineNo">142</span>            //         at java.awt.Component.processEvent(Component.java:5367)<a name="line.142"></a>
+<span class="sourceLineNo">143</span>            //         at java.awt.Container.processEvent(Container.java:2010)<a name="line.143"></a>
+<span class="sourceLineNo">144</span>            //         at java.awt.Component.dispatchEventImpl(Component.java:4068)<a name="line.144"></a>
+<span class="sourceLineNo">145</span>            //         at java.awt.Container.dispatchEventImpl(Container.java:2068)<a name="line.145"></a>
+<span class="sourceLineNo">146</span>            //         at java.awt.Component.dispatchEvent(Component.java:3903)<a name="line.146"></a>
+<span class="sourceLineNo">147</span>            //         at java.awt.LightweightDispatcher.retargetMouseEvent(Container.java:4256)<a name="line.147"></a>
+<span class="sourceLineNo">148</span>            //         at java.awt.LightweightDispatcher.processMouseEvent(Container.java:3933)<a name="line.148"></a>
+<span class="sourceLineNo">149</span>            //         at java.awt.LightweightDispatcher.dispatchEvent(Container.java:3866)<a name="line.149"></a>
+<span class="sourceLineNo">150</span>            //         at java.awt.Container.dispatchEventImpl(Container.java:2054)<a name="line.150"></a>
+<span class="sourceLineNo">151</span>            //         at java.awt.Window.dispatchEventImpl(Window.java:1801)<a name="line.151"></a>
+<span class="sourceLineNo">152</span>            //         at java.awt.Component.dispatchEvent(Component.java:3903)<a name="line.152"></a>
+<span class="sourceLineNo">153</span>            //         at java.awt.EventQueue.dispatchEvent(EventQueue.java:463)<a name="line.153"></a>
+<span class="sourceLineNo">154</span>            //         at java.awt.EventDispatchThread.pumpOneEventForHierarchy(EventDispatchThread.java:269)<a name="line.154"></a>
+<span class="sourceLineNo">155</span>            //         at java.awt.EventDispatchThread.pumpEventsForHierarchy(EventDispatchThread.java:190)<a name="line.155"></a>
+<span class="sourceLineNo">156</span>            //         at java.awt.EventDispatchThread.pumpEvents(EventDispatchThread.java:184)<a name="line.156"></a>
+<span class="sourceLineNo">157</span>            //         at java.awt.EventDispatchThread.pumpEvents(EventDispatchThread.java:176)<a name="line.157"></a>
+<span class="sourceLineNo">158</span>            //         at java.awt.EventDispatchThread.run(EventDispatchThread.java:110)<a name="line.158"></a>
+<span class="sourceLineNo">159</span><a name="line.159"></a>
+<span class="sourceLineNo">160</span>            // I think the problem here is that the actor pane has the focus when<a name="line.160"></a>
+<span class="sourceLineNo">161</span>            // the mouse click occurs.<a name="line.161"></a>
+<span class="sourceLineNo">162</span>            return;<a name="line.162"></a>
+<span class="sourceLineNo">163</span>        }<a name="line.163"></a>
+<span class="sourceLineNo">164</span>        Object object = treePath.getLastPathComponent();<a name="line.164"></a>
+<span class="sourceLineNo">165</span><a name="line.165"></a>
+<span class="sourceLineNo">166</span>        if (object instanceof NamedObj) {<a name="line.166"></a>
+<span class="sourceLineNo">167</span>            NamedObj namedObj = (NamedObj) object;<a name="line.167"></a>
+<span class="sourceLineNo">168</span>            JContextMenu menu = new JContextMenu(namedObj,<a name="line.168"></a>
+<span class="sourceLineNo">169</span>                    namedObj.getFullName());<a name="line.169"></a>
+<span class="sourceLineNo">170</span>            Iterator i = menuItemFactoryList().iterator();<a name="line.170"></a>
+<span class="sourceLineNo">171</span><a name="line.171"></a>
+<span class="sourceLineNo">172</span>            while (i.hasNext()) {<a name="line.172"></a>
+<span class="sourceLineNo">173</span>                MenuItemFactory factory = (MenuItemFactory) i.next();<a name="line.173"></a>
+<span class="sourceLineNo">174</span>                factory.create(menu, namedObj);<a name="line.174"></a>
+<span class="sourceLineNo">175</span>            }<a name="line.175"></a>
+<span class="sourceLineNo">176</span><a name="line.176"></a>
+<span class="sourceLineNo">177</span>            menu.show(tree, e.getX(), e.getY());<a name="line.177"></a>
+<span class="sourceLineNo">178</span>            e.consume();<a name="line.178"></a>
+<span class="sourceLineNo">179</span>        }<a name="line.179"></a>
+<span class="sourceLineNo">180</span>    }<a name="line.180"></a>
+<span class="sourceLineNo">181</span><a name="line.181"></a>
+<span class="sourceLineNo">182</span>    ///////////////////////////////////////////////////////////////////<a name="line.182"></a>
+<span class="sourceLineNo">183</span>    ////                     private members                       ////<a name="line.183"></a>
+<span class="sourceLineNo">184</span><a name="line.184"></a>
+<span class="sourceLineNo">185</span>    /** The menu item factories.<a name="line.185"></a>
+<span class="sourceLineNo">186</span>     */<a name="line.186"></a>
+<span class="sourceLineNo">187</span>    private List _factoryList;<a name="line.187"></a>
+<span class="sourceLineNo">188</span>}<a name="line.188"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

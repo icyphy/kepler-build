@@ -1,0 +1,234 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../../../stylesheet.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>/*<a name="line.1"></a>
+<span class="sourceLineNo">002</span><a name="line.2"></a>
+<span class="sourceLineNo">003</span>Copyright (c) 2011-2016 The Regents of the University of California.<a name="line.3"></a>
+<span class="sourceLineNo">004</span>All rights reserved.<a name="line.4"></a>
+<span class="sourceLineNo">005</span><a name="line.5"></a>
+<span class="sourceLineNo">006</span>Permission is hereby granted, without written agreement and without<a name="line.6"></a>
+<span class="sourceLineNo">007</span>license or royalty fees, to use, copy, modify, and distribute this<a name="line.7"></a>
+<span class="sourceLineNo">008</span>software and its documentation for any purpose, provided that the above<a name="line.8"></a>
+<span class="sourceLineNo">009</span>copyright notice and the following two paragraphs appear in all copies<a name="line.9"></a>
+<span class="sourceLineNo">010</span>of this software.<a name="line.10"></a>
+<span class="sourceLineNo">011</span><a name="line.11"></a>
+<span class="sourceLineNo">012</span>IN NO EVENT SHALL THE UNIVERSITY OF CALIFORNIA LIABLE TO ANY PARTY<a name="line.12"></a>
+<span class="sourceLineNo">013</span>FOR DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES<a name="line.13"></a>
+<span class="sourceLineNo">014</span>ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION, EVEN IF<a name="line.14"></a>
+<span class="sourceLineNo">015</span>THE UNIVERSITY OF CALIFORNIA HAS BEEN ADVISED OF THE POSSIBILITY OF<a name="line.15"></a>
+<span class="sourceLineNo">016</span>SUCH DAMAGE.<a name="line.16"></a>
+<span class="sourceLineNo">017</span><a name="line.17"></a>
+<span class="sourceLineNo">018</span>THE UNIVERSITY OF CALIFORNIA SPECIFICALLY DISCLAIMS ANY WARRANTIES,<a name="line.18"></a>
+<span class="sourceLineNo">019</span>INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF<a name="line.19"></a>
+<span class="sourceLineNo">020</span>MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE<a name="line.20"></a>
+<span class="sourceLineNo">021</span>PROVIDED HEREUNDER IS ON AN "AS IS" BASIS, AND THE UNIVERSITY OF<a name="line.21"></a>
+<span class="sourceLineNo">022</span>CALIFORNIA HAS NO OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT, UPDATES,<a name="line.22"></a>
+<span class="sourceLineNo">023</span>ENHANCEMENTS, OR MODIFICATIONS.<a name="line.23"></a>
+<span class="sourceLineNo">024</span><a name="line.24"></a>
+<span class="sourceLineNo">025</span>PT_COPYRIGHT_VERSION_2<a name="line.25"></a>
+<span class="sourceLineNo">026</span>COPYRIGHTENDKEY<a name="line.26"></a>
+<span class="sourceLineNo">027</span> */<a name="line.27"></a>
+<span class="sourceLineNo">028</span>package ptolemy.vergil.basic.layout;<a name="line.28"></a>
+<span class="sourceLineNo">029</span><a name="line.29"></a>
+<span class="sourceLineNo">030</span>import ptolemy.actor.parameters.DoubleRangeParameter;<a name="line.30"></a>
+<span class="sourceLineNo">031</span>import ptolemy.data.expr.ChoiceParameter;<a name="line.31"></a>
+<span class="sourceLineNo">032</span>import ptolemy.data.expr.Parameter;<a name="line.32"></a>
+<span class="sourceLineNo">033</span>import ptolemy.data.expr.StringParameter;<a name="line.33"></a>
+<span class="sourceLineNo">034</span>import ptolemy.data.type.BaseType;<a name="line.34"></a>
+<span class="sourceLineNo">035</span>import ptolemy.kernel.util.Attribute;<a name="line.35"></a>
+<span class="sourceLineNo">036</span>import ptolemy.kernel.util.IllegalActionException;<a name="line.36"></a>
+<span class="sourceLineNo">037</span>import ptolemy.kernel.util.NameDuplicationException;<a name="line.37"></a>
+<span class="sourceLineNo">038</span>import ptolemy.kernel.util.NamedObj;<a name="line.38"></a>
+<span class="sourceLineNo">039</span>import ptolemy.kernel.util.Settable;<a name="line.39"></a>
+<span class="sourceLineNo">040</span><a name="line.40"></a>
+<span class="sourceLineNo">041</span>/**<a name="line.41"></a>
+<span class="sourceLineNo">042</span> * An attribute for parameters of automatic layout. This is read by the KIELER<a name="line.42"></a>
+<span class="sourceLineNo">043</span> * layout action to generate a configuration for the layout algorithm.<a name="line.43"></a>
+<span class="sourceLineNo">044</span> *<a name="line.44"></a>
+<span class="sourceLineNo">045</span> * @see ptolemy.vergil.basic.layout.kieler.KielerLayoutAction<a name="line.45"></a>
+<span class="sourceLineNo">046</span> * @author Miro Spoenemann, Christoph Daniel Schulze, Ulf Rueegg<a name="line.46"></a>
+<span class="sourceLineNo">047</span> * @version $Id$<a name="line.47"></a>
+<span class="sourceLineNo">048</span> * @since Ptolemy II 10.0<a name="line.48"></a>
+<span class="sourceLineNo">049</span> * @Pt.ProposedRating Red (msp)<a name="line.49"></a>
+<span class="sourceLineNo">050</span> * @Pt.AcceptedRating Red (msp)<a name="line.50"></a>
+<span class="sourceLineNo">051</span> */<a name="line.51"></a>
+<span class="sourceLineNo">052</span>public abstract class AbstractLayoutConfiguration extends Attribute {<a name="line.52"></a>
+<span class="sourceLineNo">053</span><a name="line.53"></a>
+<span class="sourceLineNo">054</span>    /** Available modes of user interaction. */<a name="line.54"></a>
+<span class="sourceLineNo">055</span>    public enum InteractionMode {<a name="line.55"></a>
+<span class="sourceLineNo">056</span>        /** No user interaction: full automatic layout. */<a name="line.56"></a>
+<span class="sourceLineNo">057</span>        None,<a name="line.57"></a>
+<span class="sourceLineNo">058</span>        /** User positioning affects cycle detection. */<a name="line.58"></a>
+<span class="sourceLineNo">059</span>        Cycles,<a name="line.59"></a>
+<span class="sourceLineNo">060</span>        /** User positioning affects cycle detection and node layering. */<a name="line.60"></a>
+<span class="sourceLineNo">061</span>        Columns,<a name="line.61"></a>
+<span class="sourceLineNo">062</span>        /** User positioning affects cycle detection, node layering, and node order. */<a name="line.62"></a>
+<span class="sourceLineNo">063</span>        Full;<a name="line.63"></a>
+<span class="sourceLineNo">064</span>    }<a name="line.64"></a>
+<span class="sourceLineNo">065</span><a name="line.65"></a>
+<span class="sourceLineNo">066</span>    /**<a name="line.66"></a>
+<span class="sourceLineNo">067</span>     * Create and initialize a layout configuration.<a name="line.67"></a>
+<span class="sourceLineNo">068</span>     *<a name="line.68"></a>
+<span class="sourceLineNo">069</span>     *  @param container The container.<a name="line.69"></a>
+<span class="sourceLineNo">070</span>     *  @param name The name of this attribute.<a name="line.70"></a>
+<span class="sourceLineNo">071</span>     *  @exception IllegalActionException If the attribute is not of an<a name="line.71"></a>
+<span class="sourceLineNo">072</span>     *   acceptable class for the container, or if the name contains a period.<a name="line.72"></a>
+<span class="sourceLineNo">073</span>     *  @exception NameDuplicationException If the name coincides with<a name="line.73"></a>
+<span class="sourceLineNo">074</span>     *   an attribute already in the container.<a name="line.74"></a>
+<span class="sourceLineNo">075</span>     */<a name="line.75"></a>
+<span class="sourceLineNo">076</span>    public AbstractLayoutConfiguration(NamedObj container, String name)<a name="line.76"></a>
+<span class="sourceLineNo">077</span>            throws IllegalActionException, NameDuplicationException {<a name="line.77"></a>
+<span class="sourceLineNo">078</span>        super(container, name);<a name="line.78"></a>
+<span class="sourceLineNo">079</span><a name="line.79"></a>
+<span class="sourceLineNo">080</span>        useOldAlgorithm = new Parameter(this, "useOldAlgorithm");<a name="line.80"></a>
+<span class="sourceLineNo">081</span>        useOldAlgorithm.setDisplayName("Use old algorithm");<a name="line.81"></a>
+<span class="sourceLineNo">082</span>        useOldAlgorithm.setTypeEquals(BaseType.BOOLEAN);<a name="line.82"></a>
+<span class="sourceLineNo">083</span>        useOldAlgorithm.setExpression(Boolean.toString(DEF_OLD_ALGORITHM));<a name="line.83"></a>
+<span class="sourceLineNo">084</span>        useOldAlgorithm.setVisibility(Settable.EXPERT);<a name="line.84"></a>
+<span class="sourceLineNo">085</span><a name="line.85"></a>
+<span class="sourceLineNo">086</span>        includeDecorations = new Parameter(this, "includeDecorations");<a name="line.86"></a>
+<span class="sourceLineNo">087</span>        includeDecorations.setDisplayName("Include decorations");<a name="line.87"></a>
+<span class="sourceLineNo">088</span>        includeDecorations.setTypeEquals(BaseType.BOOLEAN);<a name="line.88"></a>
+<span class="sourceLineNo">089</span>        includeDecorations.setExpression(Boolean.toString(DEF_DECORATIONS));<a name="line.89"></a>
+<span class="sourceLineNo">090</span><a name="line.90"></a>
+<span class="sourceLineNo">091</span>        spacing = new DoubleRangeParameter(this, "spacing");<a name="line.91"></a>
+<span class="sourceLineNo">092</span>        spacing.setDisplayName("Object spacing");<a name="line.92"></a>
+<span class="sourceLineNo">093</span>        spacing.min.setExpression("2.0");<a name="line.93"></a>
+<span class="sourceLineNo">094</span>        spacing.max.setExpression("50.0");<a name="line.94"></a>
+<span class="sourceLineNo">095</span>        spacing.setExpression(Double.toString(DEF_SPACING));<a name="line.95"></a>
+<span class="sourceLineNo">096</span>        spacing.min.setVisibility(Settable.NONE);<a name="line.96"></a>
+<span class="sourceLineNo">097</span>        spacing.max.setVisibility(Settable.NONE);<a name="line.97"></a>
+<span class="sourceLineNo">098</span>        spacing.minLabel.setVisibility(Settable.NONE);<a name="line.98"></a>
+<span class="sourceLineNo">099</span>        spacing.maxLabel.setVisibility(Settable.NONE);<a name="line.99"></a>
+<span class="sourceLineNo">100</span>        spacing.precision.setVisibility(Settable.NONE);<a name="line.100"></a>
+<span class="sourceLineNo">101</span><a name="line.101"></a>
+<span class="sourceLineNo">102</span>        logAspectRatio = new DoubleRangeParameter(this, "logAspectRatio");<a name="line.102"></a>
+<span class="sourceLineNo">103</span>        logAspectRatio.setDisplayName("Aspect ratio");<a name="line.103"></a>
+<span class="sourceLineNo">104</span>        logAspectRatio.min.setExpression("-1.0");<a name="line.104"></a>
+<span class="sourceLineNo">105</span>        logAspectRatio.max.setExpression("1.0");<a name="line.105"></a>
+<span class="sourceLineNo">106</span>        logAspectRatio<a name="line.106"></a>
+<span class="sourceLineNo">107</span>                .setExpression(Double.toString(Math.log10(DEF_ASPECT_RATIO)));<a name="line.107"></a>
+<span class="sourceLineNo">108</span>        logAspectRatio.minLabel.setExpression("Narrow");<a name="line.108"></a>
+<span class="sourceLineNo">109</span>        logAspectRatio.maxLabel.setExpression("Wide");<a name="line.109"></a>
+<span class="sourceLineNo">110</span>        logAspectRatio.min.setVisibility(Settable.NONE);<a name="line.110"></a>
+<span class="sourceLineNo">111</span>        logAspectRatio.max.setVisibility(Settable.NONE);<a name="line.111"></a>
+<span class="sourceLineNo">112</span>        logAspectRatio.minLabel.setVisibility(Settable.NONE);<a name="line.112"></a>
+<span class="sourceLineNo">113</span>        logAspectRatio.maxLabel.setVisibility(Settable.NONE);<a name="line.113"></a>
+<span class="sourceLineNo">114</span>        logAspectRatio.precision.setVisibility(Settable.NONE);<a name="line.114"></a>
+<span class="sourceLineNo">115</span><a name="line.115"></a>
+<span class="sourceLineNo">116</span>        interactionMode = new ChoiceParameter(this, "interactionMode",<a name="line.116"></a>
+<span class="sourceLineNo">117</span>                InteractionMode.class);<a name="line.117"></a>
+<span class="sourceLineNo">118</span>        interactionMode.setDisplayName("Interaction mode");<a name="line.118"></a>
+<span class="sourceLineNo">119</span>        interactionMode.setExpression(DEF_INTERACTION_MODE.toString());<a name="line.119"></a>
+<span class="sourceLineNo">120</span><a name="line.120"></a>
+<span class="sourceLineNo">121</span>        helpURL = new StringParameter(this, "_helpURL");<a name="line.121"></a>
+<span class="sourceLineNo">122</span>        helpURL.setExpression("ptolemy/vergil/basic/layout/layout.htm");<a name="line.122"></a>
+<span class="sourceLineNo">123</span>        helpURL.setVisibility(Settable.NONE);<a name="line.123"></a>
+<span class="sourceLineNo">124</span>    }<a name="line.124"></a>
+<span class="sourceLineNo">125</span><a name="line.125"></a>
+<span class="sourceLineNo">126</span>    ///////////////////////////////////////////////////////////////////<a name="line.126"></a>
+<span class="sourceLineNo">127</span>    ////                       public parameters                   ////<a name="line.127"></a>
+<span class="sourceLineNo">128</span><a name="line.128"></a>
+<span class="sourceLineNo">129</span>    /** Whether to use Ptolemy's original layout algorithm. */<a name="line.129"></a>
+<span class="sourceLineNo">130</span>    public Parameter useOldAlgorithm;<a name="line.130"></a>
+<span class="sourceLineNo">131</span><a name="line.131"></a>
+<span class="sourceLineNo">132</span>    /** Whether to include unconnected nodes such as comments. */<a name="line.132"></a>
+<span class="sourceLineNo">133</span>    public Parameter includeDecorations;<a name="line.133"></a>
+<span class="sourceLineNo">134</span><a name="line.134"></a>
+<span class="sourceLineNo">135</span>    /** The overall spacing between graph elements. */<a name="line.135"></a>
+<span class="sourceLineNo">136</span>    public DoubleRangeParameter spacing;<a name="line.136"></a>
+<span class="sourceLineNo">137</span><a name="line.137"></a>
+<span class="sourceLineNo">138</span>    /** The aspect ratio for placement of connected components (logarithmic). */<a name="line.138"></a>
+<span class="sourceLineNo">139</span>    public DoubleRangeParameter logAspectRatio;<a name="line.139"></a>
+<span class="sourceLineNo">140</span><a name="line.140"></a>
+<span class="sourceLineNo">141</span>    /** Mode of user interaction: whether user positioning is allowed to affect the layout. */<a name="line.141"></a>
+<span class="sourceLineNo">142</span>    public ChoiceParameter interactionMode;<a name="line.142"></a>
+<span class="sourceLineNo">143</span><a name="line.143"></a>
+<span class="sourceLineNo">144</span>    /** Customized help file to be displayed by the layout configuration dialog. */<a name="line.144"></a>
+<span class="sourceLineNo">145</span>    public StringParameter helpURL;<a name="line.145"></a>
+<span class="sourceLineNo">146</span><a name="line.146"></a>
+<span class="sourceLineNo">147</span>    /** Default value for useOldAlgorithm. */<a name="line.147"></a>
+<span class="sourceLineNo">148</span>    public static final boolean DEF_OLD_ALGORITHM = false;<a name="line.148"></a>
+<span class="sourceLineNo">149</span><a name="line.149"></a>
+<span class="sourceLineNo">150</span>    /** Default value for includeDecorations. */<a name="line.150"></a>
+<span class="sourceLineNo">151</span>    public static final boolean DEF_DECORATIONS = true;<a name="line.151"></a>
+<span class="sourceLineNo">152</span><a name="line.152"></a>
+<span class="sourceLineNo">153</span>    /** Default value for spacing. */<a name="line.153"></a>
+<span class="sourceLineNo">154</span>    public static final double DEF_SPACING = 10.0;<a name="line.154"></a>
+<span class="sourceLineNo">155</span><a name="line.155"></a>
+<span class="sourceLineNo">156</span>    /** Default value for aspectRatio (non-logarithmic). */<a name="line.156"></a>
+<span class="sourceLineNo">157</span>    public static final double DEF_ASPECT_RATIO = 1.6;<a name="line.157"></a>
+<span class="sourceLineNo">158</span><a name="line.158"></a>
+<span class="sourceLineNo">159</span>    /** Default value for interaction mode. */<a name="line.159"></a>
+<span class="sourceLineNo">160</span>    public static final InteractionMode DEF_INTERACTION_MODE = InteractionMode.None;<a name="line.160"></a>
+<span class="sourceLineNo">161</span><a name="line.161"></a>
+<span class="sourceLineNo">162</span>}<a name="line.162"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

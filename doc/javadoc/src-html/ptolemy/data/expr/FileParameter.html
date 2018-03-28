@@ -1,0 +1,510 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../../stylesheet.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>/* A parameter that specifies a file or URL.<a name="line.1"></a>
+<span class="sourceLineNo">002</span><a name="line.2"></a>
+<span class="sourceLineNo">003</span> Copyright (c) 2003-2014 The Regents of the University of California.<a name="line.3"></a>
+<span class="sourceLineNo">004</span> All rights reserved.<a name="line.4"></a>
+<span class="sourceLineNo">005</span> Permission is hereby granted, without written agreement and without<a name="line.5"></a>
+<span class="sourceLineNo">006</span> license or royalty fees, to use, copy, modify, and distribute this<a name="line.6"></a>
+<span class="sourceLineNo">007</span> software and its documentation for any purpose, provided that the above<a name="line.7"></a>
+<span class="sourceLineNo">008</span> copyright notice and the following two paragraphs appear in all copies<a name="line.8"></a>
+<span class="sourceLineNo">009</span> of this software.<a name="line.9"></a>
+<span class="sourceLineNo">010</span><a name="line.10"></a>
+<span class="sourceLineNo">011</span> IN NO EVENT SHALL THE UNIVERSITY OF CALIFORNIA BE LIABLE TO ANY PARTY<a name="line.11"></a>
+<span class="sourceLineNo">012</span> FOR DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES<a name="line.12"></a>
+<span class="sourceLineNo">013</span> ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION, EVEN IF<a name="line.13"></a>
+<span class="sourceLineNo">014</span> THE UNIVERSITY OF CALIFORNIA HAS BEEN ADVISED OF THE POSSIBILITY OF<a name="line.14"></a>
+<span class="sourceLineNo">015</span> SUCH DAMAGE.<a name="line.15"></a>
+<span class="sourceLineNo">016</span><a name="line.16"></a>
+<span class="sourceLineNo">017</span> THE UNIVERSITY OF CALIFORNIA SPECIFICALLY DISCLAIMS ANY WARRANTIES,<a name="line.17"></a>
+<span class="sourceLineNo">018</span> INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF<a name="line.18"></a>
+<span class="sourceLineNo">019</span> MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE<a name="line.19"></a>
+<span class="sourceLineNo">020</span> PROVIDED HEREUNDER IS ON AN "AS IS" BASIS, AND THE UNIVERSITY OF<a name="line.20"></a>
+<span class="sourceLineNo">021</span> CALIFORNIA HAS NO OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT, UPDATES,<a name="line.21"></a>
+<span class="sourceLineNo">022</span> ENHANCEMENTS, OR MODIFICATIONS.<a name="line.22"></a>
+<span class="sourceLineNo">023</span><a name="line.23"></a>
+<span class="sourceLineNo">024</span> PT_COPYRIGHT_VERSION_2<a name="line.24"></a>
+<span class="sourceLineNo">025</span> COPYRIGHTENDKEY<a name="line.25"></a>
+<span class="sourceLineNo">026</span><a name="line.26"></a>
+<span class="sourceLineNo">027</span> */<a name="line.27"></a>
+<span class="sourceLineNo">028</span>package ptolemy.data.expr;<a name="line.28"></a>
+<span class="sourceLineNo">029</span><a name="line.29"></a>
+<span class="sourceLineNo">030</span>import java.io.BufferedReader;<a name="line.30"></a>
+<span class="sourceLineNo">031</span>import java.io.File;<a name="line.31"></a>
+<span class="sourceLineNo">032</span>import java.io.IOException;<a name="line.32"></a>
+<span class="sourceLineNo">033</span>import java.io.Writer;<a name="line.33"></a>
+<span class="sourceLineNo">034</span>import java.net.URI;<a name="line.34"></a>
+<span class="sourceLineNo">035</span>import java.net.URL;<a name="line.35"></a>
+<span class="sourceLineNo">036</span><a name="line.36"></a>
+<span class="sourceLineNo">037</span>import ptolemy.kernel.attributes.FileOrURLAccessor;<a name="line.37"></a>
+<span class="sourceLineNo">038</span>import ptolemy.kernel.attributes.URIAttribute;<a name="line.38"></a>
+<span class="sourceLineNo">039</span>import ptolemy.kernel.util.IllegalActionException;<a name="line.39"></a>
+<span class="sourceLineNo">040</span>import ptolemy.kernel.util.NameDuplicationException;<a name="line.40"></a>
+<span class="sourceLineNo">041</span>import ptolemy.kernel.util.NamedObj;<a name="line.41"></a>
+<span class="sourceLineNo">042</span>import ptolemy.kernel.util.Workspace;<a name="line.42"></a>
+<span class="sourceLineNo">043</span>import ptolemy.util.FileUtilities;<a name="line.43"></a>
+<span class="sourceLineNo">044</span><a name="line.44"></a>
+<span class="sourceLineNo">045</span>///////////////////////////////////////////////////////////////////<a name="line.45"></a>
+<span class="sourceLineNo">046</span>//// FileParameter<a name="line.46"></a>
+<span class="sourceLineNo">047</span><a name="line.47"></a>
+<span class="sourceLineNo">048</span>/**<a name="line.48"></a>
+<span class="sourceLineNo">049</span> &lt;p&gt;This is an attribute that specifies a file or URL.  The value of this<a name="line.49"></a>
+<span class="sourceLineNo">050</span> attribute, accessed by getExpression(), is a string that names a file<a name="line.50"></a>
+<span class="sourceLineNo">051</span> or URL, possibly containing references to variables defined in scope<a name="line.51"></a>
+<span class="sourceLineNo">052</span> using the syntax $ID, ${ID} or $(ID). The value returned by getToken()<a name="line.52"></a>
+<span class="sourceLineNo">053</span> is the name of the file with such references resolved.&lt;/p&gt;<a name="line.53"></a>
+<span class="sourceLineNo">054</span><a name="line.54"></a>
+<span class="sourceLineNo">055</span> &lt;p&gt;If this attribute contains a parameter named &lt;i&gt;allowFiles&lt;/i&gt; with<a name="line.55"></a>
+<span class="sourceLineNo">056</span> value false, then when a file browser is used to select a file,<a name="line.56"></a>
+<span class="sourceLineNo">057</span> that file browser will be set to not show files (only directories<a name="line.57"></a>
+<span class="sourceLineNo">058</span> will be shown).  If this attribute contains a parameter named<a name="line.58"></a>
+<span class="sourceLineNo">059</span> &lt;i&gt;allowDirectories&lt;/i&gt; with value true, then the file browser<a name="line.59"></a>
+<span class="sourceLineNo">060</span> will permit the user to select directories (the default behavior<a name="line.60"></a>
+<span class="sourceLineNo">061</span> is that when a directory is selected, that directory is opened<a name="line.61"></a>
+<span class="sourceLineNo">062</span> and its contained files and directories are listed).&lt;/p&gt;<a name="line.62"></a>
+<span class="sourceLineNo">063</span><a name="line.63"></a>
+<span class="sourceLineNo">064</span> &lt;p&gt;If the model containing this<a name="line.64"></a>
+<span class="sourceLineNo">065</span> attribute has been saved to a MoML file, then the file name can be<a name="line.65"></a>
+<span class="sourceLineNo">066</span> given relative to the directory containing that MoML file.<a name="line.66"></a>
+<span class="sourceLineNo">067</span> If the model has not been saved to a file,<a name="line.67"></a>
+<span class="sourceLineNo">068</span> then the classpath is used for identifying relative file names.&lt;/p&gt;<a name="line.68"></a>
+<span class="sourceLineNo">069</span><a name="line.69"></a>
+<span class="sourceLineNo">070</span> &lt;p&gt;Files can be given relative to a &lt;i&gt;base&lt;/i&gt;, where the base is<a name="line.70"></a>
+<span class="sourceLineNo">071</span> the URI of the first container above this one that has a URIAttribute.<a name="line.71"></a>
+<span class="sourceLineNo">072</span> Normally, this URI specifies the file or URL containing the model<a name="line.72"></a>
+<span class="sourceLineNo">073</span> definition. Thus, files that are referred to here can be kept in the<a name="line.73"></a>
+<span class="sourceLineNo">074</span> same directory as the model, or in a related directory, and can<a name="line.74"></a>
+<span class="sourceLineNo">075</span> moved together with the model.&lt;/p&gt;<a name="line.75"></a>
+<span class="sourceLineNo">076</span><a name="line.76"></a>
+<span class="sourceLineNo">077</span><a name="line.77"></a>
+<span class="sourceLineNo">078</span> &lt;p&gt;The following special file names are understood:&lt;/p&gt;<a name="line.78"></a>
+<span class="sourceLineNo">079</span> &lt;ul&gt;<a name="line.79"></a>
+<span class="sourceLineNo">080</span> &lt;li&gt; System.in: Standard input.<a name="line.80"></a>
+<span class="sourceLineNo">081</span> &lt;li&gt; System.out: Standard output.<a name="line.81"></a>
+<span class="sourceLineNo">082</span> &lt;/ul&gt;<a name="line.82"></a>
+<span class="sourceLineNo">083</span><a name="line.83"></a>
+<span class="sourceLineNo">084</span> &lt;p&gt; Note, however, that these file names cannot be converted to URLs<a name="line.84"></a>
+<span class="sourceLineNo">085</span> using the asURL() method.<a name="line.85"></a>
+<span class="sourceLineNo">086</span> A file name can also contain the following strings that start<a name="line.86"></a>
+<span class="sourceLineNo">087</span> with "$", which get substituted<a name="line.87"></a>
+<span class="sourceLineNo">088</span> with the appropriate values.&lt;/p&gt;<a name="line.88"></a>
+<span class="sourceLineNo">089</span> &lt;table&gt;<a name="line.89"></a>
+<span class="sourceLineNo">090</span> &lt;caption&gt;Predefined values&lt;/caption&gt;<a name="line.90"></a>
+<span class="sourceLineNo">091</span> &lt;tr&gt;<a name="line.91"></a>
+<span class="sourceLineNo">092</span> &lt;th&gt;String&lt;/th&gt;<a name="line.92"></a>
+<span class="sourceLineNo">093</span> &lt;th&gt;Description&lt;/th&gt;<a name="line.93"></a>
+<span class="sourceLineNo">094</span> &lt;th&gt;Property&lt;/th&gt;<a name="line.94"></a>
+<span class="sourceLineNo">095</span> &lt;/tr&gt;<a name="line.95"></a>
+<span class="sourceLineNo">096</span> &lt;tr&gt;<a name="line.96"></a>
+<span class="sourceLineNo">097</span> &lt;td&gt;&lt;code&gt;$CWD&lt;/code&gt;&lt;/td&gt;<a name="line.97"></a>
+<span class="sourceLineNo">098</span> &lt;td&gt;The current working directory&lt;/td&gt;<a name="line.98"></a>
+<span class="sourceLineNo">099</span> &lt;td&gt;&lt;code&gt;user.dir&lt;/code&gt;&lt;/td&gt;<a name="line.99"></a>
+<span class="sourceLineNo">100</span> &lt;/tr&gt;<a name="line.100"></a>
+<span class="sourceLineNo">101</span> &lt;tr&gt;<a name="line.101"></a>
+<span class="sourceLineNo">102</span> &lt;td&gt;&lt;code&gt;$HOME&lt;/code&gt;&lt;/td&gt;<a name="line.102"></a>
+<span class="sourceLineNo">103</span> &lt;td&gt;The user's home directory&lt;/td&gt;<a name="line.103"></a>
+<span class="sourceLineNo">104</span> &lt;td&gt;&lt;code&gt;user.home&lt;/code&gt;&lt;/td&gt;<a name="line.104"></a>
+<span class="sourceLineNo">105</span> &lt;/tr&gt;<a name="line.105"></a>
+<span class="sourceLineNo">106</span> &lt;tr&gt;<a name="line.106"></a>
+<span class="sourceLineNo">107</span> &lt;td&gt;&lt;code&gt;$PTII&lt;/code&gt;&lt;/td&gt;<a name="line.107"></a>
+<span class="sourceLineNo">108</span> &lt;td&gt;The home directory of the Ptolemy II installation&lt;/td&gt;<a name="line.108"></a>
+<span class="sourceLineNo">109</span> &lt;td&gt;&lt;code&gt;ptolemy.ptII.dir&lt;/code&gt;&lt;/td&gt;<a name="line.109"></a>
+<span class="sourceLineNo">110</span> &lt;/tr&gt;<a name="line.110"></a>
+<span class="sourceLineNo">111</span> &lt;tr&gt;<a name="line.111"></a>
+<span class="sourceLineNo">112</span> &lt;td&gt;&lt;code&gt;$TMPDIR&lt;/code&gt;&lt;/td&gt;<a name="line.112"></a>
+<span class="sourceLineNo">113</span> &lt;td&gt;The temporary directory&lt;/td&gt;<a name="line.113"></a>
+<span class="sourceLineNo">114</span> &lt;td&gt;&lt;code&gt;java.io.tmpdir&lt;/code&gt;&lt;/td&gt;<a name="line.114"></a>
+<span class="sourceLineNo">115</span> &lt;/tr&gt;<a name="line.115"></a>
+<span class="sourceLineNo">116</span> &lt;tr&gt;<a name="line.116"></a>
+<span class="sourceLineNo">117</span> &lt;td&gt;&lt;code&gt;$USERNAME&lt;/code&gt;&lt;/td&gt;<a name="line.117"></a>
+<span class="sourceLineNo">118</span> &lt;td&gt;The user's account name&lt;/td&gt;<a name="line.118"></a>
+<span class="sourceLineNo">119</span> &lt;td&gt;&lt;code&gt;user.name&lt;/code&gt;&lt;/td&gt;<a name="line.119"></a>
+<span class="sourceLineNo">120</span> &lt;/tr&gt;<a name="line.120"></a>
+<span class="sourceLineNo">121</span> &lt;/table&gt;<a name="line.121"></a>
+<span class="sourceLineNo">122</span> &lt;p&gt;The above properties are normally set when a Ptolemy II application starts.&lt;/p&gt;<a name="line.122"></a>
+<span class="sourceLineNo">123</span> &lt;p&gt;<a name="line.123"></a>
+<span class="sourceLineNo">124</span> If a file name begins with the reference "$CLASSPATH", then when<a name="line.124"></a>
+<span class="sourceLineNo">125</span> the file is opened for reading, the openForReading() method<a name="line.125"></a>
+<span class="sourceLineNo">126</span> will search for the file relative to the classpath (using the<a name="line.126"></a>
+<span class="sourceLineNo">127</span> getResource() method of the current class loader).  This will only<a name="line.127"></a>
+<span class="sourceLineNo">128</span> work for a file that exists, and thus the openForWriting() method<a name="line.128"></a>
+<span class="sourceLineNo">129</span> will not understand the "$CLASSPATH" string; this makes sense<a name="line.129"></a>
+<span class="sourceLineNo">130</span> since the classpath typically has several directories, and it<a name="line.130"></a>
+<span class="sourceLineNo">131</span> would not be obvious where to create the file.  The asURL()<a name="line.131"></a>
+<span class="sourceLineNo">132</span> method also recognizes the "$CLASSPATH" string, but not the asFile()<a name="line.132"></a>
+<span class="sourceLineNo">133</span> method (which is typically used when accessing a file for writing).<a name="line.133"></a>
+<span class="sourceLineNo">134</span> NOTE: If the container of this parameter also contains a variable<a name="line.134"></a>
+<span class="sourceLineNo">135</span> named CLASSPATH, then the value of that variable is used instead<a name="line.135"></a>
+<span class="sourceLineNo">136</span> of the Java classpath.&lt;/p&gt;<a name="line.136"></a>
+<span class="sourceLineNo">137</span><a name="line.137"></a>
+<span class="sourceLineNo">138</span> @author Edward A. Lee<a name="line.138"></a>
+<span class="sourceLineNo">139</span> @version $Id$<a name="line.139"></a>
+<span class="sourceLineNo">140</span> @since Ptolemy II 4.0<a name="line.140"></a>
+<span class="sourceLineNo">141</span> @Pt.ProposedRating Green (eal)<a name="line.141"></a>
+<span class="sourceLineNo">142</span> @Pt.AcceptedRating Yellow (cxh)<a name="line.142"></a>
+<span class="sourceLineNo">143</span> @see URIAttribute<a name="line.143"></a>
+<span class="sourceLineNo">144</span> */<a name="line.144"></a>
+<span class="sourceLineNo">145</span>public class FileParameter extends StringParameter<a name="line.145"></a>
+<span class="sourceLineNo">146</span>        implements FileOrURLAccessor {<a name="line.146"></a>
+<span class="sourceLineNo">147</span>    /** Construct an attribute with the given name contained by the<a name="line.147"></a>
+<span class="sourceLineNo">148</span>     *  specified container. The container argument must not be null, or a<a name="line.148"></a>
+<span class="sourceLineNo">149</span>     *  NullPointerException will be thrown.  This attribute will use the<a name="line.149"></a>
+<span class="sourceLineNo">150</span>     *  workspace of the container for synchronization and version counts.<a name="line.150"></a>
+<span class="sourceLineNo">151</span>     *  If the name argument is null, then the name is set to the empty<a name="line.151"></a>
+<span class="sourceLineNo">152</span>     *  string. Increment the version of the workspace.<a name="line.152"></a>
+<span class="sourceLineNo">153</span>     *  @param container The container.<a name="line.153"></a>
+<span class="sourceLineNo">154</span>     *  @param name The name of this attribute.<a name="line.154"></a>
+<span class="sourceLineNo">155</span>     *  @exception IllegalActionException If the attribute is not of an<a name="line.155"></a>
+<span class="sourceLineNo">156</span>     *   acceptable class for the container, or if the name contains a period.<a name="line.156"></a>
+<span class="sourceLineNo">157</span>     *  @exception NameDuplicationException If the name coincides with<a name="line.157"></a>
+<span class="sourceLineNo">158</span>     *   an attribute already in the container.<a name="line.158"></a>
+<span class="sourceLineNo">159</span>     */<a name="line.159"></a>
+<span class="sourceLineNo">160</span>    public FileParameter(NamedObj container, String name)<a name="line.160"></a>
+<span class="sourceLineNo">161</span>            throws IllegalActionException, NameDuplicationException {<a name="line.161"></a>
+<span class="sourceLineNo">162</span>        this(container, name, false);<a name="line.162"></a>
+<span class="sourceLineNo">163</span>    }<a name="line.163"></a>
+<span class="sourceLineNo">164</span><a name="line.164"></a>
+<span class="sourceLineNo">165</span>    /** Construct an attribute with the given name contained by the<a name="line.165"></a>
+<span class="sourceLineNo">166</span>     *  specified container. The container argument must not be null, or a<a name="line.166"></a>
+<span class="sourceLineNo">167</span>     *  NullPointerException will be thrown.  This attribute will use the<a name="line.167"></a>
+<span class="sourceLineNo">168</span>     *  workspace of the container for synchronization and version counts.<a name="line.168"></a>
+<span class="sourceLineNo">169</span>     *  If the name argument is null, then the name is set to the empty<a name="line.169"></a>
+<span class="sourceLineNo">170</span>     *  string. Increment the version of the workspace.<a name="line.170"></a>
+<span class="sourceLineNo">171</span>     *  @param container The container.<a name="line.171"></a>
+<span class="sourceLineNo">172</span>     *  @param name The name of this attribute.<a name="line.172"></a>
+<span class="sourceLineNo">173</span>     *  @param isOutput Whether the file is to be written to.<a name="line.173"></a>
+<span class="sourceLineNo">174</span>     *  @exception IllegalActionException If the attribute is not of an<a name="line.174"></a>
+<span class="sourceLineNo">175</span>     *   acceptable class for the container, or if the name contains a period.<a name="line.175"></a>
+<span class="sourceLineNo">176</span>     *  @exception NameDuplicationException If the name coincides with<a name="line.176"></a>
+<span class="sourceLineNo">177</span>     *   an attribute already in the container.<a name="line.177"></a>
+<span class="sourceLineNo">178</span>     */<a name="line.178"></a>
+<span class="sourceLineNo">179</span>    public FileParameter(NamedObj container, String name, boolean isOutput)<a name="line.179"></a>
+<span class="sourceLineNo">180</span>            throws IllegalActionException, NameDuplicationException {<a name="line.180"></a>
+<span class="sourceLineNo">181</span>        super(container, name);<a name="line.181"></a>
+<span class="sourceLineNo">182</span>        _isOutput = isOutput;<a name="line.182"></a>
+<span class="sourceLineNo">183</span>    }<a name="line.183"></a>
+<span class="sourceLineNo">184</span><a name="line.184"></a>
+<span class="sourceLineNo">185</span>    ///////////////////////////////////////////////////////////////////<a name="line.185"></a>
+<span class="sourceLineNo">186</span>    ////                         public methods                    ////<a name="line.186"></a>
+<span class="sourceLineNo">187</span><a name="line.187"></a>
+<span class="sourceLineNo">188</span>    /** Return the file as a File object.  This method first attempts<a name="line.188"></a>
+<span class="sourceLineNo">189</span>     *  to directly use the file name to construct the File. If the<a name="line.189"></a>
+<span class="sourceLineNo">190</span>     *  resulting File is not absolute, then it attempts to resolve it<a name="line.190"></a>
+<span class="sourceLineNo">191</span>     *  relative to the base directory returned by getBaseDirectory().<a name="line.191"></a>
+<span class="sourceLineNo">192</span>     *  If there is no such base URI, then it simply returns the<a name="line.192"></a>
+<span class="sourceLineNo">193</span>     *  relative File object.<a name="line.193"></a>
+<span class="sourceLineNo">194</span>     *  &lt;p&gt;<a name="line.194"></a>
+<span class="sourceLineNo">195</span>     *  The file need not exist for this method to succeed.  Thus,<a name="line.195"></a>
+<span class="sourceLineNo">196</span>     *  this method can be used to determine whether a file with a given<a name="line.196"></a>
+<span class="sourceLineNo">197</span>     *  name exists, prior to calling openForWriting().<a name="line.197"></a>
+<span class="sourceLineNo">198</span>     *  A typical usage looks like this:<a name="line.198"></a>
+<span class="sourceLineNo">199</span>     *  &lt;pre&gt;<a name="line.199"></a>
+<span class="sourceLineNo">200</span>     *      FileParameter fileParameter;<a name="line.200"></a>
+<span class="sourceLineNo">201</span>     *      ...<a name="line.201"></a>
+<span class="sourceLineNo">202</span>     *      File file = fileParameter.asFile();<a name="line.202"></a>
+<span class="sourceLineNo">203</span>     *      if (file.exists()) {<a name="line.203"></a>
+<span class="sourceLineNo">204</span>     *         ... Ask the user if it's OK to overwrite...<a name="line.204"></a>
+<span class="sourceLineNo">205</span>     *         ... Throw an exception if not...<a name="line.205"></a>
+<span class="sourceLineNo">206</span>     *      }<a name="line.206"></a>
+<span class="sourceLineNo">207</span>     *      // The following will overwrite an existing file.<a name="line.207"></a>
+<span class="sourceLineNo">208</span>     *      Writer writer = new PrintWriter(fileParameter.openForWriting());<a name="line.208"></a>
+<span class="sourceLineNo">209</span>     *  &lt;/pre&gt;<a name="line.209"></a>
+<span class="sourceLineNo">210</span>     *  &lt;p&gt;If the name begins with "$CLASSPATH",<a name="line.210"></a>
+<span class="sourceLineNo">211</span>     *  then search for the file relative to the classpath.<a name="line.211"></a>
+<span class="sourceLineNo">212</span>     *  If the name begins with $CLASSPATH and a file is not found<a name="line.212"></a>
+<span class="sourceLineNo">213</span>     *  in the CLASSPATH, then the value of $PTII is substituted<a name="line.213"></a>
+<span class="sourceLineNo">214</span>     *  in a returned.  If this is not done, then the File that is<a name="line.214"></a>
+<span class="sourceLineNo">215</span>     *  created would have $CLASSPATH or xxxxxxCLASSPATHxxxxxx in<a name="line.215"></a>
+<span class="sourceLineNo">216</span>     *  the file pathname, which is unlikely to be useful.<a name="line.216"></a>
+<span class="sourceLineNo">217</span>     *<a name="line.217"></a>
+<span class="sourceLineNo">218</span>     *  @return A File, or null if no file name has been specified.<a name="line.218"></a>
+<span class="sourceLineNo">219</span>     *  @see #getBaseDirectory()<a name="line.219"></a>
+<span class="sourceLineNo">220</span>     *  @exception IllegalActionException If a parse error occurs<a name="line.220"></a>
+<span class="sourceLineNo">221</span>     *   reading the file name.<a name="line.221"></a>
+<span class="sourceLineNo">222</span>     */<a name="line.222"></a>
+<span class="sourceLineNo">223</span>    @Override<a name="line.223"></a>
+<span class="sourceLineNo">224</span>    public File asFile() throws IllegalActionException {<a name="line.224"></a>
+<span class="sourceLineNo">225</span>        String name = stringValue();<a name="line.225"></a>
+<span class="sourceLineNo">226</span><a name="line.226"></a>
+<span class="sourceLineNo">227</span>        try {<a name="line.227"></a>
+<span class="sourceLineNo">228</span>            return FileUtilities.nameToFile(name, getBaseDirectory());<a name="line.228"></a>
+<span class="sourceLineNo">229</span>        } catch (IllegalArgumentException ex) {<a name="line.229"></a>
+<span class="sourceLineNo">230</span>            // Java 1.4.2 some times reports:<a name="line.230"></a>
+<span class="sourceLineNo">231</span>            //  java.lang.IllegalArgumentException: URI is not absolute<a name="line.231"></a>
+<span class="sourceLineNo">232</span>            throw new IllegalActionException(this, ex,<a name="line.232"></a>
+<span class="sourceLineNo">233</span>                    "Failed to create a file with name '" + name + "'.");<a name="line.233"></a>
+<span class="sourceLineNo">234</span>        }<a name="line.234"></a>
+<span class="sourceLineNo">235</span>    }<a name="line.235"></a>
+<span class="sourceLineNo">236</span><a name="line.236"></a>
+<span class="sourceLineNo">237</span>    /** Return the file as a URL.  If the file name is relative, then<a name="line.237"></a>
+<span class="sourceLineNo">238</span>     *  it is interpreted as being relative to the directory returned<a name="line.238"></a>
+<span class="sourceLineNo">239</span>     *  by getBaseDirectory(). If the name begins with "$CLASSPATH",<a name="line.239"></a>
+<span class="sourceLineNo">240</span>     *  then search for the file relative to the classpath.<a name="line.240"></a>
+<span class="sourceLineNo">241</span>     *  If no file is found, then it throws an exception.<a name="line.241"></a>
+<span class="sourceLineNo">242</span>     *  @return A URL, or null if no file name or URL has been specified.<a name="line.242"></a>
+<span class="sourceLineNo">243</span>     *  @exception IllegalActionException If the file cannot be read, or<a name="line.243"></a>
+<span class="sourceLineNo">244</span>     *   if the file cannot be represented as a URL (e.g. System.in), or<a name="line.244"></a>
+<span class="sourceLineNo">245</span>     *   the name specification cannot be parsed.<a name="line.245"></a>
+<span class="sourceLineNo">246</span>     */<a name="line.246"></a>
+<span class="sourceLineNo">247</span>    @Override<a name="line.247"></a>
+<span class="sourceLineNo">248</span>    public URL asURL() throws IllegalActionException {<a name="line.248"></a>
+<span class="sourceLineNo">249</span>        String name = stringValue();<a name="line.249"></a>
+<span class="sourceLineNo">250</span><a name="line.250"></a>
+<span class="sourceLineNo">251</span>        try {<a name="line.251"></a>
+<span class="sourceLineNo">252</span>            return FileUtilities.nameToURL(name, getBaseDirectory(),<a name="line.252"></a>
+<span class="sourceLineNo">253</span>                    getClass().getClassLoader());<a name="line.253"></a>
+<span class="sourceLineNo">254</span>        } catch (IOException ex) {<a name="line.254"></a>
+<span class="sourceLineNo">255</span>            throw new IllegalActionException(this, ex,<a name="line.255"></a>
+<span class="sourceLineNo">256</span>                    "Cannot read file '" + name + "'");<a name="line.256"></a>
+<span class="sourceLineNo">257</span>        }<a name="line.257"></a>
+<span class="sourceLineNo">258</span>    }<a name="line.258"></a>
+<span class="sourceLineNo">259</span><a name="line.259"></a>
+<span class="sourceLineNo">260</span>    /** Clone the attribute into the specified workspace.  The resulting<a name="line.260"></a>
+<span class="sourceLineNo">261</span>     *  object has no base directory name nor any reference to any open stream.<a name="line.261"></a>
+<span class="sourceLineNo">262</span>     *  @param workspace The workspace for the new object.<a name="line.262"></a>
+<span class="sourceLineNo">263</span>     *  @return A new attribute.<a name="line.263"></a>
+<span class="sourceLineNo">264</span>     *  @exception CloneNotSupportedException If a derived class contains<a name="line.264"></a>
+<span class="sourceLineNo">265</span>     *   an attribute that cannot be cloned.<a name="line.265"></a>
+<span class="sourceLineNo">266</span>     */<a name="line.266"></a>
+<span class="sourceLineNo">267</span>    @Override<a name="line.267"></a>
+<span class="sourceLineNo">268</span>    public Object clone(Workspace workspace) throws CloneNotSupportedException {<a name="line.268"></a>
+<span class="sourceLineNo">269</span>        FileParameter newObject = (FileParameter) super.clone(workspace);<a name="line.269"></a>
+<span class="sourceLineNo">270</span>        newObject._baseDirectory = null;<a name="line.270"></a>
+<span class="sourceLineNo">271</span>        newObject._reader = null;<a name="line.271"></a>
+<span class="sourceLineNo">272</span>        newObject._writer = null;<a name="line.272"></a>
+<span class="sourceLineNo">273</span>        return newObject;<a name="line.273"></a>
+<span class="sourceLineNo">274</span>    }<a name="line.274"></a>
+<span class="sourceLineNo">275</span><a name="line.275"></a>
+<span class="sourceLineNo">276</span>    /** Close the file. If it has not been opened using openForReading()<a name="line.276"></a>
+<span class="sourceLineNo">277</span>     *  or openForWriting(), then do nothing.  Also, if the file is<a name="line.277"></a>
+<span class="sourceLineNo">278</span>     *  System.in or System.out, then do not close it (it does not make<a name="line.278"></a>
+<span class="sourceLineNo">279</span>     *  sense to close these files).<a name="line.279"></a>
+<span class="sourceLineNo">280</span>     *  @exception IllegalActionException If the file or URL cannot be<a name="line.280"></a>
+<span class="sourceLineNo">281</span>     *   closed.<a name="line.281"></a>
+<span class="sourceLineNo">282</span>     */<a name="line.282"></a>
+<span class="sourceLineNo">283</span>    @Override<a name="line.283"></a>
+<span class="sourceLineNo">284</span>    public void close() throws IllegalActionException {<a name="line.284"></a>
+<span class="sourceLineNo">285</span>        if (_reader != null) {<a name="line.285"></a>
+<span class="sourceLineNo">286</span>            if (_reader != FileUtilities.STD_IN) {<a name="line.286"></a>
+<span class="sourceLineNo">287</span>                try {<a name="line.287"></a>
+<span class="sourceLineNo">288</span>                    _reader.close();<a name="line.288"></a>
+<span class="sourceLineNo">289</span>                } catch (IOException ex) {<a name="line.289"></a>
+<span class="sourceLineNo">290</span>                    // This is typically caused by the stream being<a name="line.290"></a>
+<span class="sourceLineNo">291</span>                    // already closed, so we ignore.<a name="line.291"></a>
+<span class="sourceLineNo">292</span>                }<a name="line.292"></a>
+<span class="sourceLineNo">293</span>            }<a name="line.293"></a>
+<span class="sourceLineNo">294</span>        }<a name="line.294"></a>
+<span class="sourceLineNo">295</span><a name="line.295"></a>
+<span class="sourceLineNo">296</span>        if (_writer != null) {<a name="line.296"></a>
+<span class="sourceLineNo">297</span>            try {<a name="line.297"></a>
+<span class="sourceLineNo">298</span>                _writer.flush();<a name="line.298"></a>
+<span class="sourceLineNo">299</span><a name="line.299"></a>
+<span class="sourceLineNo">300</span>                if (_writer != FileUtilities.STD_OUT) {<a name="line.300"></a>
+<span class="sourceLineNo">301</span>                    _writer.close();<a name="line.301"></a>
+<span class="sourceLineNo">302</span>                }<a name="line.302"></a>
+<span class="sourceLineNo">303</span>            } catch (IOException ex) {<a name="line.303"></a>
+<span class="sourceLineNo">304</span>                // This is typically caused by the stream being<a name="line.304"></a>
+<span class="sourceLineNo">305</span>                // already closed, so we ignore.<a name="line.305"></a>
+<span class="sourceLineNo">306</span>            }<a name="line.306"></a>
+<span class="sourceLineNo">307</span>        }<a name="line.307"></a>
+<span class="sourceLineNo">308</span>    }<a name="line.308"></a>
+<span class="sourceLineNo">309</span><a name="line.309"></a>
+<span class="sourceLineNo">310</span>    /** Return the directory to use as the base for relative file or URL names.<a name="line.310"></a>
+<span class="sourceLineNo">311</span>     *  If setBaseDirectory() has been called, then that directory is<a name="line.311"></a>
+<span class="sourceLineNo">312</span>     *  returned.  Otherwise, the directory containing the file returned<a name="line.312"></a>
+<span class="sourceLineNo">313</span>     *  by URIAttribute.getModelURI() is returned, which is the URI<a name="line.313"></a>
+<span class="sourceLineNo">314</span>     *  of the first container above this attribute in the hierarchy that<a name="line.314"></a>
+<span class="sourceLineNo">315</span>     *  has a URIAttribute, or null if there none.<a name="line.315"></a>
+<span class="sourceLineNo">316</span>     *  @see #setBaseDirectory(URI)<a name="line.316"></a>
+<span class="sourceLineNo">317</span>     *  @see URIAttribute#getModelURI(NamedObj)<a name="line.317"></a>
+<span class="sourceLineNo">318</span>     *  @return A directory name, or null if there is none.<a name="line.318"></a>
+<span class="sourceLineNo">319</span>     */<a name="line.319"></a>
+<span class="sourceLineNo">320</span>    @Override<a name="line.320"></a>
+<span class="sourceLineNo">321</span>    public URI getBaseDirectory() {<a name="line.321"></a>
+<span class="sourceLineNo">322</span>        if (_baseDirectory != null) {<a name="line.322"></a>
+<span class="sourceLineNo">323</span>            return _baseDirectory;<a name="line.323"></a>
+<span class="sourceLineNo">324</span>        } else {<a name="line.324"></a>
+<span class="sourceLineNo">325</span>            return URIAttribute.getModelURI(this);<a name="line.325"></a>
+<span class="sourceLineNo">326</span>        }<a name="line.326"></a>
+<span class="sourceLineNo">327</span>    }<a name="line.327"></a>
+<span class="sourceLineNo">328</span><a name="line.328"></a>
+<span class="sourceLineNo">329</span>    /** Return whether the file is to be written to.<a name="line.329"></a>
+<span class="sourceLineNo">330</span>     *  @return True if the file is to be written and false otherwise.<a name="line.330"></a>
+<span class="sourceLineNo">331</span>     */<a name="line.331"></a>
+<span class="sourceLineNo">332</span>    public boolean isOutput() {<a name="line.332"></a>
+<span class="sourceLineNo">333</span>        return _isOutput;<a name="line.333"></a>
+<span class="sourceLineNo">334</span>    }<a name="line.334"></a>
+<span class="sourceLineNo">335</span><a name="line.335"></a>
+<span class="sourceLineNo">336</span>    /** Open the file or URL for reading. If the name begins with<a name="line.336"></a>
+<span class="sourceLineNo">337</span>     *  "$CLASSPATH", then search for the file relative to the classpath.<a name="line.337"></a>
+<span class="sourceLineNo">338</span>     *  If the name is relative, then it is relative to the directory<a name="line.338"></a>
+<span class="sourceLineNo">339</span>     *  returned by getBaseDirectory(). This method will first close<a name="line.339"></a>
+<span class="sourceLineNo">340</span>     *  any previously opened file, whether it was opened for reading<a name="line.340"></a>
+<span class="sourceLineNo">341</span>     *  or writing.<a name="line.341"></a>
+<span class="sourceLineNo">342</span>     *  @return A buffered reader.<a name="line.342"></a>
+<span class="sourceLineNo">343</span>     *  @see #getBaseDirectory()<a name="line.343"></a>
+<span class="sourceLineNo">344</span>     *  @exception IllegalActionException If the file or URL cannot be<a name="line.344"></a>
+<span class="sourceLineNo">345</span>     *   opened.<a name="line.345"></a>
+<span class="sourceLineNo">346</span>     */<a name="line.346"></a>
+<span class="sourceLineNo">347</span>    @Override<a name="line.347"></a>
+<span class="sourceLineNo">348</span>    public BufferedReader openForReading() throws IllegalActionException {<a name="line.348"></a>
+<span class="sourceLineNo">349</span>        try {<a name="line.349"></a>
+<span class="sourceLineNo">350</span>            // In case there is anything open, close it.<a name="line.350"></a>
+<span class="sourceLineNo">351</span>            close();<a name="line.351"></a>
+<span class="sourceLineNo">352</span>            _reader = FileUtilities.openForReading(stringValue(),<a name="line.352"></a>
+<span class="sourceLineNo">353</span>                    getBaseDirectory(), getClass().getClassLoader());<a name="line.353"></a>
+<span class="sourceLineNo">354</span>            return _reader;<a name="line.354"></a>
+<span class="sourceLineNo">355</span>        } catch (IOException ex) {<a name="line.355"></a>
+<span class="sourceLineNo">356</span>            throw new IllegalActionException(this, ex,<a name="line.356"></a>
+<span class="sourceLineNo">357</span>                    "Cannot open file or URL");<a name="line.357"></a>
+<span class="sourceLineNo">358</span>        }<a name="line.358"></a>
+<span class="sourceLineNo">359</span>    }<a name="line.359"></a>
+<span class="sourceLineNo">360</span><a name="line.360"></a>
+<span class="sourceLineNo">361</span>    /** Open the file for writing.  If the file does not exist, then<a name="line.361"></a>
+<span class="sourceLineNo">362</span>     *  create it.  If the file name is not absolute, the it is assumed<a name="line.362"></a>
+<span class="sourceLineNo">363</span>     *  to be relative to the base directory returned by getBaseDirectory().<a name="line.363"></a>
+<span class="sourceLineNo">364</span>     *  If permitted, this method will return a Writer that will simply<a name="line.364"></a>
+<span class="sourceLineNo">365</span>     *  overwrite the contents of the file. It is up to the user of this<a name="line.365"></a>
+<span class="sourceLineNo">366</span>     *  method to check whether this is OK (by first calling asFile()<a name="line.366"></a>
+<span class="sourceLineNo">367</span>     *  and calling exists() on the returned value). This method will first close<a name="line.367"></a>
+<span class="sourceLineNo">368</span>     *  any previously opened file, whether it was opened for reading<a name="line.368"></a>
+<span class="sourceLineNo">369</span>     *  or writing.<a name="line.369"></a>
+<span class="sourceLineNo">370</span>     *  @see #getBaseDirectory()<a name="line.370"></a>
+<span class="sourceLineNo">371</span>     *  @see #asFile()<a name="line.371"></a>
+<span class="sourceLineNo">372</span>     *  @return A writer, or null if no file name has been specified.<a name="line.372"></a>
+<span class="sourceLineNo">373</span>     *  @exception IllegalActionException If the file cannot be opened<a name="line.373"></a>
+<span class="sourceLineNo">374</span>     *   or created.<a name="line.374"></a>
+<span class="sourceLineNo">375</span>     */<a name="line.375"></a>
+<span class="sourceLineNo">376</span>    @Override<a name="line.376"></a>
+<span class="sourceLineNo">377</span>    public Writer openForWriting() throws IllegalActionException {<a name="line.377"></a>
+<span class="sourceLineNo">378</span>        return openForWriting(false);<a name="line.378"></a>
+<span class="sourceLineNo">379</span>    }<a name="line.379"></a>
+<span class="sourceLineNo">380</span><a name="line.380"></a>
+<span class="sourceLineNo">381</span>    /** Open the file for writing or appending.<a name="line.381"></a>
+<span class="sourceLineNo">382</span>     *  If the file does not exist, then<a name="line.382"></a>
+<span class="sourceLineNo">383</span>     *  create it.  If the file name is not absolute, the it is assumed<a name="line.383"></a>
+<span class="sourceLineNo">384</span>     *  to be relative to the base directory returned by getBaseDirectory().<a name="line.384"></a>
+<span class="sourceLineNo">385</span>     *  If permitted, this method will return a Writer that will simply<a name="line.385"></a>
+<span class="sourceLineNo">386</span>     *  overwrite the contents of the file. It is up to the user of this<a name="line.386"></a>
+<span class="sourceLineNo">387</span>     *  method to check whether this is OK (by first calling asFile()<a name="line.387"></a>
+<span class="sourceLineNo">388</span>     *  and calling exists() on the returned value).<a name="line.388"></a>
+<span class="sourceLineNo">389</span>     *  This method will first close<a name="line.389"></a>
+<span class="sourceLineNo">390</span>     *  any previously opened file, whether it was opened for reading<a name="line.390"></a>
+<span class="sourceLineNo">391</span>     *  or writing.<a name="line.391"></a>
+<span class="sourceLineNo">392</span>     *  @see #getBaseDirectory()<a name="line.392"></a>
+<span class="sourceLineNo">393</span>     *  @see #asFile()<a name="line.393"></a>
+<span class="sourceLineNo">394</span>     *  @param append If true, then append to the file rather than<a name="line.394"></a>
+<span class="sourceLineNo">395</span>     *   overwriting.<a name="line.395"></a>
+<span class="sourceLineNo">396</span>     *  @return A writer, or null if no file name has been specified.<a name="line.396"></a>
+<span class="sourceLineNo">397</span>     *  @exception IllegalActionException If the file cannot be opened<a name="line.397"></a>
+<span class="sourceLineNo">398</span>     *   or created.<a name="line.398"></a>
+<span class="sourceLineNo">399</span>     */<a name="line.399"></a>
+<span class="sourceLineNo">400</span>    @Override<a name="line.400"></a>
+<span class="sourceLineNo">401</span>    public Writer openForWriting(boolean append) throws IllegalActionException {<a name="line.401"></a>
+<span class="sourceLineNo">402</span>        try {<a name="line.402"></a>
+<span class="sourceLineNo">403</span>            // In case there is anything open, close it.<a name="line.403"></a>
+<span class="sourceLineNo">404</span>            close();<a name="line.404"></a>
+<span class="sourceLineNo">405</span>            _writer = FileUtilities.openForWriting(stringValue(),<a name="line.405"></a>
+<span class="sourceLineNo">406</span>                    getBaseDirectory(), append);<a name="line.406"></a>
+<span class="sourceLineNo">407</span>            return _writer;<a name="line.407"></a>
+<span class="sourceLineNo">408</span>        } catch (IOException ex) {<a name="line.408"></a>
+<span class="sourceLineNo">409</span>            throw new IllegalActionException(this, ex,<a name="line.409"></a>
+<span class="sourceLineNo">410</span>                    "Cannot open file for writing");<a name="line.410"></a>
+<span class="sourceLineNo">411</span>        }<a name="line.411"></a>
+<span class="sourceLineNo">412</span>    }<a name="line.412"></a>
+<span class="sourceLineNo">413</span><a name="line.413"></a>
+<span class="sourceLineNo">414</span>    /** Set the directory to use as the base for relative file or URL names.<a name="line.414"></a>
+<span class="sourceLineNo">415</span>     *  @param directory The base directory.<a name="line.415"></a>
+<span class="sourceLineNo">416</span>     *  @see #getBaseDirectory()<a name="line.416"></a>
+<span class="sourceLineNo">417</span>     *  @see URIAttribute#getModelURI(NamedObj)<a name="line.417"></a>
+<span class="sourceLineNo">418</span>     */<a name="line.418"></a>
+<span class="sourceLineNo">419</span>    @Override<a name="line.419"></a>
+<span class="sourceLineNo">420</span>    public void setBaseDirectory(URI directory) {<a name="line.420"></a>
+<span class="sourceLineNo">421</span>        _baseDirectory = directory;<a name="line.421"></a>
+<span class="sourceLineNo">422</span>    }<a name="line.422"></a>
+<span class="sourceLineNo">423</span><a name="line.423"></a>
+<span class="sourceLineNo">424</span>    ///////////////////////////////////////////////////////////////////<a name="line.424"></a>
+<span class="sourceLineNo">425</span>    ////                         private members                   ////<a name="line.425"></a>
+<span class="sourceLineNo">426</span><a name="line.426"></a>
+<span class="sourceLineNo">427</span>    /** The base directory to use for relative file names. */<a name="line.427"></a>
+<span class="sourceLineNo">428</span>    private URI _baseDirectory;<a name="line.428"></a>
+<span class="sourceLineNo">429</span><a name="line.429"></a>
+<span class="sourceLineNo">430</span>    /** The current reader for the input file. */<a name="line.430"></a>
+<span class="sourceLineNo">431</span>    private BufferedReader _reader;<a name="line.431"></a>
+<span class="sourceLineNo">432</span><a name="line.432"></a>
+<span class="sourceLineNo">433</span>    /** The current writer for the output file. */<a name="line.433"></a>
+<span class="sourceLineNo">434</span>    private Writer _writer;<a name="line.434"></a>
+<span class="sourceLineNo">435</span><a name="line.435"></a>
+<span class="sourceLineNo">436</span>    /** Whether the file is to be written to. */<a name="line.436"></a>
+<span class="sourceLineNo">437</span>    private boolean _isOutput;<a name="line.437"></a>
+<span class="sourceLineNo">438</span>}<a name="line.438"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

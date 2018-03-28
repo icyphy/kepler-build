@@ -1,0 +1,637 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../../../stylesheet.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>/* A receiver with a FIFO queue and performing blocking reads<a name="line.1"></a>
+<span class="sourceLineNo">002</span> and blocking writes.<a name="line.2"></a>
+<span class="sourceLineNo">003</span><a name="line.3"></a>
+<span class="sourceLineNo">004</span> Copyright (c) 1997-2015 The Regents of the University of California.<a name="line.4"></a>
+<span class="sourceLineNo">005</span> All rights reserved.<a name="line.5"></a>
+<span class="sourceLineNo">006</span> Permission is hereby granted, without written agreement and without<a name="line.6"></a>
+<span class="sourceLineNo">007</span> license or royalty fees, to use, copy, modify, and distribute this<a name="line.7"></a>
+<span class="sourceLineNo">008</span> software and its documentation for any purpose, provided that the above<a name="line.8"></a>
+<span class="sourceLineNo">009</span> copyright notice and the following two paragraphs appear in all copies<a name="line.9"></a>
+<span class="sourceLineNo">010</span> of this software.<a name="line.10"></a>
+<span class="sourceLineNo">011</span><a name="line.11"></a>
+<span class="sourceLineNo">012</span> IN NO EVENT SHALL THE UNIVERSITY OF CALIFORNIA BE LIABLE TO ANY PARTY<a name="line.12"></a>
+<span class="sourceLineNo">013</span> FOR DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES<a name="line.13"></a>
+<span class="sourceLineNo">014</span> ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION, EVEN IF<a name="line.14"></a>
+<span class="sourceLineNo">015</span> THE UNIVERSITY OF CALIFORNIA HAS BEEN ADVISED OF THE POSSIBILITY OF<a name="line.15"></a>
+<span class="sourceLineNo">016</span> SUCH DAMAGE.<a name="line.16"></a>
+<span class="sourceLineNo">017</span><a name="line.17"></a>
+<span class="sourceLineNo">018</span> THE UNIVERSITY OF CALIFORNIA SPECIFICALLY DISCLAIMS ANY WARRANTIES,<a name="line.18"></a>
+<span class="sourceLineNo">019</span> INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF<a name="line.19"></a>
+<span class="sourceLineNo">020</span> MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE<a name="line.20"></a>
+<span class="sourceLineNo">021</span> PROVIDED HEREUNDER IS ON AN "AS IS" BASIS, AND THE UNIVERSITY OF<a name="line.21"></a>
+<span class="sourceLineNo">022</span> CALIFORNIA HAS NO OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT, UPDATES,<a name="line.22"></a>
+<span class="sourceLineNo">023</span> ENHANCEMENTS, OR MODIFICATIONS.<a name="line.23"></a>
+<span class="sourceLineNo">024</span><a name="line.24"></a>
+<span class="sourceLineNo">025</span> PT_COPYRIGHT_VERSION_2<a name="line.25"></a>
+<span class="sourceLineNo">026</span> COPYRIGHTENDKEY<a name="line.26"></a>
+<span class="sourceLineNo">027</span><a name="line.27"></a>
+<span class="sourceLineNo">028</span> */<a name="line.28"></a>
+<span class="sourceLineNo">029</span>package ptolemy.domains.pn.kernel;<a name="line.29"></a>
+<span class="sourceLineNo">030</span><a name="line.30"></a>
+<span class="sourceLineNo">031</span>import ptolemy.actor.Actor;<a name="line.31"></a>
+<span class="sourceLineNo">032</span>import ptolemy.actor.Director;<a name="line.32"></a>
+<span class="sourceLineNo">033</span>import ptolemy.actor.IOPort;<a name="line.33"></a>
+<span class="sourceLineNo">034</span>import ptolemy.actor.Manager;<a name="line.34"></a>
+<span class="sourceLineNo">035</span>import ptolemy.actor.NoRoomException;<a name="line.35"></a>
+<span class="sourceLineNo">036</span>import ptolemy.actor.QueueReceiver;<a name="line.36"></a>
+<span class="sourceLineNo">037</span>import ptolemy.actor.process.BoundaryDetector;<a name="line.37"></a>
+<span class="sourceLineNo">038</span>import ptolemy.actor.process.ProcessReceiver;<a name="line.38"></a>
+<span class="sourceLineNo">039</span>import ptolemy.actor.process.TerminateProcessException;<a name="line.39"></a>
+<span class="sourceLineNo">040</span>import ptolemy.data.Token;<a name="line.40"></a>
+<span class="sourceLineNo">041</span>import ptolemy.kernel.util.IllegalActionException;<a name="line.41"></a>
+<span class="sourceLineNo">042</span>import ptolemy.kernel.util.InvalidStateException;<a name="line.42"></a>
+<span class="sourceLineNo">043</span>import ptolemy.kernel.util.Nameable;<a name="line.43"></a>
+<span class="sourceLineNo">044</span>import ptolemy.kernel.util.Workspace;<a name="line.44"></a>
+<span class="sourceLineNo">045</span><a name="line.45"></a>
+<span class="sourceLineNo">046</span>///////////////////////////////////////////////////////////////////<a name="line.46"></a>
+<span class="sourceLineNo">047</span>//// PNQueueReceiver<a name="line.47"></a>
+<span class="sourceLineNo">048</span><a name="line.48"></a>
+<span class="sourceLineNo">049</span>/**<a name="line.49"></a>
+<span class="sourceLineNo">050</span><a name="line.50"></a>
+<span class="sourceLineNo">051</span> A receiver with a FIFO queue that blocks the calling process on a read if the<a name="line.51"></a>
+<span class="sourceLineNo">052</span> FIFO queue is empty and on a write if the queue is full. Blocking read provides<a name="line.52"></a>
+<span class="sourceLineNo">053</span> the basic functionality of a FIFO channel in the process networks model of<a name="line.53"></a>
+<span class="sourceLineNo">054</span> computation. Blocking write supports the implementation suggested by Parks for<a name="line.54"></a>
+<span class="sourceLineNo">055</span> bounded memory execution of process networks.<a name="line.55"></a>
+<span class="sourceLineNo">056</span> &lt;p&gt;<a name="line.56"></a>
+<span class="sourceLineNo">057</span> Tokens are appended to the queue with the put() method, which blocks on a write<a name="line.57"></a>
+<span class="sourceLineNo">058</span> if the queue is full. Tokens are removed from the queue with the get() method,<a name="line.58"></a>
+<span class="sourceLineNo">059</span> which blocks on a read if the queue is empty.<a name="line.59"></a>
+<span class="sourceLineNo">060</span> In case a process blocks on a read or a write, the receiver informs the<a name="line.60"></a>
+<span class="sourceLineNo">061</span> director about the same.<a name="line.61"></a>
+<span class="sourceLineNo">062</span> The receiver also unblocks processes blocked on a read or a write. In case<a name="line.62"></a>
+<span class="sourceLineNo">063</span> a process is blocked on a read (read-blocked), it is unblocked on availability<a name="line.63"></a>
+<span class="sourceLineNo">064</span> of a token.  If a process is blocked on a write (write-blocked), it<a name="line.64"></a>
+<span class="sourceLineNo">065</span> is unblocked on the availability of room in the queue and informs the director<a name="line.65"></a>
+<span class="sourceLineNo">066</span> of the same.<a name="line.66"></a>
+<span class="sourceLineNo">067</span> &lt;p&gt;<a name="line.67"></a>
+<span class="sourceLineNo">068</span> This class is also responsible for pausing or terminating a process that tries<a name="line.68"></a>
+<span class="sourceLineNo">069</span> to read from or write to the receiver. In case of termination, the receiver<a name="line.69"></a>
+<span class="sourceLineNo">070</span> throws a TerminateProcessException when a process tries to read from or write<a name="line.70"></a>
+<span class="sourceLineNo">071</span> to the receiver. This terminates the process.<a name="line.71"></a>
+<span class="sourceLineNo">072</span> In case of pausing, the receiver suspends the process when it tries to read<a name="line.72"></a>
+<span class="sourceLineNo">073</span> from or write to the receiver and resumes it only after a request to resume the<a name="line.73"></a>
+<span class="sourceLineNo">074</span> process has been received.g<a name="line.74"></a>
+<span class="sourceLineNo">075</span> &lt;p&gt;<a name="line.75"></a>
+<span class="sourceLineNo">076</span><a name="line.76"></a>
+<span class="sourceLineNo">077</span> @author Mudit Goel, John S. Davis II, Edward A. Lee, Xiaowen Xin<a name="line.77"></a>
+<span class="sourceLineNo">078</span> @version $Id$<a name="line.78"></a>
+<span class="sourceLineNo">079</span> @since Ptolemy II 0.2<a name="line.79"></a>
+<span class="sourceLineNo">080</span> @Pt.ProposedRating Yellow (eal)<a name="line.80"></a>
+<span class="sourceLineNo">081</span> @Pt.AcceptedRating Red (hyzheng)<a name="line.81"></a>
+<span class="sourceLineNo">082</span> @see QueueReceiver<a name="line.82"></a>
+<span class="sourceLineNo">083</span> @see ptolemy.actor.QueueReceiver<a name="line.83"></a>
+<span class="sourceLineNo">084</span> */<a name="line.84"></a>
+<span class="sourceLineNo">085</span>public class PNQueueReceiver extends QueueReceiver implements ProcessReceiver {<a name="line.85"></a>
+<span class="sourceLineNo">086</span>    /** Construct an empty receiver with no container.<a name="line.86"></a>
+<span class="sourceLineNo">087</span>     */<a name="line.87"></a>
+<span class="sourceLineNo">088</span>    public PNQueueReceiver() {<a name="line.88"></a>
+<span class="sourceLineNo">089</span>        super();<a name="line.89"></a>
+<span class="sourceLineNo">090</span>        _boundaryDetector = new BoundaryDetector(this);<a name="line.90"></a>
+<span class="sourceLineNo">091</span>    }<a name="line.91"></a>
+<span class="sourceLineNo">092</span><a name="line.92"></a>
+<span class="sourceLineNo">093</span>    /** Construct an empty receiver with the specified container.<a name="line.93"></a>
+<span class="sourceLineNo">094</span>     *  @param container The container of this receiver.<a name="line.94"></a>
+<span class="sourceLineNo">095</span>     *  @exception IllegalActionException If the container does<a name="line.95"></a>
+<span class="sourceLineNo">096</span>     *   not accept this receiver.<a name="line.96"></a>
+<span class="sourceLineNo">097</span>     */<a name="line.97"></a>
+<span class="sourceLineNo">098</span>    public PNQueueReceiver(IOPort container) throws IllegalActionException {<a name="line.98"></a>
+<span class="sourceLineNo">099</span>        super(container);<a name="line.99"></a>
+<span class="sourceLineNo">100</span>        _boundaryDetector = new BoundaryDetector(this);<a name="line.100"></a>
+<span class="sourceLineNo">101</span>    }<a name="line.101"></a>
+<span class="sourceLineNo">102</span><a name="line.102"></a>
+<span class="sourceLineNo">103</span>    ///////////////////////////////////////////////////////////////////<a name="line.103"></a>
+<span class="sourceLineNo">104</span>    ////                         public methods                    ////<a name="line.104"></a>
+<span class="sourceLineNo">105</span><a name="line.105"></a>
+<span class="sourceLineNo">106</span>    /** Set the container. This overrides the base class to record<a name="line.106"></a>
+<span class="sourceLineNo">107</span>     *  the director.<a name="line.107"></a>
+<span class="sourceLineNo">108</span>     *  @param port The container.<a name="line.108"></a>
+<span class="sourceLineNo">109</span>     *  @exception IllegalActionException If the container is not of<a name="line.109"></a>
+<span class="sourceLineNo">110</span>     *   an appropriate subclass of IOPort, or if the container's director<a name="line.110"></a>
+<span class="sourceLineNo">111</span>     *   is not an instance of PNDirector.<a name="line.111"></a>
+<span class="sourceLineNo">112</span>     */<a name="line.112"></a>
+<span class="sourceLineNo">113</span>    @Override<a name="line.113"></a>
+<span class="sourceLineNo">114</span>    public void setContainer(IOPort port) throws IllegalActionException {<a name="line.114"></a>
+<span class="sourceLineNo">115</span>        super.setContainer(port);<a name="line.115"></a>
+<span class="sourceLineNo">116</span>        if (port == null) {<a name="line.116"></a>
+<span class="sourceLineNo">117</span>            _director = null;<a name="line.117"></a>
+<span class="sourceLineNo">118</span>        } else {<a name="line.118"></a>
+<span class="sourceLineNo">119</span>            Actor actor = (Actor) port.getContainer();<a name="line.119"></a>
+<span class="sourceLineNo">120</span>            Director director;<a name="line.120"></a>
+<span class="sourceLineNo">121</span><a name="line.121"></a>
+<span class="sourceLineNo">122</span>            // For a composite actor,<a name="line.122"></a>
+<span class="sourceLineNo">123</span>            // the receiver type of an input port is decided by<a name="line.123"></a>
+<span class="sourceLineNo">124</span>            // the executive director.<a name="line.124"></a>
+<span class="sourceLineNo">125</span>            // While the receiver type of an output is decided by the director.<a name="line.125"></a>
+<span class="sourceLineNo">126</span>            // NOTE: getExecutiveDirector() and getDirector() yield the same<a name="line.126"></a>
+<span class="sourceLineNo">127</span>            // result for actors that do not contain directors.<a name="line.127"></a>
+<span class="sourceLineNo">128</span>            if (port.isInput()) {<a name="line.128"></a>
+<span class="sourceLineNo">129</span>                director = actor.getExecutiveDirector();<a name="line.129"></a>
+<span class="sourceLineNo">130</span>            } else {<a name="line.130"></a>
+<span class="sourceLineNo">131</span>                director = actor.getDirector();<a name="line.131"></a>
+<span class="sourceLineNo">132</span>            }<a name="line.132"></a>
+<span class="sourceLineNo">133</span><a name="line.133"></a>
+<span class="sourceLineNo">134</span>            if (!(director instanceof PNDirector)) {<a name="line.134"></a>
+<span class="sourceLineNo">135</span>                throw new IllegalActionException(port,<a name="line.135"></a>
+<span class="sourceLineNo">136</span>                        "Cannot use an instance of PNQueueReceiver "<a name="line.136"></a>
+<span class="sourceLineNo">137</span>                                + "since the director is not a PNDirector.");<a name="line.137"></a>
+<span class="sourceLineNo">138</span>            }<a name="line.138"></a>
+<span class="sourceLineNo">139</span><a name="line.139"></a>
+<span class="sourceLineNo">140</span>            _director = (PNDirector) director;<a name="line.140"></a>
+<span class="sourceLineNo">141</span>        }<a name="line.141"></a>
+<span class="sourceLineNo">142</span>    }<a name="line.142"></a>
+<span class="sourceLineNo">143</span><a name="line.143"></a>
+<span class="sourceLineNo">144</span>    /** Get a token from this receiver. If the receiver is empty then<a name="line.144"></a>
+<span class="sourceLineNo">145</span>     *  block until a token becomes available. If this receiver is<a name="line.145"></a>
+<span class="sourceLineNo">146</span>     *  terminated during the execution of this method, then throw a<a name="line.146"></a>
+<span class="sourceLineNo">147</span>     *  TerminateProcessException.<a name="line.147"></a>
+<span class="sourceLineNo">148</span>     *  @return The token contained by this receiver.<a name="line.148"></a>
+<span class="sourceLineNo">149</span>     */<a name="line.149"></a>
+<span class="sourceLineNo">150</span>    @Override<a name="line.150"></a>
+<span class="sourceLineNo">151</span>    public Token get() {<a name="line.151"></a>
+<span class="sourceLineNo">152</span>        Token result = null;<a name="line.152"></a>
+<span class="sourceLineNo">153</span>        Workspace workspace = getContainer().workspace();<a name="line.153"></a>
+<span class="sourceLineNo">154</span>        while (!_terminate) {<a name="line.154"></a>
+<span class="sourceLineNo">155</span>            int depth = 0;<a name="line.155"></a>
+<span class="sourceLineNo">156</span>            try {<a name="line.156"></a>
+<span class="sourceLineNo">157</span>                // NOTE: This used to synchronize on this, but since it calls<a name="line.157"></a>
+<span class="sourceLineNo">158</span>                // director methods that are synchronized on the director,<a name="line.158"></a>
+<span class="sourceLineNo">159</span>                // this can cause deadlock.<a name="line.159"></a>
+<span class="sourceLineNo">160</span>                synchronized (_director) {<a name="line.160"></a>
+<span class="sourceLineNo">161</span>                    // Need to check this again after acquiring the lock.<a name="line.161"></a>
+<span class="sourceLineNo">162</span>                    // Otherwise, could end up calling wait() below _after_<a name="line.162"></a>
+<span class="sourceLineNo">163</span>                    // notification has occurred.<a name="line.163"></a>
+<span class="sourceLineNo">164</span>                    if (_terminate) {<a name="line.164"></a>
+<span class="sourceLineNo">165</span>                        break;<a name="line.165"></a>
+<span class="sourceLineNo">166</span>                    }<a name="line.166"></a>
+<span class="sourceLineNo">167</span><a name="line.167"></a>
+<span class="sourceLineNo">168</span>                    // Try to read.<a name="line.168"></a>
+<span class="sourceLineNo">169</span>                    if (super.hasToken()) {<a name="line.169"></a>
+<span class="sourceLineNo">170</span>                        result = super.get();<a name="line.170"></a>
+<span class="sourceLineNo">171</span><a name="line.171"></a>
+<span class="sourceLineNo">172</span>                        // Need to mark any thread that is write blocked on<a name="line.172"></a>
+<span class="sourceLineNo">173</span>                        // this receiver unblocked now, before any notification,<a name="line.173"></a>
+<span class="sourceLineNo">174</span>                        // or we will detect deadlock and increase the buffer sizes.<a name="line.174"></a>
+<span class="sourceLineNo">175</span>                        // Note that there is no need to clear the _readPending<a name="line.175"></a>
+<span class="sourceLineNo">176</span>                        // reference because that will have been cleared by the write.<a name="line.176"></a>
+<span class="sourceLineNo">177</span>                        if (_writePending != null) {<a name="line.177"></a>
+<span class="sourceLineNo">178</span>                            _director.threadUnblocked(_writePending, this,<a name="line.178"></a>
+<span class="sourceLineNo">179</span>                                    PNDirector.WRITE_BLOCKED);<a name="line.179"></a>
+<span class="sourceLineNo">180</span>                            _writePending = null;<a name="line.180"></a>
+<span class="sourceLineNo">181</span>                        }<a name="line.181"></a>
+<span class="sourceLineNo">182</span><a name="line.182"></a>
+<span class="sourceLineNo">183</span>                        break;<a name="line.183"></a>
+<span class="sourceLineNo">184</span>                    }<a name="line.184"></a>
+<span class="sourceLineNo">185</span>                    _readPending = Thread.currentThread();<a name="line.185"></a>
+<span class="sourceLineNo">186</span>                    _director.threadBlocked(Thread.currentThread(), this,<a name="line.186"></a>
+<span class="sourceLineNo">187</span>                            PNDirector.READ_BLOCKED);<a name="line.187"></a>
+<span class="sourceLineNo">188</span><a name="line.188"></a>
+<span class="sourceLineNo">189</span>                    // NOTE: We cannot use workspace.wait(Object) here without<a name="line.189"></a>
+<span class="sourceLineNo">190</span>                    // introducing a race condition, because we have to release<a name="line.190"></a>
+<span class="sourceLineNo">191</span>                    // the lock on the _director before calling workspace.wait(_director).<a name="line.191"></a>
+<span class="sourceLineNo">192</span>                    depth = workspace.releaseReadPermission();<a name="line.192"></a>
+<span class="sourceLineNo">193</span>                    _director.wait();<a name="line.193"></a>
+<span class="sourceLineNo">194</span>                } // release lock on _director before reacquiring read permissions.<a name="line.194"></a>
+<span class="sourceLineNo">195</span>            } catch (InterruptedException e) {<a name="line.195"></a>
+<span class="sourceLineNo">196</span>                _terminate = true;<a name="line.196"></a>
+<span class="sourceLineNo">197</span>            } finally {<a name="line.197"></a>
+<span class="sourceLineNo">198</span>                if (depth &gt; 0) {<a name="line.198"></a>
+<span class="sourceLineNo">199</span>                    workspace.reacquireReadPermission(depth);<a name="line.199"></a>
+<span class="sourceLineNo">200</span>                }<a name="line.200"></a>
+<span class="sourceLineNo">201</span>            }<a name="line.201"></a>
+<span class="sourceLineNo">202</span>        }<a name="line.202"></a>
+<span class="sourceLineNo">203</span>        if (_terminate) {<a name="line.203"></a>
+<span class="sourceLineNo">204</span>            throw new TerminateProcessException("");<a name="line.204"></a>
+<span class="sourceLineNo">205</span>        }<a name="line.205"></a>
+<span class="sourceLineNo">206</span>        return result;<a name="line.206"></a>
+<span class="sourceLineNo">207</span>    }<a name="line.207"></a>
+<span class="sourceLineNo">208</span><a name="line.208"></a>
+<span class="sourceLineNo">209</span>    /** Return the director in charge of this receiver, or null<a name="line.209"></a>
+<span class="sourceLineNo">210</span>     *  if there is none.<a name="line.210"></a>
+<span class="sourceLineNo">211</span>     *  @return The director in charge of this receiver.<a name="line.211"></a>
+<span class="sourceLineNo">212</span>     */<a name="line.212"></a>
+<span class="sourceLineNo">213</span>    public PNDirector getDirector() {<a name="line.213"></a>
+<span class="sourceLineNo">214</span>        return _director;<a name="line.214"></a>
+<span class="sourceLineNo">215</span>    }<a name="line.215"></a>
+<span class="sourceLineNo">216</span><a name="line.216"></a>
+<span class="sourceLineNo">217</span>    /** Return true, since a channel in the Kahn process networks<a name="line.217"></a>
+<span class="sourceLineNo">218</span>     *  model of computation is of infinite capacity and always has room.<a name="line.218"></a>
+<span class="sourceLineNo">219</span>     *  @return True.<a name="line.219"></a>
+<span class="sourceLineNo">220</span>     */<a name="line.220"></a>
+<span class="sourceLineNo">221</span>    @Override<a name="line.221"></a>
+<span class="sourceLineNo">222</span>    public boolean hasRoom() {<a name="line.222"></a>
+<span class="sourceLineNo">223</span>        return true;<a name="line.223"></a>
+<span class="sourceLineNo">224</span>    }<a name="line.224"></a>
+<span class="sourceLineNo">225</span><a name="line.225"></a>
+<span class="sourceLineNo">226</span>    /** Return true, since a channel in the Kahn process networks<a name="line.226"></a>
+<span class="sourceLineNo">227</span>     *  model of computation is of infinite capacity and always has room.<a name="line.227"></a>
+<span class="sourceLineNo">228</span>     *  @param tokens The number of tokens, which is ignored in this method.<a name="line.228"></a>
+<span class="sourceLineNo">229</span>     *  @return True.<a name="line.229"></a>
+<span class="sourceLineNo">230</span>     */<a name="line.230"></a>
+<span class="sourceLineNo">231</span>    @Override<a name="line.231"></a>
+<span class="sourceLineNo">232</span>    public boolean hasRoom(int tokens) {<a name="line.232"></a>
+<span class="sourceLineNo">233</span>        return true;<a name="line.233"></a>
+<span class="sourceLineNo">234</span>    }<a name="line.234"></a>
+<span class="sourceLineNo">235</span><a name="line.235"></a>
+<span class="sourceLineNo">236</span>    /** Return true, since a call to the get() method of the receiver will<a name="line.236"></a>
+<span class="sourceLineNo">237</span>     *  always return a token if the call to get() ever returns.<a name="line.237"></a>
+<span class="sourceLineNo">238</span>     *  @return True.<a name="line.238"></a>
+<span class="sourceLineNo">239</span>     */<a name="line.239"></a>
+<span class="sourceLineNo">240</span>    @Override<a name="line.240"></a>
+<span class="sourceLineNo">241</span>    public boolean hasToken() {<a name="line.241"></a>
+<span class="sourceLineNo">242</span>        return true;<a name="line.242"></a>
+<span class="sourceLineNo">243</span>    }<a name="line.243"></a>
+<span class="sourceLineNo">244</span><a name="line.244"></a>
+<span class="sourceLineNo">245</span>    /** Return true, since a call to the get() method of the receiver will<a name="line.245"></a>
+<span class="sourceLineNo">246</span>     *  always return a token if the call to get() ever returns.<a name="line.246"></a>
+<span class="sourceLineNo">247</span>     *  @param tokens The number of tokens, which is ignored in this method.<a name="line.247"></a>
+<span class="sourceLineNo">248</span>     *  @return True.<a name="line.248"></a>
+<span class="sourceLineNo">249</span>     */<a name="line.249"></a>
+<span class="sourceLineNo">250</span>    @Override<a name="line.250"></a>
+<span class="sourceLineNo">251</span>    public boolean hasToken(int tokens) {<a name="line.251"></a>
+<span class="sourceLineNo">252</span>        return true;<a name="line.252"></a>
+<span class="sourceLineNo">253</span>    }<a name="line.253"></a>
+<span class="sourceLineNo">254</span><a name="line.254"></a>
+<span class="sourceLineNo">255</span>    /** Return true if this receiver is connected to the inside of a<a name="line.255"></a>
+<span class="sourceLineNo">256</span>     *  boundary port. A boundary port is an opaque port that is<a name="line.256"></a>
+<span class="sourceLineNo">257</span>     *  contained by a composite actor. If this receiver is connected<a name="line.257"></a>
+<span class="sourceLineNo">258</span>     *  to the inside of a boundary port, then return true; otherwise<a name="line.258"></a>
+<span class="sourceLineNo">259</span>     *  return false.<a name="line.259"></a>
+<span class="sourceLineNo">260</span>     *  @return True if this receiver is connected to the inside of<a name="line.260"></a>
+<span class="sourceLineNo">261</span>     *   a boundary port; return false otherwise.<a name="line.261"></a>
+<span class="sourceLineNo">262</span>     *  @exception IllegalActionException If thrown by the boundary<a name="line.262"></a>
+<span class="sourceLineNo">263</span>     *  detector.<a name="line.263"></a>
+<span class="sourceLineNo">264</span>     *  @see ptolemy.actor.process.BoundaryDetector<a name="line.264"></a>
+<span class="sourceLineNo">265</span>     */<a name="line.265"></a>
+<span class="sourceLineNo">266</span>    @Override<a name="line.266"></a>
+<span class="sourceLineNo">267</span>    public boolean isConnectedToBoundary() throws IllegalActionException {<a name="line.267"></a>
+<span class="sourceLineNo">268</span>        return _boundaryDetector.isConnectedToBoundary();<a name="line.268"></a>
+<span class="sourceLineNo">269</span>    }<a name="line.269"></a>
+<span class="sourceLineNo">270</span><a name="line.270"></a>
+<span class="sourceLineNo">271</span>    /** Return true if this receiver is connected to the inside of a<a name="line.271"></a>
+<span class="sourceLineNo">272</span>     *  boundary port. A boundary port is an opaque port that is<a name="line.272"></a>
+<span class="sourceLineNo">273</span>     *  contained by a composite actor. If this receiver is connected<a name="line.273"></a>
+<span class="sourceLineNo">274</span>     *  to the inside of a boundary port, then return true; otherwise<a name="line.274"></a>
+<span class="sourceLineNo">275</span>     *  return false.<a name="line.275"></a>
+<span class="sourceLineNo">276</span>     *  @return True if this receiver is connected to the inside of<a name="line.276"></a>
+<span class="sourceLineNo">277</span>     *   a boundary port; return false otherwise.<a name="line.277"></a>
+<span class="sourceLineNo">278</span>     *  @exception IllegalActionException If thrown by the boundary<a name="line.278"></a>
+<span class="sourceLineNo">279</span>     *   detector.<a name="line.279"></a>
+<span class="sourceLineNo">280</span>     *  @exception InvalidStateException If thrown by the boundary<a name="line.280"></a>
+<span class="sourceLineNo">281</span>     *   detector.<a name="line.281"></a>
+<span class="sourceLineNo">282</span>     *  @see ptolemy.actor.process.BoundaryDetector<a name="line.282"></a>
+<span class="sourceLineNo">283</span>     */<a name="line.283"></a>
+<span class="sourceLineNo">284</span>    @Override<a name="line.284"></a>
+<span class="sourceLineNo">285</span>    public boolean isConnectedToBoundaryInside()<a name="line.285"></a>
+<span class="sourceLineNo">286</span>            throws InvalidStateException, IllegalActionException {<a name="line.286"></a>
+<span class="sourceLineNo">287</span>        return _boundaryDetector.isConnectedToBoundaryInside();<a name="line.287"></a>
+<span class="sourceLineNo">288</span>    }<a name="line.288"></a>
+<span class="sourceLineNo">289</span><a name="line.289"></a>
+<span class="sourceLineNo">290</span>    /** Return true if this receiver is connected to the outside of a<a name="line.290"></a>
+<span class="sourceLineNo">291</span>     *  boundary port. A boundary port is an opaque port that is<a name="line.291"></a>
+<span class="sourceLineNo">292</span>     *  contained by a composite actor. If this receiver is connected<a name="line.292"></a>
+<span class="sourceLineNo">293</span>     *  to the outside of a boundary port, then return true; otherwise<a name="line.293"></a>
+<span class="sourceLineNo">294</span>     *  return false.<a name="line.294"></a>
+<span class="sourceLineNo">295</span>     *  @return True if this receiver is connected to the outside of<a name="line.295"></a>
+<span class="sourceLineNo">296</span>     *   a boundary port; return false otherwise.<a name="line.296"></a>
+<span class="sourceLineNo">297</span>     *  @exception IllegalActionException If thrown by the boundary<a name="line.297"></a>
+<span class="sourceLineNo">298</span>     *   detector.<a name="line.298"></a>
+<span class="sourceLineNo">299</span>     *  @see ptolemy.actor.process.BoundaryDetector<a name="line.299"></a>
+<span class="sourceLineNo">300</span>     */<a name="line.300"></a>
+<span class="sourceLineNo">301</span>    @Override<a name="line.301"></a>
+<span class="sourceLineNo">302</span>    public boolean isConnectedToBoundaryOutside()<a name="line.302"></a>
+<span class="sourceLineNo">303</span>            throws IllegalActionException {<a name="line.303"></a>
+<span class="sourceLineNo">304</span>        return _boundaryDetector.isConnectedToBoundaryOutside();<a name="line.304"></a>
+<span class="sourceLineNo">305</span>    }<a name="line.305"></a>
+<span class="sourceLineNo">306</span><a name="line.306"></a>
+<span class="sourceLineNo">307</span>    /** Return true if this receiver is connected to the boundary.<a name="line.307"></a>
+<span class="sourceLineNo">308</span>     *  That is, it is in an input port that is connected on<a name="line.308"></a>
+<span class="sourceLineNo">309</span>     *  the outside to the inside of an input port, or it is on<a name="line.309"></a>
+<span class="sourceLineNo">310</span>     *  the inside of an output port that is connected on the<a name="line.310"></a>
+<span class="sourceLineNo">311</span>     *  outside to an input port higher in the hierarchy.<a name="line.311"></a>
+<span class="sourceLineNo">312</span>     *  @see #isConnectedToBoundary()<a name="line.312"></a>
+<span class="sourceLineNo">313</span>     *  @return True if this is connected to the boundary.<a name="line.313"></a>
+<span class="sourceLineNo">314</span>     *  @exception IllegalActionException If thrown by the boundary<a name="line.314"></a>
+<span class="sourceLineNo">315</span>     *   detector.<a name="line.315"></a>
+<span class="sourceLineNo">316</span>     */<a name="line.316"></a>
+<span class="sourceLineNo">317</span>    @Override<a name="line.317"></a>
+<span class="sourceLineNo">318</span>    public boolean isConsumerReceiver() throws IllegalActionException {<a name="line.318"></a>
+<span class="sourceLineNo">319</span>        if (isConnectedToBoundary()) {<a name="line.319"></a>
+<span class="sourceLineNo">320</span>            return true;<a name="line.320"></a>
+<span class="sourceLineNo">321</span>        }<a name="line.321"></a>
+<span class="sourceLineNo">322</span><a name="line.322"></a>
+<span class="sourceLineNo">323</span>        return false;<a name="line.323"></a>
+<span class="sourceLineNo">324</span>    }<a name="line.324"></a>
+<span class="sourceLineNo">325</span><a name="line.325"></a>
+<span class="sourceLineNo">326</span>    /** Return true if this receiver is contained on the inside of a<a name="line.326"></a>
+<span class="sourceLineNo">327</span>     *  boundary port. A boundary port is an opaque port that is<a name="line.327"></a>
+<span class="sourceLineNo">328</span>     *  contained by a composite actor. If this receiver is contained<a name="line.328"></a>
+<span class="sourceLineNo">329</span>     *  on the inside of a boundary port then return true; otherwise<a name="line.329"></a>
+<span class="sourceLineNo">330</span>     *  return false.<a name="line.330"></a>
+<span class="sourceLineNo">331</span>     *  @return True if this receiver is contained on the inside of<a name="line.331"></a>
+<span class="sourceLineNo">332</span>     *   a boundary port; return false otherwise.<a name="line.332"></a>
+<span class="sourceLineNo">333</span>     *  @see ptolemy.actor.process.BoundaryDetector<a name="line.333"></a>
+<span class="sourceLineNo">334</span>     */<a name="line.334"></a>
+<span class="sourceLineNo">335</span>    @Override<a name="line.335"></a>
+<span class="sourceLineNo">336</span>    public boolean isInsideBoundary() {<a name="line.336"></a>
+<span class="sourceLineNo">337</span>        return _boundaryDetector.isInsideBoundary();<a name="line.337"></a>
+<span class="sourceLineNo">338</span>    }<a name="line.338"></a>
+<span class="sourceLineNo">339</span><a name="line.339"></a>
+<span class="sourceLineNo">340</span>    /** Return true if this receiver is contained on the outside of a<a name="line.340"></a>
+<span class="sourceLineNo">341</span>     *  boundary port. A boundary port is an opaque port that is<a name="line.341"></a>
+<span class="sourceLineNo">342</span>     *  contained by a composite actor. If this receiver is contained<a name="line.342"></a>
+<span class="sourceLineNo">343</span>     *  on the outside of a boundary port then return true; otherwise<a name="line.343"></a>
+<span class="sourceLineNo">344</span>     *  return false.<a name="line.344"></a>
+<span class="sourceLineNo">345</span>     *  @return True if this receiver is contained on the outside of<a name="line.345"></a>
+<span class="sourceLineNo">346</span>     *   a boundary port; return false otherwise.<a name="line.346"></a>
+<span class="sourceLineNo">347</span>     *  @see BoundaryDetector<a name="line.347"></a>
+<span class="sourceLineNo">348</span>     */<a name="line.348"></a>
+<span class="sourceLineNo">349</span>    @Override<a name="line.349"></a>
+<span class="sourceLineNo">350</span>    public boolean isOutsideBoundary() {<a name="line.350"></a>
+<span class="sourceLineNo">351</span>        return _boundaryDetector.isOutsideBoundary();<a name="line.351"></a>
+<span class="sourceLineNo">352</span>    }<a name="line.352"></a>
+<span class="sourceLineNo">353</span><a name="line.353"></a>
+<span class="sourceLineNo">354</span>    /** Return true if this receiver is at a boundary.<a name="line.354"></a>
+<span class="sourceLineNo">355</span>     *  @return True if this receiver is at a boundary.<a name="line.355"></a>
+<span class="sourceLineNo">356</span>     */<a name="line.356"></a>
+<span class="sourceLineNo">357</span>    @Override<a name="line.357"></a>
+<span class="sourceLineNo">358</span>    public boolean isProducerReceiver() {<a name="line.358"></a>
+<span class="sourceLineNo">359</span>        if (isOutsideBoundary() || isInsideBoundary()) {<a name="line.359"></a>
+<span class="sourceLineNo">360</span>            return true;<a name="line.360"></a>
+<span class="sourceLineNo">361</span>        }<a name="line.361"></a>
+<span class="sourceLineNo">362</span><a name="line.362"></a>
+<span class="sourceLineNo">363</span>        return false;<a name="line.363"></a>
+<span class="sourceLineNo">364</span>    }<a name="line.364"></a>
+<span class="sourceLineNo">365</span><a name="line.365"></a>
+<span class="sourceLineNo">366</span>    /** Return a true or false to indicate whether there is a read block<a name="line.366"></a>
+<span class="sourceLineNo">367</span>     *  on this receiver or not, respectively.<a name="line.367"></a>
+<span class="sourceLineNo">368</span>     *  @return a boolean indicating whether a read is blocked on this<a name="line.368"></a>
+<span class="sourceLineNo">369</span>     *  receiver or not.<a name="line.369"></a>
+<span class="sourceLineNo">370</span>     */<a name="line.370"></a>
+<span class="sourceLineNo">371</span>    @Override<a name="line.371"></a>
+<span class="sourceLineNo">372</span>    public boolean isReadBlocked() {<a name="line.372"></a>
+<span class="sourceLineNo">373</span>        // NOTE: This method used to be synchronized on this<a name="line.373"></a>
+<span class="sourceLineNo">374</span>        // receiver, but since it is called by synchronized methods in<a name="line.374"></a>
+<span class="sourceLineNo">375</span>        // the director, that can cause deadlock.<a name="line.375"></a>
+<span class="sourceLineNo">376</span>        synchronized (_director) {<a name="line.376"></a>
+<span class="sourceLineNo">377</span>            return _readPending != null;<a name="line.377"></a>
+<span class="sourceLineNo">378</span>        }<a name="line.378"></a>
+<span class="sourceLineNo">379</span>    }<a name="line.379"></a>
+<span class="sourceLineNo">380</span><a name="line.380"></a>
+<span class="sourceLineNo">381</span>    /** Return a true or false to indicate whether there is a write block<a name="line.381"></a>
+<span class="sourceLineNo">382</span>     *  on this receiver or not.<a name="line.382"></a>
+<span class="sourceLineNo">383</span>     *  @return A boolean indicating whether a write is blocked  on this<a name="line.383"></a>
+<span class="sourceLineNo">384</span>     *  receiver or not.<a name="line.384"></a>
+<span class="sourceLineNo">385</span>     */<a name="line.385"></a>
+<span class="sourceLineNo">386</span>    @Override<a name="line.386"></a>
+<span class="sourceLineNo">387</span>    public boolean isWriteBlocked() {<a name="line.387"></a>
+<span class="sourceLineNo">388</span>        // NOTE: This method used to be synchronized on this<a name="line.388"></a>
+<span class="sourceLineNo">389</span>        // receiver, but since it is called by synchronized methods in<a name="line.389"></a>
+<span class="sourceLineNo">390</span>        // the director, that can cause deadlock.<a name="line.390"></a>
+<span class="sourceLineNo">391</span>        synchronized (_director) {<a name="line.391"></a>
+<span class="sourceLineNo">392</span>            return _writePending != null;<a name="line.392"></a>
+<span class="sourceLineNo">393</span>        }<a name="line.393"></a>
+<span class="sourceLineNo">394</span>    }<a name="line.394"></a>
+<span class="sourceLineNo">395</span><a name="line.395"></a>
+<span class="sourceLineNo">396</span>    /** Put a token on the queue contained in this receiver.<a name="line.396"></a>
+<span class="sourceLineNo">397</span>     *  If the queue is full, then suspend the calling thread (blocking<a name="line.397"></a>
+<span class="sourceLineNo">398</span>     *  write) and inform the director of the same. Resume the process on<a name="line.398"></a>
+<span class="sourceLineNo">399</span>     *  detecting room in the queue.<a name="line.399"></a>
+<span class="sourceLineNo">400</span>     *  If a termination is requested, then initiate the termination of the<a name="line.400"></a>
+<span class="sourceLineNo">401</span>     *  calling process by throwing a TerminateProcessException.<a name="line.401"></a>
+<span class="sourceLineNo">402</span>     *  On detecting a room in the queue, put a token in the queue.<a name="line.402"></a>
+<span class="sourceLineNo">403</span>     *  Check whether any process is blocked<a name="line.403"></a>
+<span class="sourceLineNo">404</span>     *  on a read from this receiver. If a process is indeed blocked, then<a name="line.404"></a>
+<span class="sourceLineNo">405</span>     *  unblock the process, and inform the director of the same.<a name="line.405"></a>
+<span class="sourceLineNo">406</span>     *  @param token The token to be put in the receiver, or null to not put anything.<a name="line.406"></a>
+<span class="sourceLineNo">407</span>     *  @exception NoRoomException If during initialization, capacity cannot be increased<a name="line.407"></a>
+<span class="sourceLineNo">408</span>     *   enough to accommodate initial tokens.<a name="line.408"></a>
+<span class="sourceLineNo">409</span>     */<a name="line.409"></a>
+<span class="sourceLineNo">410</span>    @Override<a name="line.410"></a>
+<span class="sourceLineNo">411</span>    public void put(Token token) throws NoRoomException {<a name="line.411"></a>
+<span class="sourceLineNo">412</span>        IOPort port = getContainer();<a name="line.412"></a>
+<span class="sourceLineNo">413</span>        if (port == null || token == null) {<a name="line.413"></a>
+<span class="sourceLineNo">414</span>            return; // Nothing to do.<a name="line.414"></a>
+<span class="sourceLineNo">415</span>        }<a name="line.415"></a>
+<span class="sourceLineNo">416</span>        Workspace workspace = port.workspace();<a name="line.416"></a>
+<span class="sourceLineNo">417</span>        while (!_terminate) {<a name="line.417"></a>
+<span class="sourceLineNo">418</span>            int depth = 0;<a name="line.418"></a>
+<span class="sourceLineNo">419</span>            try {<a name="line.419"></a>
+<span class="sourceLineNo">420</span>                // NOTE: Avoid acquiring read access on the workspace<a name="line.420"></a>
+<span class="sourceLineNo">421</span>                // while holding the lock on the director because if<a name="line.421"></a>
+<span class="sourceLineNo">422</span>                // some other process is trying to acquire write access,<a name="line.422"></a>
+<span class="sourceLineNo">423</span>                // the request for read access will be deferred.<a name="line.423"></a>
+<span class="sourceLineNo">424</span>                Nameable container = getContainer().getContainer();<a name="line.424"></a>
+<span class="sourceLineNo">425</span>                Manager manager = ((Actor) container).getManager();<a name="line.425"></a>
+<span class="sourceLineNo">426</span>                // NOTE: This used to synchronize on this, but since it calls<a name="line.426"></a>
+<span class="sourceLineNo">427</span>                // director methods that are synchronized on the director,<a name="line.427"></a>
+<span class="sourceLineNo">428</span>                // this can cause deadlock.<a name="line.428"></a>
+<span class="sourceLineNo">429</span>                synchronized (_director) {<a name="line.429"></a>
+<span class="sourceLineNo">430</span>                    // Need to check this again after acquiring the lock.<a name="line.430"></a>
+<span class="sourceLineNo">431</span>                    // Otherwise, could end up calling wait() below _after_<a name="line.431"></a>
+<span class="sourceLineNo">432</span>                    // notification has occurred.<a name="line.432"></a>
+<span class="sourceLineNo">433</span>                    if (_terminate) {<a name="line.433"></a>
+<span class="sourceLineNo">434</span>                        break;<a name="line.434"></a>
+<span class="sourceLineNo">435</span>                    }<a name="line.435"></a>
+<span class="sourceLineNo">436</span><a name="line.436"></a>
+<span class="sourceLineNo">437</span>                    // If we are in the initialization phase, then we may have<a name="line.437"></a>
+<span class="sourceLineNo">438</span>                    // to increase the queue capacity before proceeding. This<a name="line.438"></a>
+<span class="sourceLineNo">439</span>                    // may be needed to support PublisherPorts that produce<a name="line.439"></a>
+<span class="sourceLineNo">440</span>                    // initial tokens (or, I suppose, any actor that produces<a name="line.440"></a>
+<span class="sourceLineNo">441</span>                    // initial tokens during initialize()?).<a name="line.441"></a>
+<span class="sourceLineNo">442</span>                    if (!super.hasRoom()) {<a name="line.442"></a>
+<span class="sourceLineNo">443</span>                        if (container instanceof Actor) {<a name="line.443"></a>
+<span class="sourceLineNo">444</span>                            if (manager.getState()<a name="line.444"></a>
+<span class="sourceLineNo">445</span>                                    .equals(Manager.INITIALIZING)) {<a name="line.445"></a>
+<span class="sourceLineNo">446</span>                                try {<a name="line.446"></a>
+<span class="sourceLineNo">447</span>                                    _queue.setCapacity(<a name="line.447"></a>
+<span class="sourceLineNo">448</span>                                            _queue.getCapacity() + 1);<a name="line.448"></a>
+<span class="sourceLineNo">449</span>                                } catch (IllegalActionException e) {<a name="line.449"></a>
+<span class="sourceLineNo">450</span>                                    throw new NoRoomException(getContainer(),<a name="line.450"></a>
+<span class="sourceLineNo">451</span>                                            "Failed to increase queue capacity enough to accommodate initial tokens");<a name="line.451"></a>
+<span class="sourceLineNo">452</span>                                }<a name="line.452"></a>
+<span class="sourceLineNo">453</span>                            }<a name="line.453"></a>
+<span class="sourceLineNo">454</span>                        }<a name="line.454"></a>
+<span class="sourceLineNo">455</span>                    }<a name="line.455"></a>
+<span class="sourceLineNo">456</span>                    // Try to write.<a name="line.456"></a>
+<span class="sourceLineNo">457</span>                    if (super.hasRoom()) {<a name="line.457"></a>
+<span class="sourceLineNo">458</span>                        super.put(token);<a name="line.458"></a>
+<span class="sourceLineNo">459</span><a name="line.459"></a>
+<span class="sourceLineNo">460</span>                        // If any thread is blocked on a get(), then it will become<a name="line.460"></a>
+<span class="sourceLineNo">461</span>                        // unblocked. Notify the director now so that there isn't a<a name="line.461"></a>
+<span class="sourceLineNo">462</span>                        // spurious deadlock detection.<a name="line.462"></a>
+<span class="sourceLineNo">463</span>                        if (_readPending != null) {<a name="line.463"></a>
+<span class="sourceLineNo">464</span>                            _director.threadUnblocked(_readPending, this,<a name="line.464"></a>
+<span class="sourceLineNo">465</span>                                    PNDirector.READ_BLOCKED);<a name="line.465"></a>
+<span class="sourceLineNo">466</span>                            _readPending = null;<a name="line.466"></a>
+<span class="sourceLineNo">467</span>                        }<a name="line.467"></a>
+<span class="sourceLineNo">468</span><a name="line.468"></a>
+<span class="sourceLineNo">469</span>                        // Normally, the _writePending reference will have<a name="line.469"></a>
+<span class="sourceLineNo">470</span>                        // been cleared by the read that unblocked this write.<a name="line.470"></a>
+<span class="sourceLineNo">471</span>                        // However, it might be that the director increased the<a name="line.471"></a>
+<span class="sourceLineNo">472</span>                        // buffer size, which would also have the affect of unblocking<a name="line.472"></a>
+<span class="sourceLineNo">473</span>                        // this write. Hence, we clear it here if it is set.<a name="line.473"></a>
+<span class="sourceLineNo">474</span>                        if (_writePending != null) {<a name="line.474"></a>
+<span class="sourceLineNo">475</span>                            _director.threadUnblocked(_writePending, this,<a name="line.475"></a>
+<span class="sourceLineNo">476</span>                                    PNDirector.WRITE_BLOCKED);<a name="line.476"></a>
+<span class="sourceLineNo">477</span>                            _writePending = null;<a name="line.477"></a>
+<span class="sourceLineNo">478</span>                        }<a name="line.478"></a>
+<span class="sourceLineNo">479</span><a name="line.479"></a>
+<span class="sourceLineNo">480</span>                        break;<a name="line.480"></a>
+<span class="sourceLineNo">481</span>                    }<a name="line.481"></a>
+<span class="sourceLineNo">482</span><a name="line.482"></a>
+<span class="sourceLineNo">483</span>                    // Wait to try again.<a name="line.483"></a>
+<span class="sourceLineNo">484</span>                    _writePending = Thread.currentThread();<a name="line.484"></a>
+<span class="sourceLineNo">485</span>                    _director.threadBlocked(_writePending, this,<a name="line.485"></a>
+<span class="sourceLineNo">486</span>                            PNDirector.WRITE_BLOCKED);<a name="line.486"></a>
+<span class="sourceLineNo">487</span><a name="line.487"></a>
+<span class="sourceLineNo">488</span>                    // NOTE: We cannot use workspace.wait(Object) here without<a name="line.488"></a>
+<span class="sourceLineNo">489</span>                    // introducing a race condition, because we have to release<a name="line.489"></a>
+<span class="sourceLineNo">490</span>                    // the lock on the _director before calling workspace.wait(_director).<a name="line.490"></a>
+<span class="sourceLineNo">491</span>                    depth = workspace.releaseReadPermission();<a name="line.491"></a>
+<span class="sourceLineNo">492</span>                    _director.wait();<a name="line.492"></a>
+<span class="sourceLineNo">493</span>                } // release lock on _director before reacquiring read permissions.<a name="line.493"></a>
+<span class="sourceLineNo">494</span>            } catch (InterruptedException e) {<a name="line.494"></a>
+<span class="sourceLineNo">495</span>                _terminate = true;<a name="line.495"></a>
+<span class="sourceLineNo">496</span>            } finally {<a name="line.496"></a>
+<span class="sourceLineNo">497</span>                if (depth &gt; 0) {<a name="line.497"></a>
+<span class="sourceLineNo">498</span>                    workspace.reacquireReadPermission(depth);<a name="line.498"></a>
+<span class="sourceLineNo">499</span>                }<a name="line.499"></a>
+<span class="sourceLineNo">500</span>            }<a name="line.500"></a>
+<span class="sourceLineNo">501</span>        }<a name="line.501"></a>
+<span class="sourceLineNo">502</span><a name="line.502"></a>
+<span class="sourceLineNo">503</span>        if (_terminate) {<a name="line.503"></a>
+<span class="sourceLineNo">504</span>            throw new TerminateProcessException("Process terminated.");<a name="line.504"></a>
+<span class="sourceLineNo">505</span>        }<a name="line.505"></a>
+<span class="sourceLineNo">506</span>    }<a name="line.506"></a>
+<span class="sourceLineNo">507</span><a name="line.507"></a>
+<span class="sourceLineNo">508</span>    /** Reset the state variables in the receiver.<a name="line.508"></a>
+<span class="sourceLineNo">509</span>     */<a name="line.509"></a>
+<span class="sourceLineNo">510</span>    @Override<a name="line.510"></a>
+<span class="sourceLineNo">511</span>    public void reset() {<a name="line.511"></a>
+<span class="sourceLineNo">512</span>        if (_readPending != null) {<a name="line.512"></a>
+<span class="sourceLineNo">513</span>            _director.threadUnblocked(_readPending, this,<a name="line.513"></a>
+<span class="sourceLineNo">514</span>                    PNDirector.READ_BLOCKED);<a name="line.514"></a>
+<span class="sourceLineNo">515</span>        }<a name="line.515"></a>
+<span class="sourceLineNo">516</span><a name="line.516"></a>
+<span class="sourceLineNo">517</span>        if (_writePending != null) {<a name="line.517"></a>
+<span class="sourceLineNo">518</span>            _director.threadUnblocked(_writePending, this,<a name="line.518"></a>
+<span class="sourceLineNo">519</span>                    PNDirector.WRITE_BLOCKED);<a name="line.519"></a>
+<span class="sourceLineNo">520</span>        }<a name="line.520"></a>
+<span class="sourceLineNo">521</span><a name="line.521"></a>
+<span class="sourceLineNo">522</span>        _readPending = null;<a name="line.522"></a>
+<span class="sourceLineNo">523</span>        _writePending = null;<a name="line.523"></a>
+<span class="sourceLineNo">524</span>        _terminate = false;<a name="line.524"></a>
+<span class="sourceLineNo">525</span>        _boundaryDetector.reset();<a name="line.525"></a>
+<span class="sourceLineNo">526</span>    }<a name="line.526"></a>
+<span class="sourceLineNo">527</span><a name="line.527"></a>
+<span class="sourceLineNo">528</span>    /** Set a flag in the receiver to indicate the onset of termination.<a name="line.528"></a>
+<span class="sourceLineNo">529</span>     *  This will result in termination of any process that is either blocked<a name="line.529"></a>
+<span class="sourceLineNo">530</span>     *  on the receiver or is trying to read from or write to it.<a name="line.530"></a>
+<span class="sourceLineNo">531</span>     */<a name="line.531"></a>
+<span class="sourceLineNo">532</span>    @Override<a name="line.532"></a>
+<span class="sourceLineNo">533</span>    public void requestFinish() {<a name="line.533"></a>
+<span class="sourceLineNo">534</span>        // NOTE: This method used to be synchronized on this<a name="line.534"></a>
+<span class="sourceLineNo">535</span>        // receiver, but since it calls synchronized methods in<a name="line.535"></a>
+<span class="sourceLineNo">536</span>        // the director, that can cause deadlock.<a name="line.536"></a>
+<span class="sourceLineNo">537</span>        synchronized (_director) {<a name="line.537"></a>
+<span class="sourceLineNo">538</span>            _terminate = true;<a name="line.538"></a>
+<span class="sourceLineNo">539</span>            _director.notifyAll();<a name="line.539"></a>
+<span class="sourceLineNo">540</span>        }<a name="line.540"></a>
+<span class="sourceLineNo">541</span>    }<a name="line.541"></a>
+<span class="sourceLineNo">542</span><a name="line.542"></a>
+<span class="sourceLineNo">543</span>    ///////////////////////////////////////////////////////////////////<a name="line.543"></a>
+<span class="sourceLineNo">544</span>    ////                         protected variables               ////<a name="line.544"></a>
+<span class="sourceLineNo">545</span><a name="line.545"></a>
+<span class="sourceLineNo">546</span>    /** The director in charge of this receiver. */<a name="line.546"></a>
+<span class="sourceLineNo">547</span>    protected PNDirector _director;<a name="line.547"></a>
+<span class="sourceLineNo">548</span><a name="line.548"></a>
+<span class="sourceLineNo">549</span>    /** Reference to a thread that is read blocked on this receiver. */<a name="line.549"></a>
+<span class="sourceLineNo">550</span>    protected Thread _readPending = null;<a name="line.550"></a>
+<span class="sourceLineNo">551</span><a name="line.551"></a>
+<span class="sourceLineNo">552</span>    /** Reference to a thread that is write blocked on this receiver. */<a name="line.552"></a>
+<span class="sourceLineNo">553</span>    protected Thread _writePending = null;<a name="line.553"></a>
+<span class="sourceLineNo">554</span><a name="line.554"></a>
+<span class="sourceLineNo">555</span>    ///////////////////////////////////////////////////////////////////<a name="line.555"></a>
+<span class="sourceLineNo">556</span>    ////                         private variables                 ////<a name="line.556"></a>
+<span class="sourceLineNo">557</span><a name="line.557"></a>
+<span class="sourceLineNo">558</span>    /** Flag indicating whether finish has been requested. */<a name="line.558"></a>
+<span class="sourceLineNo">559</span>    protected boolean _terminate = false;<a name="line.559"></a>
+<span class="sourceLineNo">560</span><a name="line.560"></a>
+<span class="sourceLineNo">561</span>    /** A BoundaryDetector determines the topological relationship of<a name="line.561"></a>
+<span class="sourceLineNo">562</span>     *  a Receiver with respect to boundary ports.<a name="line.562"></a>
+<span class="sourceLineNo">563</span>     */<a name="line.563"></a>
+<span class="sourceLineNo">564</span>    protected BoundaryDetector _boundaryDetector;<a name="line.564"></a>
+<span class="sourceLineNo">565</span>}<a name="line.565"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

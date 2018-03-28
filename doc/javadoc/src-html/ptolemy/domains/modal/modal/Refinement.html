@@ -1,0 +1,358 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../../../stylesheet.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>/* Refinement for modal models.<a name="line.1"></a>
+<span class="sourceLineNo">002</span><a name="line.2"></a>
+<span class="sourceLineNo">003</span> Copyright (c) 1999-2015 The Regents of the University of California.<a name="line.3"></a>
+<span class="sourceLineNo">004</span> All rights reserved.<a name="line.4"></a>
+<span class="sourceLineNo">005</span> Permission is hereby granted, without written agreement and without<a name="line.5"></a>
+<span class="sourceLineNo">006</span> license or royalty fees, to use, copy, modify, and distribute this<a name="line.6"></a>
+<span class="sourceLineNo">007</span> software and its documentation for any purpose, provided that the above<a name="line.7"></a>
+<span class="sourceLineNo">008</span> copyright notice and the following two paragraphs appear in all copies<a name="line.8"></a>
+<span class="sourceLineNo">009</span> of this software.<a name="line.9"></a>
+<span class="sourceLineNo">010</span><a name="line.10"></a>
+<span class="sourceLineNo">011</span> IN NO EVENT SHALL THE UNIVERSITY OF CALIFORNIA BE LIABLE TO ANY PARTY<a name="line.11"></a>
+<span class="sourceLineNo">012</span> FOR DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES<a name="line.12"></a>
+<span class="sourceLineNo">013</span> ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION, EVEN IF<a name="line.13"></a>
+<span class="sourceLineNo">014</span> THE UNIVERSITY OF CALIFORNIA HAS BEEN ADVISED OF THE POSSIBILITY OF<a name="line.14"></a>
+<span class="sourceLineNo">015</span> SUCH DAMAGE.<a name="line.15"></a>
+<span class="sourceLineNo">016</span><a name="line.16"></a>
+<span class="sourceLineNo">017</span> THE UNIVERSITY OF CALIFORNIA SPECIFICALLY DISCLAIMS ANY WARRANTIES,<a name="line.17"></a>
+<span class="sourceLineNo">018</span> INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF<a name="line.18"></a>
+<span class="sourceLineNo">019</span> MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE<a name="line.19"></a>
+<span class="sourceLineNo">020</span> PROVIDED HEREUNDER IS ON AN "AS IS" BASIS, AND THE UNIVERSITY OF<a name="line.20"></a>
+<span class="sourceLineNo">021</span> CALIFORNIA HAS NO OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT, UPDATES,<a name="line.21"></a>
+<span class="sourceLineNo">022</span> ENHANCEMENTS, OR MODIFICATIONS.<a name="line.22"></a>
+<span class="sourceLineNo">023</span><a name="line.23"></a>
+<span class="sourceLineNo">024</span> PT_COPYRIGHT_VERSION_2<a name="line.24"></a>
+<span class="sourceLineNo">025</span> COPYRIGHTENDKEY<a name="line.25"></a>
+<span class="sourceLineNo">026</span> */<a name="line.26"></a>
+<span class="sourceLineNo">027</span>package ptolemy.domains.modal.modal;<a name="line.27"></a>
+<span class="sourceLineNo">028</span><a name="line.28"></a>
+<span class="sourceLineNo">029</span>import java.util.List;<a name="line.29"></a>
+<span class="sourceLineNo">030</span><a name="line.30"></a>
+<span class="sourceLineNo">031</span>import ptolemy.actor.InstanceOpener;<a name="line.31"></a>
+<span class="sourceLineNo">032</span>import ptolemy.actor.TypedActor;<a name="line.32"></a>
+<span class="sourceLineNo">033</span>import ptolemy.actor.TypedCompositeActor;<a name="line.33"></a>
+<span class="sourceLineNo">034</span>import ptolemy.actor.parameters.ParameterPort;<a name="line.34"></a>
+<span class="sourceLineNo">035</span>import ptolemy.domains.modal.kernel.ContainmentExtender;<a name="line.35"></a>
+<span class="sourceLineNo">036</span>import ptolemy.domains.modal.kernel.RefinementActor;<a name="line.36"></a>
+<span class="sourceLineNo">037</span>import ptolemy.domains.modal.kernel.State;<a name="line.37"></a>
+<span class="sourceLineNo">038</span>import ptolemy.kernel.CompositeEntity;<a name="line.38"></a>
+<span class="sourceLineNo">039</span>import ptolemy.kernel.Entity;<a name="line.39"></a>
+<span class="sourceLineNo">040</span>import ptolemy.kernel.Port;<a name="line.40"></a>
+<span class="sourceLineNo">041</span>import ptolemy.kernel.Relation;<a name="line.41"></a>
+<span class="sourceLineNo">042</span>import ptolemy.kernel.util.IllegalActionException;<a name="line.42"></a>
+<span class="sourceLineNo">043</span>import ptolemy.kernel.util.InternalErrorException;<a name="line.43"></a>
+<span class="sourceLineNo">044</span>import ptolemy.kernel.util.NameDuplicationException;<a name="line.44"></a>
+<span class="sourceLineNo">045</span>import ptolemy.kernel.util.NamedObj;<a name="line.45"></a>
+<span class="sourceLineNo">046</span><a name="line.46"></a>
+<span class="sourceLineNo">047</span>// NOTE: This is a combination of ModalController and CTStepSizeControlActor,<a name="line.47"></a>
+<span class="sourceLineNo">048</span>// but because of the inheritance hierarchy, there appears to be no convenient<a name="line.48"></a>
+<span class="sourceLineNo">049</span>// way to share the code.<a name="line.49"></a>
+<span class="sourceLineNo">050</span>///////////////////////////////////////////////////////////////////<a name="line.50"></a>
+<span class="sourceLineNo">051</span>//// Refinement<a name="line.51"></a>
+<span class="sourceLineNo">052</span><a name="line.52"></a>
+<span class="sourceLineNo">053</span>/**<a name="line.53"></a>
+<span class="sourceLineNo">054</span> This typed composite actor supports mirroring of its ports in its container<a name="line.54"></a>
+<span class="sourceLineNo">055</span> (which is required to be a ModalModel), which in turn assures<a name="line.55"></a>
+<span class="sourceLineNo">056</span> mirroring of ports in each of the refinements and the controller.<a name="line.56"></a>
+<span class="sourceLineNo">057</span><a name="line.57"></a>
+<span class="sourceLineNo">058</span> @author Thomas Huining Feng and Edward A. Lee<a name="line.58"></a>
+<span class="sourceLineNo">059</span> @version $Id$<a name="line.59"></a>
+<span class="sourceLineNo">060</span> @since Ptolemy II 8.0<a name="line.60"></a>
+<span class="sourceLineNo">061</span> @Pt.ProposedRating Red (eal)<a name="line.61"></a>
+<span class="sourceLineNo">062</span> @Pt.AcceptedRating Red (reviewmoderator)<a name="line.62"></a>
+<span class="sourceLineNo">063</span> */<a name="line.63"></a>
+<span class="sourceLineNo">064</span>public class Refinement extends TypedCompositeActor implements RefinementActor {<a name="line.64"></a>
+<span class="sourceLineNo">065</span>    /** Construct a modal controller with a name and a container.<a name="line.65"></a>
+<span class="sourceLineNo">066</span>     *  The container argument must not be null, or a<a name="line.66"></a>
+<span class="sourceLineNo">067</span>     *  NullPointerException will be thrown.<a name="line.67"></a>
+<span class="sourceLineNo">068</span>     *  @param container The container.<a name="line.68"></a>
+<span class="sourceLineNo">069</span>     *  @param name The name of this actor.<a name="line.69"></a>
+<span class="sourceLineNo">070</span>     *  @exception IllegalActionException If the container is incompatible<a name="line.70"></a>
+<span class="sourceLineNo">071</span>     *   with this actor.<a name="line.71"></a>
+<span class="sourceLineNo">072</span>     *  @exception NameDuplicationException If the name coincides with<a name="line.72"></a>
+<span class="sourceLineNo">073</span>     *   an actor already in the container.<a name="line.73"></a>
+<span class="sourceLineNo">074</span>     */<a name="line.74"></a>
+<span class="sourceLineNo">075</span>    public Refinement(CompositeEntity container, String name)<a name="line.75"></a>
+<span class="sourceLineNo">076</span>            throws IllegalActionException, NameDuplicationException {<a name="line.76"></a>
+<span class="sourceLineNo">077</span>        super(container, name);<a name="line.77"></a>
+<span class="sourceLineNo">078</span><a name="line.78"></a>
+<span class="sourceLineNo">079</span>        // The base class identifies the class name as TypedCompositeActor<a name="line.79"></a>
+<span class="sourceLineNo">080</span>        // irrespective of the actual class name.  We override that here.<a name="line.80"></a>
+<span class="sourceLineNo">081</span>        setClassName("ptolemy.domains.modal.modal.Refinement");<a name="line.81"></a>
+<span class="sourceLineNo">082</span><a name="line.82"></a>
+<span class="sourceLineNo">083</span>        new ContainmentExtender(this, "_containmentExtender");<a name="line.83"></a>
+<span class="sourceLineNo">084</span>    }<a name="line.84"></a>
+<span class="sourceLineNo">085</span><a name="line.85"></a>
+<span class="sourceLineNo">086</span>    ///////////////////////////////////////////////////////////////////<a name="line.86"></a>
+<span class="sourceLineNo">087</span>    ////                         public methods                    ////<a name="line.87"></a>
+<span class="sourceLineNo">088</span><a name="line.88"></a>
+<span class="sourceLineNo">089</span>    /** Perform no action but throw an IllegalActionException because a<a name="line.89"></a>
+<span class="sourceLineNo">090</span>     *  refinement cannot be created in an arbitrary actor-oriented refinement.<a name="line.90"></a>
+<span class="sourceLineNo">091</span>     *<a name="line.91"></a>
+<span class="sourceLineNo">092</span>     *  @param state The state that will contain the new refinement.<a name="line.92"></a>
+<span class="sourceLineNo">093</span>     *  @param name The name of the composite entity that stores the refinement.<a name="line.93"></a>
+<span class="sourceLineNo">094</span>     *  @param template The template used to create the refinement, or null if<a name="line.94"></a>
+<span class="sourceLineNo">095</span>     *   template is not used.<a name="line.95"></a>
+<span class="sourceLineNo">096</span>     *  @param className The class name for the refinement, which is used when<a name="line.96"></a>
+<span class="sourceLineNo">097</span>     *   template is null.<a name="line.97"></a>
+<span class="sourceLineNo">098</span>     *  @param instanceOpener The instanceOpener, typically a<a name="line.98"></a>
+<span class="sourceLineNo">099</span>     *   Configuration, that is used to open the refinement (as a<a name="line.99"></a>
+<span class="sourceLineNo">100</span>     *   look-inside action) after it is created, or null if it is not<a name="line.100"></a>
+<span class="sourceLineNo">101</span>     *   needed to open the refinement.<a name="line.101"></a>
+<span class="sourceLineNo">102</span>     *  @exception IllegalActionException If error occurs while creating the<a name="line.102"></a>
+<span class="sourceLineNo">103</span>     *   refinement.<a name="line.103"></a>
+<span class="sourceLineNo">104</span>     */<a name="line.104"></a>
+<span class="sourceLineNo">105</span>    @Override<a name="line.105"></a>
+<span class="sourceLineNo">106</span>    public void addRefinement(State state, String name, Entity template,<a name="line.106"></a>
+<span class="sourceLineNo">107</span>            String className, InstanceOpener instanceOpener)<a name="line.107"></a>
+<span class="sourceLineNo">108</span>            throws IllegalActionException {<a name="line.108"></a>
+<span class="sourceLineNo">109</span>        throw new IllegalActionException(this,<a name="line.109"></a>
+<span class="sourceLineNo">110</span>                "Unable to create a " + "refinement within a CompositeActor.");<a name="line.110"></a>
+<span class="sourceLineNo">111</span>    }<a name="line.111"></a>
+<span class="sourceLineNo">112</span><a name="line.112"></a>
+<span class="sourceLineNo">113</span>    /** Get the state in any ModalController within this ModalModel that has<a name="line.113"></a>
+<span class="sourceLineNo">114</span>     *  this refinement as its refinement, if any. Return null if no such state<a name="line.114"></a>
+<span class="sourceLineNo">115</span>     *  is found.<a name="line.115"></a>
+<span class="sourceLineNo">116</span>     *<a name="line.116"></a>
+<span class="sourceLineNo">117</span>     *  @return The state with this refinement as its refinement, or null.<a name="line.117"></a>
+<span class="sourceLineNo">118</span>     *  @exception IllegalActionException If the specified refinement cannot be<a name="line.118"></a>
+<span class="sourceLineNo">119</span>     *   found in a state, or if a comma-separated list is malformed.<a name="line.119"></a>
+<span class="sourceLineNo">120</span>     */<a name="line.120"></a>
+<span class="sourceLineNo">121</span>    @Override<a name="line.121"></a>
+<span class="sourceLineNo">122</span>    public State getRefinedState() throws IllegalActionException {<a name="line.122"></a>
+<span class="sourceLineNo">123</span>        NamedObj container = getContainer();<a name="line.123"></a>
+<span class="sourceLineNo">124</span>        if (container instanceof ModalModel) {<a name="line.124"></a>
+<span class="sourceLineNo">125</span>            List&lt;?&gt; controllers = ((ModalModel) container)<a name="line.125"></a>
+<span class="sourceLineNo">126</span>                    .entityList(ModalController.class);<a name="line.126"></a>
+<span class="sourceLineNo">127</span>            for (Object controllerObject : controllers) {<a name="line.127"></a>
+<span class="sourceLineNo">128</span>                ModalController controller = (ModalController) controllerObject;<a name="line.128"></a>
+<span class="sourceLineNo">129</span>                List&lt;?&gt; states = controller.entityList(State.class);<a name="line.129"></a>
+<span class="sourceLineNo">130</span>                for (Object stateObject : states) {<a name="line.130"></a>
+<span class="sourceLineNo">131</span>                    State state = (State) stateObject;<a name="line.131"></a>
+<span class="sourceLineNo">132</span>                    TypedActor[] refinements = state.getRefinement();<a name="line.132"></a>
+<span class="sourceLineNo">133</span>                    if (refinements != null) {<a name="line.133"></a>
+<span class="sourceLineNo">134</span>                        for (TypedActor refinement : refinements) {<a name="line.134"></a>
+<span class="sourceLineNo">135</span>                            if (refinement == this) {<a name="line.135"></a>
+<span class="sourceLineNo">136</span>                                return state;<a name="line.136"></a>
+<span class="sourceLineNo">137</span>                            }<a name="line.137"></a>
+<span class="sourceLineNo">138</span>                        }<a name="line.138"></a>
+<span class="sourceLineNo">139</span>                    }<a name="line.139"></a>
+<span class="sourceLineNo">140</span>                }<a name="line.140"></a>
+<span class="sourceLineNo">141</span>            }<a name="line.141"></a>
+<span class="sourceLineNo">142</span>        }<a name="line.142"></a>
+<span class="sourceLineNo">143</span>        return null;<a name="line.143"></a>
+<span class="sourceLineNo">144</span>    }<a name="line.144"></a>
+<span class="sourceLineNo">145</span><a name="line.145"></a>
+<span class="sourceLineNo">146</span>    /** Create a new port with the specified name in the container of<a name="line.146"></a>
+<span class="sourceLineNo">147</span>     *  this refinement, which in turn creates a port in this refinement<a name="line.147"></a>
+<span class="sourceLineNo">148</span>     *  all other refinements, and the controller.<a name="line.148"></a>
+<span class="sourceLineNo">149</span>     *  This method is write-synchronized on the workspace.<a name="line.149"></a>
+<span class="sourceLineNo">150</span>     *  @param name The name to assign to the newly created port.<a name="line.150"></a>
+<span class="sourceLineNo">151</span>     *  @return The new port.<a name="line.151"></a>
+<span class="sourceLineNo">152</span>     *  @exception NameDuplicationException If the entity already has a port<a name="line.152"></a>
+<span class="sourceLineNo">153</span>     *   with the specified name.<a name="line.153"></a>
+<span class="sourceLineNo">154</span>     */<a name="line.154"></a>
+<span class="sourceLineNo">155</span>    @Override<a name="line.155"></a>
+<span class="sourceLineNo">156</span>    public Port newPort(String name) throws NameDuplicationException {<a name="line.156"></a>
+<span class="sourceLineNo">157</span>        try {<a name="line.157"></a>
+<span class="sourceLineNo">158</span>            _workspace.getWriteAccess();<a name="line.158"></a>
+<span class="sourceLineNo">159</span><a name="line.159"></a>
+<span class="sourceLineNo">160</span>            ModalModel container = (ModalModel) getContainer();<a name="line.160"></a>
+<span class="sourceLineNo">161</span><a name="line.161"></a>
+<span class="sourceLineNo">162</span>            if (_mirrorDisable || container == null) {<a name="line.162"></a>
+<span class="sourceLineNo">163</span>                // We are mirroring a change above in the hierarchy<a name="line.163"></a>
+<span class="sourceLineNo">164</span>                // (or there is no above in the hierarchy),<a name="line.164"></a>
+<span class="sourceLineNo">165</span>                // so we should not mirror this change upwards.<a name="line.165"></a>
+<span class="sourceLineNo">166</span>                RefinementPort port = new RefinementPort(this, name);<a name="line.166"></a>
+<span class="sourceLineNo">167</span><a name="line.167"></a>
+<span class="sourceLineNo">168</span>                // Create the appropriate links.<a name="line.168"></a>
+<span class="sourceLineNo">169</span>                if (container != null) {<a name="line.169"></a>
+<span class="sourceLineNo">170</span>                    String relationName = name + "Relation";<a name="line.170"></a>
+<span class="sourceLineNo">171</span>                    Relation relation = container.getRelation(relationName);<a name="line.171"></a>
+<span class="sourceLineNo">172</span><a name="line.172"></a>
+<span class="sourceLineNo">173</span>                    if (relation == null) {<a name="line.173"></a>
+<span class="sourceLineNo">174</span>                        relation = container.newRelation(relationName);<a name="line.174"></a>
+<span class="sourceLineNo">175</span><a name="line.175"></a>
+<span class="sourceLineNo">176</span>                        Port containerPort = container.getPort(name);<a name="line.176"></a>
+<span class="sourceLineNo">177</span>                        containerPort.link(relation);<a name="line.177"></a>
+<span class="sourceLineNo">178</span>                    }<a name="line.178"></a>
+<span class="sourceLineNo">179</span><a name="line.179"></a>
+<span class="sourceLineNo">180</span>                    port.link(relation);<a name="line.180"></a>
+<span class="sourceLineNo">181</span>                }<a name="line.181"></a>
+<span class="sourceLineNo">182</span><a name="line.182"></a>
+<span class="sourceLineNo">183</span>                return port;<a name="line.183"></a>
+<span class="sourceLineNo">184</span>            } else {<a name="line.184"></a>
+<span class="sourceLineNo">185</span>                // We originated the change or it originated from below,<a name="line.185"></a>
+<span class="sourceLineNo">186</span>                // so we delegate upwards. The container will set<a name="line.186"></a>
+<span class="sourceLineNo">187</span>                // our _mirrorDisable to true and call our newPort(),<a name="line.187"></a>
+<span class="sourceLineNo">188</span>                // resulting in the code above executing.<a name="line.188"></a>
+<span class="sourceLineNo">189</span>                container.newPort(name);<a name="line.189"></a>
+<span class="sourceLineNo">190</span>                return getPort(name);<a name="line.190"></a>
+<span class="sourceLineNo">191</span>            }<a name="line.191"></a>
+<span class="sourceLineNo">192</span>        } catch (IllegalActionException ex) {<a name="line.192"></a>
+<span class="sourceLineNo">193</span>            // This exception should not occur, so we throw a runtime<a name="line.193"></a>
+<span class="sourceLineNo">194</span>            // exception.<a name="line.194"></a>
+<span class="sourceLineNo">195</span>            throw new InternalErrorException(<a name="line.195"></a>
+<span class="sourceLineNo">196</span>                    "Refinement.newPort: Internal error: " + ex.getMessage());<a name="line.196"></a>
+<span class="sourceLineNo">197</span>        } finally {<a name="line.197"></a>
+<span class="sourceLineNo">198</span>            _mirrorDisable = false;<a name="line.198"></a>
+<span class="sourceLineNo">199</span>            _workspace.doneWriting();<a name="line.199"></a>
+<span class="sourceLineNo">200</span>        }<a name="line.200"></a>
+<span class="sourceLineNo">201</span>    }<a name="line.201"></a>
+<span class="sourceLineNo">202</span><a name="line.202"></a>
+<span class="sourceLineNo">203</span>    /** Control whether adding a port should be mirrored in the modal<a name="line.203"></a>
+<span class="sourceLineNo">204</span>     *  model and the mode controller.<a name="line.204"></a>
+<span class="sourceLineNo">205</span>     *  This is added to allow control by the UI.<a name="line.205"></a>
+<span class="sourceLineNo">206</span>     *  @param disable 0 if mirroring should occur, -1<a name="line.206"></a>
+<span class="sourceLineNo">207</span>     *   if mirroring should not occur downwards in the hierarchy,<a name="line.207"></a>
+<span class="sourceLineNo">208</span>     *   1 if mirroring should not occur upwards in the hierarchy.<a name="line.208"></a>
+<span class="sourceLineNo">209</span>     */<a name="line.209"></a>
+<span class="sourceLineNo">210</span>    @Override<a name="line.210"></a>
+<span class="sourceLineNo">211</span>    public void setMirrorDisable(int disable) {<a name="line.211"></a>
+<span class="sourceLineNo">212</span>        _mirrorDisable = disable != 0;<a name="line.212"></a>
+<span class="sourceLineNo">213</span>    }<a name="line.213"></a>
+<span class="sourceLineNo">214</span><a name="line.214"></a>
+<span class="sourceLineNo">215</span>    ///////////////////////////////////////////////////////////////////<a name="line.215"></a>
+<span class="sourceLineNo">216</span>    ////                         protected methods                 ////<a name="line.216"></a>
+<span class="sourceLineNo">217</span><a name="line.217"></a>
+<span class="sourceLineNo">218</span>    /** Override the base class to check that the container contains<a name="line.218"></a>
+<span class="sourceLineNo">219</span>     *  a mirror port. If it does not,<a name="line.219"></a>
+<span class="sourceLineNo">220</span>     *  then this port is being added by copy and<a name="line.220"></a>
+<span class="sourceLineNo">221</span>     *  paste or some other mechanism that has bypassed the newPort()<a name="line.221"></a>
+<span class="sourceLineNo">222</span>     *  method. Such mechanisms do not properly mirror the port in the<a name="line.222"></a>
+<span class="sourceLineNo">223</span>     *  containing ModalModel.<a name="line.223"></a>
+<span class="sourceLineNo">224</span>     *  @param port The port to add to this entity.<a name="line.224"></a>
+<span class="sourceLineNo">225</span>     *  @exception IllegalActionException If the port is not being added<a name="line.225"></a>
+<span class="sourceLineNo">226</span>     *   by the enclosing ModalModel.<a name="line.226"></a>
+<span class="sourceLineNo">227</span>     *  @exception NameDuplicationException If the port name collides with a<a name="line.227"></a>
+<span class="sourceLineNo">228</span>     *   name already in the entity.<a name="line.228"></a>
+<span class="sourceLineNo">229</span>     */<a name="line.229"></a>
+<span class="sourceLineNo">230</span>    @Override<a name="line.230"></a>
+<span class="sourceLineNo">231</span>    protected void _addPort(Port port)<a name="line.231"></a>
+<span class="sourceLineNo">232</span>            throws IllegalActionException, NameDuplicationException {<a name="line.232"></a>
+<span class="sourceLineNo">233</span>        // If mirroring is disabled, then the port is being added by the<a name="line.233"></a>
+<span class="sourceLineNo">234</span>        // container, which is surely OK.<a name="line.234"></a>
+<span class="sourceLineNo">235</span>        if (!_mirrorDisable) {<a name="line.235"></a>
+<span class="sourceLineNo">236</span>            // If mirroring is not disabled, then we might be in the initial<a name="line.236"></a>
+<span class="sourceLineNo">237</span>            // parsing of a file to construct a model. This is OK if the<a name="line.237"></a>
+<span class="sourceLineNo">238</span>            // container has a mirroring port.<a name="line.238"></a>
+<span class="sourceLineNo">239</span>            NamedObj container = getContainer();<a name="line.239"></a>
+<span class="sourceLineNo">240</span>            // If there is no container or the container is not a ModalModel,<a name="line.240"></a>
+<span class="sourceLineNo">241</span>            // then we allow creation of the port.<a name="line.241"></a>
+<span class="sourceLineNo">242</span>            // NOTE: Relying only on name matching here is questionable.<a name="line.242"></a>
+<span class="sourceLineNo">243</span>            // What if there is already a port but its input and output properties<a name="line.243"></a>
+<span class="sourceLineNo">244</span>            // don't match? Could get very subtle bugs.<a name="line.244"></a>
+<span class="sourceLineNo">245</span>            if (container instanceof ModalModel) {<a name="line.245"></a>
+<span class="sourceLineNo">246</span>                if (((ModalModel) container).getPort(port.getName()) == null<a name="line.246"></a>
+<span class="sourceLineNo">247</span>                        &amp;&amp; !(port instanceof ParameterPort)) {<a name="line.247"></a>
+<span class="sourceLineNo">248</span>                    // It is ok to have ParameterPorts inside a refinement.<a name="line.248"></a>
+<span class="sourceLineNo">249</span>                    // To replicate, create a refinement and drag in a ParameterPort.<a name="line.249"></a>
+<span class="sourceLineNo">250</span>                    // See also $PTII/ptolemy/domains/continuous/demo/Pendulum3D/Pendulum3D.xml<a name="line.250"></a>
+<span class="sourceLineNo">251</span>                    throw new IllegalActionException(this,<a name="line.251"></a>
+<span class="sourceLineNo">252</span>                            "Ports must be added to a ModalController via the newPort()"<a name="line.252"></a>
+<span class="sourceLineNo">253</span>                                    + " method, which in Vergil is accessed by clicking on one of"<a name="line.253"></a>
+<span class="sourceLineNo">254</span>                                    + " the port buttons at the top of the window."<a name="line.254"></a>
+<span class="sourceLineNo">255</span>                                    + "Failed to add a port of type "<a name="line.255"></a>
+<span class="sourceLineNo">256</span>                                    + port.getClass().getName() + " named \""<a name="line.256"></a>
+<span class="sourceLineNo">257</span>                                    + port.getName() + "\" to "<a name="line.257"></a>
+<span class="sourceLineNo">258</span>                                    + container.getFullName());<a name="line.258"></a>
+<span class="sourceLineNo">259</span>                }<a name="line.259"></a>
+<span class="sourceLineNo">260</span>            }<a name="line.260"></a>
+<span class="sourceLineNo">261</span>        }<a name="line.261"></a>
+<span class="sourceLineNo">262</span>        super._addPort(port);<a name="line.262"></a>
+<span class="sourceLineNo">263</span>    }<a name="line.263"></a>
+<span class="sourceLineNo">264</span><a name="line.264"></a>
+<span class="sourceLineNo">265</span>    /** Override the base class to ensure that the proposed container<a name="line.265"></a>
+<span class="sourceLineNo">266</span>     *  is a ModalModel or null.<a name="line.266"></a>
+<span class="sourceLineNo">267</span>     *  @param container The proposed container.<a name="line.267"></a>
+<span class="sourceLineNo">268</span>     *  @exception IllegalActionException If the proposed container is not a<a name="line.268"></a>
+<span class="sourceLineNo">269</span>     *   TypedActor, or if the base class throws it.<a name="line.269"></a>
+<span class="sourceLineNo">270</span>     */<a name="line.270"></a>
+<span class="sourceLineNo">271</span>    protected void _checkContainer(Entity container)<a name="line.271"></a>
+<span class="sourceLineNo">272</span>            throws IllegalActionException {<a name="line.272"></a>
+<span class="sourceLineNo">273</span>        if (!(container instanceof ModalModel) &amp;&amp; container != null) {<a name="line.273"></a>
+<span class="sourceLineNo">274</span>            throw new IllegalActionException(container, this,<a name="line.274"></a>
+<span class="sourceLineNo">275</span>                    "Refinement can only be contained by "<a name="line.275"></a>
+<span class="sourceLineNo">276</span>                            + "ModalModel objects.");<a name="line.276"></a>
+<span class="sourceLineNo">277</span>        }<a name="line.277"></a>
+<span class="sourceLineNo">278</span>    }<a name="line.278"></a>
+<span class="sourceLineNo">279</span><a name="line.279"></a>
+<span class="sourceLineNo">280</span>    ///////////////////////////////////////////////////////////////////<a name="line.280"></a>
+<span class="sourceLineNo">281</span>    ////                         protected variables               ////<a name="line.281"></a>
+<span class="sourceLineNo">282</span>    // These are protected to be accessible to ModalModel.<a name="line.282"></a>
+<span class="sourceLineNo">283</span><a name="line.283"></a>
+<span class="sourceLineNo">284</span>    /** Indicator that we are processing a newPort request. */<a name="line.284"></a>
+<span class="sourceLineNo">285</span>    protected boolean _mirrorDisable = false;<a name="line.285"></a>
+<span class="sourceLineNo">286</span>}<a name="line.286"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

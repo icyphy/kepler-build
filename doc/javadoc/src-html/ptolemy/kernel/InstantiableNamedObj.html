@@ -1,0 +1,661 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../stylesheet.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>/* A named object that can be either a class or an instance.<a name="line.1"></a>
+<span class="sourceLineNo">002</span><a name="line.2"></a>
+<span class="sourceLineNo">003</span> Copyright (c) 2003-2014 The Regents of the University of California.<a name="line.3"></a>
+<span class="sourceLineNo">004</span> All rights reserved.<a name="line.4"></a>
+<span class="sourceLineNo">005</span> Permission is hereby granted, without written agreement and without<a name="line.5"></a>
+<span class="sourceLineNo">006</span> license or royalty fees, to use, copy, modify, and distribute this<a name="line.6"></a>
+<span class="sourceLineNo">007</span> software and its documentation for any purpose, provided that the above<a name="line.7"></a>
+<span class="sourceLineNo">008</span> copyright notice and the following two paragraphs appear in all copies<a name="line.8"></a>
+<span class="sourceLineNo">009</span> of this software.<a name="line.9"></a>
+<span class="sourceLineNo">010</span><a name="line.10"></a>
+<span class="sourceLineNo">011</span> IN NO EVENT SHALL THE UNIVERSITY OF CALIFORNIA BE LIABLE TO ANY PARTY<a name="line.11"></a>
+<span class="sourceLineNo">012</span> FOR DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES<a name="line.12"></a>
+<span class="sourceLineNo">013</span> ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION, EVEN IF<a name="line.13"></a>
+<span class="sourceLineNo">014</span> THE UNIVERSITY OF CALIFORNIA HAS BEEN ADVISED OF THE POSSIBILITY OF<a name="line.14"></a>
+<span class="sourceLineNo">015</span> SUCH DAMAGE.<a name="line.15"></a>
+<span class="sourceLineNo">016</span><a name="line.16"></a>
+<span class="sourceLineNo">017</span> THE UNIVERSITY OF CALIFORNIA SPECIFICALLY DISCLAIMS ANY WARRANTIES,<a name="line.17"></a>
+<span class="sourceLineNo">018</span> INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF<a name="line.18"></a>
+<span class="sourceLineNo">019</span> MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE<a name="line.19"></a>
+<span class="sourceLineNo">020</span> PROVIDED HEREUNDER IS ON AN "AS IS" BASIS, AND THE UNIVERSITY OF<a name="line.20"></a>
+<span class="sourceLineNo">021</span> CALIFORNIA HAS NO OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT, UPDATES,<a name="line.21"></a>
+<span class="sourceLineNo">022</span> ENHANCEMENTS, OR MODIFICATIONS.<a name="line.22"></a>
+<span class="sourceLineNo">023</span><a name="line.23"></a>
+<span class="sourceLineNo">024</span> PT_COPYRIGHT_VERSION_2<a name="line.24"></a>
+<span class="sourceLineNo">025</span> COPYRIGHTENDKEY<a name="line.25"></a>
+<span class="sourceLineNo">026</span><a name="line.26"></a>
+<span class="sourceLineNo">027</span> */<a name="line.27"></a>
+<span class="sourceLineNo">028</span>package ptolemy.kernel;<a name="line.28"></a>
+<span class="sourceLineNo">029</span><a name="line.29"></a>
+<span class="sourceLineNo">030</span>import java.io.IOException;<a name="line.30"></a>
+<span class="sourceLineNo">031</span>import java.io.Writer;<a name="line.31"></a>
+<span class="sourceLineNo">032</span>import java.lang.ref.WeakReference;<a name="line.32"></a>
+<span class="sourceLineNo">033</span>import java.util.Collections;<a name="line.33"></a>
+<span class="sourceLineNo">034</span>import java.util.LinkedList;<a name="line.34"></a>
+<span class="sourceLineNo">035</span>import java.util.List;<a name="line.35"></a>
+<span class="sourceLineNo">036</span>import java.util.ListIterator;<a name="line.36"></a>
+<span class="sourceLineNo">037</span><a name="line.37"></a>
+<span class="sourceLineNo">038</span>import ptolemy.kernel.util.IllegalActionException;<a name="line.38"></a>
+<span class="sourceLineNo">039</span>import ptolemy.kernel.util.Instantiable;<a name="line.39"></a>
+<span class="sourceLineNo">040</span>import ptolemy.kernel.util.NameDuplicationException;<a name="line.40"></a>
+<span class="sourceLineNo">041</span>import ptolemy.kernel.util.NamedObj;<a name="line.41"></a>
+<span class="sourceLineNo">042</span>import ptolemy.kernel.util.Workspace;<a name="line.42"></a>
+<span class="sourceLineNo">043</span>import ptolemy.util.StringUtilities;<a name="line.43"></a>
+<span class="sourceLineNo">044</span><a name="line.44"></a>
+<span class="sourceLineNo">045</span>///////////////////////////////////////////////////////////////////<a name="line.45"></a>
+<span class="sourceLineNo">046</span>//// InstantiableNamedObj<a name="line.46"></a>
+<span class="sourceLineNo">047</span><a name="line.47"></a>
+<span class="sourceLineNo">048</span>/**<a name="line.48"></a>
+<span class="sourceLineNo">049</span> An InstantiableNamedObj is a named object that can be either a class<a name="line.49"></a>
+<span class="sourceLineNo">050</span> definition or an instance.  If it is a class definition, then "instances" of<a name="line.50"></a>
+<span class="sourceLineNo">051</span> that class definition can be created by the instantiate() method. Those<a name="line.51"></a>
+<span class="sourceLineNo">052</span> instances are called the "children" of this "parent." Changes<a name="line.52"></a>
+<span class="sourceLineNo">053</span> to the parent propagate automatically to the children as described<a name="line.53"></a>
+<span class="sourceLineNo">054</span> in the {@link Instantiable} interface.<a name="line.54"></a>
+<span class="sourceLineNo">055</span> &lt;p&gt;<a name="line.55"></a>
+<span class="sourceLineNo">056</span> Note that the {@link #instantiate(NamedObj, String)} permits instantiating<a name="line.56"></a>
+<span class="sourceLineNo">057</span> an object into a workspace that is different from the one associated with<a name="line.57"></a>
+<span class="sourceLineNo">058</span> this object.  This means that some care must be exercised when propagating<a name="line.58"></a>
+<span class="sourceLineNo">059</span> changes from a parent to a child, since they may be in different workspaces.<a name="line.59"></a>
+<span class="sourceLineNo">060</span> Suppose for example that the change that has to propagate is made via a<a name="line.60"></a>
+<span class="sourceLineNo">061</span> change request. Although it may be a safe time to execute a change request<a name="line.61"></a>
+<span class="sourceLineNo">062</span> in the parent, it is not necessarily a safe time to execute a change request<a name="line.62"></a>
+<span class="sourceLineNo">063</span> in the child.  Classes that restrict these safe times should override<a name="line.63"></a>
+<span class="sourceLineNo">064</span> the propagateExistence(), propagateValue(), and propagateValues() methods<a name="line.64"></a>
+<span class="sourceLineNo">065</span> to ensure that the destinations of the propagation are in a state that<a name="line.65"></a>
+<span class="sourceLineNo">066</span> they can accept changes.<a name="line.66"></a>
+<span class="sourceLineNo">067</span><a name="line.67"></a>
+<span class="sourceLineNo">068</span> @author Edward A. Lee<a name="line.68"></a>
+<span class="sourceLineNo">069</span> @version $Id$<a name="line.69"></a>
+<span class="sourceLineNo">070</span> @since Ptolemy II 4.0<a name="line.70"></a>
+<span class="sourceLineNo">071</span> @see Instantiable<a name="line.71"></a>
+<span class="sourceLineNo">072</span> @Pt.ProposedRating Green (eal)<a name="line.72"></a>
+<span class="sourceLineNo">073</span> @Pt.AcceptedRating Green (neuendor)<a name="line.73"></a>
+<span class="sourceLineNo">074</span> */<a name="line.74"></a>
+<span class="sourceLineNo">075</span>public class InstantiableNamedObj extends NamedObj implements Instantiable {<a name="line.75"></a>
+<span class="sourceLineNo">076</span>    /** Construct an object in the default workspace with an empty string<a name="line.76"></a>
+<span class="sourceLineNo">077</span>     *  as its name.<a name="line.77"></a>
+<span class="sourceLineNo">078</span>     *  The object is added to the workspace directory.<a name="line.78"></a>
+<span class="sourceLineNo">079</span>     *  Increment the version number of the workspace.<a name="line.79"></a>
+<span class="sourceLineNo">080</span>     */<a name="line.80"></a>
+<span class="sourceLineNo">081</span>    public InstantiableNamedObj() {<a name="line.81"></a>
+<span class="sourceLineNo">082</span>        super();<a name="line.82"></a>
+<span class="sourceLineNo">083</span>    }<a name="line.83"></a>
+<span class="sourceLineNo">084</span><a name="line.84"></a>
+<span class="sourceLineNo">085</span>    /** Construct an object in the default workspace with the given name.<a name="line.85"></a>
+<span class="sourceLineNo">086</span>     *  If the name argument<a name="line.86"></a>
+<span class="sourceLineNo">087</span>     *  is null, then the name is set to the empty string.<a name="line.87"></a>
+<span class="sourceLineNo">088</span>     *  The object is added to the workspace directory.<a name="line.88"></a>
+<span class="sourceLineNo">089</span>     *  Increment the version number of the workspace.<a name="line.89"></a>
+<span class="sourceLineNo">090</span>     *  @param name The name of this object.<a name="line.90"></a>
+<span class="sourceLineNo">091</span>     *  @exception IllegalActionException If the name has a period.<a name="line.91"></a>
+<span class="sourceLineNo">092</span>     */<a name="line.92"></a>
+<span class="sourceLineNo">093</span>    public InstantiableNamedObj(String name) throws IllegalActionException {<a name="line.93"></a>
+<span class="sourceLineNo">094</span>        super(name);<a name="line.94"></a>
+<span class="sourceLineNo">095</span>    }<a name="line.95"></a>
+<span class="sourceLineNo">096</span><a name="line.96"></a>
+<span class="sourceLineNo">097</span>    /** Construct an object in the given workspace with an empty string<a name="line.97"></a>
+<span class="sourceLineNo">098</span>     *  as a name.<a name="line.98"></a>
+<span class="sourceLineNo">099</span>     *  If the workspace argument is null, use the default workspace.<a name="line.99"></a>
+<span class="sourceLineNo">100</span>     *  The object is added to the workspace directory.<a name="line.100"></a>
+<span class="sourceLineNo">101</span>     *  Increment the version of the workspace.<a name="line.101"></a>
+<span class="sourceLineNo">102</span>     *  @param workspace The workspace for synchronization and version tracking.<a name="line.102"></a>
+<span class="sourceLineNo">103</span>     */<a name="line.103"></a>
+<span class="sourceLineNo">104</span>    public InstantiableNamedObj(Workspace workspace) {<a name="line.104"></a>
+<span class="sourceLineNo">105</span>        super(workspace);<a name="line.105"></a>
+<span class="sourceLineNo">106</span>    }<a name="line.106"></a>
+<span class="sourceLineNo">107</span><a name="line.107"></a>
+<span class="sourceLineNo">108</span>    /** Construct an object in the given workspace with the given name.<a name="line.108"></a>
+<span class="sourceLineNo">109</span>     *  If the workspace argument is null, use the default workspace.<a name="line.109"></a>
+<span class="sourceLineNo">110</span>     *  If the name argument<a name="line.110"></a>
+<span class="sourceLineNo">111</span>     *  is null, then the name is set to the empty string.<a name="line.111"></a>
+<span class="sourceLineNo">112</span>     *  The object is added to the workspace directory.<a name="line.112"></a>
+<span class="sourceLineNo">113</span>     *  Increment the version of the workspace.<a name="line.113"></a>
+<span class="sourceLineNo">114</span>     *  @param workspace The workspace for synchronization and version tracking.<a name="line.114"></a>
+<span class="sourceLineNo">115</span>     *  @param name The name of this object.<a name="line.115"></a>
+<span class="sourceLineNo">116</span>     *  @exception IllegalActionException If the name has a period.<a name="line.116"></a>
+<span class="sourceLineNo">117</span>     */<a name="line.117"></a>
+<span class="sourceLineNo">118</span>    public InstantiableNamedObj(Workspace workspace, String name)<a name="line.118"></a>
+<span class="sourceLineNo">119</span>            throws IllegalActionException {<a name="line.119"></a>
+<span class="sourceLineNo">120</span>        super(workspace, name);<a name="line.120"></a>
+<span class="sourceLineNo">121</span>    }<a name="line.121"></a>
+<span class="sourceLineNo">122</span><a name="line.122"></a>
+<span class="sourceLineNo">123</span>    ///////////////////////////////////////////////////////////////////<a name="line.123"></a>
+<span class="sourceLineNo">124</span>    ////                         public methods                    ////<a name="line.124"></a>
+<span class="sourceLineNo">125</span><a name="line.125"></a>
+<span class="sourceLineNo">126</span>    /** Clone the object into the specified workspace. The new object is<a name="line.126"></a>
+<span class="sourceLineNo">127</span>     *  &lt;i&gt;not&lt;/i&gt; added to the directory of that workspace (you must do this<a name="line.127"></a>
+<span class="sourceLineNo">128</span>     *  yourself if you want it there). The result is a new instance of<a name="line.128"></a>
+<span class="sourceLineNo">129</span>     *  InstantiableNamedObj that is a child of the parent of this object,<a name="line.129"></a>
+<span class="sourceLineNo">130</span>     *  if this object has a parent. The new instance has no children.<a name="line.130"></a>
+<span class="sourceLineNo">131</span>     *  This method gets read access on the workspace associated with<a name="line.131"></a>
+<span class="sourceLineNo">132</span>     *  this object.<a name="line.132"></a>
+<span class="sourceLineNo">133</span>     *  @param workspace The workspace for the cloned object.<a name="line.133"></a>
+<span class="sourceLineNo">134</span>     *  @exception CloneNotSupportedException If one of the attributes<a name="line.134"></a>
+<span class="sourceLineNo">135</span>     *   cannot be cloned.<a name="line.135"></a>
+<span class="sourceLineNo">136</span>     *  @return A new instance of InstantiableNamedObj.<a name="line.136"></a>
+<span class="sourceLineNo">137</span>     */<a name="line.137"></a>
+<span class="sourceLineNo">138</span>    @Override<a name="line.138"></a>
+<span class="sourceLineNo">139</span>    public Object clone(Workspace workspace) throws CloneNotSupportedException {<a name="line.139"></a>
+<span class="sourceLineNo">140</span>        try {<a name="line.140"></a>
+<span class="sourceLineNo">141</span>            workspace().getReadAccess();<a name="line.141"></a>
+<span class="sourceLineNo">142</span><a name="line.142"></a>
+<span class="sourceLineNo">143</span>            InstantiableNamedObj newObject = (InstantiableNamedObj) super.clone(<a name="line.143"></a>
+<span class="sourceLineNo">144</span>                    workspace);<a name="line.144"></a>
+<span class="sourceLineNo">145</span><a name="line.145"></a>
+<span class="sourceLineNo">146</span>            // The new object does not have any other objects deferring<a name="line.146"></a>
+<span class="sourceLineNo">147</span>            // their MoML definitions to it, so we have to reset this.<a name="line.147"></a>
+<span class="sourceLineNo">148</span>            newObject._children = null;<a name="line.148"></a>
+<span class="sourceLineNo">149</span><a name="line.149"></a>
+<span class="sourceLineNo">150</span>            // Set the parent using _setParent() rather than the default<a name="line.150"></a>
+<span class="sourceLineNo">151</span>            // clone to get the side effects.<a name="line.151"></a>
+<span class="sourceLineNo">152</span>            newObject._parent = null;<a name="line.152"></a>
+<span class="sourceLineNo">153</span><a name="line.153"></a>
+<span class="sourceLineNo">154</span>            // NOTE: This used to do the following,<a name="line.154"></a>
+<span class="sourceLineNo">155</span>            // but we now rely on _adjustDeferrals()<a name="line.155"></a>
+<span class="sourceLineNo">156</span>            // to fix the parent relationships.<a name="line.156"></a>
+<span class="sourceLineNo">157</span><a name="line.157"></a>
+<span class="sourceLineNo">158</span>            /*<a name="line.158"></a>
+<span class="sourceLineNo">159</span>             if (_parent != null) {<a name="line.159"></a>
+<span class="sourceLineNo">160</span>             try {<a name="line.160"></a>
+<span class="sourceLineNo">161</span>             newObject._setParent(_parent);<a name="line.161"></a>
+<span class="sourceLineNo">162</span>             } catch (IllegalActionException ex) {<a name="line.162"></a>
+<span class="sourceLineNo">163</span>             throw new InternalErrorException(ex);<a name="line.163"></a>
+<span class="sourceLineNo">164</span>             }<a name="line.164"></a>
+<span class="sourceLineNo">165</span>             }<a name="line.165"></a>
+<span class="sourceLineNo">166</span>             */<a name="line.166"></a>
+<span class="sourceLineNo">167</span>            return newObject;<a name="line.167"></a>
+<span class="sourceLineNo">168</span>        } finally {<a name="line.168"></a>
+<span class="sourceLineNo">169</span>            workspace().doneReading();<a name="line.169"></a>
+<span class="sourceLineNo">170</span>        }<a name="line.170"></a>
+<span class="sourceLineNo">171</span>    }<a name="line.171"></a>
+<span class="sourceLineNo">172</span><a name="line.172"></a>
+<span class="sourceLineNo">173</span>    /** Write a MoML description of this object with the specified<a name="line.173"></a>
+<span class="sourceLineNo">174</span>     *  indentation depth and with the specified name substituting<a name="line.174"></a>
+<span class="sourceLineNo">175</span>     *  for the name of this object. The description has one of two<a name="line.175"></a>
+<span class="sourceLineNo">176</span>     *  forms, depending on whether this is a class definition.<a name="line.176"></a>
+<span class="sourceLineNo">177</span>     *  If it is, then the exported MoML looks like this:<a name="line.177"></a>
+<span class="sourceLineNo">178</span>     *  &lt;pre&gt;<a name="line.178"></a>
+<span class="sourceLineNo">179</span>     *      &amp;lt;class name="&lt;i&gt;name&lt;/i&gt;" extends="&lt;i&gt;classname&lt;/i&gt; source="&lt;i&gt;source&lt;/i&gt;"&amp;gt;<a name="line.179"></a>
+<span class="sourceLineNo">180</span>     *          &lt;i&gt;body, determined by _exportMoMLContents()&lt;/i&gt;<a name="line.180"></a>
+<span class="sourceLineNo">181</span>     *      &amp;lt;/class&amp;gt;<a name="line.181"></a>
+<span class="sourceLineNo">182</span>     *  &lt;/pre&gt;<a name="line.182"></a>
+<span class="sourceLineNo">183</span>     *  Otherwise, the exported MoML is that generated by the<a name="line.183"></a>
+<span class="sourceLineNo">184</span>     *  superclass method that this overrides.<a name="line.184"></a>
+<span class="sourceLineNo">185</span>     *  &lt;p&gt;<a name="line.185"></a>
+<span class="sourceLineNo">186</span>     *  If this object has no container and the depth argument is zero,<a name="line.186"></a>
+<span class="sourceLineNo">187</span>     *  then this method prepends XML file header information, which is:<a name="line.187"></a>
+<span class="sourceLineNo">188</span>     *  &lt;pre&gt;<a name="line.188"></a>
+<span class="sourceLineNo">189</span>     *  &amp;lt;?xml version="1.0" standalone="no"?&amp;gt;<a name="line.189"></a>
+<span class="sourceLineNo">190</span>     *  &amp;lt;!DOCTYPE entity PUBLIC "-//UC Berkeley//DTD MoML 1//EN"<a name="line.190"></a>
+<span class="sourceLineNo">191</span>     *      "http://ptolemy.eecs.berkeley.edu/xml/dtd/MoML_1.dtd"&amp;gt;<a name="line.191"></a>
+<span class="sourceLineNo">192</span>     *  &lt;/pre&gt;<a name="line.192"></a>
+<span class="sourceLineNo">193</span>     *  In the above, "entity" may be replaced by "property" or<a name="line.193"></a>
+<span class="sourceLineNo">194</span>     *  "port" if what is being exported is an attribute or a port.<a name="line.194"></a>
+<span class="sourceLineNo">195</span>     *  &lt;p&gt;<a name="line.195"></a>
+<span class="sourceLineNo">196</span>     *  The text that is written is indented according to the specified<a name="line.196"></a>
+<span class="sourceLineNo">197</span>     *  depth, with each line (including the last one)<a name="line.197"></a>
+<span class="sourceLineNo">198</span>     *  terminated with a newline.<a name="line.198"></a>
+<span class="sourceLineNo">199</span>     *  Derived classes can override this method to change the MoML<a name="line.199"></a>
+<span class="sourceLineNo">200</span>     *  description of an object.  They can override the protected<a name="line.200"></a>
+<span class="sourceLineNo">201</span>     *  method _exportMoMLContents() if they need to only change which<a name="line.201"></a>
+<span class="sourceLineNo">202</span>     *  contents are described.<a name="line.202"></a>
+<span class="sourceLineNo">203</span>     *  &lt;p&gt;<a name="line.203"></a>
+<span class="sourceLineNo">204</span>     *  If this object is not persistent, or if there is no MoML<a name="line.204"></a>
+<span class="sourceLineNo">205</span>     *  description of this object, or if this object is implied<a name="line.205"></a>
+<span class="sourceLineNo">206</span>     *  by a parent-child relationship that less than &lt;i&gt;depth&lt;/i&gt;<a name="line.206"></a>
+<span class="sourceLineNo">207</span>     *  levels up in the containment hierarchy and it has not<a name="line.207"></a>
+<span class="sourceLineNo">208</span>     *  been overridden, then write nothing.<a name="line.208"></a>
+<span class="sourceLineNo">209</span>     *  @param output The output stream to write to.<a name="line.209"></a>
+<span class="sourceLineNo">210</span>     *  @param depth The depth in the hierarchy, to determine indenting.<a name="line.210"></a>
+<span class="sourceLineNo">211</span>     *  @param name The name to use in the exported MoML.<a name="line.211"></a>
+<span class="sourceLineNo">212</span>     *  @exception IOException If an I/O error occurs.<a name="line.212"></a>
+<span class="sourceLineNo">213</span>     *  @see ptolemy.kernel.util.MoMLExportable<a name="line.213"></a>
+<span class="sourceLineNo">214</span>     */<a name="line.214"></a>
+<span class="sourceLineNo">215</span>    @Override<a name="line.215"></a>
+<span class="sourceLineNo">216</span>    public void exportMoML(Writer output, int depth, String name)<a name="line.216"></a>
+<span class="sourceLineNo">217</span>            throws IOException {<a name="line.217"></a>
+<span class="sourceLineNo">218</span><a name="line.218"></a>
+<span class="sourceLineNo">219</span>        if (!isClassDefinition()) {<a name="line.219"></a>
+<span class="sourceLineNo">220</span>            super.exportMoML(output, depth, name);<a name="line.220"></a>
+<span class="sourceLineNo">221</span>            return;<a name="line.221"></a>
+<span class="sourceLineNo">222</span>        }<a name="line.222"></a>
+<span class="sourceLineNo">223</span><a name="line.223"></a>
+<span class="sourceLineNo">224</span>        // escape any &lt; character in name. unescapeForXML occurs in<a name="line.224"></a>
+<span class="sourceLineNo">225</span>        // NamedObj.setName(String)<a name="line.225"></a>
+<span class="sourceLineNo">226</span>        // If we don't escape the name here then we generate<a name="line.226"></a>
+<span class="sourceLineNo">227</span>        // MoML that is not valid XML.  See MoMLParser-34.0 in<a name="line.227"></a>
+<span class="sourceLineNo">228</span>        // moml/test/MoMLParser.tcl<a name="line.228"></a>
+<span class="sourceLineNo">229</span>        name = StringUtilities.escapeForXML(name);<a name="line.229"></a>
+<span class="sourceLineNo">230</span><a name="line.230"></a>
+<span class="sourceLineNo">231</span>        // If the object is not persistent, and we are not<a name="line.231"></a>
+<span class="sourceLineNo">232</span>        // at level 0, do nothing.<a name="line.232"></a>
+<span class="sourceLineNo">233</span>        if (_isMoMLSuppressed(depth)) {<a name="line.233"></a>
+<span class="sourceLineNo">234</span>            return;<a name="line.234"></a>
+<span class="sourceLineNo">235</span>        }<a name="line.235"></a>
+<span class="sourceLineNo">236</span><a name="line.236"></a>
+<span class="sourceLineNo">237</span>        if (depth == 0 &amp;&amp; getContainer() == null) {<a name="line.237"></a>
+<span class="sourceLineNo">238</span>            // No container, and this is a top level moml element.<a name="line.238"></a>
+<span class="sourceLineNo">239</span>            // Generate header information.<a name="line.239"></a>
+<span class="sourceLineNo">240</span>            // NOTE: Currently, there is only one class designation,<a name="line.240"></a>
+<span class="sourceLineNo">241</span>            // and it always applies to an Entity. Attributes that<a name="line.241"></a>
+<span class="sourceLineNo">242</span>            // are classes are not yet supported. When they are,<a name="line.242"></a>
+<span class="sourceLineNo">243</span>            // then "class" below may need to replaced with something<a name="line.243"></a>
+<span class="sourceLineNo">244</span>            // else.<a name="line.244"></a>
+<span class="sourceLineNo">245</span>            output.write("&lt;?xml version=\"1.0\" standalone=\"no\"?&gt;\n"<a name="line.245"></a>
+<span class="sourceLineNo">246</span>                    + "&lt;!DOCTYPE class PUBLIC "<a name="line.246"></a>
+<span class="sourceLineNo">247</span>                    + "\"-//UC Berkeley//DTD MoML 1//EN\"\n"<a name="line.247"></a>
+<span class="sourceLineNo">248</span>                    + "    \"http://ptolemy.eecs.berkeley.edu"<a name="line.248"></a>
+<span class="sourceLineNo">249</span>                    + "/xml/dtd/MoML_1.dtd\"&gt;\n");<a name="line.249"></a>
+<span class="sourceLineNo">250</span>        }<a name="line.250"></a>
+<span class="sourceLineNo">251</span><a name="line.251"></a>
+<span class="sourceLineNo">252</span>        output.write(_getIndentPrefix(depth) + "&lt;class name=\"" + name<a name="line.252"></a>
+<span class="sourceLineNo">253</span>                + "\" extends=\"" + getClassName() + "\"");<a name="line.253"></a>
+<span class="sourceLineNo">254</span><a name="line.254"></a>
+<span class="sourceLineNo">255</span>        if (getSource() != null) {<a name="line.255"></a>
+<span class="sourceLineNo">256</span>            output.write(" source=\"" + getSource() + "\"&gt;\n");<a name="line.256"></a>
+<span class="sourceLineNo">257</span>        } else {<a name="line.257"></a>
+<span class="sourceLineNo">258</span>            output.write("&gt;\n");<a name="line.258"></a>
+<span class="sourceLineNo">259</span>        }<a name="line.259"></a>
+<span class="sourceLineNo">260</span><a name="line.260"></a>
+<span class="sourceLineNo">261</span>        _exportMoMLContents(output, depth + 1);<a name="line.261"></a>
+<span class="sourceLineNo">262</span><a name="line.262"></a>
+<span class="sourceLineNo">263</span>        // Write the close of the element.<a name="line.263"></a>
+<span class="sourceLineNo">264</span>        output.write(_getIndentPrefix(depth) + "&lt;/class&gt;\n");<a name="line.264"></a>
+<span class="sourceLineNo">265</span>    }<a name="line.265"></a>
+<span class="sourceLineNo">266</span><a name="line.266"></a>
+<span class="sourceLineNo">267</span>    /** Get a list of weak references to instances of Instantiable<a name="line.267"></a>
+<span class="sourceLineNo">268</span>     *  that are children of this object.  This method<a name="line.268"></a>
+<span class="sourceLineNo">269</span>     *  may return null or an empty list to indicate that there are<a name="line.269"></a>
+<span class="sourceLineNo">270</span>     *  no children.<a name="line.270"></a>
+<span class="sourceLineNo">271</span>     *  @return An unmodifiable list of instances of<a name="line.271"></a>
+<span class="sourceLineNo">272</span>     *   java.lang.ref.WeakReference that refer to<a name="line.272"></a>
+<span class="sourceLineNo">273</span>     *   instances of Instantiable or null if this object<a name="line.273"></a>
+<span class="sourceLineNo">274</span>     *   has no children.<a name="line.274"></a>
+<span class="sourceLineNo">275</span>     *  @see Instantiable<a name="line.275"></a>
+<span class="sourceLineNo">276</span>     *  @see java.lang.ref.WeakReference<a name="line.276"></a>
+<span class="sourceLineNo">277</span>     */<a name="line.277"></a>
+<span class="sourceLineNo">278</span>    @Override<a name="line.278"></a>
+<span class="sourceLineNo">279</span>    public List getChildren() {<a name="line.279"></a>
+<span class="sourceLineNo">280</span>        if (_children == null) {<a name="line.280"></a>
+<span class="sourceLineNo">281</span>            return null;<a name="line.281"></a>
+<span class="sourceLineNo">282</span>        }<a name="line.282"></a>
+<span class="sourceLineNo">283</span><a name="line.283"></a>
+<span class="sourceLineNo">284</span>        return Collections.unmodifiableList(_children);<a name="line.284"></a>
+<span class="sourceLineNo">285</span>    }<a name="line.285"></a>
+<span class="sourceLineNo">286</span><a name="line.286"></a>
+<span class="sourceLineNo">287</span>    /** Get the MoML element name. If this is a class definition, then<a name="line.287"></a>
+<span class="sourceLineNo">288</span>     *  return "class". Otherwise, defer to the base class.<a name="line.288"></a>
+<span class="sourceLineNo">289</span>     *  @return The MoML element name for this object.<a name="line.289"></a>
+<span class="sourceLineNo">290</span>     *  @see ptolemy.kernel.util.MoMLExportable<a name="line.290"></a>
+<span class="sourceLineNo">291</span>     */<a name="line.291"></a>
+<span class="sourceLineNo">292</span>    @Override<a name="line.292"></a>
+<span class="sourceLineNo">293</span>    public String getElementName() {<a name="line.293"></a>
+<span class="sourceLineNo">294</span>        if (isClassDefinition()) {<a name="line.294"></a>
+<span class="sourceLineNo">295</span>            return "class";<a name="line.295"></a>
+<span class="sourceLineNo">296</span>        } else {<a name="line.296"></a>
+<span class="sourceLineNo">297</span>            return super.getElementName();<a name="line.297"></a>
+<span class="sourceLineNo">298</span>        }<a name="line.298"></a>
+<span class="sourceLineNo">299</span>    }<a name="line.299"></a>
+<span class="sourceLineNo">300</span><a name="line.300"></a>
+<span class="sourceLineNo">301</span>    /** Return the parent of this object, or null if there is none.<a name="line.301"></a>
+<span class="sourceLineNo">302</span>     *  @return The parent of this object, or null if there is none.<a name="line.302"></a>
+<span class="sourceLineNo">303</span>     *  @see #_setParent(Instantiable)<a name="line.303"></a>
+<span class="sourceLineNo">304</span>     *  @see Instantiable<a name="line.304"></a>
+<span class="sourceLineNo">305</span>     */<a name="line.305"></a>
+<span class="sourceLineNo">306</span>    @Override<a name="line.306"></a>
+<span class="sourceLineNo">307</span>    public Instantiable getParent() {<a name="line.307"></a>
+<span class="sourceLineNo">308</span>        return _parent;<a name="line.308"></a>
+<span class="sourceLineNo">309</span>    }<a name="line.309"></a>
+<span class="sourceLineNo">310</span><a name="line.310"></a>
+<span class="sourceLineNo">311</span>    /** Return a list of prototypes for this object. The list is ordered<a name="line.311"></a>
+<span class="sourceLineNo">312</span>     *  so that more local prototypes are listed before more remote<a name="line.312"></a>
+<span class="sourceLineNo">313</span>     *  prototypes. Specifically, if this object has a parent, then the<a name="line.313"></a>
+<span class="sourceLineNo">314</span>     *  parent is listed first. If the container has a parent, and<a name="line.314"></a>
+<span class="sourceLineNo">315</span>     *  that parent contains an object whose name matches the name<a name="line.315"></a>
+<span class="sourceLineNo">316</span>     *  of this object, then that object is listed next.<a name="line.316"></a>
+<span class="sourceLineNo">317</span>     *  If the container of the container has a parent, and that parent<a name="line.317"></a>
+<span class="sourceLineNo">318</span>     *  (deeply) contains a prototype, then that prototype is listed next.<a name="line.318"></a>
+<span class="sourceLineNo">319</span>     *  And so on up the hierarchy.<a name="line.319"></a>
+<span class="sourceLineNo">320</span>     *  @return A list of prototypes for this object, each of which is<a name="line.320"></a>
+<span class="sourceLineNo">321</span>     *   assured of being an instance of the same (Java) class as this<a name="line.321"></a>
+<span class="sourceLineNo">322</span>     *   object, or an empty list if there are no prototypes.<a name="line.322"></a>
+<span class="sourceLineNo">323</span>     *  @exception IllegalActionException If a prototype with the right<a name="line.323"></a>
+<span class="sourceLineNo">324</span>     *   name but the wrong class is found.<a name="line.324"></a>
+<span class="sourceLineNo">325</span>     *  @see ptolemy.kernel.util.Derivable<a name="line.325"></a>
+<span class="sourceLineNo">326</span>     */<a name="line.326"></a>
+<span class="sourceLineNo">327</span>    @Override<a name="line.327"></a>
+<span class="sourceLineNo">328</span>    public List getPrototypeList() throws IllegalActionException {<a name="line.328"></a>
+<span class="sourceLineNo">329</span>        List result = super.getPrototypeList();<a name="line.329"></a>
+<span class="sourceLineNo">330</span><a name="line.330"></a>
+<span class="sourceLineNo">331</span>        if (getParent() != null) {<a name="line.331"></a>
+<span class="sourceLineNo">332</span>            result.add(0, getParent());<a name="line.332"></a>
+<span class="sourceLineNo">333</span>        }<a name="line.333"></a>
+<span class="sourceLineNo">334</span><a name="line.334"></a>
+<span class="sourceLineNo">335</span>        return result;<a name="line.335"></a>
+<span class="sourceLineNo">336</span>    }<a name="line.336"></a>
+<span class="sourceLineNo">337</span><a name="line.337"></a>
+<span class="sourceLineNo">338</span>    /** Create an instance by (deeply) cloning this object and then adjusting<a name="line.338"></a>
+<span class="sourceLineNo">339</span>     *  the parent-child relationships between the clone and its parent.<a name="line.339"></a>
+<span class="sourceLineNo">340</span>     *  Specifically, the clone defers its definition to this object,<a name="line.340"></a>
+<span class="sourceLineNo">341</span>     *  which becomes its "parent." The "child" inherits all the objects<a name="line.341"></a>
+<span class="sourceLineNo">342</span>     *  contained by this object. If this object is a composite, then this<a name="line.342"></a>
+<span class="sourceLineNo">343</span>     *  method adjusts any parent-child relationships that are entirely<a name="line.343"></a>
+<span class="sourceLineNo">344</span>     *  contained within the child. That is, for any parent-child relationship<a name="line.344"></a>
+<span class="sourceLineNo">345</span>     *  that is entirely contained within this object (i.e., both the parent<a name="line.345"></a>
+<span class="sourceLineNo">346</span>     *  and the child are deeply contained by this object), a corresponding<a name="line.346"></a>
+<span class="sourceLineNo">347</span>     *  parent-child relationship is created within the clone such that<a name="line.347"></a>
+<span class="sourceLineNo">348</span>     *  both the parent and the child are entirely contained within<a name="line.348"></a>
+<span class="sourceLineNo">349</span>     *  the clone.<a name="line.349"></a>
+<span class="sourceLineNo">350</span>     *  &lt;p&gt;<a name="line.350"></a>
+<span class="sourceLineNo">351</span>     *  The new object is not a class definition by default (it is an<a name="line.351"></a>
+<span class="sourceLineNo">352</span>     *  "instance" rather than a "class").  To make it a class<a name="line.352"></a>
+<span class="sourceLineNo">353</span>     *  definition (a "subclass"), call {@link #setClassDefinition(boolean)}<a name="line.353"></a>
+<span class="sourceLineNo">354</span>     *  with a &lt;i&gt;true&lt;/i&gt; argument.<a name="line.354"></a>
+<span class="sourceLineNo">355</span>     *  &lt;p&gt;<a name="line.355"></a>
+<span class="sourceLineNo">356</span>     *  In this base class, the container argument is ignored except that<a name="line.356"></a>
+<span class="sourceLineNo">357</span>     *  it provides the workspace into which to clone this object. Derived<a name="line.357"></a>
+<span class="sourceLineNo">358</span>     *  classes with setContainer() methods are responsible for overriding<a name="line.358"></a>
+<span class="sourceLineNo">359</span>     *  this and calling setContainer().<a name="line.359"></a>
+<span class="sourceLineNo">360</span>     *  &lt;p&gt;<a name="line.360"></a>
+<span class="sourceLineNo">361</span>     *  Note that the workspace for the instantiated object can be different<a name="line.361"></a>
+<span class="sourceLineNo">362</span>     *  from the workspace for this object. This means that propagation of<a name="line.362"></a>
+<span class="sourceLineNo">363</span>     *  changes from a parent to a child may not be able to be safely<a name="line.363"></a>
+<span class="sourceLineNo">364</span>     *  performed in the child even when they are safely performed in the<a name="line.364"></a>
+<span class="sourceLineNo">365</span>     *  parent. Subclasses that restrict when changes are performed are<a name="line.365"></a>
+<span class="sourceLineNo">366</span>     *  therefore required to check whether the workspaces are the same<a name="line.366"></a>
+<span class="sourceLineNo">367</span>     *  before propagating changes.<a name="line.367"></a>
+<span class="sourceLineNo">368</span>     *  @param container The container for the instance, or null<a name="line.368"></a>
+<span class="sourceLineNo">369</span>     *   to instantiate it at the top level. Note that this base class<a name="line.369"></a>
+<span class="sourceLineNo">370</span>     *   does not set the container. It uses the container argument to<a name="line.370"></a>
+<span class="sourceLineNo">371</span>     *   get the workspace. Derived classes are responsible for<a name="line.371"></a>
+<span class="sourceLineNo">372</span>     *   setting the container.<a name="line.372"></a>
+<span class="sourceLineNo">373</span>     *  @param name The name for the instance.<a name="line.373"></a>
+<span class="sourceLineNo">374</span>     *  @return A new instance that is a clone of this object<a name="line.374"></a>
+<span class="sourceLineNo">375</span>     *   with adjusted parent-child relationships.<a name="line.375"></a>
+<span class="sourceLineNo">376</span>     *  @exception CloneNotSupportedException If this object<a name="line.376"></a>
+<span class="sourceLineNo">377</span>     *   cannot be cloned.<a name="line.377"></a>
+<span class="sourceLineNo">378</span>     *  @exception IllegalActionException If this object is not a<a name="line.378"></a>
+<span class="sourceLineNo">379</span>     *   class definition or the proposed container is not acceptable.<a name="line.379"></a>
+<span class="sourceLineNo">380</span>     *  @exception NameDuplicationException If the name collides with<a name="line.380"></a>
+<span class="sourceLineNo">381</span>     *   an object already in the container.<a name="line.381"></a>
+<span class="sourceLineNo">382</span>     *  @see #setClassDefinition(boolean)<a name="line.382"></a>
+<span class="sourceLineNo">383</span>     *  @see Instantiable<a name="line.383"></a>
+<span class="sourceLineNo">384</span>     */<a name="line.384"></a>
+<span class="sourceLineNo">385</span>    @Override<a name="line.385"></a>
+<span class="sourceLineNo">386</span>    public Instantiable instantiate(NamedObj container, String name)<a name="line.386"></a>
+<span class="sourceLineNo">387</span>            throws CloneNotSupportedException, IllegalActionException,<a name="line.387"></a>
+<span class="sourceLineNo">388</span>            NameDuplicationException {<a name="line.388"></a>
+<span class="sourceLineNo">389</span>        if (!isClassDefinition()) {<a name="line.389"></a>
+<span class="sourceLineNo">390</span>            throw new IllegalActionException(this,<a name="line.390"></a>
+<span class="sourceLineNo">391</span>                    "Cannot instantiate an object that is not a "<a name="line.391"></a>
+<span class="sourceLineNo">392</span>                            + "class definition");<a name="line.392"></a>
+<span class="sourceLineNo">393</span>        }<a name="line.393"></a>
+<span class="sourceLineNo">394</span><a name="line.394"></a>
+<span class="sourceLineNo">395</span>        // Use the workspace of the container, if there is one,<a name="line.395"></a>
+<span class="sourceLineNo">396</span>        // or the workspace of this object, if there isn't.<a name="line.396"></a>
+<span class="sourceLineNo">397</span>        Workspace workspace = workspace();<a name="line.397"></a>
+<span class="sourceLineNo">398</span><a name="line.398"></a>
+<span class="sourceLineNo">399</span>        if (container != null) {<a name="line.399"></a>
+<span class="sourceLineNo">400</span>            workspace = container.workspace();<a name="line.400"></a>
+<span class="sourceLineNo">401</span>        }<a name="line.401"></a>
+<span class="sourceLineNo">402</span><a name="line.402"></a>
+<span class="sourceLineNo">403</span>        InstantiableNamedObj clone = (InstantiableNamedObj) clone(workspace);<a name="line.403"></a>
+<span class="sourceLineNo">404</span><a name="line.404"></a>
+<span class="sourceLineNo">405</span>        // The cloning process results an object that defers change<a name="line.405"></a>
+<span class="sourceLineNo">406</span>        // requests.  By default, we do not want to defer change<a name="line.406"></a>
+<span class="sourceLineNo">407</span>        // requests, but more importantly, we need to execute<a name="line.407"></a>
+<span class="sourceLineNo">408</span>        // any change requests that may have been queued<a name="line.408"></a>
+<span class="sourceLineNo">409</span>        // during cloning. The following call does that.<a name="line.409"></a>
+<span class="sourceLineNo">410</span>        clone.setDeferringChangeRequests(false);<a name="line.410"></a>
+<span class="sourceLineNo">411</span><a name="line.411"></a>
+<span class="sourceLineNo">412</span>        // Set the name before the container to not get<a name="line.412"></a>
+<span class="sourceLineNo">413</span>        // spurious name conflicts.<a name="line.413"></a>
+<span class="sourceLineNo">414</span>        clone.setName(name);<a name="line.414"></a>
+<span class="sourceLineNo">415</span>        clone._setParent(this);<a name="line.415"></a>
+<span class="sourceLineNo">416</span>        clone.setClassDefinition(false);<a name="line.416"></a>
+<span class="sourceLineNo">417</span>        clone.setClassName(getFullName());<a name="line.417"></a>
+<span class="sourceLineNo">418</span><a name="line.418"></a>
+<span class="sourceLineNo">419</span>        // Mark the contents of the instantiated object as being derived.<a name="line.419"></a>
+<span class="sourceLineNo">420</span>        clone._markContentsDerived(0);<a name="line.420"></a>
+<span class="sourceLineNo">421</span><a name="line.421"></a>
+<span class="sourceLineNo">422</span>        return clone;<a name="line.422"></a>
+<span class="sourceLineNo">423</span>    }<a name="line.423"></a>
+<span class="sourceLineNo">424</span><a name="line.424"></a>
+<span class="sourceLineNo">425</span>    /** Return true if this object is a class definition, which means that<a name="line.425"></a>
+<span class="sourceLineNo">426</span>     *  it can be instantiated.<a name="line.426"></a>
+<span class="sourceLineNo">427</span>     *  @return True if this object is a class definition.<a name="line.427"></a>
+<span class="sourceLineNo">428</span>     *  @see #setClassDefinition(boolean)<a name="line.428"></a>
+<span class="sourceLineNo">429</span>     *  @see Instantiable<a name="line.429"></a>
+<span class="sourceLineNo">430</span>     */<a name="line.430"></a>
+<span class="sourceLineNo">431</span>    @Override<a name="line.431"></a>
+<span class="sourceLineNo">432</span>    public final boolean isClassDefinition() {<a name="line.432"></a>
+<span class="sourceLineNo">433</span>        return _isClassDefinition;<a name="line.433"></a>
+<span class="sourceLineNo">434</span>    }<a name="line.434"></a>
+<span class="sourceLineNo">435</span><a name="line.435"></a>
+<span class="sourceLineNo">436</span>    /** Return true if this object is a class definition or is within<a name="line.436"></a>
+<span class="sourceLineNo">437</span>     *  a class definition, which means that<a name="line.437"></a>
+<span class="sourceLineNo">438</span>     *  any container above it in the hierarchy is<a name="line.438"></a>
+<span class="sourceLineNo">439</span>     *  a class definition.<a name="line.439"></a>
+<span class="sourceLineNo">440</span>     *  @return True if this object is within a class definition.<a name="line.440"></a>
+<span class="sourceLineNo">441</span>     *  @see #setClassDefinition(boolean)<a name="line.441"></a>
+<span class="sourceLineNo">442</span>     *  @see Instantiable<a name="line.442"></a>
+<span class="sourceLineNo">443</span>     */<a name="line.443"></a>
+<span class="sourceLineNo">444</span>    public final boolean isWithinClassDefinition() {<a name="line.444"></a>
+<span class="sourceLineNo">445</span>        if (_isClassDefinition) {<a name="line.445"></a>
+<span class="sourceLineNo">446</span>            return true;<a name="line.446"></a>
+<span class="sourceLineNo">447</span>        } else {<a name="line.447"></a>
+<span class="sourceLineNo">448</span>            NamedObj container = getContainer();<a name="line.448"></a>
+<span class="sourceLineNo">449</span>            while (container != null) {<a name="line.449"></a>
+<span class="sourceLineNo">450</span>                if (container instanceof InstantiableNamedObj) {<a name="line.450"></a>
+<span class="sourceLineNo">451</span>                    if (((InstantiableNamedObj) container)._isClassDefinition) {<a name="line.451"></a>
+<span class="sourceLineNo">452</span>                        return true;<a name="line.452"></a>
+<span class="sourceLineNo">453</span>                    }<a name="line.453"></a>
+<span class="sourceLineNo">454</span>                }<a name="line.454"></a>
+<span class="sourceLineNo">455</span>                container = container.getContainer();<a name="line.455"></a>
+<span class="sourceLineNo">456</span>            }<a name="line.456"></a>
+<span class="sourceLineNo">457</span>            return false;<a name="line.457"></a>
+<span class="sourceLineNo">458</span>        }<a name="line.458"></a>
+<span class="sourceLineNo">459</span>    }<a name="line.459"></a>
+<span class="sourceLineNo">460</span><a name="line.460"></a>
+<span class="sourceLineNo">461</span>    /** Specify whether this object is a class definition.<a name="line.461"></a>
+<span class="sourceLineNo">462</span>     *  This method is write synchronized on the workspace.<a name="line.462"></a>
+<span class="sourceLineNo">463</span>     *  @param isClass True to make this object a class definition, false<a name="line.463"></a>
+<span class="sourceLineNo">464</span>     *   to make it an instance.<a name="line.464"></a>
+<span class="sourceLineNo">465</span>     *  @exception IllegalActionException If there are subclasses and/or<a name="line.465"></a>
+<span class="sourceLineNo">466</span>     *   instances and the argument is false.<a name="line.466"></a>
+<span class="sourceLineNo">467</span>     *  @see #isClassDefinition()<a name="line.467"></a>
+<span class="sourceLineNo">468</span>     *  @see Instantiable<a name="line.468"></a>
+<span class="sourceLineNo">469</span>     */<a name="line.469"></a>
+<span class="sourceLineNo">470</span>    public void setClassDefinition(boolean isClass)<a name="line.470"></a>
+<span class="sourceLineNo">471</span>            throws IllegalActionException {<a name="line.471"></a>
+<span class="sourceLineNo">472</span>        workspace().getWriteAccess();<a name="line.472"></a>
+<span class="sourceLineNo">473</span><a name="line.473"></a>
+<span class="sourceLineNo">474</span>        try {<a name="line.474"></a>
+<span class="sourceLineNo">475</span>            if (!isClass &amp;&amp; _isClassDefinition &amp;&amp; getChildren() != null<a name="line.475"></a>
+<span class="sourceLineNo">476</span>                    &amp;&amp; getChildren().size() &gt; 0) {<a name="line.476"></a>
+<span class="sourceLineNo">477</span>                throw new IllegalActionException(this,<a name="line.477"></a>
+<span class="sourceLineNo">478</span>                        "Cannot change from a class to an instance because"<a name="line.478"></a>
+<span class="sourceLineNo">479</span>                                + " there are subclasses and/or instances.");<a name="line.479"></a>
+<span class="sourceLineNo">480</span>            }<a name="line.480"></a>
+<span class="sourceLineNo">481</span><a name="line.481"></a>
+<span class="sourceLineNo">482</span>            if (_isClassDefinition != isClass) {<a name="line.482"></a>
+<span class="sourceLineNo">483</span>                // Changing the class status is a hierarchy event that<a name="line.483"></a>
+<span class="sourceLineNo">484</span>                // contained objects need to be notified of.<a name="line.484"></a>
+<span class="sourceLineNo">485</span>                _notifyHierarchyListenersBeforeChange();<a name="line.485"></a>
+<span class="sourceLineNo">486</span>                _isClassDefinition = isClass;<a name="line.486"></a>
+<span class="sourceLineNo">487</span>            }<a name="line.487"></a>
+<span class="sourceLineNo">488</span>        } finally {<a name="line.488"></a>
+<span class="sourceLineNo">489</span>            workspace().doneWriting();<a name="line.489"></a>
+<span class="sourceLineNo">490</span>            _notifyHierarchyListenersAfterChange();<a name="line.490"></a>
+<span class="sourceLineNo">491</span>        }<a name="line.491"></a>
+<span class="sourceLineNo">492</span>    }<a name="line.492"></a>
+<span class="sourceLineNo">493</span><a name="line.493"></a>
+<span class="sourceLineNo">494</span>    /** Specify the parent for this object.  This  method should be called<a name="line.494"></a>
+<span class="sourceLineNo">495</span>     *  to make this object either an instance or a subclass of<a name="line.495"></a>
+<span class="sourceLineNo">496</span>     *  the other object. When generating<a name="line.496"></a>
+<span class="sourceLineNo">497</span>     *  a MoML description of this object, instead of giving a detailed<a name="line.497"></a>
+<span class="sourceLineNo">498</span>     *  description, this object will henceforth refer to the<a name="line.498"></a>
+<span class="sourceLineNo">499</span>     *  specified other object.  The name of that other object goes<a name="line.499"></a>
+<span class="sourceLineNo">500</span>     *  into the "class" or "extends" attribute of the MoML element<a name="line.500"></a>
+<span class="sourceLineNo">501</span>     *  defining this object (depending on whether this is an instance<a name="line.501"></a>
+<span class="sourceLineNo">502</span>     *  or a subclass).  This method is called when this object<a name="line.502"></a>
+<span class="sourceLineNo">503</span>     *  is constructed using the {@link #instantiate(NamedObj, String)}<a name="line.503"></a>
+<span class="sourceLineNo">504</span>     *  method. This method is write synchronized on<a name="line.504"></a>
+<span class="sourceLineNo">505</span>     *  the workspace because it modifies the object that is the<a name="line.505"></a>
+<span class="sourceLineNo">506</span>     *  argument to refer back to this one.<a name="line.506"></a>
+<span class="sourceLineNo">507</span>     *  &lt;p&gt;<a name="line.507"></a>
+<span class="sourceLineNo">508</span>     *  Note that a parent references a child via a weak reference.<a name="line.508"></a>
+<span class="sourceLineNo">509</span>     *  This means that the parent will not prevent the child from<a name="line.509"></a>
+<span class="sourceLineNo">510</span>     *  being garbage collected. However, as long as the child has<a name="line.510"></a>
+<span class="sourceLineNo">511</span>     *  not been garbage collected, changes to the parent will<a name="line.511"></a>
+<span class="sourceLineNo">512</span>     *  propagate to the child even if there are no other live<a name="line.512"></a>
+<span class="sourceLineNo">513</span>     *  references to the child. If there are a large number of<a name="line.513"></a>
+<span class="sourceLineNo">514</span>     *  such dangling children, this could create performance<a name="line.514"></a>
+<span class="sourceLineNo">515</span>     *  problems when making changes to the parent.<a name="line.515"></a>
+<span class="sourceLineNo">516</span>     *  @param parent The parent, or null to specify that there is<a name="line.516"></a>
+<span class="sourceLineNo">517</span>     *   no parent.<a name="line.517"></a>
+<span class="sourceLineNo">518</span>     *  @exception IllegalActionException If the parent is not an<a name="line.518"></a>
+<span class="sourceLineNo">519</span>     *   instance of InstantiableNamedObj.<a name="line.519"></a>
+<span class="sourceLineNo">520</span>     *  @see #exportMoML(Writer, int)<a name="line.520"></a>
+<span class="sourceLineNo">521</span>     *  @see #getParent()<a name="line.521"></a>
+<span class="sourceLineNo">522</span>     *  @see Instantiable<a name="line.522"></a>
+<span class="sourceLineNo">523</span>     */<a name="line.523"></a>
+<span class="sourceLineNo">524</span>    protected void _setParent(Instantiable parent)<a name="line.524"></a>
+<span class="sourceLineNo">525</span>            throws IllegalActionException {<a name="line.525"></a>
+<span class="sourceLineNo">526</span>        if (parent != null &amp;&amp; !(parent instanceof InstantiableNamedObj)) {<a name="line.526"></a>
+<span class="sourceLineNo">527</span>            throw new IllegalActionException(this,<a name="line.527"></a>
+<span class="sourceLineNo">528</span>                    "Parent of an InstantiableNamedObj must also "<a name="line.528"></a>
+<span class="sourceLineNo">529</span>                            + "be an InstantiableNamedObj.");<a name="line.529"></a>
+<span class="sourceLineNo">530</span>        }<a name="line.530"></a>
+<span class="sourceLineNo">531</span><a name="line.531"></a>
+<span class="sourceLineNo">532</span>        try {<a name="line.532"></a>
+<span class="sourceLineNo">533</span>            _workspace.getWriteAccess();<a name="line.533"></a>
+<span class="sourceLineNo">534</span><a name="line.534"></a>
+<span class="sourceLineNo">535</span>            if (_parent != null) {<a name="line.535"></a>
+<span class="sourceLineNo">536</span>                // Previously existing deferral.<a name="line.536"></a>
+<span class="sourceLineNo">537</span>                // Remove it.<a name="line.537"></a>
+<span class="sourceLineNo">538</span>                // NOTE: If WeakReference overrides equal(),<a name="line.538"></a>
+<span class="sourceLineNo">539</span>                // then this could probably be done more simply.<a name="line.539"></a>
+<span class="sourceLineNo">540</span>                List deferredFromList = _parent._children;<a name="line.540"></a>
+<span class="sourceLineNo">541</span><a name="line.541"></a>
+<span class="sourceLineNo">542</span>                if (deferredFromList != null) {<a name="line.542"></a>
+<span class="sourceLineNo">543</span>                    // Removing a previous reference.<a name="line.543"></a>
+<span class="sourceLineNo">544</span>                    // Note that this is a list of weak references, so<a name="line.544"></a>
+<span class="sourceLineNo">545</span>                    // it is not sufficient to just remove this!<a name="line.545"></a>
+<span class="sourceLineNo">546</span>                    ListIterator references = deferredFromList.listIterator();<a name="line.546"></a>
+<span class="sourceLineNo">547</span><a name="line.547"></a>
+<span class="sourceLineNo">548</span>                    while (references.hasNext()) {<a name="line.548"></a>
+<span class="sourceLineNo">549</span>                        WeakReference reference = (WeakReference) references<a name="line.549"></a>
+<span class="sourceLineNo">550</span>                                .next();<a name="line.550"></a>
+<span class="sourceLineNo">551</span><a name="line.551"></a>
+<span class="sourceLineNo">552</span>                        if (reference == null || reference.get() == this) {<a name="line.552"></a>
+<span class="sourceLineNo">553</span>                            references.remove();<a name="line.553"></a>
+<span class="sourceLineNo">554</span>                        }<a name="line.554"></a>
+<span class="sourceLineNo">555</span>                    }<a name="line.555"></a>
+<span class="sourceLineNo">556</span>                }<a name="line.556"></a>
+<span class="sourceLineNo">557</span>            }<a name="line.557"></a>
+<span class="sourceLineNo">558</span><a name="line.558"></a>
+<span class="sourceLineNo">559</span>            _parent = (InstantiableNamedObj) parent;<a name="line.559"></a>
+<span class="sourceLineNo">560</span><a name="line.560"></a>
+<span class="sourceLineNo">561</span>            if (_parent != null) {<a name="line.561"></a>
+<span class="sourceLineNo">562</span>                if (_parent._children == null) {<a name="line.562"></a>
+<span class="sourceLineNo">563</span>                    _parent._children = new LinkedList();<a name="line.563"></a>
+<span class="sourceLineNo">564</span>                }<a name="line.564"></a>
+<span class="sourceLineNo">565</span><a name="line.565"></a>
+<span class="sourceLineNo">566</span>                // NOTE: These need to be weak references.<a name="line.566"></a>
+<span class="sourceLineNo">567</span>                _parent._children.add(new WeakReference(this));<a name="line.567"></a>
+<span class="sourceLineNo">568</span>            }<a name="line.568"></a>
+<span class="sourceLineNo">569</span>        } finally {<a name="line.569"></a>
+<span class="sourceLineNo">570</span>            _workspace.doneWriting();<a name="line.570"></a>
+<span class="sourceLineNo">571</span>        }<a name="line.571"></a>
+<span class="sourceLineNo">572</span>    }<a name="line.572"></a>
+<span class="sourceLineNo">573</span><a name="line.573"></a>
+<span class="sourceLineNo">574</span>    ///////////////////////////////////////////////////////////////////<a name="line.574"></a>
+<span class="sourceLineNo">575</span>    ////                         private variables                 ////<a name="line.575"></a>
+<span class="sourceLineNo">576</span><a name="line.576"></a>
+<span class="sourceLineNo">577</span>    /** List of weak references to children for which this object<a name="line.577"></a>
+<span class="sourceLineNo">578</span>     *  is the parent.<a name="line.578"></a>
+<span class="sourceLineNo">579</span>     */<a name="line.579"></a>
+<span class="sourceLineNo">580</span>    private List _children;<a name="line.580"></a>
+<span class="sourceLineNo">581</span><a name="line.581"></a>
+<span class="sourceLineNo">582</span>    /** Parent to which this object defers its definition to, or<a name="line.582"></a>
+<span class="sourceLineNo">583</span>     *  null if there is none.<a name="line.583"></a>
+<span class="sourceLineNo">584</span>     */<a name="line.584"></a>
+<span class="sourceLineNo">585</span>    private InstantiableNamedObj _parent;<a name="line.585"></a>
+<span class="sourceLineNo">586</span><a name="line.586"></a>
+<span class="sourceLineNo">587</span>    /** Indicator of whether this is a class definition. */<a name="line.587"></a>
+<span class="sourceLineNo">588</span>    private boolean _isClassDefinition;<a name="line.588"></a>
+<span class="sourceLineNo">589</span>}<a name="line.589"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

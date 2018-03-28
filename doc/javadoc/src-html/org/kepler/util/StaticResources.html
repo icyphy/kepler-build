@@ -1,0 +1,420 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../../stylesheet.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>/*<a name="line.1"></a>
+<span class="sourceLineNo">002</span> * Copyright (c) 2006-2010 The Regents of the University of California.<a name="line.2"></a>
+<span class="sourceLineNo">003</span> * All rights reserved.<a name="line.3"></a>
+<span class="sourceLineNo">004</span> *<a name="line.4"></a>
+<span class="sourceLineNo">005</span> * '$Author: berkley $'<a name="line.5"></a>
+<span class="sourceLineNo">006</span> * '$Date: 2010-04-27 17:12:36 -0700 (Tue, 27 Apr 2010) $' <a name="line.6"></a>
+<span class="sourceLineNo">007</span> * '$Revision: 24000 $'<a name="line.7"></a>
+<span class="sourceLineNo">008</span> * <a name="line.8"></a>
+<span class="sourceLineNo">009</span> * Permission is hereby granted, without written agreement and without<a name="line.9"></a>
+<span class="sourceLineNo">010</span> * license or royalty fees, to use, copy, modify, and distribute this<a name="line.10"></a>
+<span class="sourceLineNo">011</span> * software and its documentation for any purpose, provided that the above<a name="line.11"></a>
+<span class="sourceLineNo">012</span> * copyright notice and the following two paragraphs appear in all copies<a name="line.12"></a>
+<span class="sourceLineNo">013</span> * of this software.<a name="line.13"></a>
+<span class="sourceLineNo">014</span> *<a name="line.14"></a>
+<span class="sourceLineNo">015</span> * IN NO EVENT SHALL THE UNIVERSITY OF CALIFORNIA BE LIABLE TO ANY PARTY<a name="line.15"></a>
+<span class="sourceLineNo">016</span> * FOR DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES<a name="line.16"></a>
+<span class="sourceLineNo">017</span> * ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION, EVEN IF<a name="line.17"></a>
+<span class="sourceLineNo">018</span> * THE UNIVERSITY OF CALIFORNIA HAS BEEN ADVISED OF THE POSSIBILITY OF<a name="line.18"></a>
+<span class="sourceLineNo">019</span> * SUCH DAMAGE.<a name="line.19"></a>
+<span class="sourceLineNo">020</span> *<a name="line.20"></a>
+<span class="sourceLineNo">021</span> * THE UNIVERSITY OF CALIFORNIA SPECIFICALLY DISCLAIMS ANY WARRANTIES,<a name="line.21"></a>
+<span class="sourceLineNo">022</span> * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF<a name="line.22"></a>
+<span class="sourceLineNo">023</span> * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE<a name="line.23"></a>
+<span class="sourceLineNo">024</span> * PROVIDED HEREUNDER IS ON AN "AS IS" BASIS, AND THE UNIVERSITY OF<a name="line.24"></a>
+<span class="sourceLineNo">025</span> * CALIFORNIA HAS NO OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT, UPDATES,<a name="line.25"></a>
+<span class="sourceLineNo">026</span> * ENHANCEMENTS, OR MODIFICATIONS.<a name="line.26"></a>
+<span class="sourceLineNo">027</span> *<a name="line.27"></a>
+<span class="sourceLineNo">028</span> */<a name="line.28"></a>
+<span class="sourceLineNo">029</span><a name="line.29"></a>
+<span class="sourceLineNo">030</span>package org.kepler.util;<a name="line.30"></a>
+<span class="sourceLineNo">031</span><a name="line.31"></a>
+<span class="sourceLineNo">032</span>import java.io.IOException;<a name="line.32"></a>
+<span class="sourceLineNo">033</span>import java.util.List;<a name="line.33"></a>
+<span class="sourceLineNo">034</span><a name="line.34"></a>
+<span class="sourceLineNo">035</span>import org.kepler.configuration.ConfigurationManager;<a name="line.35"></a>
+<span class="sourceLineNo">036</span>import org.kepler.configuration.ConfigurationNamespace;<a name="line.36"></a>
+<span class="sourceLineNo">037</span>import org.kepler.configuration.ConfigurationProperty;<a name="line.37"></a>
+<span class="sourceLineNo">038</span><a name="line.38"></a>
+<span class="sourceLineNo">039</span>//////////////////////////////////////////////////////////////////////////<a name="line.39"></a>
+<span class="sourceLineNo">040</span>//// StaticResources<a name="line.40"></a>
+<span class="sourceLineNo">041</span><a name="line.41"></a>
+<span class="sourceLineNo">042</span>/**<a name="line.42"></a>
+<span class="sourceLineNo">043</span> *<a name="line.43"></a>
+<span class="sourceLineNo">044</span> * Static resources for accessing ResourceBundles.<a name="line.44"></a>
+<span class="sourceLineNo">045</span> *<a name="line.45"></a>
+<span class="sourceLineNo">046</span> * @author Matthew Brooke<a name="line.46"></a>
+<span class="sourceLineNo">047</span> * @version $Id: StaticResources.java 24000 2010-04-28 00:12:36Z berkley $<a name="line.47"></a>
+<span class="sourceLineNo">048</span> * @since Ptolemy II 7.1<a name="line.48"></a>
+<span class="sourceLineNo">049</span> * @Pt.ProposedRating<a name="line.49"></a>
+<span class="sourceLineNo">050</span> * @Pt.AcceptedRating<a name="line.50"></a>
+<span class="sourceLineNo">051</span> */<a name="line.51"></a>
+<span class="sourceLineNo">052</span>public class StaticResources {<a name="line.52"></a>
+<span class="sourceLineNo">053</span>        // kepler.gui.StaticGUIResources contains GUI specific code,<a name="line.53"></a>
+<span class="sourceLineNo">054</span>        // this class should _not_ import GUI code.<a name="line.54"></a>
+<span class="sourceLineNo">055</span><a name="line.55"></a>
+<span class="sourceLineNo">056</span>        // protected constructor - non-instantiable<a name="line.56"></a>
+<span class="sourceLineNo">057</span>        protected StaticResources() {<a name="line.57"></a>
+<span class="sourceLineNo">058</span>        }<a name="line.58"></a>
+<span class="sourceLineNo">059</span><a name="line.59"></a>
+<span class="sourceLineNo">060</span>        ///////////////////////////////////////////////////////////////////<a name="line.60"></a>
+<span class="sourceLineNo">061</span>        ////                       public methods                      ////<a name="line.61"></a>
+<span class="sourceLineNo">062</span>        ///////////////////////////////////////////////////////////////////<a name="line.62"></a>
+<span class="sourceLineNo">063</span><a name="line.63"></a>
+<span class="sourceLineNo">064</span>        /**<a name="line.64"></a>
+<span class="sourceLineNo">065</span>         * Search the uiDisplayText resourcebundle for the property specified by the<a name="line.65"></a>
+<span class="sourceLineNo">066</span>         * key parameter. Return the boolean value of the property String<a name="line.66"></a>
+<span class="sourceLineNo">067</span>         * corresponding to the specified key. If the property is not found, the<a name="line.67"></a>
+<span class="sourceLineNo">068</span>         * defaultVal parameter is returned.<a name="line.68"></a>
+<span class="sourceLineNo">069</span>         *<a name="line.69"></a>
+<span class="sourceLineNo">070</span>         * @param key<a name="line.70"></a>
+<span class="sourceLineNo">071</span>         *            the properties key identifying the value to be found<a name="line.71"></a>
+<span class="sourceLineNo">072</span>         * @param defaultVal<a name="line.72"></a>
+<span class="sourceLineNo">073</span>         *            - the default boolean value to be returned if the requested<a name="line.73"></a>
+<span class="sourceLineNo">074</span>         *            property cannot be found or read<a name="line.74"></a>
+<span class="sourceLineNo">075</span>         * @return boolean value of the property String corresponding to the<a name="line.75"></a>
+<span class="sourceLineNo">076</span>         *         specified key. If the property is not found, the defaultVal<a name="line.76"></a>
+<span class="sourceLineNo">077</span>         *         parameter is returned.<a name="line.77"></a>
+<span class="sourceLineNo">078</span>         */<a name="line.78"></a>
+<span class="sourceLineNo">079</span>        public static boolean getBoolean(String key, boolean defaultVal) {<a name="line.79"></a>
+<span class="sourceLineNo">080</span><a name="line.80"></a>
+<span class="sourceLineNo">081</span>                boolean val = defaultVal;<a name="line.81"></a>
+<span class="sourceLineNo">082</span>                try {<a name="line.82"></a>
+<span class="sourceLineNo">083</span>                        val = Boolean.valueOf(_getString(key, getUISettingsProperty()))<a name="line.83"></a>
+<span class="sourceLineNo">084</span>                                        .booleanValue();<a name="line.84"></a>
+<span class="sourceLineNo">085</span>                } catch (Exception ex) {<a name="line.85"></a>
+<span class="sourceLineNo">086</span>                        if (_isDebugging) {<a name="line.86"></a>
+<span class="sourceLineNo">087</span>                                System.out<a name="line.87"></a>
+<span class="sourceLineNo">088</span>                                                .println("StaticResources could not find the property for the key: "<a name="line.88"></a>
+<span class="sourceLineNo">089</span>                                                                + key<a name="line.89"></a>
+<span class="sourceLineNo">090</span>                                                                + "\n; returning default value: "<a name="line.90"></a>
+<span class="sourceLineNo">091</span>                                                                + defaultVal);<a name="line.91"></a>
+<span class="sourceLineNo">092</span>                        }<a name="line.92"></a>
+<span class="sourceLineNo">093</span>                }<a name="line.93"></a>
+<span class="sourceLineNo">094</span>                return val;<a name="line.94"></a>
+<span class="sourceLineNo">095</span>        }<a name="line.95"></a>
+<span class="sourceLineNo">096</span><a name="line.96"></a>
+<span class="sourceLineNo">097</span>        /**<a name="line.97"></a>
+<span class="sourceLineNo">098</span>         * Search the uiDisplayText resourcebundle for the property specified by the<a name="line.98"></a>
+<span class="sourceLineNo">099</span>         * key parameter. Return the String value of the property value specified.<a name="line.99"></a>
+<span class="sourceLineNo">100</span>         * If the property is not found, the default defaultString parameter is<a name="line.100"></a>
+<span class="sourceLineNo">101</span>         * returned.<a name="line.101"></a>
+<span class="sourceLineNo">102</span>         *<a name="line.102"></a>
+<span class="sourceLineNo">103</span>         * @param key<a name="line.103"></a>
+<span class="sourceLineNo">104</span>         *            the properties key for the String to be found<a name="line.104"></a>
+<span class="sourceLineNo">105</span>         * @param defaultString<a name="line.105"></a>
+<span class="sourceLineNo">106</span>         *            - the default String to be returned if the property cannot be<a name="line.106"></a>
+<span class="sourceLineNo">107</span>         *            found or read<a name="line.107"></a>
+<span class="sourceLineNo">108</span>         * @return String value associated with the specified key, or the<a name="line.108"></a>
+<span class="sourceLineNo">109</span>         *         defaultString parameter if the property is not found.<a name="line.109"></a>
+<span class="sourceLineNo">110</span>         */<a name="line.110"></a>
+<span class="sourceLineNo">111</span>        public static String getDisplayString(String key, String defaultString) {<a name="line.111"></a>
+<span class="sourceLineNo">112</span><a name="line.112"></a>
+<span class="sourceLineNo">113</span>                String result = null;<a name="line.113"></a>
+<span class="sourceLineNo">114</span>                try {<a name="line.114"></a>
+<span class="sourceLineNo">115</span>                        result = _getString(key, getDisplayTextProperty());<a name="line.115"></a>
+<span class="sourceLineNo">116</span>                } catch (Exception ex) {<a name="line.116"></a>
+<span class="sourceLineNo">117</span>                        if (_isDebugging) {<a name="line.117"></a>
+<span class="sourceLineNo">118</span>                                System.out<a name="line.118"></a>
+<span class="sourceLineNo">119</span>                                                .println("StaticResources could not find String property for the key: "<a name="line.119"></a>
+<span class="sourceLineNo">120</span>                                                                + key<a name="line.120"></a>
+<span class="sourceLineNo">121</span>                                                                + "\n; returning default String: "<a name="line.121"></a>
+<span class="sourceLineNo">122</span>                                                                + defaultString);<a name="line.122"></a>
+<span class="sourceLineNo">123</span>                        }<a name="line.123"></a>
+<span class="sourceLineNo">124</span>                        return defaultString;<a name="line.124"></a>
+<span class="sourceLineNo">125</span>                }<a name="line.125"></a>
+<span class="sourceLineNo">126</span>                return result;<a name="line.126"></a>
+<span class="sourceLineNo">127</span>        }<a name="line.127"></a>
+<span class="sourceLineNo">128</span><a name="line.128"></a>
+<span class="sourceLineNo">129</span>        /**<a name="line.129"></a>
+<span class="sourceLineNo">130</span>         * Search for the ResourceBundle containing the UI Display Text.<a name="line.130"></a>
+<span class="sourceLineNo">131</span>         * @return The resource bundle that corresponds with<a name="line.131"></a>
+<span class="sourceLineNo">132</span>         * {@link #UI_DISPLAY_TEXT_BUNDLE}<a name="line.132"></a>
+<span class="sourceLineNo">133</span>         * @exception IOException If the bundle that corresponds with<a name="line.133"></a>
+<span class="sourceLineNo">134</span>         * {@link #UI_DISPLAY_TEXT_BUNDLE} cannot be loaded.<a name="line.134"></a>
+<span class="sourceLineNo">135</span>         */<a name="line.135"></a>
+<span class="sourceLineNo">136</span>        public static ConfigurationProperty getDisplayTextProperty()<a name="line.136"></a>
+<span class="sourceLineNo">137</span>                        throws IOException {<a name="line.137"></a>
+<span class="sourceLineNo">138</span><a name="line.138"></a>
+<span class="sourceLineNo">139</span>                if (diplayTextProp == null) {<a name="line.139"></a>
+<span class="sourceLineNo">140</span>                        ConfigurationNamespace ns = new ConfigurationNamespace(<a name="line.140"></a>
+<span class="sourceLineNo">141</span>                                        "uiDisplayText");<a name="line.141"></a>
+<span class="sourceLineNo">142</span>                        diplayTextProp = ConfigurationManager.getInstance().getProperty(<a name="line.142"></a>
+<span class="sourceLineNo">143</span>                                        ConfigurationManager.getModule("gui"), ns);<a name="line.143"></a>
+<span class="sourceLineNo">144</span>                }<a name="line.144"></a>
+<span class="sourceLineNo">145</span>                return diplayTextProp;<a name="line.145"></a>
+<span class="sourceLineNo">146</span>        }<a name="line.146"></a>
+<span class="sourceLineNo">147</span><a name="line.147"></a>
+<span class="sourceLineNo">148</span>        /**<a name="line.148"></a>
+<span class="sourceLineNo">149</span>         * Search the uiSettings resourcebundle for the property specified by the<a name="line.149"></a>
+<span class="sourceLineNo">150</span>         * key parameter. Return the String value of the property value specified.<a name="line.150"></a>
+<span class="sourceLineNo">151</span>         * If the property is not found, the default defaultString parameter is<a name="line.151"></a>
+<span class="sourceLineNo">152</span>         * returned.<a name="line.152"></a>
+<span class="sourceLineNo">153</span>         *<a name="line.153"></a>
+<span class="sourceLineNo">154</span>         * @param key<a name="line.154"></a>
+<span class="sourceLineNo">155</span>         *            the properties key for the String to be found<a name="line.155"></a>
+<span class="sourceLineNo">156</span>         * @param defaultString<a name="line.156"></a>
+<span class="sourceLineNo">157</span>         *            - the default String to be returned if the property cannot be<a name="line.157"></a>
+<span class="sourceLineNo">158</span>         *            found or read<a name="line.158"></a>
+<span class="sourceLineNo">159</span>         * @return String value associated with the specified key, or the<a name="line.159"></a>
+<span class="sourceLineNo">160</span>         *         defaultString parameter if the property is not found.<a name="line.160"></a>
+<span class="sourceLineNo">161</span>         */<a name="line.161"></a>
+<span class="sourceLineNo">162</span>        public static String getSettingsString(String key, String defaultString) {<a name="line.162"></a>
+<span class="sourceLineNo">163</span>                String result = null;<a name="line.163"></a>
+<span class="sourceLineNo">164</span>                try {<a name="line.164"></a>
+<span class="sourceLineNo">165</span>                        result = _getString(key, getUISettingsProperty());<a name="line.165"></a>
+<span class="sourceLineNo">166</span>                } catch (Exception ex) {<a name="line.166"></a>
+<span class="sourceLineNo">167</span>                        if (_isDebugging) {<a name="line.167"></a>
+<span class="sourceLineNo">168</span>                                System.out<a name="line.168"></a>
+<span class="sourceLineNo">169</span>                                                .println("StaticResources could not find String property for the key: "<a name="line.169"></a>
+<span class="sourceLineNo">170</span>                                                                + key<a name="line.170"></a>
+<span class="sourceLineNo">171</span>                                                                + "\n; returning default String: "<a name="line.171"></a>
+<span class="sourceLineNo">172</span>                                                                + defaultString);<a name="line.172"></a>
+<span class="sourceLineNo">173</span>                        }<a name="line.173"></a>
+<span class="sourceLineNo">174</span>                        return defaultString;<a name="line.174"></a>
+<span class="sourceLineNo">175</span>                }<a name="line.175"></a>
+<span class="sourceLineNo">176</span>                return result;<a name="line.176"></a>
+<span class="sourceLineNo">177</span>        }<a name="line.177"></a>
+<span class="sourceLineNo">178</span><a name="line.178"></a>
+<span class="sourceLineNo">179</span>        /**<a name="line.179"></a>
+<span class="sourceLineNo">180</span>         * Search the uiSettings resourcebundle for the size property specified by<a name="line.180"></a>
+<span class="sourceLineNo">181</span>         * the sizeKey. Return the integer (int) value of the size specified. If the<a name="line.181"></a>
+<span class="sourceLineNo">182</span>         * property is not found, the defaultSize parameter is returned.<a name="line.182"></a>
+<span class="sourceLineNo">183</span>         *<a name="line.183"></a>
+<span class="sourceLineNo">184</span>         * @param sizeKey<a name="line.184"></a>
+<span class="sourceLineNo">185</span>         *            the properties key String for the size setting<a name="line.185"></a>
+<span class="sourceLineNo">186</span>         * @param defaultSize<a name="line.186"></a>
+<span class="sourceLineNo">187</span>         *            - the default size to be used if the property cannot be found<a name="line.187"></a>
+<span class="sourceLineNo">188</span>         * @return integer (int) value of the size specified. If the property is not<a name="line.188"></a>
+<span class="sourceLineNo">189</span>         *         found, the defaultSize parameter is returned.<a name="line.189"></a>
+<span class="sourceLineNo">190</span>         */<a name="line.190"></a>
+<span class="sourceLineNo">191</span>        public static int getSize(String sizeKey, int defaultSize) {<a name="line.191"></a>
+<span class="sourceLineNo">192</span><a name="line.192"></a>
+<span class="sourceLineNo">193</span>                int size = 0;<a name="line.193"></a>
+<span class="sourceLineNo">194</span>                try {<a name="line.194"></a>
+<span class="sourceLineNo">195</span>                        size = _getInt(sizeKey, getUISettingsProperty());<a name="line.195"></a>
+<span class="sourceLineNo">196</span>                } catch (Exception ex) {<a name="line.196"></a>
+<span class="sourceLineNo">197</span>                        if (_isDebugging) {<a name="line.197"></a>
+<span class="sourceLineNo">198</span>                                System.out<a name="line.198"></a>
+<span class="sourceLineNo">199</span>                                                .println("StaticResources could not find size property for the key: "<a name="line.199"></a>
+<span class="sourceLineNo">200</span>                                                                + sizeKey<a name="line.200"></a>
+<span class="sourceLineNo">201</span>                                                                + "\n; returning default size: "<a name="line.201"></a>
+<span class="sourceLineNo">202</span>                                                                + defaultSize);<a name="line.202"></a>
+<span class="sourceLineNo">203</span>                        }<a name="line.203"></a>
+<span class="sourceLineNo">204</span>                        return defaultSize;<a name="line.204"></a>
+<span class="sourceLineNo">205</span>                }<a name="line.205"></a>
+<span class="sourceLineNo">206</span>                return size;<a name="line.206"></a>
+<span class="sourceLineNo">207</span>        }<a name="line.207"></a>
+<span class="sourceLineNo">208</span><a name="line.208"></a>
+<span class="sourceLineNo">209</span>        /**<a name="line.209"></a>
+<span class="sourceLineNo">210</span>         * Search for the ResourceBundle containing the ui settings.<a name="line.210"></a>
+<span class="sourceLineNo">211</span>         * @return The resource bundle that corresponds with<a name="line.211"></a>
+<span class="sourceLineNo">212</span>         * {@link #UI_SETTINGS_BUNDLE}<a name="line.212"></a>
+<span class="sourceLineNo">213</span>         * @exception IOException If the bundle that corresponds with<a name="line.213"></a>
+<span class="sourceLineNo">214</span>         * {@link #UI_SETTINGS_BUNDLE} cannot be loaded.<a name="line.214"></a>
+<span class="sourceLineNo">215</span>         */<a name="line.215"></a>
+<span class="sourceLineNo">216</span>        public static ConfigurationProperty getUISettingsProperty()<a name="line.216"></a>
+<span class="sourceLineNo">217</span>                        throws IOException {<a name="line.217"></a>
+<span class="sourceLineNo">218</span><a name="line.218"></a>
+<span class="sourceLineNo">219</span>                if (uiSettingsProp == null) {<a name="line.219"></a>
+<span class="sourceLineNo">220</span>                        ConfigurationNamespace ns = new ConfigurationNamespace("uiSettings");<a name="line.220"></a>
+<span class="sourceLineNo">221</span>                        uiSettingsProp = ConfigurationManager.getInstance().getProperty(<a name="line.221"></a>
+<span class="sourceLineNo">222</span>                                        ConfigurationManager.getModule("gui"), ns);<a name="line.222"></a>
+<span class="sourceLineNo">223</span>                }<a name="line.223"></a>
+<span class="sourceLineNo">224</span>                return uiSettingsProp;<a name="line.224"></a>
+<span class="sourceLineNo">225</span>        }<a name="line.225"></a>
+<span class="sourceLineNo">226</span><a name="line.226"></a>
+<span class="sourceLineNo">227</span>        /**<a name="line.227"></a>
+<span class="sourceLineNo">228</span>         * get the configuration property for the svg icon class mappings<a name="line.228"></a>
+<span class="sourceLineNo">229</span>         */<a name="line.229"></a>
+<span class="sourceLineNo">230</span>        public static ConfigurationProperty getUiSVGIconMappingsByClass() {<a name="line.230"></a>
+<span class="sourceLineNo">231</span>                if (uiSVGIconMappingsByClassProp == null) {<a name="line.231"></a>
+<span class="sourceLineNo">232</span>                        ConfigurationNamespace ns = new ConfigurationNamespace(<a name="line.232"></a>
+<span class="sourceLineNo">233</span>                                        "uiSVGIconMappingsByClass");<a name="line.233"></a>
+<span class="sourceLineNo">234</span>                        uiSVGIconMappingsByClassProp = ConfigurationManager.getInstance()<a name="line.234"></a>
+<span class="sourceLineNo">235</span>                                        .getProperty(ConfigurationManager.getModule("gui"), ns);<a name="line.235"></a>
+<span class="sourceLineNo">236</span>                }<a name="line.236"></a>
+<span class="sourceLineNo">237</span>                return uiSVGIconMappingsByClassProp;<a name="line.237"></a>
+<span class="sourceLineNo">238</span>        }<a name="line.238"></a>
+<span class="sourceLineNo">239</span><a name="line.239"></a>
+<span class="sourceLineNo">240</span>        /**<a name="line.240"></a>
+<span class="sourceLineNo">241</span>         * get the configuraiton property for the svg icon lsid mappings<a name="line.241"></a>
+<span class="sourceLineNo">242</span>         */<a name="line.242"></a>
+<span class="sourceLineNo">243</span>        public static ConfigurationProperty getUiSVGIconMappingsByLSID() {<a name="line.243"></a>
+<span class="sourceLineNo">244</span>                if (uiSVGIconMappingsByLSIDProp == null) {<a name="line.244"></a>
+<span class="sourceLineNo">245</span>                        ConfigurationNamespace ns = new ConfigurationNamespace(<a name="line.245"></a>
+<span class="sourceLineNo">246</span>                                        "uiSVGIconMappingsByLSID");<a name="line.246"></a>
+<span class="sourceLineNo">247</span>                        uiSVGIconMappingsByLSIDProp = ConfigurationManager.getInstance()<a name="line.247"></a>
+<span class="sourceLineNo">248</span>                                        .getProperty(ConfigurationManager.getModule("gui"), ns);<a name="line.248"></a>
+<span class="sourceLineNo">249</span>                }<a name="line.249"></a>
+<span class="sourceLineNo">250</span>                return uiSVGIconMappingsByLSIDProp;<a name="line.250"></a>
+<span class="sourceLineNo">251</span>        }<a name="line.251"></a>
+<span class="sourceLineNo">252</span><a name="line.252"></a>
+<span class="sourceLineNo">253</span>        /**<a name="line.253"></a>
+<span class="sourceLineNo">254</span>         * get the value of a property based on the name<a name="line.254"></a>
+<span class="sourceLineNo">255</span>         */<a name="line.255"></a>
+<span class="sourceLineNo">256</span>        public static String getValueFromName(ConfigurationProperty prop,<a name="line.256"></a>
+<span class="sourceLineNo">257</span>                        String name) {<a name="line.257"></a>
+<span class="sourceLineNo">258</span>                //System.out.println("finding name=" + name + " in prop " + prop.getName());<a name="line.258"></a>
+<span class="sourceLineNo">259</span>                List l = prop.findProperties("name", name, true);<a name="line.259"></a>
+<span class="sourceLineNo">260</span>                if (l != null &amp;&amp; l.size() &gt; 0) {<a name="line.260"></a>
+<span class="sourceLineNo">261</span>                        ConfigurationProperty p = (ConfigurationProperty) l.get(0);<a name="line.261"></a>
+<span class="sourceLineNo">262</span>                        String value = p.getProperty("value").getValue();<a name="line.262"></a>
+<span class="sourceLineNo">263</span>                        return value;<a name="line.263"></a>
+<span class="sourceLineNo">264</span>                }<a name="line.264"></a>
+<span class="sourceLineNo">265</span>                return null;<a name="line.265"></a>
+<span class="sourceLineNo">266</span>        }<a name="line.266"></a>
+<span class="sourceLineNo">267</span><a name="line.267"></a>
+<span class="sourceLineNo">268</span>        ///////////////////////////////////////////////////////////////////<a name="line.268"></a>
+<span class="sourceLineNo">269</span>        ////                      public variables                     ////<a name="line.269"></a>
+<span class="sourceLineNo">270</span>        ///////////////////////////////////////////////////////////////////<a name="line.270"></a>
+<span class="sourceLineNo">271</span><a name="line.271"></a>
+<span class="sourceLineNo">272</span>        static {<a name="line.272"></a>
+<span class="sourceLineNo">273</span>                try {<a name="line.273"></a>
+<span class="sourceLineNo">274</span>                        getUISettingsProperty();<a name="line.274"></a>
+<span class="sourceLineNo">275</span>                } catch (IOException ex) {<a name="line.275"></a>
+<span class="sourceLineNo">276</span>                        // no worries - just try again when we actually need it<a name="line.276"></a>
+<span class="sourceLineNo">277</span>                }<a name="line.277"></a>
+<span class="sourceLineNo">278</span>                try {<a name="line.278"></a>
+<span class="sourceLineNo">279</span>                        getDisplayTextProperty();<a name="line.279"></a>
+<span class="sourceLineNo">280</span>                } catch (IOException ex) {<a name="line.280"></a>
+<span class="sourceLineNo">281</span>                        // no worries - just try again when we actually need it<a name="line.281"></a>
+<span class="sourceLineNo">282</span>                }<a name="line.282"></a>
+<span class="sourceLineNo">283</span>        }<a name="line.283"></a>
+<span class="sourceLineNo">284</span><a name="line.284"></a>
+<span class="sourceLineNo">285</span>        ///////////////////////////////////////////////////////////////////<a name="line.285"></a>
+<span class="sourceLineNo">286</span>        ////                      protected methods                      ////<a name="line.286"></a>
+<span class="sourceLineNo">287</span>        ///////////////////////////////////////////////////////////////////<a name="line.287"></a>
+<span class="sourceLineNo">288</span><a name="line.288"></a>
+<span class="sourceLineNo">289</span>        /**<a name="line.289"></a>
+<span class="sourceLineNo">290</span>         * Get the String property denoted by the propertyKey.<a name="line.290"></a>
+<span class="sourceLineNo">291</span>         *<a name="line.291"></a>
+<span class="sourceLineNo">292</span>         * @param propertyKey<a name="line.292"></a>
+<span class="sourceLineNo">293</span>         *            the properties key String identifying the property<a name="line.293"></a>
+<span class="sourceLineNo">294</span>         *<a name="line.294"></a>
+<span class="sourceLineNo">295</span>         * @param property<a name="line.295"></a>
+<span class="sourceLineNo">296</span>         *            the ConfigurationProperty in which to search<a name="line.296"></a>
+<span class="sourceLineNo">297</span>         *<a name="line.297"></a>
+<span class="sourceLineNo">298</span>         * @return the String value identified by the propertyKey<a name="line.298"></a>
+<span class="sourceLineNo">299</span>         *<a name="line.299"></a>
+<span class="sourceLineNo">300</span>         * @exception java.lang.Exception<a name="line.300"></a>
+<span class="sourceLineNo">301</span>         *             if key is not found or cannot be read<a name="line.301"></a>
+<span class="sourceLineNo">302</span>         */<a name="line.302"></a>
+<span class="sourceLineNo">303</span>        protected static String _getString(String propertyKey,<a name="line.303"></a>
+<span class="sourceLineNo">304</span>                        ConfigurationProperty property) throws Exception {<a name="line.304"></a>
+<span class="sourceLineNo">305</span>                String s = getValueFromName(property, propertyKey);<a name="line.305"></a>
+<span class="sourceLineNo">306</span>                return s;<a name="line.306"></a>
+<span class="sourceLineNo">307</span>        }<a name="line.307"></a>
+<span class="sourceLineNo">308</span><a name="line.308"></a>
+<span class="sourceLineNo">309</span>        /**<a name="line.309"></a>
+<span class="sourceLineNo">310</span>         * Get the integer (int) property denoted by the propertyKey.<a name="line.310"></a>
+<span class="sourceLineNo">311</span>         *<a name="line.311"></a>
+<span class="sourceLineNo">312</span>         * @param propertyKey<a name="line.312"></a>
+<span class="sourceLineNo">313</span>         *            the properties key String identifying the property<a name="line.313"></a>
+<span class="sourceLineNo">314</span>         *<a name="line.314"></a>
+<span class="sourceLineNo">315</span>         * @param property<a name="line.315"></a>
+<span class="sourceLineNo">316</span>         *            the ConfigurationProperty in which to search<a name="line.316"></a>
+<span class="sourceLineNo">317</span>         *<a name="line.317"></a>
+<span class="sourceLineNo">318</span>         * @return the int value identified by the propertyKey<a name="line.318"></a>
+<span class="sourceLineNo">319</span>         *<a name="line.319"></a>
+<span class="sourceLineNo">320</span>         * @exception Exception<a name="line.320"></a>
+<span class="sourceLineNo">321</span>         *             if key is not found, cannot be read, or cannot be parsed as<a name="line.321"></a>
+<span class="sourceLineNo">322</span>         *             an integer<a name="line.322"></a>
+<span class="sourceLineNo">323</span>         */<a name="line.323"></a>
+<span class="sourceLineNo">324</span>        protected static int _getInt(String propertyKey,<a name="line.324"></a>
+<span class="sourceLineNo">325</span>                        ConfigurationProperty property) throws Exception {<a name="line.325"></a>
+<span class="sourceLineNo">326</span>                String val = _getString(propertyKey, property);<a name="line.326"></a>
+<span class="sourceLineNo">327</span>                return new Integer(val).intValue();<a name="line.327"></a>
+<span class="sourceLineNo">328</span>        }<a name="line.328"></a>
+<span class="sourceLineNo">329</span><a name="line.329"></a>
+<span class="sourceLineNo">330</span>        //TODO: get this path out of the code.<a name="line.330"></a>
+<span class="sourceLineNo">331</span>        public final static String RESOURCEBUNDLE_DIR = "ptolemy/configs/kepler";<a name="line.331"></a>
+<span class="sourceLineNo">332</span><a name="line.332"></a>
+<span class="sourceLineNo">333</span>        ///////////////////////////////////////////////////////////////////<a name="line.333"></a>
+<span class="sourceLineNo">334</span>        ////                        protected variables                ////<a name="line.334"></a>
+<span class="sourceLineNo">335</span>        ///////////////////////////////////////////////////////////////////<a name="line.335"></a>
+<span class="sourceLineNo">336</span><a name="line.336"></a>
+<span class="sourceLineNo">337</span>        /** Set to true and recompile for debugging such as error messages.*/<a name="line.337"></a>
+<span class="sourceLineNo">338</span>        protected final static boolean _isDebugging = false;<a name="line.338"></a>
+<span class="sourceLineNo">339</span><a name="line.339"></a>
+<span class="sourceLineNo">340</span>        ///////////////////////////////////////////////////////////////////<a name="line.340"></a>
+<span class="sourceLineNo">341</span>        ////                        public variables                  ////<a name="line.341"></a>
+<span class="sourceLineNo">342</span>        ///////////////////////////////////////////////////////////////////<a name="line.342"></a>
+<span class="sourceLineNo">343</span><a name="line.343"></a>
+<span class="sourceLineNo">344</span>        private static ConfigurationProperty uiSettingsProp;<a name="line.344"></a>
+<span class="sourceLineNo">345</span>        private static ConfigurationProperty diplayTextProp;<a name="line.345"></a>
+<span class="sourceLineNo">346</span>        private static ConfigurationProperty uiSVGIconMappingsByClassProp;<a name="line.346"></a>
+<span class="sourceLineNo">347</span>        private static ConfigurationProperty uiSVGIconMappingsByLSIDProp;<a name="line.347"></a>
+<span class="sourceLineNo">348</span>}<a name="line.348"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

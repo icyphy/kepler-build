@@ -1,0 +1,610 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../../stylesheet.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>/* An action for getting documentation.<a name="line.1"></a>
+<span class="sourceLineNo">002</span><a name="line.2"></a>
+<span class="sourceLineNo">003</span> Copyright (c) 2006-2014 The Regents of the University of California.<a name="line.3"></a>
+<span class="sourceLineNo">004</span> All rights reserved.<a name="line.4"></a>
+<span class="sourceLineNo">005</span> Permission is hereby granted, without written agreement and without<a name="line.5"></a>
+<span class="sourceLineNo">006</span> license or royalty fees, to use, copy, modify, and distribute this<a name="line.6"></a>
+<span class="sourceLineNo">007</span> software and its documentation for any purpose, provided that the above<a name="line.7"></a>
+<span class="sourceLineNo">008</span> copyright notice and the following two paragraphs appear in all copies<a name="line.8"></a>
+<span class="sourceLineNo">009</span> of this software.<a name="line.9"></a>
+<span class="sourceLineNo">010</span><a name="line.10"></a>
+<span class="sourceLineNo">011</span> IN NO EVENT SHALL THE UNIVERSITY OF CALIFORNIA BE LIABLE TO ANY PARTY<a name="line.11"></a>
+<span class="sourceLineNo">012</span> FOR DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES<a name="line.12"></a>
+<span class="sourceLineNo">013</span> ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION, EVEN IF<a name="line.13"></a>
+<span class="sourceLineNo">014</span> THE UNIVERSITY OF CALIFORNIA HAS BEEN ADVISED OF THE POSSIBILITY OF<a name="line.14"></a>
+<span class="sourceLineNo">015</span> SUCH DAMAGE.<a name="line.15"></a>
+<span class="sourceLineNo">016</span><a name="line.16"></a>
+<span class="sourceLineNo">017</span> THE UNIVERSITY OF CALIFORNIA SPECIFICALLY DISCLAIMS ANY WARRANTIES,<a name="line.17"></a>
+<span class="sourceLineNo">018</span> INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF<a name="line.18"></a>
+<span class="sourceLineNo">019</span> MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE<a name="line.19"></a>
+<span class="sourceLineNo">020</span> PROVIDED HEREUNDER IS ON AN "AS IS" BASIS, AND THE UNIVERSITY OF<a name="line.20"></a>
+<span class="sourceLineNo">021</span> CALIFORNIA HAS NO OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT, UPDATES,<a name="line.21"></a>
+<span class="sourceLineNo">022</span> ENHANCEMENTS, OR MODIFICATIONS.<a name="line.22"></a>
+<span class="sourceLineNo">023</span><a name="line.23"></a>
+<span class="sourceLineNo">024</span> PT_COPYRIGHT_VERSION_2<a name="line.24"></a>
+<span class="sourceLineNo">025</span> COPYRIGHTENDKEY<a name="line.25"></a>
+<span class="sourceLineNo">026</span><a name="line.26"></a>
+<span class="sourceLineNo">027</span> */<a name="line.27"></a>
+<span class="sourceLineNo">028</span>package ptolemy.vergil.basic;<a name="line.28"></a>
+<span class="sourceLineNo">029</span><a name="line.29"></a>
+<span class="sourceLineNo">030</span>import java.awt.event.ActionEvent;<a name="line.30"></a>
+<span class="sourceLineNo">031</span>import java.net.URL;<a name="line.31"></a>
+<span class="sourceLineNo">032</span>import java.util.Iterator;<a name="line.32"></a>
+<span class="sourceLineNo">033</span>import java.util.List;<a name="line.33"></a>
+<span class="sourceLineNo">034</span><a name="line.34"></a>
+<span class="sourceLineNo">035</span>import javax.swing.JOptionPane;<a name="line.35"></a>
+<span class="sourceLineNo">036</span><a name="line.36"></a>
+<span class="sourceLineNo">037</span>import ptolemy.actor.gui.Configuration;<a name="line.37"></a>
+<span class="sourceLineNo">038</span>import ptolemy.actor.gui.Effigy;<a name="line.38"></a>
+<span class="sourceLineNo">039</span>import ptolemy.actor.gui.Tableau;<a name="line.39"></a>
+<span class="sourceLineNo">040</span>import ptolemy.data.expr.Parameter;<a name="line.40"></a>
+<span class="sourceLineNo">041</span>import ptolemy.kernel.ComponentEntity;<a name="line.41"></a>
+<span class="sourceLineNo">042</span>import ptolemy.kernel.attributes.VersionAttribute;<a name="line.42"></a>
+<span class="sourceLineNo">043</span>import ptolemy.kernel.util.InternalErrorException;<a name="line.43"></a>
+<span class="sourceLineNo">044</span>import ptolemy.kernel.util.KernelException;<a name="line.44"></a>
+<span class="sourceLineNo">045</span>import ptolemy.kernel.util.KernelRuntimeException;<a name="line.45"></a>
+<span class="sourceLineNo">046</span>import ptolemy.kernel.util.NamedObj;<a name="line.46"></a>
+<span class="sourceLineNo">047</span>import ptolemy.kernel.util.StringAttribute;<a name="line.47"></a>
+<span class="sourceLineNo">048</span>import ptolemy.util.MessageHandler;<a name="line.48"></a>
+<span class="sourceLineNo">049</span>import ptolemy.vergil.actor.DocApplicationSpecializer;<a name="line.49"></a>
+<span class="sourceLineNo">050</span>import ptolemy.vergil.actor.DocBuilderEffigy;<a name="line.50"></a>
+<span class="sourceLineNo">051</span>import ptolemy.vergil.actor.DocBuilderTableau;<a name="line.51"></a>
+<span class="sourceLineNo">052</span>import ptolemy.vergil.actor.DocEffigy;<a name="line.52"></a>
+<span class="sourceLineNo">053</span>import ptolemy.vergil.actor.DocManager;<a name="line.53"></a>
+<span class="sourceLineNo">054</span>import ptolemy.vergil.actor.DocTableau;<a name="line.54"></a>
+<span class="sourceLineNo">055</span>import ptolemy.vergil.toolbox.FigureAction;<a name="line.55"></a>
+<span class="sourceLineNo">056</span><a name="line.56"></a>
+<span class="sourceLineNo">057</span>///////////////////////////////////////////////////////////////////<a name="line.57"></a>
+<span class="sourceLineNo">058</span>//// GetDocumentationAction<a name="line.58"></a>
+<span class="sourceLineNo">059</span><a name="line.59"></a>
+<span class="sourceLineNo">060</span>/** This is an action that accesses the documentation for a Ptolemy<a name="line.60"></a>
+<span class="sourceLineNo">061</span>    object associated with a figure.  Note that this base class does<a name="line.61"></a>
+<span class="sourceLineNo">062</span>    not put this action in a menu, since some derived classes will<a name="line.62"></a>
+<span class="sourceLineNo">063</span>    not want it.  But by having it here, it is available to all<a name="line.63"></a>
+<span class="sourceLineNo">064</span>    derived classes.<a name="line.64"></a>
+<span class="sourceLineNo">065</span><a name="line.65"></a>
+<span class="sourceLineNo">066</span>    This class provides an action for removing instance-specific documentation.<a name="line.66"></a>
+<span class="sourceLineNo">067</span><a name="line.67"></a>
+<span class="sourceLineNo">068</span>    @author Edward A. Lee<a name="line.68"></a>
+<span class="sourceLineNo">069</span>    @version $Id$<a name="line.69"></a>
+<span class="sourceLineNo">070</span>    @since Ptolemy II 5.2<a name="line.70"></a>
+<span class="sourceLineNo">071</span>    @Pt.ProposedRating Red (eal)<a name="line.71"></a>
+<span class="sourceLineNo">072</span>    @Pt.AcceptedRating Red (johnr)<a name="line.72"></a>
+<span class="sourceLineNo">073</span> */<a name="line.73"></a>
+<span class="sourceLineNo">074</span>@SuppressWarnings("serial")<a name="line.74"></a>
+<span class="sourceLineNo">075</span>public class GetDocumentationAction extends FigureAction {<a name="line.75"></a>
+<span class="sourceLineNo">076</span><a name="line.76"></a>
+<span class="sourceLineNo">077</span>    /** Construct an instance and give a preference for whether the<a name="line.77"></a>
+<span class="sourceLineNo">078</span>     * KeplerDocumentationAttribute or the docAttribute should be displayed<a name="line.78"></a>
+<span class="sourceLineNo">079</span>     * if both exist.<a name="line.79"></a>
+<span class="sourceLineNo">080</span>     * @param docPreference 0 for docAttribute, 1 for<a name="line.80"></a>
+<span class="sourceLineNo">081</span>     * KeplerDocumentationAttribute<a name="line.81"></a>
+<span class="sourceLineNo">082</span>     */<a name="line.82"></a>
+<span class="sourceLineNo">083</span>    public GetDocumentationAction(int docPreference) {<a name="line.83"></a>
+<span class="sourceLineNo">084</span>        super("Get Documentation");<a name="line.84"></a>
+<span class="sourceLineNo">085</span>        _docPreference = docPreference;<a name="line.85"></a>
+<span class="sourceLineNo">086</span>    }<a name="line.86"></a>
+<span class="sourceLineNo">087</span><a name="line.87"></a>
+<span class="sourceLineNo">088</span>    /** Construct an instance of this action. */<a name="line.88"></a>
+<span class="sourceLineNo">089</span>    public GetDocumentationAction() {<a name="line.89"></a>
+<span class="sourceLineNo">090</span>        super("Get Documentation");<a name="line.90"></a>
+<span class="sourceLineNo">091</span>    }<a name="line.91"></a>
+<span class="sourceLineNo">092</span><a name="line.92"></a>
+<span class="sourceLineNo">093</span>    ///////////////////////////////////////////////////////////////////<a name="line.93"></a>
+<span class="sourceLineNo">094</span>    ////                         public methods                    ////<a name="line.94"></a>
+<span class="sourceLineNo">095</span><a name="line.95"></a>
+<span class="sourceLineNo">096</span>    /** Perform the action by opening documentation for the target.<a name="line.96"></a>
+<span class="sourceLineNo">097</span>     *  In the default situation, the documentation is in doc.codeDoc.<a name="line.97"></a>
+<span class="sourceLineNo">098</span>     *  However, if we have a custom application like HyVisual,<a name="line.98"></a>
+<span class="sourceLineNo">099</span>     *  VisualSense or Viptos, then we create the docs in<a name="line.99"></a>
+<span class="sourceLineNo">100</span>     *  doc.codeDoc&lt;i&gt;ApplicationName&lt;/i&gt;.doc.codeDoc.  However, this<a name="line.100"></a>
+<span class="sourceLineNo">101</span>     *  directory gets jar up and shipped with these apps when we ship<a name="line.101"></a>
+<span class="sourceLineNo">102</span>     *  windows installers and the docs are found at doc.codeDoc<a name="line.102"></a>
+<span class="sourceLineNo">103</span>     *  again.  So, if _applicationName is set, we look in<a name="line.103"></a>
+<span class="sourceLineNo">104</span>     *  doc.codeDoc&lt;i&gt;_applicationName&lt;/i&gt;.doc.codeDoc.  If that is<a name="line.104"></a>
+<span class="sourceLineNo">105</span>     *  not found, we look in doc.codeDoc.  If that is not found,<a name="line.105"></a>
+<span class="sourceLineNo">106</span>     *  we bring up {@link ptolemy.vergil.actor.DocBuilderGUI}.<a name="line.106"></a>
+<span class="sourceLineNo">107</span>     */<a name="line.107"></a>
+<span class="sourceLineNo">108</span>    @Override<a name="line.108"></a>
+<span class="sourceLineNo">109</span>    public void actionPerformed(ActionEvent e) {<a name="line.109"></a>
+<span class="sourceLineNo">110</span>        super.actionPerformed(e);<a name="line.110"></a>
+<span class="sourceLineNo">111</span><a name="line.111"></a>
+<span class="sourceLineNo">112</span>        if (_configuration == null) {<a name="line.112"></a>
+<span class="sourceLineNo">113</span>            MessageHandler<a name="line.113"></a>
+<span class="sourceLineNo">114</span>                    .error("Cannot get documentation without a configuration.");<a name="line.114"></a>
+<span class="sourceLineNo">115</span>        }<a name="line.115"></a>
+<span class="sourceLineNo">116</span><a name="line.116"></a>
+<span class="sourceLineNo">117</span>        NamedObj target = getTarget();<a name="line.117"></a>
+<span class="sourceLineNo">118</span>        if (target == null) {<a name="line.118"></a>
+<span class="sourceLineNo">119</span>            // Ignore and return.<a name="line.119"></a>
+<span class="sourceLineNo">120</span>            return;<a name="line.120"></a>
+<span class="sourceLineNo">121</span>        }<a name="line.121"></a>
+<span class="sourceLineNo">122</span><a name="line.122"></a>
+<span class="sourceLineNo">123</span>        showDocumentation(target);<a name="line.123"></a>
+<span class="sourceLineNo">124</span>    }<a name="line.124"></a>
+<span class="sourceLineNo">125</span><a name="line.125"></a>
+<span class="sourceLineNo">126</span>    /**<a name="line.126"></a>
+<span class="sourceLineNo">127</span>     * Show the documentation for a NamedObj.  This does the same<a name="line.127"></a>
+<span class="sourceLineNo">128</span>     * thing as the actionPerformed but without the action handler<a name="line.128"></a>
+<span class="sourceLineNo">129</span>     * @param target The NamedObj that will have its documentation shown.<a name="line.129"></a>
+<span class="sourceLineNo">130</span>     */<a name="line.130"></a>
+<span class="sourceLineNo">131</span>    public void showDocumentation(NamedObj target) {<a name="line.131"></a>
+<span class="sourceLineNo">132</span>        if (_configuration == null) {<a name="line.132"></a>
+<span class="sourceLineNo">133</span>            MessageHandler<a name="line.133"></a>
+<span class="sourceLineNo">134</span>                    .error("Cannot get documentation without a configuration.");<a name="line.134"></a>
+<span class="sourceLineNo">135</span>        }<a name="line.135"></a>
+<span class="sourceLineNo">136</span><a name="line.136"></a>
+<span class="sourceLineNo">137</span>        // If the object contains<a name="line.137"></a>
+<span class="sourceLineNo">138</span>        // an attribute named of class DocAttribute or if there<a name="line.138"></a>
+<span class="sourceLineNo">139</span>        // is a doc file for the object in the standard place,<a name="line.139"></a>
+<span class="sourceLineNo">140</span>        // then use the DocViewer class to display the documentation.<a name="line.140"></a>
+<span class="sourceLineNo">141</span>        // For backward compatibility, if neither of these is found,<a name="line.141"></a>
+<span class="sourceLineNo">142</span>        // then we open the Javadoc file, if it is found.<a name="line.142"></a>
+<span class="sourceLineNo">143</span>        List docAttributes = target.attributeList(DocAttribute.class);<a name="line.143"></a>
+<span class="sourceLineNo">144</span>        //check for the KeplerDocumentation attribute<a name="line.144"></a>
+<span class="sourceLineNo">145</span>        KeplerDocumentationAttribute keplerDocumentationAttribute = (KeplerDocumentationAttribute) target<a name="line.145"></a>
+<span class="sourceLineNo">146</span>                .getAttribute("KeplerDocumentation");<a name="line.146"></a>
+<span class="sourceLineNo">147</span>        int docAttributeSize = docAttributes.size();<a name="line.147"></a>
+<span class="sourceLineNo">148</span><a name="line.148"></a>
+<span class="sourceLineNo">149</span>        if (docAttributes.size() != 0 &amp;&amp; keplerDocumentationAttribute != null) {<a name="line.149"></a>
+<span class="sourceLineNo">150</span>            //if there is both a docAttribute and a KeplerDocumentationAttribute<a name="line.150"></a>
+<span class="sourceLineNo">151</span>            //use the preference passed in to the constructor<a name="line.151"></a>
+<span class="sourceLineNo">152</span>            if (_docPreference == 0) {<a name="line.152"></a>
+<span class="sourceLineNo">153</span>                keplerDocumentationAttribute = null;<a name="line.153"></a>
+<span class="sourceLineNo">154</span>            } else if (_docPreference == 1) {<a name="line.154"></a>
+<span class="sourceLineNo">155</span>                docAttributeSize = 0;<a name="line.155"></a>
+<span class="sourceLineNo">156</span>            }<a name="line.156"></a>
+<span class="sourceLineNo">157</span>        }<a name="line.157"></a>
+<span class="sourceLineNo">158</span><a name="line.158"></a>
+<span class="sourceLineNo">159</span>        if (keplerDocumentationAttribute != null) {<a name="line.159"></a>
+<span class="sourceLineNo">160</span>            //use the KeplerDocumentationAttribute<a name="line.160"></a>
+<span class="sourceLineNo">161</span>            DocAttribute docAttribute = keplerDocumentationAttribute<a name="line.161"></a>
+<span class="sourceLineNo">162</span>                    .getDocAttribute(target);<a name="line.162"></a>
+<span class="sourceLineNo">163</span>            if (docAttribute != null) {<a name="line.163"></a>
+<span class="sourceLineNo">164</span>                _showDocAttributeTableau(docAttribute, target);<a name="line.164"></a>
+<span class="sourceLineNo">165</span>            } else {<a name="line.165"></a>
+<span class="sourceLineNo">166</span>                throw new InternalErrorException(<a name="line.166"></a>
+<span class="sourceLineNo">167</span>                        "Error building Kepler documentation");<a name="line.167"></a>
+<span class="sourceLineNo">168</span>            }<a name="line.168"></a>
+<span class="sourceLineNo">169</span>        } else if (docAttributeSize != 0) {<a name="line.169"></a>
+<span class="sourceLineNo">170</span>            // Have a doc attribute. Use that.<a name="line.170"></a>
+<span class="sourceLineNo">171</span>            DocAttribute docAttribute = (DocAttribute) docAttributes<a name="line.171"></a>
+<span class="sourceLineNo">172</span>                    .get(docAttributes.size() - 1);<a name="line.172"></a>
+<span class="sourceLineNo">173</span>            _showDocAttributeTableau(docAttribute, target);<a name="line.173"></a>
+<span class="sourceLineNo">174</span>        } else {<a name="line.174"></a>
+<span class="sourceLineNo">175</span>            // No doc attribute. Try for a doc file.<a name="line.175"></a>
+<span class="sourceLineNo">176</span>            String className = target.getClass().getName();<a name="line.176"></a>
+<span class="sourceLineNo">177</span>            Effigy context = Configuration.findEffigy(target);<a name="line.177"></a>
+<span class="sourceLineNo">178</span>            NamedObj container = target.getContainer();<a name="line.178"></a>
+<span class="sourceLineNo">179</span>            while (context == null &amp;&amp; container != null) {<a name="line.179"></a>
+<span class="sourceLineNo">180</span>                context = Configuration.findEffigy(container);<a name="line.180"></a>
+<span class="sourceLineNo">181</span>                container = container.getContainer();<a name="line.181"></a>
+<span class="sourceLineNo">182</span>            }<a name="line.182"></a>
+<span class="sourceLineNo">183</span>            /* This test is pointless, since it shows the doc anyway.<a name="line.183"></a>
+<span class="sourceLineNo">184</span>            if (context == null) {<a name="line.184"></a>
+<span class="sourceLineNo">185</span>                MessageHandler.error("Cannot find an effigy for "<a name="line.185"></a>
+<span class="sourceLineNo">186</span>                        + target.getFullName());<a name="line.186"></a>
+<span class="sourceLineNo">187</span>            }<a name="line.187"></a>
+<span class="sourceLineNo">188</span>             */<a name="line.188"></a>
+<span class="sourceLineNo">189</span>            getDocumentation(_configuration, className, context);<a name="line.189"></a>
+<span class="sourceLineNo">190</span>        }<a name="line.190"></a>
+<span class="sourceLineNo">191</span>    }<a name="line.191"></a>
+<span class="sourceLineNo">192</span><a name="line.192"></a>
+<span class="sourceLineNo">193</span>    /** Get the documentation for a particular class.<a name="line.193"></a>
+<span class="sourceLineNo">194</span>     *  &lt;p&gt;If the configuration has a parameter _docApplicationSpecializer<a name="line.194"></a>
+<span class="sourceLineNo">195</span>     *  and that parameter names a class that that implements the<a name="line.195"></a>
+<span class="sourceLineNo">196</span>     *  DocApplicationSpecializer interface, then we call<a name="line.196"></a>
+<span class="sourceLineNo">197</span>     *  docClassNameToURL().<a name="line.197"></a>
+<span class="sourceLineNo">198</span>     *<a name="line.198"></a>
+<span class="sourceLineNo">199</span>     *  &lt;p&gt;If the documentation is not found, pop up a dialog and ask the<a name="line.199"></a>
+<span class="sourceLineNo">200</span>     *  user if they would like to build the documentation, use the<a name="line.200"></a>
+<span class="sourceLineNo">201</span>     *  website documentation or cancel.  The location of the website<a name="line.201"></a>
+<span class="sourceLineNo">202</span>     *  documentation is set by the _remoteDocumentationURLBase attribute<a name="line.202"></a>
+<span class="sourceLineNo">203</span>     *  in the configuration.  That attribute, if present, should be a<a name="line.203"></a>
+<span class="sourceLineNo">204</span>     *  parameter that whose value is a string that represents the URL<a name="line.204"></a>
+<span class="sourceLineNo">205</span>     *  where the documentation may be found.  If the<a name="line.205"></a>
+<span class="sourceLineNo">206</span>     *  _remoteDocumentationURLBase attribute is not set, then the<a name="line.206"></a>
+<span class="sourceLineNo">207</span>     *  location of the website documentation defaults to<a name="line.207"></a>
+<span class="sourceLineNo">208</span>     *  &lt;code&gt;http://ptolemy.eecs.berkeley.edu/ptolemyII/ptII/&lt;i&gt;Major.Version&lt;/i&gt;&lt;/code&gt;,<a name="line.208"></a>
+<span class="sourceLineNo">209</span>     *  where &lt;code&gt;&lt;i&gt;Major.Version&lt;/i&gt;&lt;/code&gt; is the value returned by<a name="line.209"></a>
+<span class="sourceLineNo">210</span>     *  {@link ptolemy.kernel.attributes.VersionAttribute#majorCurrentVersion()}.<a name="line.210"></a>
+<span class="sourceLineNo">211</span>     *<a name="line.211"></a>
+<span class="sourceLineNo">212</span>     *  @param configuration The configuration.<a name="line.212"></a>
+<span class="sourceLineNo">213</span>     *  @param className The dot separated fully qualified name of the class.<a name="line.213"></a>
+<span class="sourceLineNo">214</span>     *  @param context The context.<a name="line.214"></a>
+<span class="sourceLineNo">215</span>     */<a name="line.215"></a>
+<span class="sourceLineNo">216</span>    public static void getDocumentation(Configuration configuration,<a name="line.216"></a>
+<span class="sourceLineNo">217</span>            String className, Effigy context) {<a name="line.217"></a>
+<span class="sourceLineNo">218</span>        try {<a name="line.218"></a>
+<span class="sourceLineNo">219</span><a name="line.219"></a>
+<span class="sourceLineNo">220</span>            // Look for the PtDoc .xml file or the javadoc.<a name="line.220"></a>
+<span class="sourceLineNo">221</span>            // Don't look for the source or the index.<a name="line.221"></a>
+<span class="sourceLineNo">222</span>            URL toRead = DocManager.docClassNameToURL(configuration, className,<a name="line.222"></a>
+<span class="sourceLineNo">223</span>                    true, true, false, false);<a name="line.223"></a>
+<span class="sourceLineNo">224</span>            if (toRead != null) {<a name="line.224"></a>
+<span class="sourceLineNo">225</span>                _lastClassName = null;<a name="line.225"></a>
+<span class="sourceLineNo">226</span>                if (toRead.toExternalForm().endsWith(".html")) {<a name="line.226"></a>
+<span class="sourceLineNo">227</span>                    // Sadly, Javadoc from Java 1.7 cannot be<a name="line.227"></a>
+<span class="sourceLineNo">228</span>                    // displayed using a JEditorPane, so we open<a name="line.228"></a>
+<span class="sourceLineNo">229</span>                    // javadoc in an external browser.  To test this<a name="line.229"></a>
+<span class="sourceLineNo">230</span>                    // out, see<a name="line.230"></a>
+<span class="sourceLineNo">231</span>                    // http://docs.oracle.com/javase/tutorial/uiswing/components/editorpane.html#editorpane<a name="line.231"></a>
+<span class="sourceLineNo">232</span>                    // and modify the example so that it tries to view<a name="line.232"></a>
+<span class="sourceLineNo">233</span>                    // the Javadoc for Object.<a name="line.233"></a>
+<span class="sourceLineNo">234</span>                    toRead = new URL(toRead.toExternalForm() + "#in_browser");<a name="line.234"></a>
+<span class="sourceLineNo">235</span>                }<a name="line.235"></a>
+<span class="sourceLineNo">236</span>                // Opening a remote URL can be slow, so we report to the status bar.<a name="line.236"></a>
+<span class="sourceLineNo">237</span>                BasicGraphFrame basicGraphFrame = BasicGraphFrame<a name="line.237"></a>
+<span class="sourceLineNo">238</span>                        .getBasicGraphFrame(context);<a name="line.238"></a>
+<span class="sourceLineNo">239</span><a name="line.239"></a>
+<span class="sourceLineNo">240</span>                if (basicGraphFrame != null) {<a name="line.240"></a>
+<span class="sourceLineNo">241</span>                    basicGraphFrame.report("Opening " + toRead);<a name="line.241"></a>
+<span class="sourceLineNo">242</span>                }<a name="line.242"></a>
+<span class="sourceLineNo">243</span>                configuration.openModel(null, toRead, toRead.toExternalForm());<a name="line.243"></a>
+<span class="sourceLineNo">244</span>                if (basicGraphFrame != null) {<a name="line.244"></a>
+<span class="sourceLineNo">245</span>                    basicGraphFrame<a name="line.245"></a>
+<span class="sourceLineNo">246</span>                            .report("Opened documentation for " + className);<a name="line.246"></a>
+<span class="sourceLineNo">247</span>                }<a name="line.247"></a>
+<span class="sourceLineNo">248</span>            } else {<a name="line.248"></a>
+<span class="sourceLineNo">249</span>                Parameter docApplicationSpecializerParameter = (Parameter) configuration<a name="line.249"></a>
+<span class="sourceLineNo">250</span>                        .getAttribute("_docApplicationSpecializer",<a name="line.250"></a>
+<span class="sourceLineNo">251</span>                                Parameter.class);<a name="line.251"></a>
+<span class="sourceLineNo">252</span>                if (docApplicationSpecializerParameter != null) {<a name="line.252"></a>
+<span class="sourceLineNo">253</span>                    //if there is a docApplicationSpecializer, let it handle the<a name="line.253"></a>
+<span class="sourceLineNo">254</span>                    //error instead of just throwing the exception<a name="line.254"></a>
+<span class="sourceLineNo">255</span>                    String docApplicationSpecializerClassName = docApplicationSpecializerParameter<a name="line.255"></a>
+<span class="sourceLineNo">256</span>                            .getExpression();<a name="line.256"></a>
+<span class="sourceLineNo">257</span>                    Class docApplicationSpecializerClass = Class<a name="line.257"></a>
+<span class="sourceLineNo">258</span>                            .forName(docApplicationSpecializerClassName);<a name="line.258"></a>
+<span class="sourceLineNo">259</span>                    final DocApplicationSpecializer docApplicationSpecializer = (DocApplicationSpecializer) docApplicationSpecializerClass<a name="line.259"></a>
+<span class="sourceLineNo">260</span>                            .newInstance();<a name="line.260"></a>
+<span class="sourceLineNo">261</span>                    docApplicationSpecializer<a name="line.261"></a>
+<span class="sourceLineNo">262</span>                            .handleDocumentationNotFound(className, context);<a name="line.262"></a>
+<span class="sourceLineNo">263</span>                } else {<a name="line.263"></a>
+<span class="sourceLineNo">264</span>                    throw new Exception("Could not get find documentation for "<a name="line.264"></a>
+<span class="sourceLineNo">265</span>                            + className + "."<a name="line.265"></a>
+<span class="sourceLineNo">266</span>                            + (DocManager<a name="line.266"></a>
+<span class="sourceLineNo">267</span>                                    .getRemoteDocumentationURLBase() != null<a name="line.267"></a>
+<span class="sourceLineNo">268</span>                                            ? " Also tried looking on \""<a name="line.268"></a>
+<span class="sourceLineNo">269</span>                                                    + DocManager<a name="line.269"></a>
+<span class="sourceLineNo">270</span>                                                            .getRemoteDocumentationURLBase()<a name="line.270"></a>
+<span class="sourceLineNo">271</span>                                                    + "\"."<a name="line.271"></a>
+<span class="sourceLineNo">272</span>                                            : ""));<a name="line.272"></a>
+<span class="sourceLineNo">273</span>                }<a name="line.273"></a>
+<span class="sourceLineNo">274</span>            }<a name="line.274"></a>
+<span class="sourceLineNo">275</span>        } catch (Exception ex) {<a name="line.275"></a>
+<span class="sourceLineNo">276</span>            // Try to open the DocBuilderGUI<a name="line.276"></a>
+<span class="sourceLineNo">277</span>            try {<a name="line.277"></a>
+<span class="sourceLineNo">278</span>                Parameter remoteDocumentationURLBaseParameter = (Parameter) configuration<a name="line.278"></a>
+<span class="sourceLineNo">279</span>                        .getAttribute("_remoteDocumentationURLBase",<a name="line.279"></a>
+<span class="sourceLineNo">280</span>                                Parameter.class);<a name="line.280"></a>
+<span class="sourceLineNo">281</span>                String tentativeRemoteDocumentationURLBase = null;<a name="line.281"></a>
+<span class="sourceLineNo">282</span>                if (remoteDocumentationURLBaseParameter != null) {<a name="line.282"></a>
+<span class="sourceLineNo">283</span>                    tentativeRemoteDocumentationURLBase = remoteDocumentationURLBaseParameter<a name="line.283"></a>
+<span class="sourceLineNo">284</span>                            .getExpression();<a name="line.284"></a>
+<span class="sourceLineNo">285</span>                } else {<a name="line.285"></a>
+<span class="sourceLineNo">286</span>                    if (VersionAttribute.CURRENT_VERSION.getExpression()<a name="line.286"></a>
+<span class="sourceLineNo">287</span>                            .indexOf(".devel") != -1) {<a name="line.287"></a>
+<span class="sourceLineNo">288</span>                        tentativeRemoteDocumentationURLBase = "https://chess.eecs.berkeley.edu/ptexternal/src/ptII/";<a name="line.288"></a>
+<span class="sourceLineNo">289</span>                    } else {<a name="line.289"></a>
+<span class="sourceLineNo">290</span>                        tentativeRemoteDocumentationURLBase = "http://ptolemy.eecs.berkeley.edu/ptolemyII/ptII"<a name="line.290"></a>
+<span class="sourceLineNo">291</span>                                + VersionAttribute.majorCurrentVersion()<a name="line.291"></a>
+<span class="sourceLineNo">292</span>                                + "/ptII/";<a name="line.292"></a>
+<span class="sourceLineNo">293</span>                    }<a name="line.293"></a>
+<span class="sourceLineNo">294</span>                }<a name="line.294"></a>
+<span class="sourceLineNo">295</span>                // Pop up a query an prompt the user<a name="line.295"></a>
+<span class="sourceLineNo">296</span>                String message = "The documentation for " + className<a name="line.296"></a>
+<span class="sourceLineNo">297</span>                        + " was not found.\n"<a name="line.297"></a>
+<span class="sourceLineNo">298</span>                        + (_lastClassName != null &amp;&amp; DocManager<a name="line.298"></a>
+<span class="sourceLineNo">299</span>                                .getRemoteDocumentationURLBase() != null<a name="line.299"></a>
+<span class="sourceLineNo">300</span>                                        ? " We looked in \"" + DocManager<a name="line.300"></a>
+<span class="sourceLineNo">301</span>                                                .getRemoteDocumentationURLBase()<a name="line.301"></a>
+<span class="sourceLineNo">302</span>                                                + "\" but did not find anything.\n"<a name="line.302"></a>
+<span class="sourceLineNo">303</span>                                        : "")<a name="line.303"></a>
+<span class="sourceLineNo">304</span>                        + "You may\n"<a name="line.304"></a>
+<span class="sourceLineNo">305</span>                        + "1) Build the documentation, which requires "<a name="line.305"></a>
+<span class="sourceLineNo">306</span>                        + "configure and make, or\n"<a name="line.306"></a>
+<span class="sourceLineNo">307</span>                        + "2) Use the documentation from the website at \""<a name="line.307"></a>
+<span class="sourceLineNo">308</span>                        + tentativeRemoteDocumentationURLBase + "\" or\n"<a name="line.308"></a>
+<span class="sourceLineNo">309</span>                        + "3) Cancel";<a name="line.309"></a>
+<span class="sourceLineNo">310</span>                Object[] options = { "Build", "Use Website", "Cancel" };<a name="line.310"></a>
+<span class="sourceLineNo">311</span>                int selected = JOptionPane.showOptionDialog(null, message,<a name="line.311"></a>
+<span class="sourceLineNo">312</span>                        "Choose Documentation Source",<a name="line.312"></a>
+<span class="sourceLineNo">313</span>                        JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE,<a name="line.313"></a>
+<span class="sourceLineNo">314</span>                        null, options, options[0]);<a name="line.314"></a>
+<span class="sourceLineNo">315</span>                switch (selected) {<a name="line.315"></a>
+<span class="sourceLineNo">316</span>                case 2:<a name="line.316"></a>
+<span class="sourceLineNo">317</span>                    // Cancel<a name="line.317"></a>
+<span class="sourceLineNo">318</span>                    return;<a name="line.318"></a>
+<span class="sourceLineNo">319</span>                case 1:<a name="line.319"></a>
+<span class="sourceLineNo">320</span>                    // Use Website<a name="line.320"></a>
+<span class="sourceLineNo">321</span>                    DocManager.setRemoteDocumentationURLBase(<a name="line.321"></a>
+<span class="sourceLineNo">322</span>                            tentativeRemoteDocumentationURLBase);<a name="line.322"></a>
+<span class="sourceLineNo">323</span>                    _lastClassName = className;<a name="line.323"></a>
+<span class="sourceLineNo">324</span>                    getDocumentation(configuration, className, context);<a name="line.324"></a>
+<span class="sourceLineNo">325</span>                    break;<a name="line.325"></a>
+<span class="sourceLineNo">326</span>                case 0:<a name="line.326"></a>
+<span class="sourceLineNo">327</span>                    // Build<a name="line.327"></a>
+<span class="sourceLineNo">328</span>                    // Need to create an effigy and tableau.<a name="line.328"></a>
+<span class="sourceLineNo">329</span>                    ComponentEntity effigy = context<a name="line.329"></a>
+<span class="sourceLineNo">330</span>                            .getEntity("DocBuilderEffigy");<a name="line.330"></a>
+<span class="sourceLineNo">331</span>                    if (effigy == null) {<a name="line.331"></a>
+<span class="sourceLineNo">332</span>                        try {<a name="line.332"></a>
+<span class="sourceLineNo">333</span>                            effigy = new DocBuilderEffigy(context,<a name="line.333"></a>
+<span class="sourceLineNo">334</span>                                    "DocBuilderEffigy");<a name="line.334"></a>
+<span class="sourceLineNo">335</span>                        } catch (KernelException exception) {<a name="line.335"></a>
+<span class="sourceLineNo">336</span>                            throw new InternalErrorException(exception);<a name="line.336"></a>
+<span class="sourceLineNo">337</span>                        }<a name="line.337"></a>
+<span class="sourceLineNo">338</span>                    }<a name="line.338"></a>
+<span class="sourceLineNo">339</span>                    if (!(effigy instanceof DocBuilderEffigy)) {<a name="line.339"></a>
+<span class="sourceLineNo">340</span>                        MessageHandler.error("Found an effigy named "<a name="line.340"></a>
+<span class="sourceLineNo">341</span>                                + "DocBuilderEffigy that "<a name="line.341"></a>
+<span class="sourceLineNo">342</span>                                + "is not an instance of DocBuilderEffigy!");<a name="line.342"></a>
+<span class="sourceLineNo">343</span>                    }<a name="line.343"></a>
+<span class="sourceLineNo">344</span>                    //((DocEffigy) effigy).setDocAttribute(docAttribute);<a name="line.344"></a>
+<span class="sourceLineNo">345</span>                    ComponentEntity tableau = ((Effigy) effigy)<a name="line.345"></a>
+<span class="sourceLineNo">346</span>                            .getEntity("DocBuilderTableau");<a name="line.346"></a>
+<span class="sourceLineNo">347</span>                    if (tableau == null) {<a name="line.347"></a>
+<span class="sourceLineNo">348</span>                        try {<a name="line.348"></a>
+<span class="sourceLineNo">349</span>                            tableau = new DocBuilderTableau(<a name="line.349"></a>
+<span class="sourceLineNo">350</span>                                    (DocBuilderEffigy) effigy,<a name="line.350"></a>
+<span class="sourceLineNo">351</span>                                    "DocBuilderTableau");<a name="line.351"></a>
+<span class="sourceLineNo">352</span>                            ((DocBuilderTableau) tableau)<a name="line.352"></a>
+<span class="sourceLineNo">353</span>                                    .setTitle("Documentation for " + className);<a name="line.353"></a>
+<span class="sourceLineNo">354</span>                        } catch (KernelException exception) {<a name="line.354"></a>
+<span class="sourceLineNo">355</span>                            throw new InternalErrorException(exception);<a name="line.355"></a>
+<span class="sourceLineNo">356</span>                        }<a name="line.356"></a>
+<span class="sourceLineNo">357</span>                    }<a name="line.357"></a>
+<span class="sourceLineNo">358</span>                    if (!(tableau instanceof DocBuilderTableau)) {<a name="line.358"></a>
+<span class="sourceLineNo">359</span>                        MessageHandler.error("Found a tableau named "<a name="line.359"></a>
+<span class="sourceLineNo">360</span>                                + "DocBuilderTableau that "<a name="line.360"></a>
+<span class="sourceLineNo">361</span>                                + "is not an instance of DocBuilderTableau!");<a name="line.361"></a>
+<span class="sourceLineNo">362</span>                    }<a name="line.362"></a>
+<span class="sourceLineNo">363</span>                    // FIXME: Tell the user what to do here.<a name="line.363"></a>
+<span class="sourceLineNo">364</span>                    ((DocBuilderTableau) tableau).show();<a name="line.364"></a>
+<span class="sourceLineNo">365</span>                    break;<a name="line.365"></a>
+<span class="sourceLineNo">366</span>                default:<a name="line.366"></a>
+<span class="sourceLineNo">367</span>                    throw new InternalErrorException("Unknown return value \""<a name="line.367"></a>
+<span class="sourceLineNo">368</span>                            + selected<a name="line.368"></a>
+<span class="sourceLineNo">369</span>                            + "\" from Choose Documentation Source window.");<a name="line.369"></a>
+<span class="sourceLineNo">370</span>                    //break;<a name="line.370"></a>
+<span class="sourceLineNo">371</span>                }<a name="line.371"></a>
+<span class="sourceLineNo">372</span>            } catch (Throwable throwable) {<a name="line.372"></a>
+<span class="sourceLineNo">373</span>                MessageHandler.error("Cannot find documentation for "<a name="line.373"></a>
+<span class="sourceLineNo">374</span>                        + className + "\nTry Running \"make\" in ptII/doc."<a name="line.374"></a>
+<span class="sourceLineNo">375</span>                        + "\nor installing the documentation component.",<a name="line.375"></a>
+<span class="sourceLineNo">376</span>                        throwable);<a name="line.376"></a>
+<span class="sourceLineNo">377</span>            }<a name="line.377"></a>
+<span class="sourceLineNo">378</span>        }<a name="line.378"></a>
+<span class="sourceLineNo">379</span>    }<a name="line.379"></a>
+<span class="sourceLineNo">380</span><a name="line.380"></a>
+<span class="sourceLineNo">381</span>    /** Set the configuration.  This is used<a name="line.381"></a>
+<span class="sourceLineNo">382</span>     *  to open files (such as documentation).  The configuration is<a name="line.382"></a>
+<span class="sourceLineNo">383</span>     *  is important because it keeps track of which files are already<a name="line.383"></a>
+<span class="sourceLineNo">384</span>     *  open and ensures that there is only one editor operating on the<a name="line.384"></a>
+<span class="sourceLineNo">385</span>     *  file at any one time.<a name="line.385"></a>
+<span class="sourceLineNo">386</span>     *  @param configuration The configuration.<a name="line.386"></a>
+<span class="sourceLineNo">387</span>     */<a name="line.387"></a>
+<span class="sourceLineNo">388</span>    public void setConfiguration(Configuration configuration) {<a name="line.388"></a>
+<span class="sourceLineNo">389</span>        _configuration = configuration;<a name="line.389"></a>
+<span class="sourceLineNo">390</span>    }<a name="line.390"></a>
+<span class="sourceLineNo">391</span><a name="line.391"></a>
+<span class="sourceLineNo">392</span>    /** Set the effigy to be used if the effigy is not evident from the<a name="line.392"></a>
+<span class="sourceLineNo">393</span>     *  model being edited.  This is used if you are showing the documentation<a name="line.393"></a>
+<span class="sourceLineNo">394</span>     *  from code that is not in a model.<a name="line.394"></a>
+<span class="sourceLineNo">395</span>     *  @param effigy the effigy to set.<a name="line.395"></a>
+<span class="sourceLineNo">396</span>     */<a name="line.396"></a>
+<span class="sourceLineNo">397</span>    public void setEffigy(Effigy effigy) {<a name="line.397"></a>
+<span class="sourceLineNo">398</span>        _effigy = effigy;<a name="line.398"></a>
+<span class="sourceLineNo">399</span>    }<a name="line.399"></a>
+<span class="sourceLineNo">400</span><a name="line.400"></a>
+<span class="sourceLineNo">401</span>    ///////////////////////////////////////////////////////////////////<a name="line.401"></a>
+<span class="sourceLineNo">402</span>    ////                         protected variables               ////<a name="line.402"></a>
+<span class="sourceLineNo">403</span><a name="line.403"></a>
+<span class="sourceLineNo">404</span>    /** The configuration. */<a name="line.404"></a>
+<span class="sourceLineNo">405</span>    protected Configuration _configuration;<a name="line.405"></a>
+<span class="sourceLineNo">406</span><a name="line.406"></a>
+<span class="sourceLineNo">407</span>    ///////////////////////////////////////////////////////////////////<a name="line.407"></a>
+<span class="sourceLineNo">408</span>    ////                         private methods                   ////<a name="line.408"></a>
+<span class="sourceLineNo">409</span><a name="line.409"></a>
+<span class="sourceLineNo">410</span>    /**<a name="line.410"></a>
+<span class="sourceLineNo">411</span>     * Allow optional use of multiple documentation windows when the<a name="line.411"></a>
+<span class="sourceLineNo">412</span>     * _multipleDocumentationAllowed attribute is found in the<a name="line.412"></a>
+<span class="sourceLineNo">413</span>     * Configuration.<a name="line.413"></a>
+<span class="sourceLineNo">414</span>     */<a name="line.414"></a>
+<span class="sourceLineNo">415</span>    private static boolean _isMultipleDocumentationAllowed() {<a name="line.415"></a>
+<span class="sourceLineNo">416</span>        // FIXME: This is necessary for Kepler, but not for Ptolemy?<a name="line.416"></a>
+<span class="sourceLineNo">417</span>        // Why?<a name="line.417"></a>
+<span class="sourceLineNo">418</span>        boolean retVal = false;<a name="line.418"></a>
+<span class="sourceLineNo">419</span>        List configsList = Configuration.configurations();<a name="line.419"></a>
+<span class="sourceLineNo">420</span>        Configuration config = null;<a name="line.420"></a>
+<span class="sourceLineNo">421</span><a name="line.421"></a>
+<span class="sourceLineNo">422</span>        for (Iterator it = configsList.iterator(); it.hasNext();) {<a name="line.422"></a>
+<span class="sourceLineNo">423</span>            config = (Configuration) it.next();<a name="line.423"></a>
+<span class="sourceLineNo">424</span>            if (config != null) {<a name="line.424"></a>
+<span class="sourceLineNo">425</span>                break;<a name="line.425"></a>
+<span class="sourceLineNo">426</span>            }<a name="line.426"></a>
+<span class="sourceLineNo">427</span>        }<a name="line.427"></a>
+<span class="sourceLineNo">428</span>        if (config == null) {<a name="line.428"></a>
+<span class="sourceLineNo">429</span>            throw new KernelRuntimeException("Could not find "<a name="line.429"></a>
+<span class="sourceLineNo">430</span>                    + "configuration, list of configurations was "<a name="line.430"></a>
+<span class="sourceLineNo">431</span>                    + configsList.size() + " elements, all were null.");<a name="line.431"></a>
+<span class="sourceLineNo">432</span>        }<a name="line.432"></a>
+<span class="sourceLineNo">433</span>        // Look up the attribute (if it exists)<a name="line.433"></a>
+<span class="sourceLineNo">434</span>        StringAttribute multipleDocumentationAllowed = (StringAttribute) config<a name="line.434"></a>
+<span class="sourceLineNo">435</span>                .getAttribute("_multipleDocumentationAllowed");<a name="line.435"></a>
+<span class="sourceLineNo">436</span>        if (multipleDocumentationAllowed != null) {<a name="line.436"></a>
+<span class="sourceLineNo">437</span>            retVal = Boolean<a name="line.437"></a>
+<span class="sourceLineNo">438</span>                    .parseBoolean(multipleDocumentationAllowed.getExpression());<a name="line.438"></a>
+<span class="sourceLineNo">439</span>        }<a name="line.439"></a>
+<span class="sourceLineNo">440</span>        return retVal;<a name="line.440"></a>
+<span class="sourceLineNo">441</span>    }<a name="line.441"></a>
+<span class="sourceLineNo">442</span><a name="line.442"></a>
+<span class="sourceLineNo">443</span>    /**<a name="line.443"></a>
+<span class="sourceLineNo">444</span>     * Find and show the tableau for a given DocAttribute.<a name="line.444"></a>
+<span class="sourceLineNo">445</span>     * @param docAttribute the attribute to show<a name="line.445"></a>
+<span class="sourceLineNo">446</span>     * @param target the target of the documentation viewing<a name="line.446"></a>
+<span class="sourceLineNo">447</span>     */<a name="line.447"></a>
+<span class="sourceLineNo">448</span>    private void _showDocAttributeTableau(DocAttribute docAttribute,<a name="line.448"></a>
+<span class="sourceLineNo">449</span>            NamedObj target) {<a name="line.449"></a>
+<span class="sourceLineNo">450</span>        // Need to create an effigy and tableau.<a name="line.450"></a>
+<span class="sourceLineNo">451</span>        ComponentEntity effigy = null;<a name="line.451"></a>
+<span class="sourceLineNo">452</span>        Effigy context = Configuration.findEffigy(target);<a name="line.452"></a>
+<span class="sourceLineNo">453</span>        if (_effigy == null) {<a name="line.453"></a>
+<span class="sourceLineNo">454</span>            NamedObj container = target.getContainer();<a name="line.454"></a>
+<span class="sourceLineNo">455</span>            while (container != null &amp;&amp; context == null) {<a name="line.455"></a>
+<span class="sourceLineNo">456</span>                context = Configuration.findEffigy(container);<a name="line.456"></a>
+<span class="sourceLineNo">457</span>                container = container.getContainer();<a name="line.457"></a>
+<span class="sourceLineNo">458</span>            }<a name="line.458"></a>
+<span class="sourceLineNo">459</span>            if (context == null) {<a name="line.459"></a>
+<span class="sourceLineNo">460</span>                MessageHandler.error(<a name="line.460"></a>
+<span class="sourceLineNo">461</span>                        "Cannot find an effigy for " + target.getFullName());<a name="line.461"></a>
+<span class="sourceLineNo">462</span>                return;<a name="line.462"></a>
+<span class="sourceLineNo">463</span>            }<a name="line.463"></a>
+<span class="sourceLineNo">464</span>            effigy = context.getEntity("DocEffigy");<a name="line.464"></a>
+<span class="sourceLineNo">465</span>        } else {<a name="line.465"></a>
+<span class="sourceLineNo">466</span>            effigy = _effigy;<a name="line.466"></a>
+<span class="sourceLineNo">467</span>        }<a name="line.467"></a>
+<span class="sourceLineNo">468</span><a name="line.468"></a>
+<span class="sourceLineNo">469</span>        if (effigy == null) {<a name="line.469"></a>
+<span class="sourceLineNo">470</span>            try {<a name="line.470"></a>
+<span class="sourceLineNo">471</span>                effigy = new DocEffigy(context, "DocEffigy");<a name="line.471"></a>
+<span class="sourceLineNo">472</span>            } catch (KernelException exception) {<a name="line.472"></a>
+<span class="sourceLineNo">473</span>                throw new InternalErrorException(exception);<a name="line.473"></a>
+<span class="sourceLineNo">474</span>            }<a name="line.474"></a>
+<span class="sourceLineNo">475</span>        }<a name="line.475"></a>
+<span class="sourceLineNo">476</span>        if (!(effigy instanceof DocEffigy)) {<a name="line.476"></a>
+<span class="sourceLineNo">477</span>            MessageHandler.error("Found an effigy named DocEffigy that "<a name="line.477"></a>
+<span class="sourceLineNo">478</span>                    + "is not an instance of DocEffigy!");<a name="line.478"></a>
+<span class="sourceLineNo">479</span>        }<a name="line.479"></a>
+<span class="sourceLineNo">480</span>        ((DocEffigy) effigy).setDocAttribute(docAttribute);<a name="line.480"></a>
+<span class="sourceLineNo">481</span>        ComponentEntity tableau = ((Effigy) effigy).getEntity("DocTableau");<a name="line.481"></a>
+<span class="sourceLineNo">482</span>        if (tableau == null) {<a name="line.482"></a>
+<span class="sourceLineNo">483</span>            try {<a name="line.483"></a>
+<span class="sourceLineNo">484</span>                tableau = new DocTableau((DocEffigy) effigy, "DocTableau");<a name="line.484"></a>
+<span class="sourceLineNo">485</span><a name="line.485"></a>
+<span class="sourceLineNo">486</span>                ((DocTableau) tableau)<a name="line.486"></a>
+<span class="sourceLineNo">487</span>                        .setTitle("Documentation for " + target.getFullName());<a name="line.487"></a>
+<span class="sourceLineNo">488</span>            } catch (KernelException exception) {<a name="line.488"></a>
+<span class="sourceLineNo">489</span>                throw new InternalErrorException(exception);<a name="line.489"></a>
+<span class="sourceLineNo">490</span>            }<a name="line.490"></a>
+<span class="sourceLineNo">491</span>        } else {<a name="line.491"></a>
+<span class="sourceLineNo">492</span>            if (_isMultipleDocumentationAllowed() ||<a name="line.492"></a>
+<span class="sourceLineNo">493</span>            // For some reason, the frame might be null.<a name="line.493"></a>
+<span class="sourceLineNo">494</span>                    (tableau instanceof Tableau)<a name="line.494"></a>
+<span class="sourceLineNo">495</span>                            &amp;&amp; ((Tableau) tableau).getFrame() == null) {<a name="line.495"></a>
+<span class="sourceLineNo">496</span>                try {<a name="line.496"></a>
+<span class="sourceLineNo">497</span>                    // FIXME: This is necessary for Kepler, but<a name="line.497"></a>
+<span class="sourceLineNo">498</span>                    // not for Ptolemy?  Why?<a name="line.498"></a>
+<span class="sourceLineNo">499</span><a name="line.499"></a>
+<span class="sourceLineNo">500</span>                    // Create a new tableau with a unique name<a name="line.500"></a>
+<span class="sourceLineNo">501</span>                    tableau = new DocTableau((DocEffigy) effigy,<a name="line.501"></a>
+<span class="sourceLineNo">502</span>                            effigy.uniqueName("DocTableau"));<a name="line.502"></a>
+<span class="sourceLineNo">503</span>                    ((DocTableau) tableau).setTitle(<a name="line.503"></a>
+<span class="sourceLineNo">504</span>                            "Documentation for " + target.getFullName());<a name="line.504"></a>
+<span class="sourceLineNo">505</span>                } catch (KernelException exception) {<a name="line.505"></a>
+<span class="sourceLineNo">506</span>                    MessageHandler.error("Failed to display documentation for "<a name="line.506"></a>
+<span class="sourceLineNo">507</span>                            + "\" " + target.getFullName() + "\".", exception);<a name="line.507"></a>
+<span class="sourceLineNo">508</span>                }<a name="line.508"></a>
+<span class="sourceLineNo">509</span>            }<a name="line.509"></a>
+<span class="sourceLineNo">510</span>        }<a name="line.510"></a>
+<span class="sourceLineNo">511</span>        if (!(tableau instanceof DocTableau)) {<a name="line.511"></a>
+<span class="sourceLineNo">512</span>            MessageHandler.error("Found a tableau named DocTableau that "<a name="line.512"></a>
+<span class="sourceLineNo">513</span>                    + "is not an instance of DocTableau!");<a name="line.513"></a>
+<span class="sourceLineNo">514</span>        }<a name="line.514"></a>
+<span class="sourceLineNo">515</span>        ((DocTableau) tableau).show();<a name="line.515"></a>
+<span class="sourceLineNo">516</span>    }<a name="line.516"></a>
+<span class="sourceLineNo">517</span><a name="line.517"></a>
+<span class="sourceLineNo">518</span>    ///////////////////////////////////////////////////////////////////<a name="line.518"></a>
+<span class="sourceLineNo">519</span>    ////                         private variables                 ////<a name="line.519"></a>
+<span class="sourceLineNo">520</span><a name="line.520"></a>
+<span class="sourceLineNo">521</span>    /**<a name="line.521"></a>
+<span class="sourceLineNo">522</span>     * Defines a preference for whether to display kepler documentation or<a name="line.522"></a>
+<span class="sourceLineNo">523</span>     * ptolemy documentation.  This can be set in the constructor and it<a name="line.523"></a>
+<span class="sourceLineNo">524</span>     * default to ptolemy.  0 is ptolemy, 1 is kepler.<a name="line.524"></a>
+<span class="sourceLineNo">525</span>     */<a name="line.525"></a>
+<span class="sourceLineNo">526</span>    private int _docPreference = 0;<a name="line.526"></a>
+<span class="sourceLineNo">527</span><a name="line.527"></a>
+<span class="sourceLineNo">528</span>    /**<a name="line.528"></a>
+<span class="sourceLineNo">529</span>     * Defines the effigy to use if the effigy is not apparent from the model<a name="line.529"></a>
+<span class="sourceLineNo">530</span>     */<a name="line.530"></a>
+<span class="sourceLineNo">531</span>    private Effigy _effigy = null;<a name="line.531"></a>
+<span class="sourceLineNo">532</span><a name="line.532"></a>
+<span class="sourceLineNo">533</span>    /** The name of the last class for which we looked.  If the user<a name="line.533"></a>
+<span class="sourceLineNo">534</span>     *  looks again for the same class and gets an error and<a name="line.534"></a>
+<span class="sourceLineNo">535</span>     *  remoteDocumentationURLBase is set, we print a little more information.<a name="line.535"></a>
+<span class="sourceLineNo">536</span>     */<a name="line.536"></a>
+<span class="sourceLineNo">537</span>    private static String _lastClassName = null;<a name="line.537"></a>
+<span class="sourceLineNo">538</span>}<a name="line.538"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

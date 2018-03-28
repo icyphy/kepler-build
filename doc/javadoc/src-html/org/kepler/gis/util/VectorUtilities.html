@@ -1,0 +1,643 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../../../stylesheet.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>/*<a name="line.1"></a>
+<span class="sourceLineNo">002</span> * Copyright (c) 2014-2015 The Regents of the University of California.<a name="line.2"></a>
+<span class="sourceLineNo">003</span> * All rights reserved.<a name="line.3"></a>
+<span class="sourceLineNo">004</span> *<a name="line.4"></a>
+<span class="sourceLineNo">005</span> * '$Author: crawl $'<a name="line.5"></a>
+<span class="sourceLineNo">006</span> * '$Date: 2018-03-15 11:14:49 -0700 (Thu, 15 Mar 2018) $' <a name="line.6"></a>
+<span class="sourceLineNo">007</span> * '$Revision: 34676 $'<a name="line.7"></a>
+<span class="sourceLineNo">008</span> * <a name="line.8"></a>
+<span class="sourceLineNo">009</span> * Permission is hereby granted, without written agreement and without<a name="line.9"></a>
+<span class="sourceLineNo">010</span> * license or royalty fees, to use, copy, modify, and distribute this<a name="line.10"></a>
+<span class="sourceLineNo">011</span> * software and its documentation for any purpose, provided that the above<a name="line.11"></a>
+<span class="sourceLineNo">012</span> * copyright notice and the following two paragraphs appear in all copies<a name="line.12"></a>
+<span class="sourceLineNo">013</span> * of this software.<a name="line.13"></a>
+<span class="sourceLineNo">014</span> *<a name="line.14"></a>
+<span class="sourceLineNo">015</span> * IN NO EVENT SHALL THE UNIVERSITY OF CALIFORNIA BE LIABLE TO ANY PARTY<a name="line.15"></a>
+<span class="sourceLineNo">016</span> * FOR DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES<a name="line.16"></a>
+<span class="sourceLineNo">017</span> * ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION, EVEN IF<a name="line.17"></a>
+<span class="sourceLineNo">018</span> * THE UNIVERSITY OF CALIFORNIA HAS BEEN ADVISED OF THE POSSIBILITY OF<a name="line.18"></a>
+<span class="sourceLineNo">019</span> * SUCH DAMAGE.<a name="line.19"></a>
+<span class="sourceLineNo">020</span> *<a name="line.20"></a>
+<span class="sourceLineNo">021</span> * THE UNIVERSITY OF CALIFORNIA SPECIFICALLY DISCLAIMS ANY WARRANTIES,<a name="line.21"></a>
+<span class="sourceLineNo">022</span> * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF<a name="line.22"></a>
+<span class="sourceLineNo">023</span> * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE<a name="line.23"></a>
+<span class="sourceLineNo">024</span> * PROVIDED HEREUNDER IS ON AN "AS IS" BASIS, AND THE UNIVERSITY OF<a name="line.24"></a>
+<span class="sourceLineNo">025</span> * CALIFORNIA HAS NO OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT, UPDATES,<a name="line.25"></a>
+<span class="sourceLineNo">026</span> * ENHANCEMENTS, OR MODIFICATIONS.<a name="line.26"></a>
+<span class="sourceLineNo">027</span> *<a name="line.27"></a>
+<span class="sourceLineNo">028</span> */<a name="line.28"></a>
+<span class="sourceLineNo">029</span>package org.kepler.gis.util;<a name="line.29"></a>
+<span class="sourceLineNo">030</span><a name="line.30"></a>
+<span class="sourceLineNo">031</span>import java.io.ByteArrayInputStream;<a name="line.31"></a>
+<span class="sourceLineNo">032</span>import java.io.File;<a name="line.32"></a>
+<span class="sourceLineNo">033</span>import java.io.FileInputStream;<a name="line.33"></a>
+<span class="sourceLineNo">034</span>import java.io.IOException;<a name="line.34"></a>
+<span class="sourceLineNo">035</span>import java.io.InputStream;<a name="line.35"></a>
+<span class="sourceLineNo">036</span>import java.util.Collection;<a name="line.36"></a>
+<span class="sourceLineNo">037</span>import java.util.HashMap;<a name="line.37"></a>
+<span class="sourceLineNo">038</span>import java.util.HashSet;<a name="line.38"></a>
+<span class="sourceLineNo">039</span>import java.util.LinkedList;<a name="line.39"></a>
+<span class="sourceLineNo">040</span>import java.util.Map;<a name="line.40"></a>
+<span class="sourceLineNo">041</span>import java.util.Set;<a name="line.41"></a>
+<span class="sourceLineNo">042</span><a name="line.42"></a>
+<span class="sourceLineNo">043</span>import javax.xml.parsers.ParserConfigurationException;<a name="line.43"></a>
+<span class="sourceLineNo">044</span><a name="line.44"></a>
+<span class="sourceLineNo">045</span>import org.apache.commons.io.FileUtils;<a name="line.45"></a>
+<span class="sourceLineNo">046</span>import org.apache.commons.io.FilenameUtils;<a name="line.46"></a>
+<span class="sourceLineNo">047</span>import org.geotools.GML;<a name="line.47"></a>
+<span class="sourceLineNo">048</span>import org.geotools.GML.Version;<a name="line.48"></a>
+<span class="sourceLineNo">049</span>import org.geotools.data.DataStore;<a name="line.49"></a>
+<span class="sourceLineNo">050</span>import org.geotools.data.DataStoreFinder;<a name="line.50"></a>
+<span class="sourceLineNo">051</span>import org.geotools.data.DataUtilities;<a name="line.51"></a>
+<span class="sourceLineNo">052</span>import org.geotools.data.FeatureSource;<a name="line.52"></a>
+<span class="sourceLineNo">053</span>import org.geotools.data.FileDataStoreFinder;<a name="line.53"></a>
+<span class="sourceLineNo">054</span>import org.geotools.data.ogr.OGRDataStoreFactory;<a name="line.54"></a>
+<span class="sourceLineNo">055</span>import org.geotools.data.ogr.bridj.BridjOGRDataStoreFactory;<a name="line.55"></a>
+<span class="sourceLineNo">056</span>import org.geotools.data.simple.SimpleFeatureCollection;<a name="line.56"></a>
+<span class="sourceLineNo">057</span>import org.geotools.data.simple.SimpleFeatureIterator;<a name="line.57"></a>
+<span class="sourceLineNo">058</span>import org.geotools.feature.DefaultFeatureCollection;<a name="line.58"></a>
+<span class="sourceLineNo">059</span>import org.geotools.feature.simple.SimpleFeatureBuilder;<a name="line.59"></a>
+<span class="sourceLineNo">060</span>import org.geotools.feature.simple.SimpleFeatureTypeBuilder;<a name="line.60"></a>
+<span class="sourceLineNo">061</span>import org.geotools.filter.text.ecql.ECQL;<a name="line.61"></a>
+<span class="sourceLineNo">062</span>import org.geotools.geojson.feature.FeatureJSON;<a name="line.62"></a>
+<span class="sourceLineNo">063</span>import org.geotools.geometry.jts.JTS;<a name="line.63"></a>
+<span class="sourceLineNo">064</span>import org.geotools.geometry.jts.ReferencedEnvelope;<a name="line.64"></a>
+<span class="sourceLineNo">065</span>import org.geotools.kml.KMLConfiguration;<a name="line.65"></a>
+<span class="sourceLineNo">066</span>import org.geotools.referencing.CRS;<a name="line.66"></a>
+<span class="sourceLineNo">067</span>import org.geotools.xml.Parser;<a name="line.67"></a>
+<span class="sourceLineNo">068</span>import org.json.JSONException;<a name="line.68"></a>
+<span class="sourceLineNo">069</span>import org.json.JSONObject;<a name="line.69"></a>
+<span class="sourceLineNo">070</span>import org.kepler.gis.data.VectorToken;<a name="line.70"></a>
+<span class="sourceLineNo">071</span>import org.opengis.feature.Feature;<a name="line.71"></a>
+<span class="sourceLineNo">072</span>import org.opengis.feature.simple.SimpleFeature;<a name="line.72"></a>
+<span class="sourceLineNo">073</span>import org.opengis.feature.simple.SimpleFeatureType;<a name="line.73"></a>
+<span class="sourceLineNo">074</span>import org.opengis.filter.Filter;<a name="line.74"></a>
+<span class="sourceLineNo">075</span>import org.opengis.geometry.MismatchedDimensionException;<a name="line.75"></a>
+<span class="sourceLineNo">076</span>import org.opengis.geometry.coordinate.Polygon;<a name="line.76"></a>
+<span class="sourceLineNo">077</span>import org.opengis.referencing.FactoryException;<a name="line.77"></a>
+<span class="sourceLineNo">078</span>import org.opengis.referencing.crs.CoordinateReferenceSystem;<a name="line.78"></a>
+<span class="sourceLineNo">079</span>import org.opengis.referencing.operation.MathTransform;<a name="line.79"></a>
+<span class="sourceLineNo">080</span>import org.opengis.referencing.operation.TransformException;<a name="line.80"></a>
+<span class="sourceLineNo">081</span>import org.xml.sax.SAXException;<a name="line.81"></a>
+<span class="sourceLineNo">082</span><a name="line.82"></a>
+<span class="sourceLineNo">083</span>import com.vividsolutions.jts.geom.Geometry;<a name="line.83"></a>
+<span class="sourceLineNo">084</span><a name="line.84"></a>
+<span class="sourceLineNo">085</span>import ptolemy.kernel.util.IllegalActionException;<a name="line.85"></a>
+<span class="sourceLineNo">086</span>import ptolemy.util.MessageHandler;<a name="line.86"></a>
+<span class="sourceLineNo">087</span><a name="line.87"></a>
+<span class="sourceLineNo">088</span>/** A collection of utilities for vectors/features.<a name="line.88"></a>
+<span class="sourceLineNo">089</span> * <a name="line.89"></a>
+<span class="sourceLineNo">090</span> *  @author Daniel Crawl<a name="line.90"></a>
+<span class="sourceLineNo">091</span> *  @version $Id: VectorUtilities.java 34676 2018-03-15 18:14:49Z crawl $<a name="line.91"></a>
+<span class="sourceLineNo">092</span> *  <a name="line.92"></a>
+<span class="sourceLineNo">093</span> */<a name="line.93"></a>
+<span class="sourceLineNo">094</span>public class VectorUtilities {<a name="line.94"></a>
+<span class="sourceLineNo">095</span><a name="line.95"></a>
+<span class="sourceLineNo">096</span>    /** Close all data stores opened in this thread while reading files. */<a name="line.96"></a>
+<span class="sourceLineNo">097</span>    public static void closeDataStores() {<a name="line.97"></a>
+<span class="sourceLineNo">098</span>        <a name="line.98"></a>
+<span class="sourceLineNo">099</span>        synchronized(_dataStoresMap) {<a name="line.99"></a>
+<span class="sourceLineNo">100</span>            Set&lt;DataStore&gt; dataStores = _dataStoresMap.get(Thread.currentThread());<a name="line.100"></a>
+<span class="sourceLineNo">101</span>            if(dataStores != null) {<a name="line.101"></a>
+<span class="sourceLineNo">102</span>                for(DataStore store : dataStores) {<a name="line.102"></a>
+<span class="sourceLineNo">103</span>                    //System.out.println(Thread.currentThread().getId() + " closing " + store);<a name="line.103"></a>
+<span class="sourceLineNo">104</span>                    store.dispose();<a name="line.104"></a>
+<span class="sourceLineNo">105</span>                }<a name="line.105"></a>
+<span class="sourceLineNo">106</span>                dataStores.clear();<a name="line.106"></a>
+<span class="sourceLineNo">107</span>                _dataStoresMap.remove(Thread.currentThread());<a name="line.107"></a>
+<span class="sourceLineNo">108</span>            }<a name="line.108"></a>
+<span class="sourceLineNo">109</span>        }<a name="line.109"></a>
+<span class="sourceLineNo">110</span>    }<a name="line.110"></a>
+<span class="sourceLineNo">111</span><a name="line.111"></a>
+<span class="sourceLineNo">112</span>    /** Create an empty feature schema<a name="line.112"></a>
+<span class="sourceLineNo">113</span>     *  @param defaultCRS The default CRS. can be null.<a name="line.113"></a>
+<span class="sourceLineNo">114</span>     *  @return an empty feature schema.<a name="line.114"></a>
+<span class="sourceLineNo">115</span>     */<a name="line.115"></a>
+<span class="sourceLineNo">116</span>    public static SimpleFeatureType createEmptySchema(CoordinateReferenceSystem defaultCRS) {<a name="line.116"></a>
+<span class="sourceLineNo">117</span>        SimpleFeatureTypeBuilder builder = new SimpleFeatureTypeBuilder();<a name="line.117"></a>
+<span class="sourceLineNo">118</span>        builder.setName("unknown");<a name="line.118"></a>
+<span class="sourceLineNo">119</span>        if(defaultCRS != null) {<a name="line.119"></a>
+<span class="sourceLineNo">120</span>            builder.setCRS(defaultCRS);<a name="line.120"></a>
+<span class="sourceLineNo">121</span>        }<a name="line.121"></a>
+<span class="sourceLineNo">122</span>        builder.add("geom", Polygon.class);<a name="line.122"></a>
+<span class="sourceLineNo">123</span>        return builder.buildFeatureType();<a name="line.123"></a>
+<span class="sourceLineNo">124</span>    }<a name="line.124"></a>
+<span class="sourceLineNo">125</span><a name="line.125"></a>
+<span class="sourceLineNo">126</span>    /** Create a vector token from reading a file containing features. */<a name="line.126"></a>
+<span class="sourceLineNo">127</span>    public static VectorToken readFile(File inputFile)<a name="line.127"></a>
+<span class="sourceLineNo">128</span>            throws IllegalActionException, IOException {<a name="line.128"></a>
+<span class="sourceLineNo">129</span>        return readFile(inputFile, null, null);<a name="line.129"></a>
+<span class="sourceLineNo">130</span>    }<a name="line.130"></a>
+<span class="sourceLineNo">131</span>    <a name="line.131"></a>
+<span class="sourceLineNo">132</span>    /** Create a vector token from a specific type in a file containing features.<a name="line.132"></a>
+<span class="sourceLineNo">133</span>     *  @param inputFile the file to read<a name="line.133"></a>
+<span class="sourceLineNo">134</span>     *  @param typeNameStr the feature type in the file to read. this can be<a name="line.134"></a>
+<span class="sourceLineNo">135</span>     *  null, but must be specified if more than one feature type is present<a name="line.135"></a>
+<span class="sourceLineNo">136</span>     *  in the file.<a name="line.136"></a>
+<span class="sourceLineNo">137</span>     */<a name="line.137"></a>
+<span class="sourceLineNo">138</span>    public static VectorToken readFile(File inputFile, String typeNameStr) <a name="line.138"></a>
+<span class="sourceLineNo">139</span>            throws IllegalActionException, IOException {<a name="line.139"></a>
+<span class="sourceLineNo">140</span>        return readFile(inputFile, typeNameStr, null);<a name="line.140"></a>
+<span class="sourceLineNo">141</span>    }<a name="line.141"></a>
+<span class="sourceLineNo">142</span><a name="line.142"></a>
+<span class="sourceLineNo">143</span>    /** Create a vector token from a specific type in a file containing features.<a name="line.143"></a>
+<span class="sourceLineNo">144</span>     *  @param inputFile the file to read<a name="line.144"></a>
+<span class="sourceLineNo">145</span>     *  @param typeNameStr the feature type in the file to read. this can be<a name="line.145"></a>
+<span class="sourceLineNo">146</span>     *  null, but must be specified if more than one feature type is present<a name="line.146"></a>
+<span class="sourceLineNo">147</span>     *  in the file.<a name="line.147"></a>
+<span class="sourceLineNo">148</span>     *  @param crs The coordinate reference system used if not specified in the file.<a name="line.148"></a>
+<span class="sourceLineNo">149</span>     */<a name="line.149"></a>
+<span class="sourceLineNo">150</span>    public static VectorToken readFile(File inputFile, String typeNameStr, CoordinateReferenceSystem defaultCRS)<a name="line.150"></a>
+<span class="sourceLineNo">151</span>            throws IllegalActionException, IOException {<a name="line.151"></a>
+<span class="sourceLineNo">152</span>        <a name="line.152"></a>
+<span class="sourceLineNo">153</span>        //System.out.println("reading " + inputFile);<a name="line.153"></a>
+<span class="sourceLineNo">154</span>        <a name="line.154"></a>
+<span class="sourceLineNo">155</span>        SimpleFeatureCollection features;<a name="line.155"></a>
+<span class="sourceLineNo">156</span>        <a name="line.156"></a>
+<span class="sourceLineNo">157</span>        final String filenameStr = inputFile.getAbsolutePath();<a name="line.157"></a>
+<span class="sourceLineNo">158</span>        <a name="line.158"></a>
+<span class="sourceLineNo">159</span>        if(filenameStr.toLowerCase().endsWith(".json") ||<a name="line.159"></a>
+<span class="sourceLineNo">160</span>                filenameStr.toLowerCase().endsWith(".geojson")) {<a name="line.160"></a>
+<span class="sourceLineNo">161</span>            try {<a name="line.161"></a>
+<span class="sourceLineNo">162</span>                return readGeoJSONString(FileUtils.readFileToString(inputFile), defaultCRS);<a name="line.162"></a>
+<span class="sourceLineNo">163</span>            } catch (JSONException e) {<a name="line.163"></a>
+<span class="sourceLineNo">164</span>                throw new IOException("Error parsing " + inputFile +<a name="line.164"></a>
+<span class="sourceLineNo">165</span>                    ": " + e.getMessage(), e);<a name="line.165"></a>
+<span class="sourceLineNo">166</span>            }<a name="line.166"></a>
+<span class="sourceLineNo">167</span>        } else if(filenameStr.toLowerCase().endsWith(".gml")) {<a name="line.167"></a>
+<span class="sourceLineNo">168</span>            try {<a name="line.168"></a>
+<span class="sourceLineNo">169</span>                // TODO defaultCRS<a name="line.169"></a>
+<span class="sourceLineNo">170</span>                return readGMLString(FileUtils.readFileToString(inputFile));<a name="line.170"></a>
+<span class="sourceLineNo">171</span>            } catch(IOException | IllegalActionException e) {<a name="line.171"></a>
+<span class="sourceLineNo">172</span>                throw new IOException("Error parsing " + inputFile +<a name="line.172"></a>
+<span class="sourceLineNo">173</span>                    ": " + e.getMessage(), e);<a name="line.173"></a>
+<span class="sourceLineNo">174</span>            }            <a name="line.174"></a>
+<span class="sourceLineNo">175</span>        } else if(filenameStr.toLowerCase().endsWith(".kml")) {<a name="line.175"></a>
+<span class="sourceLineNo">176</span>            <a name="line.176"></a>
+<span class="sourceLineNo">177</span>            Parser parser = new Parser(new KMLConfiguration());<a name="line.177"></a>
+<span class="sourceLineNo">178</span>            <a name="line.178"></a>
+<span class="sourceLineNo">179</span>            try(FileInputStream stream = new FileInputStream(inputFile)) {<a name="line.179"></a>
+<span class="sourceLineNo">180</span>                SimpleFeature feature = (SimpleFeature) parser.parse(stream);<a name="line.180"></a>
+<span class="sourceLineNo">181</span>                Collection&lt;SimpleFeature&gt; collection =<a name="line.181"></a>
+<span class="sourceLineNo">182</span>                        (Collection&lt;SimpleFeature&gt;) feature.getAttribute("Feature");<a name="line.182"></a>
+<span class="sourceLineNo">183</span>                features = new DefaultFeatureCollection();<a name="line.183"></a>
+<span class="sourceLineNo">184</span>                ((DefaultFeatureCollection) features).addAll(collection);<a name="line.184"></a>
+<span class="sourceLineNo">185</span>                <a name="line.185"></a>
+<span class="sourceLineNo">186</span>                if(defaultCRS != null &amp;&amp;<a name="line.186"></a>
+<span class="sourceLineNo">187</span>                    features.getSchema().getCoordinateReferenceSystem() == null) {<a name="line.187"></a>
+<span class="sourceLineNo">188</span>                    features = setCRS(features, defaultCRS);<a name="line.188"></a>
+<span class="sourceLineNo">189</span>                }                <a name="line.189"></a>
+<span class="sourceLineNo">190</span>                return new VectorToken(features);<a name="line.190"></a>
+<span class="sourceLineNo">191</span>            } catch (IOException | SAXException | ParserConfigurationException e) {<a name="line.191"></a>
+<span class="sourceLineNo">192</span>                throw new IOException("Error reading KML file " + filenameStr, e);<a name="line.192"></a>
+<span class="sourceLineNo">193</span>            }<a name="line.193"></a>
+<span class="sourceLineNo">194</span><a name="line.194"></a>
+<span class="sourceLineNo">195</span>        }<a name="line.195"></a>
+<span class="sourceLineNo">196</span>        <a name="line.196"></a>
+<span class="sourceLineNo">197</span>        DataStore store = _getDataStoreForFile(inputFile);<a name="line.197"></a>
+<span class="sourceLineNo">198</span>        <a name="line.198"></a>
+<span class="sourceLineNo">199</span>        try {<a name="line.199"></a>
+<span class="sourceLineNo">200</span>            return _getVectorDataFromStore(store, typeNameStr, defaultCRS);<a name="line.200"></a>
+<span class="sourceLineNo">201</span>        } catch(Exception e) {<a name="line.201"></a>
+<span class="sourceLineNo">202</span>            throw new IOException("Error reading vector data from file " + inputFile, e);<a name="line.202"></a>
+<span class="sourceLineNo">203</span>        }<a name="line.203"></a>
+<span class="sourceLineNo">204</span>    }<a name="line.204"></a>
+<span class="sourceLineNo">205</span><a name="line.205"></a>
+<span class="sourceLineNo">206</span>    /** Read a string containing either GML or GeoJSON. */<a name="line.206"></a>
+<span class="sourceLineNo">207</span>    public static VectorToken readGeoString(String geoString, CoordinateReferenceSystem defaultCRS)<a name="line.207"></a>
+<span class="sourceLineNo">208</span>        throws IllegalActionException, IOException, JSONException {<a name="line.208"></a>
+<span class="sourceLineNo">209</span>    <a name="line.209"></a>
+<span class="sourceLineNo">210</span>        // see if it looks like GML<a name="line.210"></a>
+<span class="sourceLineNo">211</span>        if(geoString.startsWith("&lt;?xml") || geoString.startsWith("&lt;gml")) {<a name="line.211"></a>
+<span class="sourceLineNo">212</span>            return readGMLString(geoString /*, TODO defaultCRS*/);<a name="line.212"></a>
+<span class="sourceLineNo">213</span>        }<a name="line.213"></a>
+<span class="sourceLineNo">214</span>        <a name="line.214"></a>
+<span class="sourceLineNo">215</span>        // try geojson<a name="line.215"></a>
+<span class="sourceLineNo">216</span>        return readGeoJSONString(geoString, defaultCRS);<a name="line.216"></a>
+<span class="sourceLineNo">217</span>    }<a name="line.217"></a>
+<span class="sourceLineNo">218</span><a name="line.218"></a>
+<span class="sourceLineNo">219</span>    /** Read a string containing GeoJSON. */<a name="line.219"></a>
+<span class="sourceLineNo">220</span>    public static VectorToken readGeoJSONString(String geoJSON) throws IOException, JSONException, IllegalActionException {<a name="line.220"></a>
+<span class="sourceLineNo">221</span>        return readGeoJSONString(geoJSON, null);<a name="line.221"></a>
+<span class="sourceLineNo">222</span>    }<a name="line.222"></a>
+<span class="sourceLineNo">223</span>    <a name="line.223"></a>
+<span class="sourceLineNo">224</span>    /** Read a string containing GeoJSON using a default CRS. The default<a name="line.224"></a>
+<span class="sourceLineNo">225</span>     *  CRS is only used if the GeoJSON string does not contain the CRS. <a name="line.225"></a>
+<span class="sourceLineNo">226</span>     */<a name="line.226"></a>
+<span class="sourceLineNo">227</span>    public static VectorToken readGeoJSONString(String geoJSON, CoordinateReferenceSystem defaultCRS) throws IOException, JSONException, IllegalActionException {<a name="line.227"></a>
+<span class="sourceLineNo">228</span>        <a name="line.228"></a>
+<span class="sourceLineNo">229</span>        SimpleFeatureCollection features = readGeoJSONString(geoJSON, defaultCRS, null);<a name="line.229"></a>
+<span class="sourceLineNo">230</span>        return new VectorToken(features);<a name="line.230"></a>
+<span class="sourceLineNo">231</span>    }<a name="line.231"></a>
+<span class="sourceLineNo">232</span>    <a name="line.232"></a>
+<span class="sourceLineNo">233</span>    /** Read a string containing GeoJSON.<a name="line.233"></a>
+<span class="sourceLineNo">234</span>     *  @param geoJSON the geojson string.<a name="line.234"></a>
+<span class="sourceLineNo">235</span>     *  @param defaultCRS CRS used if one not found in geojson string.<a name="line.235"></a>
+<span class="sourceLineNo">236</span>     *  @param defaultType feture type used if one not found in geojson string.<a name="line.236"></a>
+<span class="sourceLineNo">237</span>     *  @return Features in geojson string.<a name="line.237"></a>
+<span class="sourceLineNo">238</span>     */<a name="line.238"></a>
+<span class="sourceLineNo">239</span>    public static SimpleFeatureCollection readGeoJSONString(String geoJSON, CoordinateReferenceSystem defaultCRS, SimpleFeatureType defaultType) throws IOException, JSONException, IllegalActionException {<a name="line.239"></a>
+<span class="sourceLineNo">240</span>        <a name="line.240"></a>
+<span class="sourceLineNo">241</span>        FeatureJSON featureJSON = new FeatureJSON();<a name="line.241"></a>
+<span class="sourceLineNo">242</span>        <a name="line.242"></a>
+<span class="sourceLineNo">243</span>        if(defaultType != null) {<a name="line.243"></a>
+<span class="sourceLineNo">244</span>            featureJSON.setFeatureType(defaultType);<a name="line.244"></a>
+<span class="sourceLineNo">245</span>        }<a name="line.245"></a>
+<span class="sourceLineNo">246</span>        <a name="line.246"></a>
+<span class="sourceLineNo">247</span>        byte[] bytes = geoJSON.getBytes();<a name="line.247"></a>
+<span class="sourceLineNo">248</span>        <a name="line.248"></a>
+<span class="sourceLineNo">249</span>        JSONObject json;<a name="line.249"></a>
+<span class="sourceLineNo">250</span>        try {<a name="line.250"></a>
+<span class="sourceLineNo">251</span>            json = new JSONObject(geoJSON);<a name="line.251"></a>
+<span class="sourceLineNo">252</span>        } catch (JSONException e) {<a name="line.252"></a>
+<span class="sourceLineNo">253</span>            throw new IOException("Error converting string to JSON.", e);<a name="line.253"></a>
+<span class="sourceLineNo">254</span>        }<a name="line.254"></a>
+<span class="sourceLineNo">255</span>        <a name="line.255"></a>
+<span class="sourceLineNo">256</span>        if(!json.has("type")) {<a name="line.256"></a>
+<span class="sourceLineNo">257</span>            throw new IOException("No type field in GeoJSON string.");<a name="line.257"></a>
+<span class="sourceLineNo">258</span>        }<a name="line.258"></a>
+<span class="sourceLineNo">259</span>        String type = json.getString("type");<a name="line.259"></a>
+<span class="sourceLineNo">260</span>        <a name="line.260"></a>
+<span class="sourceLineNo">261</span>        SimpleFeatureCollection features = null;<a name="line.261"></a>
+<span class="sourceLineNo">262</span>        <a name="line.262"></a>
+<span class="sourceLineNo">263</span>        if(type.equals("FeatureCollection")) {<a name="line.263"></a>
+<span class="sourceLineNo">264</span>            try(InputStream stream = new ByteArrayInputStream(bytes)) {<a name="line.264"></a>
+<span class="sourceLineNo">265</span>                features =  (SimpleFeatureCollection) featureJSON.readFeatureCollection(stream);<a name="line.265"></a>
+<span class="sourceLineNo">266</span>            } <a name="line.266"></a>
+<span class="sourceLineNo">267</span>        } else if(type.equals("Feature")) {            <a name="line.267"></a>
+<span class="sourceLineNo">268</span>            try(InputStream stream = new ByteArrayInputStream(bytes)) {<a name="line.268"></a>
+<span class="sourceLineNo">269</span>                SimpleFeature feature = featureJSON.readFeature(stream);<a name="line.269"></a>
+<span class="sourceLineNo">270</span>                features = DataUtilities.collection(feature);<a name="line.270"></a>
+<span class="sourceLineNo">271</span>            }<a name="line.271"></a>
+<span class="sourceLineNo">272</span>        } else {<a name="line.272"></a>
+<span class="sourceLineNo">273</span>            System.err.println("WARNING: unhandled type of GeoJSON: " + type);<a name="line.273"></a>
+<span class="sourceLineNo">274</span>            features = DataUtilities.collection(new LinkedList&lt;SimpleFeature&gt;());<a name="line.274"></a>
+<span class="sourceLineNo">275</span>        }<a name="line.275"></a>
+<span class="sourceLineNo">276</span>        <a name="line.276"></a>
+<span class="sourceLineNo">277</span>        // see if the GeoJSON string does not have a CRS and we were<a name="line.277"></a>
+<span class="sourceLineNo">278</span>        // given a default CRS<a name="line.278"></a>
+<span class="sourceLineNo">279</span>        if(defaultCRS != null &amp;&amp; !json.has("crs")) {<a name="line.279"></a>
+<span class="sourceLineNo">280</span>            features = setCRS(features, defaultCRS);       <a name="line.280"></a>
+<span class="sourceLineNo">281</span>        }<a name="line.281"></a>
+<span class="sourceLineNo">282</span>        <a name="line.282"></a>
+<span class="sourceLineNo">283</span>        return features;<a name="line.283"></a>
+<span class="sourceLineNo">284</span>    }<a name="line.284"></a>
+<span class="sourceLineNo">285</span>        <a name="line.285"></a>
+<span class="sourceLineNo">286</span>    /** Read a string containing GML. */<a name="line.286"></a>
+<span class="sourceLineNo">287</span>    public static VectorToken readGMLString(String gmlString) throws IOException, IllegalActionException {<a name="line.287"></a>
+<span class="sourceLineNo">288</span>        <a name="line.288"></a>
+<span class="sourceLineNo">289</span>        // TODO try version 3, too. how can we distinguish?<a name="line.289"></a>
+<span class="sourceLineNo">290</span>        <a name="line.290"></a>
+<span class="sourceLineNo">291</span>        GML gml = new GML(Version.GML2);<a name="line.291"></a>
+<span class="sourceLineNo">292</span>        <a name="line.292"></a>
+<span class="sourceLineNo">293</span>        try(InputStream stream = new ByteArrayInputStream(gmlString.getBytes())) {<a name="line.293"></a>
+<span class="sourceLineNo">294</span>            SimpleFeatureCollection features;<a name="line.294"></a>
+<span class="sourceLineNo">295</span>            try {<a name="line.295"></a>
+<span class="sourceLineNo">296</span>                features = gml.decodeFeatureCollection(stream);<a name="line.296"></a>
+<span class="sourceLineNo">297</span>            } catch (SAXException | ParserConfigurationException e) {<a name="line.297"></a>
+<span class="sourceLineNo">298</span>                throw new IOException("Error parsing GML: " + e.getMessage(), e);<a name="line.298"></a>
+<span class="sourceLineNo">299</span>            }<a name="line.299"></a>
+<span class="sourceLineNo">300</span>            //System.out.println(toGeoJSONString(features));<a name="line.300"></a>
+<span class="sourceLineNo">301</span>            return new VectorToken(features);<a name="line.301"></a>
+<span class="sourceLineNo">302</span>        }<a name="line.302"></a>
+<span class="sourceLineNo">303</span>    }<a name="line.303"></a>
+<span class="sourceLineNo">304</span><a name="line.304"></a>
+<span class="sourceLineNo">305</span>    /** Get a vector token from a WFS service.<a name="line.305"></a>
+<span class="sourceLineNo">306</span>     *  @param urlStr the WFS url<a name="line.306"></a>
+<span class="sourceLineNo">307</span>     *  @param typeNameStr the feature type to read. can be null, but must<a name="line.307"></a>
+<span class="sourceLineNo">308</span>     *  be specified if more than one type exists on in the WFS service.<a name="line.308"></a>
+<span class="sourceLineNo">309</span>     * <a name="line.309"></a>
+<span class="sourceLineNo">310</span>     */<a name="line.310"></a>
+<span class="sourceLineNo">311</span>    public static VectorToken readWFS(String urlStr, String typeNameStr) throws IOException, IllegalActionException {<a name="line.311"></a>
+<span class="sourceLineNo">312</span>        <a name="line.312"></a>
+<span class="sourceLineNo">313</span>        String getCapabilities = null;<a name="line.313"></a>
+<span class="sourceLineNo">314</span>        <a name="line.314"></a>
+<span class="sourceLineNo">315</span>        if(urlStr.toLowerCase().contains("request=getcapabilities")) {<a name="line.315"></a>
+<span class="sourceLineNo">316</span>            getCapabilities = urlStr;<a name="line.316"></a>
+<span class="sourceLineNo">317</span>        } else {<a name="line.317"></a>
+<span class="sourceLineNo">318</span>            getCapabilities = urlStr + "?service=wfs&amp;version=1.0.0&amp;REQUEST=GetCapabilities";<a name="line.318"></a>
+<span class="sourceLineNo">319</span>        }<a name="line.319"></a>
+<span class="sourceLineNo">320</span><a name="line.320"></a>
+<span class="sourceLineNo">321</span>        System.out.println("Using WFS url: " + getCapabilities);<a name="line.321"></a>
+<span class="sourceLineNo">322</span>        <a name="line.322"></a>
+<span class="sourceLineNo">323</span>        Map&lt;String,Object&gt; connectionParameters = new HashMap&lt;String,Object&gt;();<a name="line.323"></a>
+<span class="sourceLineNo">324</span>        connectionParameters.put("WFSDataStoreFactory:GET_CAPABILITIES_URL", getCapabilities);<a name="line.324"></a>
+<span class="sourceLineNo">325</span>        // NOTE: the default timeout is 3000ms, which is too small<a name="line.325"></a>
+<span class="sourceLineNo">326</span>        // for some servers<a name="line.326"></a>
+<span class="sourceLineNo">327</span>        connectionParameters.put("WFSDataStoreFactory:TIMEOUT", 20000);<a name="line.327"></a>
+<span class="sourceLineNo">328</span>        <a name="line.328"></a>
+<span class="sourceLineNo">329</span>        DataStore store = DataStoreFinder.getDataStore(connectionParameters);<a name="line.329"></a>
+<span class="sourceLineNo">330</span><a name="line.330"></a>
+<span class="sourceLineNo">331</span>        return _getVectorDataFromStore(store, typeNameStr, null);<a name="line.331"></a>
+<span class="sourceLineNo">332</span>    }<a name="line.332"></a>
+<span class="sourceLineNo">333</span><a name="line.333"></a>
+<span class="sourceLineNo">334</span>    /** Reproject a set of features.<a name="line.334"></a>
+<span class="sourceLineNo">335</span>     *  @param features The set of features.<a name="line.335"></a>
+<span class="sourceLineNo">336</span>     *  @param destCRS The new coordinate reference system.<a name="line.336"></a>
+<span class="sourceLineNo">337</span>     *  @return The reprojected set of features.<a name="line.337"></a>
+<span class="sourceLineNo">338</span>     */<a name="line.338"></a>
+<span class="sourceLineNo">339</span>    public static SimpleFeatureCollection reproject(SimpleFeatureCollection features,<a name="line.339"></a>
+<span class="sourceLineNo">340</span>        CoordinateReferenceSystem destCRS) throws IllegalActionException {<a name="line.340"></a>
+<span class="sourceLineNo">341</span>        return reproject(features, features.getSchema().getCoordinateReferenceSystem(),<a name="line.341"></a>
+<span class="sourceLineNo">342</span>            destCRS);<a name="line.342"></a>
+<span class="sourceLineNo">343</span>    }<a name="line.343"></a>
+<span class="sourceLineNo">344</span>    <a name="line.344"></a>
+<span class="sourceLineNo">345</span>    /** Reproject a set of features from the specified coordinate reference system.<a name="line.345"></a>
+<span class="sourceLineNo">346</span>     *  @param features The set of features.<a name="line.346"></a>
+<span class="sourceLineNo">347</span>     *  @param crs The source coordinate reference system.<a name="line.347"></a>
+<span class="sourceLineNo">348</span>     *  @param destCRS The new coordinate reference system.<a name="line.348"></a>
+<span class="sourceLineNo">349</span>     *  @return The reprojected set of features.<a name="line.349"></a>
+<span class="sourceLineNo">350</span>     */<a name="line.350"></a>
+<span class="sourceLineNo">351</span>    public static SimpleFeatureCollection reproject(SimpleFeatureCollection features,<a name="line.351"></a>
+<span class="sourceLineNo">352</span>        CoordinateReferenceSystem crs, CoordinateReferenceSystem destCRS)<a name="line.352"></a>
+<span class="sourceLineNo">353</span>        throws IllegalActionException {<a name="line.353"></a>
+<span class="sourceLineNo">354</span><a name="line.354"></a>
+<span class="sourceLineNo">355</span>        if(crs == null) {<a name="line.355"></a>
+<span class="sourceLineNo">356</span>            throw new IllegalActionException("Source CRS is null.");<a name="line.356"></a>
+<span class="sourceLineNo">357</span>        }<a name="line.357"></a>
+<span class="sourceLineNo">358</span>        <a name="line.358"></a>
+<span class="sourceLineNo">359</span>        if(crs.equals(destCRS)) {<a name="line.359"></a>
+<span class="sourceLineNo">360</span>            return features;<a name="line.360"></a>
+<span class="sourceLineNo">361</span>        }<a name="line.361"></a>
+<span class="sourceLineNo">362</span><a name="line.362"></a>
+<span class="sourceLineNo">363</span>        MathTransform transform;<a name="line.363"></a>
+<span class="sourceLineNo">364</span>        try {<a name="line.364"></a>
+<span class="sourceLineNo">365</span>            transform = CRS.findMathTransform(crs, destCRS, true);<a name="line.365"></a>
+<span class="sourceLineNo">366</span>        } catch (FactoryException e) {<a name="line.366"></a>
+<span class="sourceLineNo">367</span>            throw new IllegalActionException(<a name="line.367"></a>
+<span class="sourceLineNo">368</span>                "Error finding reprojection transformation: " + e.getMessage());<a name="line.368"></a>
+<span class="sourceLineNo">369</span>        }<a name="line.369"></a>
+<span class="sourceLineNo">370</span>        <a name="line.370"></a>
+<span class="sourceLineNo">371</span>        SimpleFeatureType transformedSchema = SimpleFeatureTypeBuilder.retype(features.getSchema(), destCRS);<a name="line.371"></a>
+<span class="sourceLineNo">372</span>            <a name="line.372"></a>
+<span class="sourceLineNo">373</span>        DefaultFeatureCollection newCollection =<a name="line.373"></a>
+<span class="sourceLineNo">374</span>            new DefaultFeatureCollection(features.getID(), transformedSchema);<a name="line.374"></a>
+<span class="sourceLineNo">375</span>        SimpleFeatureBuilder builder = new SimpleFeatureBuilder(transformedSchema);<a name="line.375"></a>
+<span class="sourceLineNo">376</span>        <a name="line.376"></a>
+<span class="sourceLineNo">377</span>        try(SimpleFeatureIterator iterator = features.features();) {<a name="line.377"></a>
+<span class="sourceLineNo">378</span>            while(iterator.hasNext()) {<a name="line.378"></a>
+<span class="sourceLineNo">379</span>                SimpleFeature feature = (SimpleFeature) iterator.next();<a name="line.379"></a>
+<span class="sourceLineNo">380</span>                Geometry geometry = (Geometry) feature.getDefaultGeometry();<a name="line.380"></a>
+<span class="sourceLineNo">381</span>                Geometry reprojectedGeometry = JTS.transform(geometry, transform);<a name="line.381"></a>
+<span class="sourceLineNo">382</span>                <a name="line.382"></a>
+<span class="sourceLineNo">383</span>                builder.init(feature);<a name="line.383"></a>
+<span class="sourceLineNo">384</span>                SimpleFeature newFeature = builder.buildFeature(feature.getID());<a name="line.384"></a>
+<span class="sourceLineNo">385</span>                newFeature.setDefaultGeometry(reprojectedGeometry);<a name="line.385"></a>
+<span class="sourceLineNo">386</span>                newCollection.add(newFeature);<a name="line.386"></a>
+<span class="sourceLineNo">387</span>            }<a name="line.387"></a>
+<span class="sourceLineNo">388</span>            <a name="line.388"></a>
+<span class="sourceLineNo">389</span>        } catch (MismatchedDimensionException | TransformException e) {<a name="line.389"></a>
+<span class="sourceLineNo">390</span>            throw new IllegalActionException("Error reprojecting features: " + e.getMessage());<a name="line.390"></a>
+<span class="sourceLineNo">391</span>        }<a name="line.391"></a>
+<span class="sourceLineNo">392</span>        <a name="line.392"></a>
+<span class="sourceLineNo">393</span>        return newCollection;<a name="line.393"></a>
+<span class="sourceLineNo">394</span>    }<a name="line.394"></a>
+<span class="sourceLineNo">395</span>    <a name="line.395"></a>
+<span class="sourceLineNo">396</span>    /** Set the coordinate reference system for a set of features. */<a name="line.396"></a>
+<span class="sourceLineNo">397</span>    public static SimpleFeatureCollection setCRS(SimpleFeatureCollection features, CoordinateReferenceSystem defaultCRS) {<a name="line.397"></a>
+<span class="sourceLineNo">398</span>        <a name="line.398"></a>
+<span class="sourceLineNo">399</span>        SimpleFeatureType schema = features.getSchema();<a name="line.399"></a>
+<span class="sourceLineNo">400</span>        <a name="line.400"></a>
+<span class="sourceLineNo">401</span>        SimpleFeatureType transformedSchema;<a name="line.401"></a>
+<span class="sourceLineNo">402</span>        if(schema == null) {<a name="line.402"></a>
+<span class="sourceLineNo">403</span>            transformedSchema = createEmptySchema(defaultCRS);<a name="line.403"></a>
+<span class="sourceLineNo">404</span>        } else {<a name="line.404"></a>
+<span class="sourceLineNo">405</span>            transformedSchema = SimpleFeatureTypeBuilder.retype(schema, defaultCRS);<a name="line.405"></a>
+<span class="sourceLineNo">406</span>        }<a name="line.406"></a>
+<span class="sourceLineNo">407</span>        <a name="line.407"></a>
+<span class="sourceLineNo">408</span>        DefaultFeatureCollection newCollection =<a name="line.408"></a>
+<span class="sourceLineNo">409</span>            new DefaultFeatureCollection(features.getID(), transformedSchema);<a name="line.409"></a>
+<span class="sourceLineNo">410</span>        SimpleFeatureBuilder builder = new SimpleFeatureBuilder(transformedSchema);<a name="line.410"></a>
+<span class="sourceLineNo">411</span>        <a name="line.411"></a>
+<span class="sourceLineNo">412</span>        try(SimpleFeatureIterator iterator = features.features();) {<a name="line.412"></a>
+<span class="sourceLineNo">413</span>            while(iterator.hasNext()) {<a name="line.413"></a>
+<span class="sourceLineNo">414</span>                SimpleFeature feature = (SimpleFeature) iterator.next();<a name="line.414"></a>
+<span class="sourceLineNo">415</span>                Geometry geometry = (Geometry) feature.getDefaultGeometry();<a name="line.415"></a>
+<span class="sourceLineNo">416</span>                <a name="line.416"></a>
+<span class="sourceLineNo">417</span>                builder.init(feature);<a name="line.417"></a>
+<span class="sourceLineNo">418</span>                SimpleFeature newFeature = builder.buildFeature(feature.getID());<a name="line.418"></a>
+<span class="sourceLineNo">419</span>                newFeature.setDefaultGeometry(geometry);<a name="line.419"></a>
+<span class="sourceLineNo">420</span>                newCollection.add(newFeature);<a name="line.420"></a>
+<span class="sourceLineNo">421</span>            }<a name="line.421"></a>
+<span class="sourceLineNo">422</span>        }<a name="line.422"></a>
+<span class="sourceLineNo">423</span>        return newCollection;<a name="line.423"></a>
+<span class="sourceLineNo">424</span>    }<a name="line.424"></a>
+<span class="sourceLineNo">425</span><a name="line.425"></a>
+<span class="sourceLineNo">426</span>    /** Convert a set of features into a GeoJSON string. */<a name="line.426"></a>
+<span class="sourceLineNo">427</span>    public static String toGeoJSONString(SimpleFeatureCollection features) {<a name="line.427"></a>
+<span class="sourceLineNo">428</span>        <a name="line.428"></a>
+<span class="sourceLineNo">429</span>        FeatureJSON featureJSON = new FeatureJSON();<a name="line.429"></a>
+<span class="sourceLineNo">430</span>        featureJSON.setEncodeFeatureCollectionCRS(true);<a name="line.430"></a>
+<span class="sourceLineNo">431</span>        try {<a name="line.431"></a>
+<span class="sourceLineNo">432</span>            return featureJSON.toString(features);<a name="line.432"></a>
+<span class="sourceLineNo">433</span>        } catch (IOException e) {<a name="line.433"></a>
+<span class="sourceLineNo">434</span>            MessageHandler.error("Error writing feature collection.", e);<a name="line.434"></a>
+<span class="sourceLineNo">435</span>            return "";<a name="line.435"></a>
+<span class="sourceLineNo">436</span>        }<a name="line.436"></a>
+<span class="sourceLineNo">437</span>    }<a name="line.437"></a>
+<span class="sourceLineNo">438</span><a name="line.438"></a>
+<span class="sourceLineNo">439</span>    ////////////////////////////////////////////////////////////////////////<a name="line.439"></a>
+<span class="sourceLineNo">440</span>    //// private methods                                                ////<a name="line.440"></a>
+<span class="sourceLineNo">441</span><a name="line.441"></a>
+<span class="sourceLineNo">442</span>    /** Get the data store for a file. */<a name="line.442"></a>
+<span class="sourceLineNo">443</span>    private static DataStore _getDataStoreForFile(File file) throws IOException {<a name="line.443"></a>
+<span class="sourceLineNo">444</span>        <a name="line.444"></a>
+<span class="sourceLineNo">445</span>        if(file.getName().endsWith(".shp")) {        <a name="line.445"></a>
+<span class="sourceLineNo">446</span>            return FileDataStoreFinder.getDataStore(file);<a name="line.446"></a>
+<span class="sourceLineNo">447</span>        } else {<a name="line.447"></a>
+<span class="sourceLineNo">448</span>            String extension = FilenameUtils.getExtension(file.getName());            <a name="line.448"></a>
+<span class="sourceLineNo">449</span>            Map&lt;String, String&gt; connectionParams = new HashMap&lt;String, String&gt;();<a name="line.449"></a>
+<span class="sourceLineNo">450</span>            connectionParams.put("DriverName", extension.toUpperCase());<a name="line.450"></a>
+<span class="sourceLineNo">451</span>            connectionParams.put("DatasourceName", file.getAbsolutePath());<a name="line.451"></a>
+<span class="sourceLineNo">452</span>            return _ogrFactory.createDataStore(connectionParams);<a name="line.452"></a>
+<span class="sourceLineNo">453</span>        }        <a name="line.453"></a>
+<span class="sourceLineNo">454</span>    }<a name="line.454"></a>
+<span class="sourceLineNo">455</span><a name="line.455"></a>
+<span class="sourceLineNo">456</span>    /** Create a vector token from reading a data store.<a name="line.456"></a>
+<span class="sourceLineNo">457</span>     *  @param store the data store<a name="line.457"></a>
+<span class="sourceLineNo">458</span>     *  @param typeNameStr the feature type to read. can be null, but must be<a name="line.458"></a>
+<span class="sourceLineNo">459</span>     *  specified if the data store contains more than one type.<a name="line.459"></a>
+<span class="sourceLineNo">460</span>     *  @param defaultCRS The coordinate reference system used if not specified in the file.<a name="line.460"></a>
+<span class="sourceLineNo">461</span>     */<a name="line.461"></a>
+<span class="sourceLineNo">462</span>    private static VectorToken _getVectorDataFromStore(DataStore store,<a name="line.462"></a>
+<span class="sourceLineNo">463</span>            String typeNameStr, CoordinateReferenceSystem defaultCRS)<a name="line.463"></a>
+<span class="sourceLineNo">464</span>            throws IllegalActionException, IOException {<a name="line.464"></a>
+<span class="sourceLineNo">465</span>        <a name="line.465"></a>
+<span class="sourceLineNo">466</span>        synchronized(_dataStoresMap) {<a name="line.466"></a>
+<span class="sourceLineNo">467</span>            Set&lt;DataStore&gt; stores = _dataStoresMap.get(Thread.currentThread());<a name="line.467"></a>
+<span class="sourceLineNo">468</span>            if(stores == null) {<a name="line.468"></a>
+<span class="sourceLineNo">469</span>                stores = new HashSet&lt;DataStore&gt;();<a name="line.469"></a>
+<span class="sourceLineNo">470</span>                _dataStoresMap.put(Thread.currentThread(), stores);<a name="line.470"></a>
+<span class="sourceLineNo">471</span>            }<a name="line.471"></a>
+<span class="sourceLineNo">472</span>            stores.add(store);<a name="line.472"></a>
+<span class="sourceLineNo">473</span>            //System.out.println(Thread.currentThread().getId() + " opened " + inputFile);<a name="line.473"></a>
+<span class="sourceLineNo">474</span>        }<a name="line.474"></a>
+<span class="sourceLineNo">475</span><a name="line.475"></a>
+<span class="sourceLineNo">476</span>        String[] typeNames = store.getTypeNames();<a name="line.476"></a>
+<span class="sourceLineNo">477</span>        <a name="line.477"></a>
+<span class="sourceLineNo">478</span>        if(typeNames.length == 0) {<a name="line.478"></a>
+<span class="sourceLineNo">479</span>            throw new IllegalActionException("No type names found in data store.");<a name="line.479"></a>
+<span class="sourceLineNo">480</span>        }<a name="line.480"></a>
+<span class="sourceLineNo">481</span>                <a name="line.481"></a>
+<span class="sourceLineNo">482</span>        if(typeNameStr == null) {<a name="line.482"></a>
+<span class="sourceLineNo">483</span>            if(typeNames.length == 1) {<a name="line.483"></a>
+<span class="sourceLineNo">484</span>                return new VectorToken(store.getFeatureSource(typeNames[0]), defaultCRS);<a name="line.484"></a>
+<span class="sourceLineNo">485</span>            } else {<a name="line.485"></a>
+<span class="sourceLineNo">486</span>                throw new IllegalActionException("More than one feature type found in the input.\n" +<a name="line.486"></a>
+<span class="sourceLineNo">487</span>                        "Specify the type in the typeName parameter.");<a name="line.487"></a>
+<span class="sourceLineNo">488</span>            }<a name="line.488"></a>
+<span class="sourceLineNo">489</span>        }<a name="line.489"></a>
+<span class="sourceLineNo">490</span>        <a name="line.490"></a>
+<span class="sourceLineNo">491</span>        for(String name : typeNames) {<a name="line.491"></a>
+<span class="sourceLineNo">492</span>            if(name.equals(typeNameStr)) {<a name="line.492"></a>
+<span class="sourceLineNo">493</span>                return new VectorToken(store.getFeatureSource(typeNameStr), defaultCRS);<a name="line.493"></a>
+<span class="sourceLineNo">494</span>            }<a name="line.494"></a>
+<span class="sourceLineNo">495</span>        }<a name="line.495"></a>
+<span class="sourceLineNo">496</span>        <a name="line.496"></a>
+<span class="sourceLineNo">497</span>        throw new IllegalActionException("Type " + typeNameStr +<a name="line.497"></a>
+<span class="sourceLineNo">498</span>                " was not found in the data store.");<a name="line.498"></a>
+<span class="sourceLineNo">499</span>        <a name="line.499"></a>
+<span class="sourceLineNo">500</span>    }<a name="line.500"></a>
+<span class="sourceLineNo">501</span>        <a name="line.501"></a>
+<span class="sourceLineNo">502</span>    ////////////////////////////////////////////////////////////////////////<a name="line.502"></a>
+<span class="sourceLineNo">503</span>    //// private variables                                              ////<a name="line.503"></a>
+<span class="sourceLineNo">504</span><a name="line.504"></a>
+<span class="sourceLineNo">505</span>    /** Factory to read vector/feature files using GDAL via Bridj. */<a name="line.505"></a>
+<span class="sourceLineNo">506</span>    private static OGRDataStoreFactory _ogrFactory = new BridjOGRDataStoreFactory();<a name="line.506"></a>
+<span class="sourceLineNo">507</span><a name="line.507"></a>
+<span class="sourceLineNo">508</span>    /** Mapping of thread to data store. */<a name="line.508"></a>
+<span class="sourceLineNo">509</span>    private static Map&lt;Thread,Set&lt;DataStore&gt;&gt; _dataStoresMap =<a name="line.509"></a>
+<span class="sourceLineNo">510</span>            new HashMap&lt;Thread,Set&lt;DataStore&gt;&gt;();<a name="line.510"></a>
+<span class="sourceLineNo">511</span>    <a name="line.511"></a>
+<span class="sourceLineNo">512</span>    <a name="line.512"></a>
+<span class="sourceLineNo">513</span>    /** For debugging, ignore. */<a name="line.513"></a>
+<span class="sourceLineNo">514</span>    public static void main(String[] args) {<a name="line.514"></a>
+<span class="sourceLineNo">515</span>        <a name="line.515"></a>
+<span class="sourceLineNo">516</span>        try {<a name="line.516"></a>
+<span class="sourceLineNo">517</span>            String getCapabilities = "http://mapserver.flightgear.org/ms?Service=WFS&amp;Version=1.0.0&amp;request=GetCapabilities";<a name="line.517"></a>
+<span class="sourceLineNo">518</span>    <a name="line.518"></a>
+<span class="sourceLineNo">519</span>            Map&lt;String,Object&gt; connectionParameters = new HashMap&lt;String,Object&gt;();<a name="line.519"></a>
+<span class="sourceLineNo">520</span>            connectionParameters.put("WFSDataStoreFactory:GET_CAPABILITIES_URL", getCapabilities );<a name="line.520"></a>
+<span class="sourceLineNo">521</span>            connectionParameters.put("WFSDataStoreFactory:TIMEOUT", 20000);<a name="line.521"></a>
+<span class="sourceLineNo">522</span><a name="line.522"></a>
+<span class="sourceLineNo">523</span>            // Step 2 - connection<a name="line.523"></a>
+<span class="sourceLineNo">524</span>            DataStore data = DataStoreFinder.getDataStore( connectionParameters );<a name="line.524"></a>
+<span class="sourceLineNo">525</span>    <a name="line.525"></a>
+<span class="sourceLineNo">526</span>            // Step 3 - discovery<a name="line.526"></a>
+<span class="sourceLineNo">527</span>            //String typeNames[] = data.getTypeNames();<a name="line.527"></a>
+<span class="sourceLineNo">528</span>            //String typeName = typeNames[0];<a name="line.528"></a>
+<span class="sourceLineNo">529</span>            String typeName = "cs_lake";<a name="line.529"></a>
+<span class="sourceLineNo">530</span>            SimpleFeatureType schema = data.getSchema( typeName );<a name="line.530"></a>
+<span class="sourceLineNo">531</span>            <a name="line.531"></a>
+<span class="sourceLineNo">532</span>            // Step 4 - target<a name="line.532"></a>
+<span class="sourceLineNo">533</span>            FeatureSource&lt;SimpleFeatureType, SimpleFeature&gt; source = data.getFeatureSource( typeName );<a name="line.533"></a>
+<span class="sourceLineNo">534</span>            System.out.println( "Metadata Bounds:"+ source.getBounds() );<a name="line.534"></a>
+<span class="sourceLineNo">535</span>    <a name="line.535"></a>
+<span class="sourceLineNo">536</span>            // Step 5 - query<a name="line.536"></a>
+<span class="sourceLineNo">537</span>            String geomName = schema.getGeometryDescriptor().getLocalName();<a name="line.537"></a>
+<span class="sourceLineNo">538</span>            System.out.println("geom name = " + geomName);<a name="line.538"></a>
+<span class="sourceLineNo">539</span>            <a name="line.539"></a>
+<span class="sourceLineNo">540</span>            /*<a name="line.540"></a>
+<span class="sourceLineNo">541</span>            ReferencedEnvelope bbox = new ReferencedEnvelope(-117.6488, 32.501, -116.058, 33.66,<a name="line.541"></a>
+<span class="sourceLineNo">542</span>                    DefaultGeographicCRS.WGS84 );<a name="line.542"></a>
+<span class="sourceLineNo">543</span>    <a name="line.543"></a>
+<span class="sourceLineNo">544</span>            FilterFactory2 ff = CommonFactoryFinder.getFilterFactory2( GeoTools.getDefaultHints() );<a name="line.544"></a>
+<span class="sourceLineNo">545</span>            Filter filter = ff.bbox(ff.property(geomName), bbox);<a name="line.545"></a>
+<span class="sourceLineNo">546</span>             */<a name="line.546"></a>
+<span class="sourceLineNo">547</span>            <a name="line.547"></a>
+<span class="sourceLineNo">548</span>            Filter filter = ECQL.toFilter("BBOX(msGeometry, -117.6488, 32.501, -116.058, 33.66)");<a name="line.548"></a>
+<span class="sourceLineNo">549</span>            <a name="line.549"></a>
+<span class="sourceLineNo">550</span>            SimpleFeatureCollection features = (SimpleFeatureCollection) source.getFeatures( filter );<a name="line.550"></a>
+<span class="sourceLineNo">551</span>    <a name="line.551"></a>
+<span class="sourceLineNo">552</span>            System.out.println("filter = " + filter);<a name="line.552"></a>
+<span class="sourceLineNo">553</span><a name="line.553"></a>
+<span class="sourceLineNo">554</span>            System.out.println("there are " + features.size() + " features");<a name="line.554"></a>
+<span class="sourceLineNo">555</span>            <a name="line.555"></a>
+<span class="sourceLineNo">556</span>            ReferencedEnvelope bounds = new ReferencedEnvelope();<a name="line.556"></a>
+<span class="sourceLineNo">557</span>            try(SimpleFeatureIterator iterator = features.features()) {<a name="line.557"></a>
+<span class="sourceLineNo">558</span>                while( iterator.hasNext() ){<a name="line.558"></a>
+<span class="sourceLineNo">559</span>                    Feature feature = (Feature) iterator.next();<a name="line.559"></a>
+<span class="sourceLineNo">560</span>                    bounds.include( feature.getBounds() );<a name="line.560"></a>
+<span class="sourceLineNo">561</span>                }<a name="line.561"></a>
+<span class="sourceLineNo">562</span>                System.out.println( "Calculated Bounds:"+ bounds );    <a name="line.562"></a>
+<span class="sourceLineNo">563</span>            }       <a name="line.563"></a>
+<span class="sourceLineNo">564</span>            <a name="line.564"></a>
+<span class="sourceLineNo">565</span>            //System.out.println(toGeoJSONString(features));<a name="line.565"></a>
+<span class="sourceLineNo">566</span>            <a name="line.566"></a>
+<span class="sourceLineNo">567</span>        } catch(Throwable t) {<a name="line.567"></a>
+<span class="sourceLineNo">568</span>            System.err.println("Error: " + t.getMessage());<a name="line.568"></a>
+<span class="sourceLineNo">569</span>        }<a name="line.569"></a>
+<span class="sourceLineNo">570</span>    }<a name="line.570"></a>
+<span class="sourceLineNo">571</span>}<a name="line.571"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

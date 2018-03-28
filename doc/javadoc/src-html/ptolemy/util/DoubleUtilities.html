@@ -1,0 +1,244 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../stylesheet.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>/*<a name="line.1"></a>
+<span class="sourceLineNo">002</span> * Copyright (C) 2011 The Guava Authors<a name="line.2"></a>
+<span class="sourceLineNo">003</span> *<a name="line.3"></a>
+<span class="sourceLineNo">004</span> * Licensed under the Apache License, Version 2.0 (the "License");<a name="line.4"></a>
+<span class="sourceLineNo">005</span> * you may not use this file except in compliance with the License.<a name="line.5"></a>
+<span class="sourceLineNo">006</span> * You may obtain a copy of the License at<a name="line.6"></a>
+<span class="sourceLineNo">007</span> *<a name="line.7"></a>
+<span class="sourceLineNo">008</span> * http://www.apache.org/licenses/LICENSE-2.0<a name="line.8"></a>
+<span class="sourceLineNo">009</span> *<a name="line.9"></a>
+<span class="sourceLineNo">010</span> * Unless required by applicable law or agreed to in writing, software<a name="line.10"></a>
+<span class="sourceLineNo">011</span> * distributed under the License is distributed on an "AS IS" BASIS,<a name="line.11"></a>
+<span class="sourceLineNo">012</span> * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.<a name="line.12"></a>
+<span class="sourceLineNo">013</span> * See the License for the specific language governing permissions and<a name="line.13"></a>
+<span class="sourceLineNo">014</span> * limitations under the License.<a name="line.14"></a>
+<span class="sourceLineNo">015</span> */<a name="line.15"></a>
+<span class="sourceLineNo">016</span><a name="line.16"></a>
+<span class="sourceLineNo">017</span>package ptolemy.util;<a name="line.17"></a>
+<span class="sourceLineNo">018</span><a name="line.18"></a>
+<span class="sourceLineNo">019</span>// Remove the dependency on google classes.<a name="line.19"></a>
+<span class="sourceLineNo">020</span>//import static com.google.common.base.Preconditions.checkArgument;<a name="line.20"></a>
+<span class="sourceLineNo">021</span>import static java.lang.Double.MAX_EXPONENT;<a name="line.21"></a>
+<span class="sourceLineNo">022</span>import static java.lang.Double.MIN_EXPONENT;<a name="line.22"></a>
+<span class="sourceLineNo">023</span>import static java.lang.Double.POSITIVE_INFINITY;<a name="line.23"></a>
+<span class="sourceLineNo">024</span>import static java.lang.Double.doubleToRawLongBits;<a name="line.24"></a>
+<span class="sourceLineNo">025</span>import static java.lang.Double.isNaN;<a name="line.25"></a>
+<span class="sourceLineNo">026</span>import static java.lang.Double.longBitsToDouble;<a name="line.26"></a>
+<span class="sourceLineNo">027</span>import static java.lang.Math.getExponent;<a name="line.27"></a>
+<span class="sourceLineNo">028</span><a name="line.28"></a>
+<span class="sourceLineNo">029</span>import java.math.BigInteger;<a name="line.29"></a>
+<span class="sourceLineNo">030</span><a name="line.30"></a>
+<span class="sourceLineNo">031</span>/**<a name="line.31"></a>
+<span class="sourceLineNo">032</span> * Utilities for double primitives.<a name="line.32"></a>
+<span class="sourceLineNo">033</span> *<a name="line.33"></a>
+<span class="sourceLineNo">034</span> * This code is used by ptolemy.actor.util.Time to improve performance.<a name="line.34"></a>
+<span class="sourceLineNo">035</span> *<a name="line.35"></a>
+<span class="sourceLineNo">036</span> * @author Louis Wasserman, based on https://code.google.com/p/guava-libraries/source/browse/guava/src/com/google/common/math/DoubleUtils.java<a name="line.36"></a>
+<span class="sourceLineNo">037</span> */<a name="line.37"></a>
+<span class="sourceLineNo">038</span>public final class DoubleUtilities {<a name="line.38"></a>
+<span class="sourceLineNo">039</span>    private DoubleUtilities() {<a name="line.39"></a>
+<span class="sourceLineNo">040</span>    }<a name="line.40"></a>
+<span class="sourceLineNo">041</span><a name="line.41"></a>
+<span class="sourceLineNo">042</span>    static double nextDown(double d) {<a name="line.42"></a>
+<span class="sourceLineNo">043</span>        return -Math.nextUp(-d);<a name="line.43"></a>
+<span class="sourceLineNo">044</span>    }<a name="line.44"></a>
+<span class="sourceLineNo">045</span><a name="line.45"></a>
+<span class="sourceLineNo">046</span>    static long getSignificand(double d) {<a name="line.46"></a>
+<span class="sourceLineNo">047</span>        // Remove check argument and replace with conditionals<a name="line.47"></a>
+<span class="sourceLineNo">048</span>        // to remove dependency on google classes.<a name="line.48"></a>
+<span class="sourceLineNo">049</span>        //checkArgument(isFinite(d), "not a normal value");<a name="line.49"></a>
+<span class="sourceLineNo">050</span>        if (!isFinite(d)) {<a name="line.50"></a>
+<span class="sourceLineNo">051</span>            throw new IllegalArgumentException("not a normal value");<a name="line.51"></a>
+<span class="sourceLineNo">052</span>        }<a name="line.52"></a>
+<span class="sourceLineNo">053</span>        int exponent = getExponent(d);<a name="line.53"></a>
+<span class="sourceLineNo">054</span>        long bits = doubleToRawLongBits(d);<a name="line.54"></a>
+<span class="sourceLineNo">055</span>        bits &amp;= SIGNIFICAND_MASK;<a name="line.55"></a>
+<span class="sourceLineNo">056</span>        return (exponent == MIN_EXPONENT - 1) ? bits &lt;&lt; 1 : bits | IMPLICIT_BIT;<a name="line.56"></a>
+<span class="sourceLineNo">057</span>    }<a name="line.57"></a>
+<span class="sourceLineNo">058</span><a name="line.58"></a>
+<span class="sourceLineNo">059</span>    static boolean isFinite(double d) {<a name="line.59"></a>
+<span class="sourceLineNo">060</span>        return getExponent(d) &lt;= MAX_EXPONENT;<a name="line.60"></a>
+<span class="sourceLineNo">061</span>    }<a name="line.61"></a>
+<span class="sourceLineNo">062</span><a name="line.62"></a>
+<span class="sourceLineNo">063</span>    static boolean isNormal(double d) {<a name="line.63"></a>
+<span class="sourceLineNo">064</span>        return getExponent(d) &gt;= MIN_EXPONENT;<a name="line.64"></a>
+<span class="sourceLineNo">065</span>    }<a name="line.65"></a>
+<span class="sourceLineNo">066</span><a name="line.66"></a>
+<span class="sourceLineNo">067</span>    /*<a name="line.67"></a>
+<span class="sourceLineNo">068</span>     * Returns x scaled by a power of 2 such that it is in the range [1, 2). Assumes x is positive,<a name="line.68"></a>
+<span class="sourceLineNo">069</span>     * normal, and finite.<a name="line.69"></a>
+<span class="sourceLineNo">070</span>     */<a name="line.70"></a>
+<span class="sourceLineNo">071</span>    static double scaleNormalize(double x) {<a name="line.71"></a>
+<span class="sourceLineNo">072</span>        long significand = doubleToRawLongBits(x) &amp; SIGNIFICAND_MASK;<a name="line.72"></a>
+<span class="sourceLineNo">073</span>        return longBitsToDouble(significand | ONE_BITS);<a name="line.73"></a>
+<span class="sourceLineNo">074</span>    }<a name="line.74"></a>
+<span class="sourceLineNo">075</span><a name="line.75"></a>
+<span class="sourceLineNo">076</span>    /** Convert a BigInteger to a double using a fast implementation.<a name="line.76"></a>
+<span class="sourceLineNo">077</span>     *  @param x The BigInteger to be converted.<a name="line.77"></a>
+<span class="sourceLineNo">078</span>     *  @return the value of the BigInteger as a double.<a name="line.78"></a>
+<span class="sourceLineNo">079</span>     */<a name="line.79"></a>
+<span class="sourceLineNo">080</span>    public static double bigToDouble(BigInteger x) {<a name="line.80"></a>
+<span class="sourceLineNo">081</span>        // This is an extremely fast implementation of BigInteger.doubleValue().  JDK patch pending.<a name="line.81"></a>
+<span class="sourceLineNo">082</span>        BigInteger absX = x.abs();<a name="line.82"></a>
+<span class="sourceLineNo">083</span>        int exponent = absX.bitLength() - 1;<a name="line.83"></a>
+<span class="sourceLineNo">084</span>        // exponent == floor(log2(abs(x)))<a name="line.84"></a>
+<span class="sourceLineNo">085</span>        if (exponent &lt; Long.SIZE - 1) {<a name="line.85"></a>
+<span class="sourceLineNo">086</span>            return x.longValue();<a name="line.86"></a>
+<span class="sourceLineNo">087</span>        } else if (exponent &gt; MAX_EXPONENT) {<a name="line.87"></a>
+<span class="sourceLineNo">088</span>            return x.signum() * POSITIVE_INFINITY;<a name="line.88"></a>
+<span class="sourceLineNo">089</span>        }<a name="line.89"></a>
+<span class="sourceLineNo">090</span><a name="line.90"></a>
+<span class="sourceLineNo">091</span>        /*<a name="line.91"></a>
+<span class="sourceLineNo">092</span>         * We need the top SIGNIFICAND_BITS + 1 bits, including the "implicit" one bit. To make<a name="line.92"></a>
+<span class="sourceLineNo">093</span>         * rounding easier, we pick out the top SIGNIFICAND_BITS + 2 bits, so we have one to help us<a name="line.93"></a>
+<span class="sourceLineNo">094</span>         * round up or down. twiceSignifFloor will contain the top SIGNIFICAND_BITS + 2 bits, and<a name="line.94"></a>
+<span class="sourceLineNo">095</span>         * signifFloor the top SIGNIFICAND_BITS + 1.<a name="line.95"></a>
+<span class="sourceLineNo">096</span>         *<a name="line.96"></a>
+<span class="sourceLineNo">097</span>         * It helps to consider the real number signif = absX * 2^(SIGNIFICAND_BITS - exponent).<a name="line.97"></a>
+<span class="sourceLineNo">098</span>         */<a name="line.98"></a>
+<span class="sourceLineNo">099</span>        int shift = exponent - SIGNIFICAND_BITS - 1;<a name="line.99"></a>
+<span class="sourceLineNo">100</span>        long twiceSignifFloor = absX.shiftRight(shift).longValue();<a name="line.100"></a>
+<span class="sourceLineNo">101</span>        long signifFloor = twiceSignifFloor &gt;&gt; 1;<a name="line.101"></a>
+<span class="sourceLineNo">102</span>        signifFloor &amp;= SIGNIFICAND_MASK; // remove the implied bit<a name="line.102"></a>
+<span class="sourceLineNo">103</span><a name="line.103"></a>
+<span class="sourceLineNo">104</span>        /*<a name="line.104"></a>
+<span class="sourceLineNo">105</span>         * We round up if either the fractional part of signif is strictly greater than 0.5 (which is<a name="line.105"></a>
+<span class="sourceLineNo">106</span>         * true if the 0.5 bit is set and any lower bit is set), or if the fractional part of signif is<a name="line.106"></a>
+<span class="sourceLineNo">107</span>         * &gt;= 0.5 and signifFloor is odd (which is true if both the 0.5 bit and the 1 bit are set).<a name="line.107"></a>
+<span class="sourceLineNo">108</span>         */<a name="line.108"></a>
+<span class="sourceLineNo">109</span>        boolean increment = (twiceSignifFloor &amp; 1) != 0<a name="line.109"></a>
+<span class="sourceLineNo">110</span>                &amp;&amp; ((signifFloor &amp; 1) != 0 || absX.getLowestSetBit() &lt; shift);<a name="line.110"></a>
+<span class="sourceLineNo">111</span>        long signifRounded = increment ? signifFloor + 1 : signifFloor;<a name="line.111"></a>
+<span class="sourceLineNo">112</span>        long bits = (long) ((exponent + EXPONENT_BIAS)) &lt;&lt; SIGNIFICAND_BITS;<a name="line.112"></a>
+<span class="sourceLineNo">113</span>        bits += signifRounded;<a name="line.113"></a>
+<span class="sourceLineNo">114</span>        /*<a name="line.114"></a>
+<span class="sourceLineNo">115</span>         * If signifRounded == 2^53, we'd need to set all of the significand bits to zero and add 1 to<a name="line.115"></a>
+<span class="sourceLineNo">116</span>         * the exponent. This is exactly the behavior we get from just adding signifRounded to bits<a name="line.116"></a>
+<span class="sourceLineNo">117</span>         * directly.  If the exponent is MAX_DOUBLE_EXPONENT, we round up (correctly) to<a name="line.117"></a>
+<span class="sourceLineNo">118</span>         * Double.POSITIVE_INFINITY.<a name="line.118"></a>
+<span class="sourceLineNo">119</span>         */<a name="line.119"></a>
+<span class="sourceLineNo">120</span>        bits |= x.signum() &amp; SIGN_MASK;<a name="line.120"></a>
+<span class="sourceLineNo">121</span>        return longBitsToDouble(bits);<a name="line.121"></a>
+<span class="sourceLineNo">122</span>    }<a name="line.122"></a>
+<span class="sourceLineNo">123</span><a name="line.123"></a>
+<span class="sourceLineNo">124</span>    /**<a name="line.124"></a>
+<span class="sourceLineNo">125</span>     * Returns its argument if it is non-negative, zero if it is negative.<a name="line.125"></a>
+<span class="sourceLineNo">126</span>     * @param value The value to be checked.<a name="line.126"></a>
+<span class="sourceLineNo">127</span>     * @return If value is non-negative, return the value.  If the value<a name="line.127"></a>
+<span class="sourceLineNo">128</span>     * is negative, then return zero.<a name="line.128"></a>
+<span class="sourceLineNo">129</span>     */<a name="line.129"></a>
+<span class="sourceLineNo">130</span>    static double ensureNonNegative(double value) {<a name="line.130"></a>
+<span class="sourceLineNo">131</span>        // Remove check argument and replace with conditionals<a name="line.131"></a>
+<span class="sourceLineNo">132</span>        // to remove dependency on google classes.<a name="line.132"></a>
+<span class="sourceLineNo">133</span>        //checkArgument(!isNaN(value));<a name="line.133"></a>
+<span class="sourceLineNo">134</span>        if (isNaN(value)) {<a name="line.134"></a>
+<span class="sourceLineNo">135</span>            throw new IllegalArgumentException("not a number");<a name="line.135"></a>
+<span class="sourceLineNo">136</span>        }<a name="line.136"></a>
+<span class="sourceLineNo">137</span>        if (value &gt; 0.0) {<a name="line.137"></a>
+<span class="sourceLineNo">138</span>            return value;<a name="line.138"></a>
+<span class="sourceLineNo">139</span>        } else {<a name="line.139"></a>
+<span class="sourceLineNo">140</span>            return 0.0;<a name="line.140"></a>
+<span class="sourceLineNo">141</span>        }<a name="line.141"></a>
+<span class="sourceLineNo">142</span>    }<a name="line.142"></a>
+<span class="sourceLineNo">143</span><a name="line.143"></a>
+<span class="sourceLineNo">144</span>    ///////////////////////////////////////////////////////////////////<a name="line.144"></a>
+<span class="sourceLineNo">145</span>    ////                    static variables                      ////<a name="line.145"></a>
+<span class="sourceLineNo">146</span><a name="line.146"></a>
+<span class="sourceLineNo">147</span>    // The mask for the significand, according to the {@link<a name="line.147"></a>
+<span class="sourceLineNo">148</span>    // Double#doubleToRawLongBits(double)} spec.<a name="line.148"></a>
+<span class="sourceLineNo">149</span>    static final long SIGNIFICAND_MASK = 0x000fffffffffffffL;<a name="line.149"></a>
+<span class="sourceLineNo">150</span><a name="line.150"></a>
+<span class="sourceLineNo">151</span>    // The mask for the exponent, according to the {@link<a name="line.151"></a>
+<span class="sourceLineNo">152</span>    // Double#doubleToRawLongBits(double)} spec.<a name="line.152"></a>
+<span class="sourceLineNo">153</span>    static final long EXPONENT_MASK = 0x7ff0000000000000L;<a name="line.153"></a>
+<span class="sourceLineNo">154</span><a name="line.154"></a>
+<span class="sourceLineNo">155</span>    // The mask for the sign, according to the {@link<a name="line.155"></a>
+<span class="sourceLineNo">156</span>    // Double#doubleToRawLongBits(double)} spec.<a name="line.156"></a>
+<span class="sourceLineNo">157</span>    static final long SIGN_MASK = 0x8000000000000000L;<a name="line.157"></a>
+<span class="sourceLineNo">158</span><a name="line.158"></a>
+<span class="sourceLineNo">159</span>    // The significands bits<a name="line.159"></a>
+<span class="sourceLineNo">160</span>    static final int SIGNIFICAND_BITS = 52;<a name="line.160"></a>
+<span class="sourceLineNo">161</span><a name="line.161"></a>
+<span class="sourceLineNo">162</span>    // The exponent bias<a name="line.162"></a>
+<span class="sourceLineNo">163</span>    static final int EXPONENT_BIAS = 1023;<a name="line.163"></a>
+<span class="sourceLineNo">164</span><a name="line.164"></a>
+<span class="sourceLineNo">165</span>    // The implicit 1 bit that is omitted in significands of normal doubles.<a name="line.165"></a>
+<span class="sourceLineNo">166</span>    static final long IMPLICIT_BIT = SIGNIFICAND_MASK + 1;<a name="line.166"></a>
+<span class="sourceLineNo">167</span><a name="line.167"></a>
+<span class="sourceLineNo">168</span>    ///////////////////////////////////////////////////////////////////<a name="line.168"></a>
+<span class="sourceLineNo">169</span>    ////                      static private variables            ////<a name="line.169"></a>
+<span class="sourceLineNo">170</span><a name="line.170"></a>
+<span class="sourceLineNo">171</span>    private static final long ONE_BITS = doubleToRawLongBits(1.0);<a name="line.171"></a>
+<span class="sourceLineNo">172</span>}<a name="line.172"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

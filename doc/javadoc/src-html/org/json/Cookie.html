@@ -1,0 +1,241 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../stylesheet.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>package org.json;<a name="line.1"></a>
+<span class="sourceLineNo">002</span><a name="line.2"></a>
+<span class="sourceLineNo">003</span>/*<a name="line.3"></a>
+<span class="sourceLineNo">004</span>Copyright (c) 2002 JSON.org<a name="line.4"></a>
+<span class="sourceLineNo">005</span><a name="line.5"></a>
+<span class="sourceLineNo">006</span>Permission is hereby granted, free of charge, to any person obtaining a copy<a name="line.6"></a>
+<span class="sourceLineNo">007</span>of this software and associated documentation files (the "Software"), to deal<a name="line.7"></a>
+<span class="sourceLineNo">008</span>in the Software without restriction, including without limitation the rights<a name="line.8"></a>
+<span class="sourceLineNo">009</span>to use, copy, modify, merge, publish, distribute, sublicense, and/or sell<a name="line.9"></a>
+<span class="sourceLineNo">010</span>copies of the Software, and to permit persons to whom the Software is<a name="line.10"></a>
+<span class="sourceLineNo">011</span>furnished to do so, subject to the following conditions:<a name="line.11"></a>
+<span class="sourceLineNo">012</span><a name="line.12"></a>
+<span class="sourceLineNo">013</span>The above copyright notice and this permission notice shall be included in all<a name="line.13"></a>
+<span class="sourceLineNo">014</span>copies or substantial portions of the Software.<a name="line.14"></a>
+<span class="sourceLineNo">015</span><a name="line.15"></a>
+<span class="sourceLineNo">016</span>The Software shall be used for Good, not Evil.<a name="line.16"></a>
+<span class="sourceLineNo">017</span><a name="line.17"></a>
+<span class="sourceLineNo">018</span>THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR<a name="line.18"></a>
+<span class="sourceLineNo">019</span>IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,<a name="line.19"></a>
+<span class="sourceLineNo">020</span>FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE<a name="line.20"></a>
+<span class="sourceLineNo">021</span>AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER<a name="line.21"></a>
+<span class="sourceLineNo">022</span>LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,<a name="line.22"></a>
+<span class="sourceLineNo">023</span>OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE<a name="line.23"></a>
+<span class="sourceLineNo">024</span>SOFTWARE.<a name="line.24"></a>
+<span class="sourceLineNo">025</span> */<a name="line.25"></a>
+<span class="sourceLineNo">026</span><a name="line.26"></a>
+<span class="sourceLineNo">027</span>/**<a name="line.27"></a>
+<span class="sourceLineNo">028</span> * Convert a web browser cookie specification to a JSONObject and back.<a name="line.28"></a>
+<span class="sourceLineNo">029</span> * JSON and Cookies are both notations for name/value pairs.<a name="line.29"></a>
+<span class="sourceLineNo">030</span> * @author JSON.org<a name="line.30"></a>
+<span class="sourceLineNo">031</span>@version $Id$<a name="line.31"></a>
+<span class="sourceLineNo">032</span>@since Ptolemy II 10.0<a name="line.32"></a>
+<span class="sourceLineNo">033</span> * @version 2008-09-18<a name="line.33"></a>
+<span class="sourceLineNo">034</span> */<a name="line.34"></a>
+<span class="sourceLineNo">035</span>public class Cookie {<a name="line.35"></a>
+<span class="sourceLineNo">036</span><a name="line.36"></a>
+<span class="sourceLineNo">037</span>    /**<a name="line.37"></a>
+<span class="sourceLineNo">038</span>     * Produce a copy of a string in which the characters '+', '%', '=', ';'<a name="line.38"></a>
+<span class="sourceLineNo">039</span>     * and control characters are replaced with "%hh". This is a gentle form<a name="line.39"></a>
+<span class="sourceLineNo">040</span>     * of URL encoding, attempting to cause as little distortion to the<a name="line.40"></a>
+<span class="sourceLineNo">041</span>     * string as possible. The characters '=' and ';' are meta characters in<a name="line.41"></a>
+<span class="sourceLineNo">042</span>     * cookies. By convention, they are escaped using the URL-encoding. This is<a name="line.42"></a>
+<span class="sourceLineNo">043</span>     * only a convention, not a standard. Often, cookies are expected to have<a name="line.43"></a>
+<span class="sourceLineNo">044</span>     * encoded values. We encode '=' and ';' because we must. We encode '%' and<a name="line.44"></a>
+<span class="sourceLineNo">045</span>     * '+' because they are meta characters in URL encoding.<a name="line.45"></a>
+<span class="sourceLineNo">046</span>     * @param string The source string.<a name="line.46"></a>
+<span class="sourceLineNo">047</span>     * @return       The escaped result.<a name="line.47"></a>
+<span class="sourceLineNo">048</span>     */<a name="line.48"></a>
+<span class="sourceLineNo">049</span>    public static String escape(String string) {<a name="line.49"></a>
+<span class="sourceLineNo">050</span>        char c;<a name="line.50"></a>
+<span class="sourceLineNo">051</span>        String s = string.trim();<a name="line.51"></a>
+<span class="sourceLineNo">052</span>        StringBuffer sb = new StringBuffer();<a name="line.52"></a>
+<span class="sourceLineNo">053</span>        int len = s.length();<a name="line.53"></a>
+<span class="sourceLineNo">054</span>        for (int i = 0; i &lt; len; i += 1) {<a name="line.54"></a>
+<span class="sourceLineNo">055</span>            c = s.charAt(i);<a name="line.55"></a>
+<span class="sourceLineNo">056</span>            if (c &lt; ' ' || c == '+' || c == '%' || c == '=' || c == ';') {<a name="line.56"></a>
+<span class="sourceLineNo">057</span>                sb.append('%');<a name="line.57"></a>
+<span class="sourceLineNo">058</span>                sb.append(Character.forDigit((char) (c &gt;&gt;&gt; 4 &amp; 0x0f), 16));<a name="line.58"></a>
+<span class="sourceLineNo">059</span>                sb.append(Character.forDigit((char) (c &amp; 0x0f), 16));<a name="line.59"></a>
+<span class="sourceLineNo">060</span>            } else {<a name="line.60"></a>
+<span class="sourceLineNo">061</span>                sb.append(c);<a name="line.61"></a>
+<span class="sourceLineNo">062</span>            }<a name="line.62"></a>
+<span class="sourceLineNo">063</span>        }<a name="line.63"></a>
+<span class="sourceLineNo">064</span>        return sb.toString();<a name="line.64"></a>
+<span class="sourceLineNo">065</span>    }<a name="line.65"></a>
+<span class="sourceLineNo">066</span><a name="line.66"></a>
+<span class="sourceLineNo">067</span>    /**<a name="line.67"></a>
+<span class="sourceLineNo">068</span>     * Convert a cookie specification string into a JSONObject. The string<a name="line.68"></a>
+<span class="sourceLineNo">069</span>     * will contain a name value pair separated by '='. The name and the value<a name="line.69"></a>
+<span class="sourceLineNo">070</span>     * will be unescaped, possibly converting '+' and '%' sequences. The<a name="line.70"></a>
+<span class="sourceLineNo">071</span>     * cookie properties may follow, separated by ';', also represented as<a name="line.71"></a>
+<span class="sourceLineNo">072</span>     * name=value (except the secure property, which does not have a value).<a name="line.72"></a>
+<span class="sourceLineNo">073</span>     * The name will be stored under the key "name", and the value will be<a name="line.73"></a>
+<span class="sourceLineNo">074</span>     * stored under the key "value". This method does not do checking or<a name="line.74"></a>
+<span class="sourceLineNo">075</span>     * validation of the parameters. It only converts the cookie string into<a name="line.75"></a>
+<span class="sourceLineNo">076</span>     * a JSONObject.<a name="line.76"></a>
+<span class="sourceLineNo">077</span>     * @param string The cookie specification string.<a name="line.77"></a>
+<span class="sourceLineNo">078</span>     * @return A JSONObject containing "name", "value", and possibly other<a name="line.78"></a>
+<span class="sourceLineNo">079</span>     *  members.<a name="line.79"></a>
+<span class="sourceLineNo">080</span>     * @exception JSONException<a name="line.80"></a>
+<span class="sourceLineNo">081</span>     */<a name="line.81"></a>
+<span class="sourceLineNo">082</span>    public static JSONObject toJSONObject(String string) throws JSONException {<a name="line.82"></a>
+<span class="sourceLineNo">083</span>        String n;<a name="line.83"></a>
+<span class="sourceLineNo">084</span>        JSONObject o = new JSONObject();<a name="line.84"></a>
+<span class="sourceLineNo">085</span>        Object v;<a name="line.85"></a>
+<span class="sourceLineNo">086</span>        JSONTokener x = new JSONTokener(string);<a name="line.86"></a>
+<span class="sourceLineNo">087</span>        o.put("name", x.nextTo('='));<a name="line.87"></a>
+<span class="sourceLineNo">088</span>        x.next('=');<a name="line.88"></a>
+<span class="sourceLineNo">089</span>        o.put("value", x.nextTo(';'));<a name="line.89"></a>
+<span class="sourceLineNo">090</span>        x.next();<a name="line.90"></a>
+<span class="sourceLineNo">091</span>        while (x.more()) {<a name="line.91"></a>
+<span class="sourceLineNo">092</span>            n = unescape(x.nextTo("=;"));<a name="line.92"></a>
+<span class="sourceLineNo">093</span>            if (x.next() != '=') {<a name="line.93"></a>
+<span class="sourceLineNo">094</span>                if (n.equals("secure")) {<a name="line.94"></a>
+<span class="sourceLineNo">095</span>                    v = Boolean.TRUE;<a name="line.95"></a>
+<span class="sourceLineNo">096</span>                } else {<a name="line.96"></a>
+<span class="sourceLineNo">097</span>                    throw x.syntaxError("Missing '=' in cookie parameter.");<a name="line.97"></a>
+<span class="sourceLineNo">098</span>                }<a name="line.98"></a>
+<span class="sourceLineNo">099</span>            } else {<a name="line.99"></a>
+<span class="sourceLineNo">100</span>                v = unescape(x.nextTo(';'));<a name="line.100"></a>
+<span class="sourceLineNo">101</span>                x.next();<a name="line.101"></a>
+<span class="sourceLineNo">102</span>            }<a name="line.102"></a>
+<span class="sourceLineNo">103</span>            o.put(n, v);<a name="line.103"></a>
+<span class="sourceLineNo">104</span>        }<a name="line.104"></a>
+<span class="sourceLineNo">105</span>        return o;<a name="line.105"></a>
+<span class="sourceLineNo">106</span>    }<a name="line.106"></a>
+<span class="sourceLineNo">107</span><a name="line.107"></a>
+<span class="sourceLineNo">108</span>    /**<a name="line.108"></a>
+<span class="sourceLineNo">109</span>     * Convert a JSONObject into a cookie specification string. The JSONObject<a name="line.109"></a>
+<span class="sourceLineNo">110</span>     * must contain "name" and "value" members.<a name="line.110"></a>
+<span class="sourceLineNo">111</span>     * If the JSONObject contains "expires", "domain", "path", or "secure"<a name="line.111"></a>
+<span class="sourceLineNo">112</span>     * members, they will be appended to the cookie specification string.<a name="line.112"></a>
+<span class="sourceLineNo">113</span>     * All other members are ignored.<a name="line.113"></a>
+<span class="sourceLineNo">114</span>     * @param o A JSONObject<a name="line.114"></a>
+<span class="sourceLineNo">115</span>     * @return A cookie specification string<a name="line.115"></a>
+<span class="sourceLineNo">116</span>     * @exception JSONException<a name="line.116"></a>
+<span class="sourceLineNo">117</span>     */<a name="line.117"></a>
+<span class="sourceLineNo">118</span>    public static String toString(JSONObject o) throws JSONException {<a name="line.118"></a>
+<span class="sourceLineNo">119</span>        StringBuffer sb = new StringBuffer();<a name="line.119"></a>
+<span class="sourceLineNo">120</span><a name="line.120"></a>
+<span class="sourceLineNo">121</span>        sb.append(escape(o.getString("name")));<a name="line.121"></a>
+<span class="sourceLineNo">122</span>        sb.append("=");<a name="line.122"></a>
+<span class="sourceLineNo">123</span>        sb.append(escape(o.getString("value")));<a name="line.123"></a>
+<span class="sourceLineNo">124</span>        if (o.has("expires")) {<a name="line.124"></a>
+<span class="sourceLineNo">125</span>            sb.append(";expires=");<a name="line.125"></a>
+<span class="sourceLineNo">126</span>            sb.append(o.getString("expires"));<a name="line.126"></a>
+<span class="sourceLineNo">127</span>        }<a name="line.127"></a>
+<span class="sourceLineNo">128</span>        if (o.has("domain")) {<a name="line.128"></a>
+<span class="sourceLineNo">129</span>            sb.append(";domain=");<a name="line.129"></a>
+<span class="sourceLineNo">130</span>            sb.append(escape(o.getString("domain")));<a name="line.130"></a>
+<span class="sourceLineNo">131</span>        }<a name="line.131"></a>
+<span class="sourceLineNo">132</span>        if (o.has("path")) {<a name="line.132"></a>
+<span class="sourceLineNo">133</span>            sb.append(";path=");<a name="line.133"></a>
+<span class="sourceLineNo">134</span>            sb.append(escape(o.getString("path")));<a name="line.134"></a>
+<span class="sourceLineNo">135</span>        }<a name="line.135"></a>
+<span class="sourceLineNo">136</span>        if (o.optBoolean("secure")) {<a name="line.136"></a>
+<span class="sourceLineNo">137</span>            sb.append(";secure");<a name="line.137"></a>
+<span class="sourceLineNo">138</span>        }<a name="line.138"></a>
+<span class="sourceLineNo">139</span>        return sb.toString();<a name="line.139"></a>
+<span class="sourceLineNo">140</span>    }<a name="line.140"></a>
+<span class="sourceLineNo">141</span><a name="line.141"></a>
+<span class="sourceLineNo">142</span>    /**<a name="line.142"></a>
+<span class="sourceLineNo">143</span>     * Convert &lt;code&gt;%&lt;/code&gt;&lt;i&gt;hh&lt;/i&gt; sequences to single characters, and<a name="line.143"></a>
+<span class="sourceLineNo">144</span>     * convert plus to space.<a name="line.144"></a>
+<span class="sourceLineNo">145</span>     * @param s A string that may contain<a name="line.145"></a>
+<span class="sourceLineNo">146</span>     *      &lt;code&gt;+&lt;/code&gt;&amp;nbsp;&lt;small&gt;(plus)&lt;/small&gt; and<a name="line.146"></a>
+<span class="sourceLineNo">147</span>     *      &lt;code&gt;%&lt;/code&gt;&lt;i&gt;hh&lt;/i&gt; sequences.<a name="line.147"></a>
+<span class="sourceLineNo">148</span>     * @return The unescaped string.<a name="line.148"></a>
+<span class="sourceLineNo">149</span>     */<a name="line.149"></a>
+<span class="sourceLineNo">150</span>    public static String unescape(String s) {<a name="line.150"></a>
+<span class="sourceLineNo">151</span>        int len = s.length();<a name="line.151"></a>
+<span class="sourceLineNo">152</span>        StringBuffer b = new StringBuffer();<a name="line.152"></a>
+<span class="sourceLineNo">153</span>        for (int i = 0; i &lt; len; ++i) {<a name="line.153"></a>
+<span class="sourceLineNo">154</span>            char c = s.charAt(i);<a name="line.154"></a>
+<span class="sourceLineNo">155</span>            if (c == '+') {<a name="line.155"></a>
+<span class="sourceLineNo">156</span>                c = ' ';<a name="line.156"></a>
+<span class="sourceLineNo">157</span>            } else if (c == '%' &amp;&amp; i + 2 &lt; len) {<a name="line.157"></a>
+<span class="sourceLineNo">158</span>                int d = JSONTokener.dehexchar(s.charAt(i + 1));<a name="line.158"></a>
+<span class="sourceLineNo">159</span>                int e = JSONTokener.dehexchar(s.charAt(i + 2));<a name="line.159"></a>
+<span class="sourceLineNo">160</span>                if (d &gt;= 0 &amp;&amp; e &gt;= 0) {<a name="line.160"></a>
+<span class="sourceLineNo">161</span>                    c = (char) (d * 16 + e);<a name="line.161"></a>
+<span class="sourceLineNo">162</span>                    i += 2;<a name="line.162"></a>
+<span class="sourceLineNo">163</span>                }<a name="line.163"></a>
+<span class="sourceLineNo">164</span>            }<a name="line.164"></a>
+<span class="sourceLineNo">165</span>            b.append(c);<a name="line.165"></a>
+<span class="sourceLineNo">166</span>        }<a name="line.166"></a>
+<span class="sourceLineNo">167</span>        return b.toString();<a name="line.167"></a>
+<span class="sourceLineNo">168</span>    }<a name="line.168"></a>
+<span class="sourceLineNo">169</span>}<a name="line.169"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

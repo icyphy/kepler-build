@@ -1,0 +1,217 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../../stylesheet.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>/* Singleton class for displaying exceptions, errors, warnings, and messages that<a name="line.1"></a>
+<span class="sourceLineNo">002</span>includes a button to open the actor that caused the problem<a name="line.2"></a>
+<span class="sourceLineNo">003</span><a name="line.3"></a>
+<span class="sourceLineNo">004</span> Copyright (c) 2010-2014 The Regents of the University of California.<a name="line.4"></a>
+<span class="sourceLineNo">005</span> All rights reserved.<a name="line.5"></a>
+<span class="sourceLineNo">006</span> Permission is hereby granted, without written agreement and without<a name="line.6"></a>
+<span class="sourceLineNo">007</span> license or royalty fees, to use, copy, modify, and distribute this<a name="line.7"></a>
+<span class="sourceLineNo">008</span> software and its documentation for any purpose, provided that the above<a name="line.8"></a>
+<span class="sourceLineNo">009</span> copyright notice and the following two paragraphs appear in all copies<a name="line.9"></a>
+<span class="sourceLineNo">010</span> of this software.<a name="line.10"></a>
+<span class="sourceLineNo">011</span><a name="line.11"></a>
+<span class="sourceLineNo">012</span> IN NO EVENT SHALL THE UNIVERSITY OF CALIFORNIA BE LIABLE TO ANY PARTY<a name="line.12"></a>
+<span class="sourceLineNo">013</span> FOR DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES<a name="line.13"></a>
+<span class="sourceLineNo">014</span> ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION, EVEN IF<a name="line.14"></a>
+<span class="sourceLineNo">015</span> THE UNIVERSITY OF CALIFORNIA HAS BEEN ADVISED OF THE POSSIBILITY OF<a name="line.15"></a>
+<span class="sourceLineNo">016</span> SUCH DAMAGE.<a name="line.16"></a>
+<span class="sourceLineNo">017</span><a name="line.17"></a>
+<span class="sourceLineNo">018</span> THE UNIVERSITY OF CALIFORNIA SPECIFICALLY DISCLAIMS ANY WARRANTIES,<a name="line.18"></a>
+<span class="sourceLineNo">019</span> INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF<a name="line.19"></a>
+<span class="sourceLineNo">020</span> MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE<a name="line.20"></a>
+<span class="sourceLineNo">021</span> PROVIDED HEREUNDER IS ON AN "AS IS" BASIS, AND THE UNIVERSITY OF<a name="line.21"></a>
+<span class="sourceLineNo">022</span> CALIFORNIA HAS NO OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT, UPDATES,<a name="line.22"></a>
+<span class="sourceLineNo">023</span> ENHANCEMENTS, OR MODIFICATIONS.<a name="line.23"></a>
+<span class="sourceLineNo">024</span><a name="line.24"></a>
+<span class="sourceLineNo">025</span> PT_COPYRIGHT_VERSION_2<a name="line.25"></a>
+<span class="sourceLineNo">026</span> COPYRIGHTENDKEY<a name="line.26"></a>
+<span class="sourceLineNo">027</span> */<a name="line.27"></a>
+<span class="sourceLineNo">028</span>package ptolemy.actor.gui;<a name="line.28"></a>
+<span class="sourceLineNo">029</span><a name="line.29"></a>
+<span class="sourceLineNo">030</span>import java.util.Iterator;<a name="line.30"></a>
+<span class="sourceLineNo">031</span><a name="line.31"></a>
+<span class="sourceLineNo">032</span>import ptolemy.gui.GraphicalMessageHandler;<a name="line.32"></a>
+<span class="sourceLineNo">033</span>import ptolemy.kernel.CompositeEntity;<a name="line.33"></a>
+<span class="sourceLineNo">034</span>import ptolemy.kernel.util.InternalErrorException;<a name="line.34"></a>
+<span class="sourceLineNo">035</span>import ptolemy.kernel.util.KernelException;<a name="line.35"></a>
+<span class="sourceLineNo">036</span>import ptolemy.kernel.util.KernelRuntimeException;<a name="line.36"></a>
+<span class="sourceLineNo">037</span>import ptolemy.kernel.util.Nameable;<a name="line.37"></a>
+<span class="sourceLineNo">038</span>import ptolemy.kernel.util.NamedObj;<a name="line.38"></a>
+<span class="sourceLineNo">039</span><a name="line.39"></a>
+<span class="sourceLineNo">040</span>///////////////////////////////////////////////////////////////////<a name="line.40"></a>
+<span class="sourceLineNo">041</span>//// GraphicalMessageHandler<a name="line.41"></a>
+<span class="sourceLineNo">042</span><a name="line.42"></a>
+<span class="sourceLineNo">043</span>/**<a name="line.43"></a>
+<span class="sourceLineNo">044</span> A message handler that optionally includes a button that opens the model<a name="line.44"></a>
+<span class="sourceLineNo">045</span> that contains the actor that caused the exception.<a name="line.45"></a>
+<span class="sourceLineNo">046</span><a name="line.46"></a>
+<span class="sourceLineNo">047</span> @author  Christopher Brooks<a name="line.47"></a>
+<span class="sourceLineNo">048</span> @version $Id$<a name="line.48"></a>
+<span class="sourceLineNo">049</span> @since Ptolemy II 10.0<a name="line.49"></a>
+<span class="sourceLineNo">050</span> @Pt.ProposedRating Red (cxh)<a name="line.50"></a>
+<span class="sourceLineNo">051</span> @Pt.AcceptedRating Red (cxh)<a name="line.51"></a>
+<span class="sourceLineNo">052</span> */<a name="line.52"></a>
+<span class="sourceLineNo">053</span>public class ActorGraphicalMessageHandler extends GraphicalMessageHandler {<a name="line.53"></a>
+<span class="sourceLineNo">054</span><a name="line.54"></a>
+<span class="sourceLineNo">055</span>    /** Under certain circumstances, add a "Go To Actor" button to the<a name="line.55"></a>
+<span class="sourceLineNo">056</span>     *  options array.  The button is added to the array if the<a name="line.56"></a>
+<span class="sourceLineNo">057</span>     *  throwable is a KernelException or a KernelRuntimeException<a name="line.57"></a>
+<span class="sourceLineNo">058</span>     *  with a non-null Nameable and the Nameable is not at the<a name="line.58"></a>
+<span class="sourceLineNo">059</span>     *  toplevel.<a name="line.59"></a>
+<span class="sourceLineNo">060</span>     *  @param options An array of Strings, suitable for passing to<a name="line.60"></a>
+<span class="sourceLineNo">061</span>     *  JOptionPane.showOptionDialog().<a name="line.61"></a>
+<span class="sourceLineNo">062</span>     *  @param throwable The throwable.<a name="line.62"></a>
+<span class="sourceLineNo">063</span>     *  @return An array of Strings.  If the throwable is an instance<a name="line.63"></a>
+<span class="sourceLineNo">064</span>     *  of KernelException and non-null, then the String "Go To Actor"<a name="line.64"></a>
+<span class="sourceLineNo">065</span>     *  is added to the array as the last element.  Otherwise, the<a name="line.65"></a>
+<span class="sourceLineNo">066</span>     *  options argument is returned.<a name="line.66"></a>
+<span class="sourceLineNo">067</span>     */<a name="line.67"></a>
+<span class="sourceLineNo">068</span>    @Override<a name="line.68"></a>
+<span class="sourceLineNo">069</span>    protected Object[] _checkThrowableNameable(Object[] options,<a name="line.69"></a>
+<span class="sourceLineNo">070</span>            Throwable throwable) {<a name="line.70"></a>
+<span class="sourceLineNo">071</span><a name="line.71"></a>
+<span class="sourceLineNo">072</span>        Object[] result = options;<a name="line.72"></a>
+<span class="sourceLineNo">073</span>        Nameable nameable1 = _getNameable(throwable);<a name="line.73"></a>
+<span class="sourceLineNo">074</span>        // If the throwable has a Nameable, and is not the top level,<a name="line.74"></a>
+<span class="sourceLineNo">075</span>        // then add a button<a name="line.75"></a>
+<span class="sourceLineNo">076</span>        if (nameable1 != null &amp;&amp; nameable1 instanceof NamedObj<a name="line.76"></a>
+<span class="sourceLineNo">077</span>                &amp;&amp; ((NamedObj) nameable1).toplevel() != nameable1) {<a name="line.77"></a>
+<span class="sourceLineNo">078</span>            result = new Object[options.length + 1];<a name="line.78"></a>
+<span class="sourceLineNo">079</span>            System.arraycopy(options, 0, result, 0, options.length);<a name="line.79"></a>
+<span class="sourceLineNo">080</span>            result[options.length] = "Go To Actor";<a name="line.80"></a>
+<span class="sourceLineNo">081</span>        }<a name="line.81"></a>
+<span class="sourceLineNo">082</span>        return result;<a name="line.82"></a>
+<span class="sourceLineNo">083</span>    }<a name="line.83"></a>
+<span class="sourceLineNo">084</span><a name="line.84"></a>
+<span class="sourceLineNo">085</span>    /** Given a throwable, return the first Nameable (if any).<a name="line.85"></a>
+<span class="sourceLineNo">086</span>     *  @param throwable The throwable that may or may not<a name="line.86"></a>
+<span class="sourceLineNo">087</span>     *  be an instance of KernelException or KernelRuntimeException.<a name="line.87"></a>
+<span class="sourceLineNo">088</span>     *  @return The first Nameable or null if the throwable<a name="line.88"></a>
+<span class="sourceLineNo">089</span>     *  is not a KernelException or KernelRuntimeException.<a name="line.89"></a>
+<span class="sourceLineNo">090</span>     */<a name="line.90"></a>
+<span class="sourceLineNo">091</span>    protected Nameable _getNameable(Throwable throwable) {<a name="line.91"></a>
+<span class="sourceLineNo">092</span>        Nameable nameable1 = null;<a name="line.92"></a>
+<span class="sourceLineNo">093</span>        if (throwable instanceof KernelException) {<a name="line.93"></a>
+<span class="sourceLineNo">094</span>            nameable1 = ((KernelException) throwable).getNameable1();<a name="line.94"></a>
+<span class="sourceLineNo">095</span>        } else if (throwable instanceof KernelRuntimeException) {<a name="line.95"></a>
+<span class="sourceLineNo">096</span>            Iterator nameables = ((KernelRuntimeException) throwable)<a name="line.96"></a>
+<span class="sourceLineNo">097</span>                    .getNameables().iterator();<a name="line.97"></a>
+<span class="sourceLineNo">098</span>            while (nameables.hasNext()) {<a name="line.98"></a>
+<span class="sourceLineNo">099</span>                Object object = nameables.next();<a name="line.99"></a>
+<span class="sourceLineNo">100</span>                if (object instanceof NamedObj) {<a name="line.100"></a>
+<span class="sourceLineNo">101</span>                    nameable1 = (NamedObj) object;<a name="line.101"></a>
+<span class="sourceLineNo">102</span>                    break;<a name="line.102"></a>
+<span class="sourceLineNo">103</span>                }<a name="line.103"></a>
+<span class="sourceLineNo">104</span>            }<a name="line.104"></a>
+<span class="sourceLineNo">105</span><a name="line.105"></a>
+<span class="sourceLineNo">106</span>        }<a name="line.106"></a>
+<span class="sourceLineNo">107</span>        return nameable1;<a name="line.107"></a>
+<span class="sourceLineNo">108</span>    }<a name="line.108"></a>
+<span class="sourceLineNo">109</span><a name="line.109"></a>
+<span class="sourceLineNo">110</span>    /** Open the level of hierarchy of the model that contains the<a name="line.110"></a>
+<span class="sourceLineNo">111</span>     *  Nameable referred to by the KernelException or KernelRuntimeException.<a name="line.111"></a>
+<span class="sourceLineNo">112</span>     *  @param throwable The throwable that may be a KernelException<a name="line.112"></a>
+<span class="sourceLineNo">113</span>     *  or KernelRuntimeException.<a name="line.113"></a>
+<span class="sourceLineNo">114</span>     */<a name="line.114"></a>
+<span class="sourceLineNo">115</span>    @Override<a name="line.115"></a>
+<span class="sourceLineNo">116</span>    protected void _showNameable(Throwable throwable) {<a name="line.116"></a>
+<span class="sourceLineNo">117</span>        Nameable nameable1 = _getNameable(throwable);<a name="line.117"></a>
+<span class="sourceLineNo">118</span>        if (nameable1 != null) {<a name="line.118"></a>
+<span class="sourceLineNo">119</span>            Effigy effigy = Configuration<a name="line.119"></a>
+<span class="sourceLineNo">120</span>                    .findEffigy(((NamedObj) nameable1).toplevel());<a name="line.120"></a>
+<span class="sourceLineNo">121</span>            Configuration configuration = (Configuration) effigy.toplevel();<a name="line.121"></a>
+<span class="sourceLineNo">122</span>            try {<a name="line.122"></a>
+<span class="sourceLineNo">123</span>                Nameable container = nameable1;<a name="line.123"></a>
+<span class="sourceLineNo">124</span>                while (container != null<a name="line.124"></a>
+<span class="sourceLineNo">125</span>                        &amp;&amp; !(container instanceof CompositeEntity)) {<a name="line.125"></a>
+<span class="sourceLineNo">126</span>                    container = container.getContainer();<a name="line.126"></a>
+<span class="sourceLineNo">127</span>                }<a name="line.127"></a>
+<span class="sourceLineNo">128</span>                if (container == null) {<a name="line.128"></a>
+<span class="sourceLineNo">129</span>                    // Hmm.  Could not find container?<a name="line.129"></a>
+<span class="sourceLineNo">130</span>                    container = nameable1;<a name="line.130"></a>
+<span class="sourceLineNo">131</span>                }<a name="line.131"></a>
+<span class="sourceLineNo">132</span>                configuration.openModel((NamedObj) container);<a name="line.132"></a>
+<span class="sourceLineNo">133</span>            } catch (KernelException ex) {<a name="line.133"></a>
+<span class="sourceLineNo">134</span>                // FIXME: Could be an endless loop here if<a name="line.134"></a>
+<span class="sourceLineNo">135</span>                // we keep failing to open container.<a name="line.135"></a>
+<span class="sourceLineNo">136</span>                throw new InternalErrorException(nameable1, ex,<a name="line.136"></a>
+<span class="sourceLineNo">137</span>                        "Could not open " + nameable1.getFullName());<a name="line.137"></a>
+<span class="sourceLineNo">138</span>            }<a name="line.138"></a>
+<span class="sourceLineNo">139</span>            return;<a name="line.139"></a>
+<span class="sourceLineNo">140</span>        }<a name="line.140"></a>
+<span class="sourceLineNo">141</span><a name="line.141"></a>
+<span class="sourceLineNo">142</span>        message("Internal Error: The throwable \"" + throwable<a name="line.142"></a>
+<span class="sourceLineNo">143</span>                + "\" is not a KernelException or KernelRuntimeException?");<a name="line.143"></a>
+<span class="sourceLineNo">144</span>    }<a name="line.144"></a>
+<span class="sourceLineNo">145</span>}<a name="line.145"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

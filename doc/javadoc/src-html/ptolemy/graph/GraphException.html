@@ -1,0 +1,199 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../stylesheet.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>/* Base exception for graph errors.<a name="line.1"></a>
+<span class="sourceLineNo">002</span><a name="line.2"></a>
+<span class="sourceLineNo">003</span> Copyright (c) 2002-2014 The University of Maryland.<a name="line.3"></a>
+<span class="sourceLineNo">004</span> All rights reserved.<a name="line.4"></a>
+<span class="sourceLineNo">005</span> Permission is hereby granted, without written agreement and without<a name="line.5"></a>
+<span class="sourceLineNo">006</span> license or royalty fees, to use, copy, modify, and distribute this<a name="line.6"></a>
+<span class="sourceLineNo">007</span> software and its documentation for any purpose, provided that the above<a name="line.7"></a>
+<span class="sourceLineNo">008</span> copyright notice and the following two paragraphs appear in all copies<a name="line.8"></a>
+<span class="sourceLineNo">009</span> of this software.<a name="line.9"></a>
+<span class="sourceLineNo">010</span><a name="line.10"></a>
+<span class="sourceLineNo">011</span> IN NO EVENT SHALL THE UNIVERSITY OF MARYLAND BE LIABLE TO ANY PARTY<a name="line.11"></a>
+<span class="sourceLineNo">012</span> FOR DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES<a name="line.12"></a>
+<span class="sourceLineNo">013</span> ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION, EVEN IF<a name="line.13"></a>
+<span class="sourceLineNo">014</span> THE UNIVERSITY OF MARYLAND HAS BEEN ADVISED OF THE POSSIBILITY OF<a name="line.14"></a>
+<span class="sourceLineNo">015</span> SUCH DAMAGE.<a name="line.15"></a>
+<span class="sourceLineNo">016</span><a name="line.16"></a>
+<span class="sourceLineNo">017</span> THE UNIVERSITY OF MARYLAND SPECIFICALLY DISCLAIMS ANY WARRANTIES,<a name="line.17"></a>
+<span class="sourceLineNo">018</span> INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF<a name="line.18"></a>
+<span class="sourceLineNo">019</span> MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE<a name="line.19"></a>
+<span class="sourceLineNo">020</span> PROVIDED HEREUNDER IS ON AN "AS IS" BASIS, AND THE UNIVERSITY OF<a name="line.20"></a>
+<span class="sourceLineNo">021</span> MARYLAND HAS NO OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT, UPDATES,<a name="line.21"></a>
+<span class="sourceLineNo">022</span> ENHANCEMENTS, OR MODIFICATIONS.<a name="line.22"></a>
+<span class="sourceLineNo">023</span><a name="line.23"></a>
+<span class="sourceLineNo">024</span> */<a name="line.24"></a>
+<span class="sourceLineNo">025</span>package ptolemy.graph;<a name="line.25"></a>
+<span class="sourceLineNo">026</span><a name="line.26"></a>
+<span class="sourceLineNo">027</span>///////////////////////////////////////////////////////////////////<a name="line.27"></a>
+<span class="sourceLineNo">028</span>//// GraphException<a name="line.28"></a>
+<span class="sourceLineNo">029</span><a name="line.29"></a>
+<span class="sourceLineNo">030</span>/**<a name="line.30"></a>
+<span class="sourceLineNo">031</span> Base exception for graph errors. This is also an instance of<a name="line.31"></a>
+<span class="sourceLineNo">032</span> &lt;code&gt;RuntimeException&lt;/code&gt;.<a name="line.32"></a>
+<span class="sourceLineNo">033</span><a name="line.33"></a>
+<span class="sourceLineNo">034</span> @author Mingyung Ko, Shuvra S. Bhattacharyya<a name="line.34"></a>
+<span class="sourceLineNo">035</span> @version $Id$<a name="line.35"></a>
+<span class="sourceLineNo">036</span> @since Ptolemy II 2.1<a name="line.36"></a>
+<span class="sourceLineNo">037</span> @Pt.ProposedRating Red (myko)<a name="line.37"></a>
+<span class="sourceLineNo">038</span> @Pt.AcceptedRating Red (ssb)<a name="line.38"></a>
+<span class="sourceLineNo">039</span> */<a name="line.39"></a>
+<span class="sourceLineNo">040</span>@SuppressWarnings("serial")<a name="line.40"></a>
+<span class="sourceLineNo">041</span>public class GraphException extends RuntimeException {<a name="line.41"></a>
+<span class="sourceLineNo">042</span>    /** The default constructor without arguments.<a name="line.42"></a>
+<span class="sourceLineNo">043</span>     */<a name="line.43"></a>
+<span class="sourceLineNo">044</span>    public GraphException() {<a name="line.44"></a>
+<span class="sourceLineNo">045</span>        // Note: this nullary exception is required.  If it is<a name="line.45"></a>
+<span class="sourceLineNo">046</span>        // not present, then the subclasses of this class will not<a name="line.46"></a>
+<span class="sourceLineNo">047</span>        // compile.<a name="line.47"></a>
+<span class="sourceLineNo">048</span>        this(null);<a name="line.48"></a>
+<span class="sourceLineNo">049</span>    }<a name="line.49"></a>
+<span class="sourceLineNo">050</span><a name="line.50"></a>
+<span class="sourceLineNo">051</span>    /** Constructor with an argument of text description.<a name="line.51"></a>
+<span class="sourceLineNo">052</span>     *  @param message The exception message.<a name="line.52"></a>
+<span class="sourceLineNo">053</span>     */<a name="line.53"></a>
+<span class="sourceLineNo">054</span>    public GraphException(String message) {<a name="line.54"></a>
+<span class="sourceLineNo">055</span>        super(message);<a name="line.55"></a>
+<span class="sourceLineNo">056</span>    }<a name="line.56"></a>
+<span class="sourceLineNo">057</span><a name="line.57"></a>
+<span class="sourceLineNo">058</span>    ///////////////////////////////////////////////////////////////////<a name="line.58"></a>
+<span class="sourceLineNo">059</span>    ////                         public methods                    ////<a name="line.59"></a>
+<span class="sourceLineNo">060</span><a name="line.60"></a>
+<span class="sourceLineNo">061</span>    /** Return a dump of this graph suitable to be appended to an<a name="line.61"></a>
+<span class="sourceLineNo">062</span>     *  error message.<a name="line.62"></a>
+<span class="sourceLineNo">063</span>     *<a name="line.63"></a>
+<span class="sourceLineNo">064</span>     *  @param graph The graph to dump.<a name="line.64"></a>
+<span class="sourceLineNo">065</span>     *  @return A text string dump of the graph.<a name="line.65"></a>
+<span class="sourceLineNo">066</span>     */<a name="line.66"></a>
+<span class="sourceLineNo">067</span>    static public String graphDump(Graph graph) {<a name="line.67"></a>
+<span class="sourceLineNo">068</span>        return "\nA Dump of the offending graph follows.\n" + graph.toString()<a name="line.68"></a>
+<span class="sourceLineNo">069</span>                + "\n";<a name="line.69"></a>
+<span class="sourceLineNo">070</span>    }<a name="line.70"></a>
+<span class="sourceLineNo">071</span><a name="line.71"></a>
+<span class="sourceLineNo">072</span>    /** Return a dump of a graph element and the container graph suitable to<a name="line.72"></a>
+<span class="sourceLineNo">073</span>     *  be appended to an error message.<a name="line.73"></a>
+<span class="sourceLineNo">074</span>     *<a name="line.74"></a>
+<span class="sourceLineNo">075</span>     *  @param element The element to dump.<a name="line.75"></a>
+<span class="sourceLineNo">076</span>     *  @param graph The graph where the element resides.<a name="line.76"></a>
+<span class="sourceLineNo">077</span>     *  @return A text string dump of the element and graph.<a name="line.77"></a>
+<span class="sourceLineNo">078</span>     */<a name="line.78"></a>
+<span class="sourceLineNo">079</span>    static public String elementDump(Element element, Graph graph) {<a name="line.79"></a>
+<span class="sourceLineNo">080</span>        String descriptor;<a name="line.80"></a>
+<span class="sourceLineNo">081</span><a name="line.81"></a>
+<span class="sourceLineNo">082</span>        if (element == null) {<a name="line.82"></a>
+<span class="sourceLineNo">083</span>            descriptor = "element";<a name="line.83"></a>
+<span class="sourceLineNo">084</span>        } else {<a name="line.84"></a>
+<span class="sourceLineNo">085</span>            descriptor = element.descriptor();<a name="line.85"></a>
+<span class="sourceLineNo">086</span>        }<a name="line.86"></a>
+<span class="sourceLineNo">087</span><a name="line.87"></a>
+<span class="sourceLineNo">088</span>        return _elementDump(element, graph, descriptor);<a name="line.88"></a>
+<span class="sourceLineNo">089</span>    }<a name="line.89"></a>
+<span class="sourceLineNo">090</span><a name="line.90"></a>
+<span class="sourceLineNo">091</span>    /** Return a dump of a weight and the container graph suitable to<a name="line.91"></a>
+<span class="sourceLineNo">092</span>     *  be appended to an error message. Generally, an<a name="line.92"></a>
+<span class="sourceLineNo">093</span>     *  {@link #elementDump(Element, Graph)} follows.<a name="line.93"></a>
+<span class="sourceLineNo">094</span>     *<a name="line.94"></a>
+<span class="sourceLineNo">095</span>     *  @param weight The weight to dump.<a name="line.95"></a>
+<span class="sourceLineNo">096</span>     *  @return A text string dump of the weight and graph.<a name="line.96"></a>
+<span class="sourceLineNo">097</span>     */<a name="line.97"></a>
+<span class="sourceLineNo">098</span>    static public String weightDump(Object weight) {<a name="line.98"></a>
+<span class="sourceLineNo">099</span>        if (weight == null) {<a name="line.99"></a>
+<span class="sourceLineNo">100</span>            return "\nThe weight was null?";<a name="line.100"></a>
+<span class="sourceLineNo">101</span>        }<a name="line.101"></a>
+<span class="sourceLineNo">102</span>        String dump = "\nThe weight is of class " + weight.getClass().getName()<a name="line.102"></a>
+<span class="sourceLineNo">103</span>                + " and its description follows:\n" + weight.toString();<a name="line.103"></a>
+<span class="sourceLineNo">104</span>        return dump;<a name="line.104"></a>
+<span class="sourceLineNo">105</span>    }<a name="line.105"></a>
+<span class="sourceLineNo">106</span><a name="line.106"></a>
+<span class="sourceLineNo">107</span>    ///////////////////////////////////////////////////////////////////<a name="line.107"></a>
+<span class="sourceLineNo">108</span>    ////                         protected methods                 ////<a name="line.108"></a>
+<span class="sourceLineNo">109</span><a name="line.109"></a>
+<span class="sourceLineNo">110</span>    /** Return a dump of an element ({@link Node}, {@link Edge},<a name="line.110"></a>
+<span class="sourceLineNo">111</span>     *  or weight) and the container graph suitable to be appended<a name="line.111"></a>
+<span class="sourceLineNo">112</span>     *  to an error message.<a name="line.112"></a>
+<span class="sourceLineNo">113</span>     *<a name="line.113"></a>
+<span class="sourceLineNo">114</span>     *  @param element The element to dump.<a name="line.114"></a>
+<span class="sourceLineNo">115</span>     *  @param graph The container graph.<a name="line.115"></a>
+<span class="sourceLineNo">116</span>     *  @param elementDescriptor Descriptor of the element.<a name="line.116"></a>
+<span class="sourceLineNo">117</span>     *  @return A text string dump of the element and graph.<a name="line.117"></a>
+<span class="sourceLineNo">118</span>     */<a name="line.118"></a>
+<span class="sourceLineNo">119</span>    static protected String _elementDump(Object element, Graph graph,<a name="line.119"></a>
+<span class="sourceLineNo">120</span>            String elementDescriptor) {<a name="line.120"></a>
+<span class="sourceLineNo">121</span>        String elementString = element == null ? "&lt;null&gt;" : element.toString();<a name="line.121"></a>
+<span class="sourceLineNo">122</span>        return "\nDumps of the offending " + elementDescriptor<a name="line.122"></a>
+<span class="sourceLineNo">123</span>                + " and graph follow.\n" + "The offending " + elementDescriptor<a name="line.123"></a>
+<span class="sourceLineNo">124</span>                + ":\n" + elementString + "\nThe offending graph:\n"<a name="line.124"></a>
+<span class="sourceLineNo">125</span>                + graph.toString() + "\n";<a name="line.125"></a>
+<span class="sourceLineNo">126</span>    }<a name="line.126"></a>
+<span class="sourceLineNo">127</span>}<a name="line.127"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

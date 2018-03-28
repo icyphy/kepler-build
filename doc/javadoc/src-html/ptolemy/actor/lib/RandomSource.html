@@ -1,0 +1,371 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../../stylesheet.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>/* A base class for random sources.<a name="line.1"></a>
+<span class="sourceLineNo">002</span><a name="line.2"></a>
+<span class="sourceLineNo">003</span> Copyright (c) 1998-2014 The Regents of the University of California.<a name="line.3"></a>
+<span class="sourceLineNo">004</span> All rights reserved.<a name="line.4"></a>
+<span class="sourceLineNo">005</span> Permission is hereby granted, without written agreement and without<a name="line.5"></a>
+<span class="sourceLineNo">006</span> license or royalty fees, to use, copy, modify, and distribute this<a name="line.6"></a>
+<span class="sourceLineNo">007</span> software and its documentation for any purpose, provided that the above<a name="line.7"></a>
+<span class="sourceLineNo">008</span> copyright notice and the following two paragraphs appear in all copies<a name="line.8"></a>
+<span class="sourceLineNo">009</span> of this software.<a name="line.9"></a>
+<span class="sourceLineNo">010</span><a name="line.10"></a>
+<span class="sourceLineNo">011</span> IN NO EVENT SHALL THE UNIVERSITY OF CALIFORNIA BE LIABLE TO ANY PARTY<a name="line.11"></a>
+<span class="sourceLineNo">012</span> FOR DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES<a name="line.12"></a>
+<span class="sourceLineNo">013</span> ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION, EVEN IF<a name="line.13"></a>
+<span class="sourceLineNo">014</span> THE UNIVERSITY OF CALIFORNIA HAS BEEN ADVISED OF THE POSSIBILITY OF<a name="line.14"></a>
+<span class="sourceLineNo">015</span> SUCH DAMAGE.<a name="line.15"></a>
+<span class="sourceLineNo">016</span><a name="line.16"></a>
+<span class="sourceLineNo">017</span> THE UNIVERSITY OF CALIFORNIA SPECIFICALLY DISCLAIMS ANY WARRANTIES,<a name="line.17"></a>
+<span class="sourceLineNo">018</span> INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF<a name="line.18"></a>
+<span class="sourceLineNo">019</span> MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE<a name="line.19"></a>
+<span class="sourceLineNo">020</span> PROVIDED HEREUNDER IS ON AN "AS IS" BASIS, AND THE UNIVERSITY OF<a name="line.20"></a>
+<span class="sourceLineNo">021</span> CALIFORNIA HAS NO OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT, UPDATES,<a name="line.21"></a>
+<span class="sourceLineNo">022</span> ENHANCEMENTS, OR MODIFICATIONS.<a name="line.22"></a>
+<span class="sourceLineNo">023</span><a name="line.23"></a>
+<span class="sourceLineNo">024</span> PT_COPYRIGHT_VERSION_2<a name="line.24"></a>
+<span class="sourceLineNo">025</span> COPYRIGHTENDKEY<a name="line.25"></a>
+<span class="sourceLineNo">026</span><a name="line.26"></a>
+<span class="sourceLineNo">027</span> */<a name="line.27"></a>
+<span class="sourceLineNo">028</span>package ptolemy.actor.lib;<a name="line.28"></a>
+<span class="sourceLineNo">029</span><a name="line.29"></a>
+<span class="sourceLineNo">030</span>import java.util.Random;<a name="line.30"></a>
+<span class="sourceLineNo">031</span><a name="line.31"></a>
+<span class="sourceLineNo">032</span>import ptolemy.actor.parameters.SharedParameter;<a name="line.32"></a>
+<span class="sourceLineNo">033</span>import ptolemy.data.BooleanToken;<a name="line.33"></a>
+<span class="sourceLineNo">034</span>import ptolemy.data.LongToken;<a name="line.34"></a>
+<span class="sourceLineNo">035</span>import ptolemy.data.Token;<a name="line.35"></a>
+<span class="sourceLineNo">036</span>import ptolemy.data.expr.Parameter;<a name="line.36"></a>
+<span class="sourceLineNo">037</span>import ptolemy.data.expr.SingletonParameter;<a name="line.37"></a>
+<span class="sourceLineNo">038</span>import ptolemy.data.type.BaseType;<a name="line.38"></a>
+<span class="sourceLineNo">039</span>import ptolemy.kernel.CompositeEntity;<a name="line.39"></a>
+<span class="sourceLineNo">040</span>import ptolemy.kernel.util.Attribute;<a name="line.40"></a>
+<span class="sourceLineNo">041</span>import ptolemy.kernel.util.IllegalActionException;<a name="line.41"></a>
+<span class="sourceLineNo">042</span>import ptolemy.kernel.util.NameDuplicationException;<a name="line.42"></a>
+<span class="sourceLineNo">043</span>import ptolemy.kernel.util.Workspace;<a name="line.43"></a>
+<span class="sourceLineNo">044</span><a name="line.44"></a>
+<span class="sourceLineNo">045</span>///////////////////////////////////////////////////////////////////<a name="line.45"></a>
+<span class="sourceLineNo">046</span>//// RandomSource<a name="line.46"></a>
+<span class="sourceLineNo">047</span><a name="line.47"></a>
+<span class="sourceLineNo">048</span>/**<a name="line.48"></a>
+<span class="sourceLineNo">049</span> A base class for sources of random numbers.<a name="line.49"></a>
+<span class="sourceLineNo">050</span> It uses the class java.util.Random.<a name="line.50"></a>
+<span class="sourceLineNo">051</span> This base class manages the seed. Specifically,<a name="line.51"></a>
+<span class="sourceLineNo">052</span> the seed is a shared parameter, so setting the seed<a name="line.52"></a>
+<span class="sourceLineNo">053</span> in any one instance of a RandomSource results in setting<a name="line.53"></a>
+<span class="sourceLineNo">054</span> the seed in all instances. If the seed is set to value 0L,<a name="line.54"></a>
+<span class="sourceLineNo">055</span> the default, then this is interpreted as not specifying a seed,<a name="line.55"></a>
+<span class="sourceLineNo">056</span> and the random number generators are set to use a seed that<a name="line.56"></a>
+<span class="sourceLineNo">057</span> depends on the current time in milliseconds. If the seed<a name="line.57"></a>
+<span class="sourceLineNo">058</span> is set to any value other than 0L, then a seed is computed<a name="line.58"></a>
+<span class="sourceLineNo">059</span> for the random number generator by adding that specified seed<a name="line.59"></a>
+<span class="sourceLineNo">060</span> to the hashcode for the full name of the actor. This ensures<a name="line.60"></a>
+<span class="sourceLineNo">061</span> that with high probability, multiple instances of RandomSource<a name="line.61"></a>
+<span class="sourceLineNo">062</span> (and derived classes) will have distinct seeds, but that the<a name="line.62"></a>
+<span class="sourceLineNo">063</span> executions are deterministically repeatable.<a name="line.63"></a>
+<span class="sourceLineNo">064</span>&lt;p&gt;<a name="line.64"></a>
+<span class="sourceLineNo">065</span> If the &lt;i&gt;resetOnEachRun&lt;/i&gt; parameter is true (it is<a name="line.65"></a>
+<span class="sourceLineNo">066</span> false by default), then each run resets the random number<a name="line.66"></a>
+<span class="sourceLineNo">067</span> generator. If the seed is non-zero, then this makes<a name="line.67"></a>
+<span class="sourceLineNo">068</span> each run identical.  This is useful for constructing<a name="line.68"></a>
+<span class="sourceLineNo">069</span> tests. If the seed is zero, then a new seed is generated<a name="line.69"></a>
+<span class="sourceLineNo">070</span> on each run using the same technique described above<a name="line.70"></a>
+<span class="sourceLineNo">071</span> (combining current time and the hash code).<a name="line.71"></a>
+<span class="sourceLineNo">072</span><a name="line.72"></a>
+<span class="sourceLineNo">073</span> @author Edward A. Lee, Steve Neuendorffer, Elaine Cheong<a name="line.73"></a>
+<span class="sourceLineNo">074</span> @version $Id$<a name="line.74"></a>
+<span class="sourceLineNo">075</span> @since Ptolemy II 0.3<a name="line.75"></a>
+<span class="sourceLineNo">076</span> @Pt.ProposedRating Green (eal)<a name="line.76"></a>
+<span class="sourceLineNo">077</span> @Pt.AcceptedRating Green (bilung)<a name="line.77"></a>
+<span class="sourceLineNo">078</span> */<a name="line.78"></a>
+<span class="sourceLineNo">079</span>public abstract class RandomSource extends Source {<a name="line.79"></a>
+<span class="sourceLineNo">080</span>    /** Construct an actor with the given container and name.<a name="line.80"></a>
+<span class="sourceLineNo">081</span>     *  @param container The container.<a name="line.81"></a>
+<span class="sourceLineNo">082</span>     *  @param name The name of this actor.<a name="line.82"></a>
+<span class="sourceLineNo">083</span>     *  @exception IllegalActionException If the actor cannot be contained<a name="line.83"></a>
+<span class="sourceLineNo">084</span>     *   by the proposed container.<a name="line.84"></a>
+<span class="sourceLineNo">085</span>     *  @exception NameDuplicationException If the container already has an<a name="line.85"></a>
+<span class="sourceLineNo">086</span>     *   actor with this name.<a name="line.86"></a>
+<span class="sourceLineNo">087</span>     */<a name="line.87"></a>
+<span class="sourceLineNo">088</span>    public RandomSource(CompositeEntity container, String name)<a name="line.88"></a>
+<span class="sourceLineNo">089</span>            throws NameDuplicationException, IllegalActionException {<a name="line.89"></a>
+<span class="sourceLineNo">090</span>        super(container, name);<a name="line.90"></a>
+<span class="sourceLineNo">091</span>        seed = new SharedParameter(this, "seed", RandomSource.class, "0L");<a name="line.91"></a>
+<span class="sourceLineNo">092</span>        seed.setTypeEquals(BaseType.LONG);<a name="line.92"></a>
+<span class="sourceLineNo">093</span><a name="line.93"></a>
+<span class="sourceLineNo">094</span>        privateSeed = new Parameter(this, "privateSeed");<a name="line.94"></a>
+<span class="sourceLineNo">095</span>        privateSeed.setTypeEquals(BaseType.LONG);<a name="line.95"></a>
+<span class="sourceLineNo">096</span><a name="line.96"></a>
+<span class="sourceLineNo">097</span>        resetOnEachRun = new SharedParameter(this, "resetOnEachRun",<a name="line.97"></a>
+<span class="sourceLineNo">098</span>                RandomSource.class, "false");<a name="line.98"></a>
+<span class="sourceLineNo">099</span>        resetOnEachRun.setTypeEquals(BaseType.BOOLEAN);<a name="line.99"></a>
+<span class="sourceLineNo">100</span><a name="line.100"></a>
+<span class="sourceLineNo">101</span>        new SingletonParameter(trigger, "_showName")<a name="line.101"></a>
+<span class="sourceLineNo">102</span>                .setToken(BooleanToken.TRUE);<a name="line.102"></a>
+<span class="sourceLineNo">103</span>    }<a name="line.103"></a>
+<span class="sourceLineNo">104</span><a name="line.104"></a>
+<span class="sourceLineNo">105</span>    ///////////////////////////////////////////////////////////////////<a name="line.105"></a>
+<span class="sourceLineNo">106</span>    ////                     ports and parameters                  ////<a name="line.106"></a>
+<span class="sourceLineNo">107</span><a name="line.107"></a>
+<span class="sourceLineNo">108</span>    /** If true, this parameter specifies that the random number<a name="line.108"></a>
+<span class="sourceLineNo">109</span>     *  generator should be reset on each run of the model (in<a name="line.109"></a>
+<span class="sourceLineNo">110</span>     *  the initialize() method). It is a boolean that defaults<a name="line.110"></a>
+<span class="sourceLineNo">111</span>     *  to false. This is a shared parameter, meaning that changing<a name="line.111"></a>
+<span class="sourceLineNo">112</span>     *  it somewhere in the model causes it to be changed everywhere<a name="line.112"></a>
+<span class="sourceLineNo">113</span>     *  in the model.<a name="line.113"></a>
+<span class="sourceLineNo">114</span>     */<a name="line.114"></a>
+<span class="sourceLineNo">115</span>    public SharedParameter resetOnEachRun;<a name="line.115"></a>
+<span class="sourceLineNo">116</span><a name="line.116"></a>
+<span class="sourceLineNo">117</span>    /** The seed that controls the random number generation.<a name="line.117"></a>
+<span class="sourceLineNo">118</span>     *  This is a shared parameter, meaning that all instances of<a name="line.118"></a>
+<span class="sourceLineNo">119</span>     *  RandomSource or derived classes in the same model share the<a name="line.119"></a>
+<span class="sourceLineNo">120</span>     *  same value.<a name="line.120"></a>
+<span class="sourceLineNo">121</span>     *  A seed of zero is interpreted to mean that no seed is specified,<a name="line.121"></a>
+<span class="sourceLineNo">122</span>     *  which means that each execution of the model could result in<a name="line.122"></a>
+<span class="sourceLineNo">123</span>     *  distinct data. For the value 0, the seed is set to<a name="line.123"></a>
+<span class="sourceLineNo">124</span>     *  System.currentTimeMillis() + hashCode(), which means that<a name="line.124"></a>
+<span class="sourceLineNo">125</span>     *  with extremely high probability, two distinct actors will have<a name="line.125"></a>
+<span class="sourceLineNo">126</span>     *  distinct seeds.  However, current time may not have enough<a name="line.126"></a>
+<span class="sourceLineNo">127</span>     *  resolution to ensure that two subsequent executions of the<a name="line.127"></a>
+<span class="sourceLineNo">128</span>     *  same model have distinct seeds. For a value other than zero,<a name="line.128"></a>
+<span class="sourceLineNo">129</span>     *  the seed is set to that value plus the hashCode() of the<a name="line.129"></a>
+<span class="sourceLineNo">130</span>     *  full name of the actor. This means that with high probability,<a name="line.130"></a>
+<span class="sourceLineNo">131</span>     *  two distinct actors will have distinct, but repeatable seeds.<a name="line.131"></a>
+<span class="sourceLineNo">132</span>     *<a name="line.132"></a>
+<span class="sourceLineNo">133</span>     *  This parameter contains a LongToken, initially with value 0.<a name="line.133"></a>
+<span class="sourceLineNo">134</span>     */<a name="line.134"></a>
+<span class="sourceLineNo">135</span>    public SharedParameter seed;<a name="line.135"></a>
+<span class="sourceLineNo">136</span><a name="line.136"></a>
+<span class="sourceLineNo">137</span>    /** This private seed overrides the shared seed parameter to specify a<a name="line.137"></a>
+<span class="sourceLineNo">138</span>     *  particular seed rather than using System.currentTimeMillis() or<a name="line.138"></a>
+<span class="sourceLineNo">139</span>     *  hashCode() to compute the seed value.<a name="line.139"></a>
+<span class="sourceLineNo">140</span>     *<a name="line.140"></a>
+<span class="sourceLineNo">141</span>     *  By default, this parameter is empty, which means that the shared seed<a name="line.141"></a>
+<span class="sourceLineNo">142</span>     *  parameter is used.<a name="line.142"></a>
+<span class="sourceLineNo">143</span>     *<a name="line.143"></a>
+<span class="sourceLineNo">144</span>     *  WARNING: It is up to the user to make sure that different seed<a name="line.144"></a>
+<span class="sourceLineNo">145</span>     *  values are used in different random number generators.<a name="line.145"></a>
+<span class="sourceLineNo">146</span>     */<a name="line.146"></a>
+<span class="sourceLineNo">147</span>    public Parameter privateSeed;<a name="line.147"></a>
+<span class="sourceLineNo">148</span><a name="line.148"></a>
+<span class="sourceLineNo">149</span>    ///////////////////////////////////////////////////////////////////<a name="line.149"></a>
+<span class="sourceLineNo">150</span>    ////                         public methods                    ////<a name="line.150"></a>
+<span class="sourceLineNo">151</span><a name="line.151"></a>
+<span class="sourceLineNo">152</span>    /** If the attribute is &lt;i&gt;seed&lt;/i&gt; or &lt;i&gt;useThisSeed&lt;/i&gt;<a name="line.152"></a>
+<span class="sourceLineNo">153</span>     *  then create the base random number generator.<a name="line.153"></a>
+<span class="sourceLineNo">154</span>     *  @param attribute The attribute that changed.<a name="line.154"></a>
+<span class="sourceLineNo">155</span>     *  @exception IllegalActionException If the change is not acceptable<a name="line.155"></a>
+<span class="sourceLineNo">156</span>     *   to this container (not thrown in this base class).<a name="line.156"></a>
+<span class="sourceLineNo">157</span>     */<a name="line.157"></a>
+<span class="sourceLineNo">158</span>    @Override<a name="line.158"></a>
+<span class="sourceLineNo">159</span>    public void attributeChanged(Attribute attribute)<a name="line.159"></a>
+<span class="sourceLineNo">160</span>            throws IllegalActionException {<a name="line.160"></a>
+<span class="sourceLineNo">161</span>        if (attribute == seed || attribute == privateSeed) {<a name="line.161"></a>
+<span class="sourceLineNo">162</span>            long seedValue;<a name="line.162"></a>
+<span class="sourceLineNo">163</span>            Token privateSeedToken = privateSeed.getToken();<a name="line.163"></a>
+<span class="sourceLineNo">164</span>            if (privateSeedToken != null) {<a name="line.164"></a>
+<span class="sourceLineNo">165</span>                seedValue = ((LongToken) privateSeedToken).longValue();<a name="line.165"></a>
+<span class="sourceLineNo">166</span>            } else {<a name="line.166"></a>
+<span class="sourceLineNo">167</span>                seedValue = ((LongToken) seed.getToken()).longValue();<a name="line.167"></a>
+<span class="sourceLineNo">168</span>            }<a name="line.168"></a>
+<span class="sourceLineNo">169</span>            if (seedValue != _generatorSeed) {<a name="line.169"></a>
+<span class="sourceLineNo">170</span>                _needNewGenerator = true;<a name="line.170"></a>
+<span class="sourceLineNo">171</span>            }<a name="line.171"></a>
+<span class="sourceLineNo">172</span>        } else {<a name="line.172"></a>
+<span class="sourceLineNo">173</span>            super.attributeChanged(attribute);<a name="line.173"></a>
+<span class="sourceLineNo">174</span>        }<a name="line.174"></a>
+<span class="sourceLineNo">175</span>    }<a name="line.175"></a>
+<span class="sourceLineNo">176</span><a name="line.176"></a>
+<span class="sourceLineNo">177</span>    /** Clone the actor into the specified workspace. This calls the<a name="line.177"></a>
+<span class="sourceLineNo">178</span>     *  base class and then creates new ports and parameters.<a name="line.178"></a>
+<span class="sourceLineNo">179</span>     *  @param workspace The workspace for the new object.<a name="line.179"></a>
+<span class="sourceLineNo">180</span>     *  @return A new actor.<a name="line.180"></a>
+<span class="sourceLineNo">181</span>     *  @exception CloneNotSupportedException If a derived class contains<a name="line.181"></a>
+<span class="sourceLineNo">182</span>     *   an attribute that cannot be cloned.<a name="line.182"></a>
+<span class="sourceLineNo">183</span>     */<a name="line.183"></a>
+<span class="sourceLineNo">184</span>    @Override<a name="line.184"></a>
+<span class="sourceLineNo">185</span>    public Object clone(Workspace workspace) throws CloneNotSupportedException {<a name="line.185"></a>
+<span class="sourceLineNo">186</span>        RandomSource newObject = (RandomSource) super.clone(workspace);<a name="line.186"></a>
+<span class="sourceLineNo">187</span><a name="line.187"></a>
+<span class="sourceLineNo">188</span>        // It is too soon to generate the new generator because<a name="line.188"></a>
+<span class="sourceLineNo">189</span>        // all clones will have the same actor name, which results<a name="line.189"></a>
+<span class="sourceLineNo">190</span>        // in the same seed.<a name="line.190"></a>
+<span class="sourceLineNo">191</span>        newObject._needNewGenerator = true;<a name="line.191"></a>
+<span class="sourceLineNo">192</span><a name="line.192"></a>
+<span class="sourceLineNo">193</span>        return newObject;<a name="line.193"></a>
+<span class="sourceLineNo">194</span>    }<a name="line.194"></a>
+<span class="sourceLineNo">195</span><a name="line.195"></a>
+<span class="sourceLineNo">196</span>    /** Generate a new random number if this is the first firing<a name="line.196"></a>
+<span class="sourceLineNo">197</span>     *  of the iteration.<a name="line.197"></a>
+<span class="sourceLineNo">198</span>     *  @exception IllegalActionException If there is no director.<a name="line.198"></a>
+<span class="sourceLineNo">199</span>     */<a name="line.199"></a>
+<span class="sourceLineNo">200</span>    @Override<a name="line.200"></a>
+<span class="sourceLineNo">201</span>    public void fire() throws IllegalActionException {<a name="line.201"></a>
+<span class="sourceLineNo">202</span>        super.fire();<a name="line.202"></a>
+<span class="sourceLineNo">203</span>        if (_needNewGenerator) {<a name="line.203"></a>
+<span class="sourceLineNo">204</span>            _createGenerator();<a name="line.204"></a>
+<span class="sourceLineNo">205</span>        }<a name="line.205"></a>
+<span class="sourceLineNo">206</span><a name="line.206"></a>
+<span class="sourceLineNo">207</span>        if (_needNew) {<a name="line.207"></a>
+<span class="sourceLineNo">208</span>            _generateRandomNumber();<a name="line.208"></a>
+<span class="sourceLineNo">209</span>            _needNew = false;<a name="line.209"></a>
+<span class="sourceLineNo">210</span>        }<a name="line.210"></a>
+<span class="sourceLineNo">211</span>    }<a name="line.211"></a>
+<span class="sourceLineNo">212</span><a name="line.212"></a>
+<span class="sourceLineNo">213</span>    /** Initialize the random number generator with the seed, if it<a name="line.213"></a>
+<span class="sourceLineNo">214</span>     *  has been given.  A seed of zero is interpreted to mean that no<a name="line.214"></a>
+<span class="sourceLineNo">215</span>     *  seed is specified.  In such cases, a seed based on the current<a name="line.215"></a>
+<span class="sourceLineNo">216</span>     *  time and this instance of a RandomSource is used to be fairly<a name="line.216"></a>
+<span class="sourceLineNo">217</span>     *  sure that two identical sequences will not be returned.<a name="line.217"></a>
+<span class="sourceLineNo">218</span>     *  @exception IllegalActionException If the parent class throws it.<a name="line.218"></a>
+<span class="sourceLineNo">219</span>     */<a name="line.219"></a>
+<span class="sourceLineNo">220</span>    @Override<a name="line.220"></a>
+<span class="sourceLineNo">221</span>    public void initialize() throws IllegalActionException {<a name="line.221"></a>
+<span class="sourceLineNo">222</span>        super.initialize();<a name="line.222"></a>
+<span class="sourceLineNo">223</span><a name="line.223"></a>
+<span class="sourceLineNo">224</span>        if (_random == null<a name="line.224"></a>
+<span class="sourceLineNo">225</span>                || ((BooleanToken) resetOnEachRun.getToken()).booleanValue()) {<a name="line.225"></a>
+<span class="sourceLineNo">226</span>            _createGenerator();<a name="line.226"></a>
+<span class="sourceLineNo">227</span>        }<a name="line.227"></a>
+<span class="sourceLineNo">228</span>        _needNew = true;<a name="line.228"></a>
+<span class="sourceLineNo">229</span>    }<a name="line.229"></a>
+<span class="sourceLineNo">230</span><a name="line.230"></a>
+<span class="sourceLineNo">231</span>    /** Calculate the next random number.<a name="line.231"></a>
+<span class="sourceLineNo">232</span>     *  @exception IllegalActionException If the base class throws it.<a name="line.232"></a>
+<span class="sourceLineNo">233</span>     *  @return True if it is ok to continue.<a name="line.233"></a>
+<span class="sourceLineNo">234</span>     */<a name="line.234"></a>
+<span class="sourceLineNo">235</span>    @Override<a name="line.235"></a>
+<span class="sourceLineNo">236</span>    public boolean postfire() throws IllegalActionException {<a name="line.236"></a>
+<span class="sourceLineNo">237</span>        _needNew = true;<a name="line.237"></a>
+<span class="sourceLineNo">238</span>        return super.postfire();<a name="line.238"></a>
+<span class="sourceLineNo">239</span>    }<a name="line.239"></a>
+<span class="sourceLineNo">240</span><a name="line.240"></a>
+<span class="sourceLineNo">241</span>    ///////////////////////////////////////////////////////////////////<a name="line.241"></a>
+<span class="sourceLineNo">242</span>    ////                         protected methods                 ////<a name="line.242"></a>
+<span class="sourceLineNo">243</span><a name="line.243"></a>
+<span class="sourceLineNo">244</span>    /** Create the random number generator using current parameter values.<a name="line.244"></a>
+<span class="sourceLineNo">245</span>     *  @exception IllegalActionException If thrown while reading the<a name="line.245"></a>
+<span class="sourceLineNo">246</span>     *  seed Token.<a name="line.246"></a>
+<span class="sourceLineNo">247</span>     */<a name="line.247"></a>
+<span class="sourceLineNo">248</span>    protected void _createGenerator() throws IllegalActionException {<a name="line.248"></a>
+<span class="sourceLineNo">249</span>        long seedValue;<a name="line.249"></a>
+<span class="sourceLineNo">250</span>        Token privateSeedToken = privateSeed.getToken();<a name="line.250"></a>
+<span class="sourceLineNo">251</span>        if (privateSeedToken != null) {<a name="line.251"></a>
+<span class="sourceLineNo">252</span>            seedValue = ((LongToken) privateSeedToken).longValue();<a name="line.252"></a>
+<span class="sourceLineNo">253</span>            _generatorSeed = seedValue;<a name="line.253"></a>
+<span class="sourceLineNo">254</span>        } else {<a name="line.254"></a>
+<span class="sourceLineNo">255</span>            seedValue = ((LongToken) seed.getToken()).longValue();<a name="line.255"></a>
+<span class="sourceLineNo">256</span>            _generatorSeed = seedValue;<a name="line.256"></a>
+<span class="sourceLineNo">257</span><a name="line.257"></a>
+<span class="sourceLineNo">258</span>            if (seedValue == 0L) {<a name="line.258"></a>
+<span class="sourceLineNo">259</span>                seedValue = System.currentTimeMillis() + hashCode();<a name="line.259"></a>
+<span class="sourceLineNo">260</span>            } else {<a name="line.260"></a>
+<span class="sourceLineNo">261</span>                // BTW - the reason to use the full name here is so that<a name="line.261"></a>
+<span class="sourceLineNo">262</span>                // each random number generator generates a sequence<a name="line.262"></a>
+<span class="sourceLineNo">263</span>                // of different random numbers.  If we use just the<a name="line.263"></a>
+<span class="sourceLineNo">264</span>                // display name, then two actors that have the same<a name="line.264"></a>
+<span class="sourceLineNo">265</span>                // name will generate the same sequence of numbers which<a name="line.265"></a>
+<span class="sourceLineNo">266</span>                // is bad for Monte Carlo simulations.<a name="line.266"></a>
+<span class="sourceLineNo">267</span>                seedValue = seedValue + getFullName().hashCode();<a name="line.267"></a>
+<span class="sourceLineNo">268</span>            }<a name="line.268"></a>
+<span class="sourceLineNo">269</span>        }<a name="line.269"></a>
+<span class="sourceLineNo">270</span><a name="line.270"></a>
+<span class="sourceLineNo">271</span>        _random = new Random(seedValue);<a name="line.271"></a>
+<span class="sourceLineNo">272</span>        _needNewGenerator = false;<a name="line.272"></a>
+<span class="sourceLineNo">273</span>        _needNew = true;<a name="line.273"></a>
+<span class="sourceLineNo">274</span>    }<a name="line.274"></a>
+<span class="sourceLineNo">275</span><a name="line.275"></a>
+<span class="sourceLineNo">276</span>    /** Generate a new random number.<a name="line.276"></a>
+<span class="sourceLineNo">277</span>     *  @exception IllegalActionException Not thrown in this base class.<a name="line.277"></a>
+<span class="sourceLineNo">278</span>     *  Derived classes may throw it if there are problems getting parameter<a name="line.278"></a>
+<span class="sourceLineNo">279</span>     *  values.<a name="line.279"></a>
+<span class="sourceLineNo">280</span>     */<a name="line.280"></a>
+<span class="sourceLineNo">281</span>    protected abstract void _generateRandomNumber()<a name="line.281"></a>
+<span class="sourceLineNo">282</span>            throws IllegalActionException;<a name="line.282"></a>
+<span class="sourceLineNo">283</span><a name="line.283"></a>
+<span class="sourceLineNo">284</span>    ///////////////////////////////////////////////////////////////////<a name="line.284"></a>
+<span class="sourceLineNo">285</span>    ////                         protected variables               ////<a name="line.285"></a>
+<span class="sourceLineNo">286</span><a name="line.286"></a>
+<span class="sourceLineNo">287</span>    /** The current value of the seed parameter. */<a name="line.287"></a>
+<span class="sourceLineNo">288</span>    protected long _generatorSeed = 0L;<a name="line.288"></a>
+<span class="sourceLineNo">289</span><a name="line.289"></a>
+<span class="sourceLineNo">290</span>    /** Indicator that a new random number is needed. */<a name="line.290"></a>
+<span class="sourceLineNo">291</span>    protected boolean _needNew = false;<a name="line.291"></a>
+<span class="sourceLineNo">292</span><a name="line.292"></a>
+<span class="sourceLineNo">293</span>    /** Indicator that a new generator is needed. */<a name="line.293"></a>
+<span class="sourceLineNo">294</span>    protected boolean _needNewGenerator = true;<a name="line.294"></a>
+<span class="sourceLineNo">295</span><a name="line.295"></a>
+<span class="sourceLineNo">296</span>    /** The Random object. */<a name="line.296"></a>
+<span class="sourceLineNo">297</span>    protected Random _random;<a name="line.297"></a>
+<span class="sourceLineNo">298</span><a name="line.298"></a>
+<span class="sourceLineNo">299</span>}<a name="line.299"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

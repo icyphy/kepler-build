@@ -1,0 +1,187 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../stylesheet.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>/* Execute commands in a subprocess.<a name="line.1"></a>
+<span class="sourceLineNo">002</span><a name="line.2"></a>
+<span class="sourceLineNo">003</span> Copyright (c) 2006-2013 The Regents of the University of California.<a name="line.3"></a>
+<span class="sourceLineNo">004</span> All rights reserved.<a name="line.4"></a>
+<span class="sourceLineNo">005</span> Permission is hereby granted, without written agreement and without<a name="line.5"></a>
+<span class="sourceLineNo">006</span> license or royalty fees, to use, copy, modify, and distribute this<a name="line.6"></a>
+<span class="sourceLineNo">007</span> software and its documentation for any purpose, provided that the above<a name="line.7"></a>
+<span class="sourceLineNo">008</span> copyright notice and the following two paragraphs appear in all copies<a name="line.8"></a>
+<span class="sourceLineNo">009</span> of this software.<a name="line.9"></a>
+<span class="sourceLineNo">010</span><a name="line.10"></a>
+<span class="sourceLineNo">011</span> IN NO EVENT SHALL THE UNIVERSITY OF CALIFORNIA BE LIABLE TO ANY PARTY<a name="line.11"></a>
+<span class="sourceLineNo">012</span> FOR DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES<a name="line.12"></a>
+<span class="sourceLineNo">013</span> ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION, EVEN IF<a name="line.13"></a>
+<span class="sourceLineNo">014</span> THE UNIVERSITY OF CALIFORNIA HAS BEEN ADVISED OF THE POSSIBILITY OF<a name="line.14"></a>
+<span class="sourceLineNo">015</span> SUCH DAMAGE.<a name="line.15"></a>
+<span class="sourceLineNo">016</span><a name="line.16"></a>
+<span class="sourceLineNo">017</span> THE UNIVERSITY OF CALIFORNIA SPECIFICALLY DISCLAIMS ANY WARRANTIES,<a name="line.17"></a>
+<span class="sourceLineNo">018</span> INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF<a name="line.18"></a>
+<span class="sourceLineNo">019</span> MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE<a name="line.19"></a>
+<span class="sourceLineNo">020</span> PROVIDED HEREUNDER IS ON AN "AS IS" BASIS, AND THE UNIVERSITY OF<a name="line.20"></a>
+<span class="sourceLineNo">021</span> CALIFORNIA HAS NO OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT, UPDATES,<a name="line.21"></a>
+<span class="sourceLineNo">022</span> ENHANCEMENTS, OR MODIFICATIONS.<a name="line.22"></a>
+<span class="sourceLineNo">023</span><a name="line.23"></a>
+<span class="sourceLineNo">024</span> PT_COPYRIGHT_VERSION_2<a name="line.24"></a>
+<span class="sourceLineNo">025</span> COPYRIGHTENDKEY<a name="line.25"></a>
+<span class="sourceLineNo">026</span> */<a name="line.26"></a>
+<span class="sourceLineNo">027</span>package ptolemy.util;<a name="line.27"></a>
+<span class="sourceLineNo">028</span><a name="line.28"></a>
+<span class="sourceLineNo">029</span>import java.io.File;<a name="line.29"></a>
+<span class="sourceLineNo">030</span>import java.util.List;<a name="line.30"></a>
+<span class="sourceLineNo">031</span><a name="line.31"></a>
+<span class="sourceLineNo">032</span>/** Interface for classes execute commands in a subprocess.<a name="line.32"></a>
+<span class="sourceLineNo">033</span><a name="line.33"></a>
+<span class="sourceLineNo">034</span> &lt;p&gt;Loosely based on Example1.java from<a name="line.34"></a>
+<span class="sourceLineNo">035</span> &lt;a href="http://java.sun.com/products/jfc/tsc/articles/threads/threads2.html"&gt;http://java.sun.com/products/jfc/tsc/articles/threads/threads2.html&lt;/a&gt;<a name="line.35"></a>
+<span class="sourceLineNo">036</span> &lt;p&gt;See also<a name="line.36"></a>
+<span class="sourceLineNo">037</span> &lt;a href="http://developer.java.sun.com/developer/qow/archive/135/index.jsp"&gt;http://developer.java.sun.com/developer/qow/archive/135/index.jsp&lt;/a&gt; &lt;i&gt;(1/11: Broken)&lt;/i&gt;<a name="line.37"></a>
+<span class="sourceLineNo">038</span> and<a name="line.38"></a>
+<span class="sourceLineNo">039</span> &lt;a href="http://jw.itworld.com/javaworld/jw-12-2000/jw-1229-traps.html"&gt;http://jw.itworld.com/javaworld/jw-12-2000/jw-1229-traps.html&lt;/a&gt;.&lt;/p&gt;<a name="line.39"></a>
+<span class="sourceLineNo">040</span><a name="line.40"></a>
+<span class="sourceLineNo">041</span><a name="line.41"></a>
+<span class="sourceLineNo">042</span> @see StreamExec<a name="line.42"></a>
+<span class="sourceLineNo">043</span><a name="line.43"></a>
+<span class="sourceLineNo">044</span> @author Christopher Brooks<a name="line.44"></a>
+<span class="sourceLineNo">045</span> @version $Id$<a name="line.45"></a>
+<span class="sourceLineNo">046</span> @since Ptolemy II 5.2<a name="line.46"></a>
+<span class="sourceLineNo">047</span> @Pt.ProposedRating Red (cxh)<a name="line.47"></a>
+<span class="sourceLineNo">048</span> @Pt.AcceptedRating Red (cxh)<a name="line.48"></a>
+<span class="sourceLineNo">049</span> */<a name="line.49"></a>
+<span class="sourceLineNo">050</span>public interface ExecuteCommands {<a name="line.50"></a>
+<span class="sourceLineNo">051</span><a name="line.51"></a>
+<span class="sourceLineNo">052</span>    ///////////////////////////////////////////////////////////////////<a name="line.52"></a>
+<span class="sourceLineNo">053</span>    ////                         public methods                    ////<a name="line.53"></a>
+<span class="sourceLineNo">054</span><a name="line.54"></a>
+<span class="sourceLineNo">055</span>    /** Append to the path of the subprocess.<a name="line.55"></a>
+<span class="sourceLineNo">056</span>     *  @param directoryName The name of the directory to append to the path.<a name="line.56"></a>
+<span class="sourceLineNo">057</span>     */<a name="line.57"></a>
+<span class="sourceLineNo">058</span>    public void appendToPath(String directoryName);<a name="line.58"></a>
+<span class="sourceLineNo">059</span><a name="line.59"></a>
+<span class="sourceLineNo">060</span>    /** Cancel any running commands. */<a name="line.60"></a>
+<span class="sourceLineNo">061</span>    public void cancel();<a name="line.61"></a>
+<span class="sourceLineNo">062</span><a name="line.62"></a>
+<span class="sourceLineNo">063</span>    /** Clear the text area, status bar and progress bar. */<a name="line.63"></a>
+<span class="sourceLineNo">064</span>    public void clear();<a name="line.64"></a>
+<span class="sourceLineNo">065</span><a name="line.65"></a>
+<span class="sourceLineNo">066</span>    /** Get the value of the environment of the subprocess.<a name="line.66"></a>
+<span class="sourceLineNo">067</span>     *  @param key The key to be looked up.<a name="line.67"></a>
+<span class="sourceLineNo">068</span>     *  @return The value of the key.  If the key is not set, then<a name="line.68"></a>
+<span class="sourceLineNo">069</span>     *  null is returned.  If appendToPath() has been called, and<a name="line.69"></a>
+<span class="sourceLineNo">070</span>     *  the key parameter is "PATH", then the current value of the PATH<a name="line.70"></a>
+<span class="sourceLineNo">071</span>     *  of the subprocess will be returned.  Note that this may be different<a name="line.71"></a>
+<span class="sourceLineNo">072</span>     *  from the PATH of the current process.<a name="line.72"></a>
+<span class="sourceLineNo">073</span>     */<a name="line.73"></a>
+<span class="sourceLineNo">074</span>    public String getenv(String key);<a name="line.74"></a>
+<span class="sourceLineNo">075</span><a name="line.75"></a>
+<span class="sourceLineNo">076</span>    /** Return the return code of the last subprocess that was executed.<a name="line.76"></a>
+<span class="sourceLineNo">077</span>     *  @return the return code of the last subprocess that was executed.<a name="line.77"></a>
+<span class="sourceLineNo">078</span>     */<a name="line.78"></a>
+<span class="sourceLineNo">079</span>    public int getLastSubprocessReturnCode();<a name="line.79"></a>
+<span class="sourceLineNo">080</span><a name="line.80"></a>
+<span class="sourceLineNo">081</span>    /** Set the list of commands.<a name="line.81"></a>
+<span class="sourceLineNo">082</span>     *  @param commands A list of Strings, where each element is a command.<a name="line.82"></a>
+<span class="sourceLineNo">083</span>     */<a name="line.83"></a>
+<span class="sourceLineNo">084</span>    public void setCommands(List commands);<a name="line.84"></a>
+<span class="sourceLineNo">085</span><a name="line.85"></a>
+<span class="sourceLineNo">086</span>    /** Set the working directory of the subprocess.<a name="line.86"></a>
+<span class="sourceLineNo">087</span>     *  @param workingDirectory The working directory of the<a name="line.87"></a>
+<span class="sourceLineNo">088</span>     *  subprocess.  If this argument is null, then the subprocess is<a name="line.88"></a>
+<span class="sourceLineNo">089</span>     *  executed in the working directory of the current process.<a name="line.89"></a>
+<span class="sourceLineNo">090</span>     */<a name="line.90"></a>
+<span class="sourceLineNo">091</span>    public void setWorkingDirectory(File workingDirectory);<a name="line.91"></a>
+<span class="sourceLineNo">092</span><a name="line.92"></a>
+<span class="sourceLineNo">093</span>    /** Start running the commands. */<a name="line.93"></a>
+<span class="sourceLineNo">094</span>    public void start();<a name="line.94"></a>
+<span class="sourceLineNo">095</span><a name="line.95"></a>
+<span class="sourceLineNo">096</span>    /** Append the text message to stderr.  Classes that implement<a name="line.96"></a>
+<span class="sourceLineNo">097</span>     *  this method could append to a StringBuffer or JTextArea.<a name="line.97"></a>
+<span class="sourceLineNo">098</span>     *  The output automatically gets a trailing newline  appended.<a name="line.98"></a>
+<span class="sourceLineNo">099</span>     *  @param text The text to append to standard error.<a name="line.99"></a>
+<span class="sourceLineNo">100</span>     */<a name="line.100"></a>
+<span class="sourceLineNo">101</span>    public void stderr(final String text);<a name="line.101"></a>
+<span class="sourceLineNo">102</span><a name="line.102"></a>
+<span class="sourceLineNo">103</span>    /** Append the text message to stderr.  Classes that implement<a name="line.103"></a>
+<span class="sourceLineNo">104</span>     *  this method could append to a StringBuffer or JTextArea.<a name="line.104"></a>
+<span class="sourceLineNo">105</span>     *  The output automatically gets a trailing newline  appended.<a name="line.105"></a>
+<span class="sourceLineNo">106</span>     *  @param text The text to append to standard out.<a name="line.106"></a>
+<span class="sourceLineNo">107</span>     */<a name="line.107"></a>
+<span class="sourceLineNo">108</span>    public void stdout(final String text);<a name="line.108"></a>
+<span class="sourceLineNo">109</span><a name="line.109"></a>
+<span class="sourceLineNo">110</span>    /** Set the text of the status bar.  In this base class, do<a name="line.110"></a>
+<span class="sourceLineNo">111</span>     *  nothing, derived classes may update a status bar.<a name="line.111"></a>
+<span class="sourceLineNo">112</span>     *  @param text The text with which the status bar is updated.<a name="line.112"></a>
+<span class="sourceLineNo">113</span>     */<a name="line.113"></a>
+<span class="sourceLineNo">114</span>    public void updateStatusBar(final String text);<a name="line.114"></a>
+<span class="sourceLineNo">115</span>}<a name="line.115"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

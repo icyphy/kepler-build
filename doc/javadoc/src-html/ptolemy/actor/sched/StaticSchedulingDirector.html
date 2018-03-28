@@ -1,0 +1,561 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../../stylesheet.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>/* A director that uses a static schedule.<a name="line.1"></a>
+<span class="sourceLineNo">002</span><a name="line.2"></a>
+<span class="sourceLineNo">003</span> Copyright (c) 1998-2014 The Regents of the University of California.<a name="line.3"></a>
+<span class="sourceLineNo">004</span> All rights reserved.<a name="line.4"></a>
+<span class="sourceLineNo">005</span> Permission is hereby granted, without written agreement and without<a name="line.5"></a>
+<span class="sourceLineNo">006</span> license or royalty fees, to use, copy, modify, and distribute this<a name="line.6"></a>
+<span class="sourceLineNo">007</span> software and its documentation for any purpose, provided that the above<a name="line.7"></a>
+<span class="sourceLineNo">008</span> copyright notice and the following two paragraphs appear in all copies<a name="line.8"></a>
+<span class="sourceLineNo">009</span> of this software.<a name="line.9"></a>
+<span class="sourceLineNo">010</span><a name="line.10"></a>
+<span class="sourceLineNo">011</span> IN NO EVENT SHALL THE UNIVERSITY OF CALIFORNIA BE LIABLE TO ANY PARTY<a name="line.11"></a>
+<span class="sourceLineNo">012</span> FOR DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES<a name="line.12"></a>
+<span class="sourceLineNo">013</span> ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION, EVEN IF<a name="line.13"></a>
+<span class="sourceLineNo">014</span> THE UNIVERSITY OF CALIFORNIA HAS BEEN ADVISED OF THE POSSIBILITY OF<a name="line.14"></a>
+<span class="sourceLineNo">015</span> SUCH DAMAGE.<a name="line.15"></a>
+<span class="sourceLineNo">016</span><a name="line.16"></a>
+<span class="sourceLineNo">017</span> THE UNIVERSITY OF CALIFORNIA SPECIFICALLY DISCLAIMS ANY WARRANTIES,<a name="line.17"></a>
+<span class="sourceLineNo">018</span> INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF<a name="line.18"></a>
+<span class="sourceLineNo">019</span> MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE<a name="line.19"></a>
+<span class="sourceLineNo">020</span> PROVIDED HEREUNDER IS ON AN "AS IS" BASIS, AND THE UNIVERSITY OF<a name="line.20"></a>
+<span class="sourceLineNo">021</span> CALIFORNIA HAS NO OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT, UPDATES,<a name="line.21"></a>
+<span class="sourceLineNo">022</span> ENHANCEMENTS, OR MODIFICATIONS.<a name="line.22"></a>
+<span class="sourceLineNo">023</span><a name="line.23"></a>
+<span class="sourceLineNo">024</span> PT_COPYRIGHT_VERSION_2<a name="line.24"></a>
+<span class="sourceLineNo">025</span> COPYRIGHTENDKEY<a name="line.25"></a>
+<span class="sourceLineNo">026</span><a name="line.26"></a>
+<span class="sourceLineNo">027</span> */<a name="line.27"></a>
+<span class="sourceLineNo">028</span>package ptolemy.actor.sched;<a name="line.28"></a>
+<span class="sourceLineNo">029</span><a name="line.29"></a>
+<span class="sourceLineNo">030</span>import java.util.Iterator;<a name="line.30"></a>
+<span class="sourceLineNo">031</span><a name="line.31"></a>
+<span class="sourceLineNo">032</span>import ptolemy.actor.Actor;<a name="line.32"></a>
+<span class="sourceLineNo">033</span>import ptolemy.actor.CompositeActor;<a name="line.33"></a>
+<span class="sourceLineNo">034</span>import ptolemy.actor.Director;<a name="line.34"></a>
+<span class="sourceLineNo">035</span>import ptolemy.actor.FiringEvent;<a name="line.35"></a>
+<span class="sourceLineNo">036</span>import ptolemy.kernel.CompositeEntity;<a name="line.36"></a>
+<span class="sourceLineNo">037</span>import ptolemy.kernel.util.DebugListener;<a name="line.37"></a>
+<span class="sourceLineNo">038</span>import ptolemy.kernel.util.IllegalActionException;<a name="line.38"></a>
+<span class="sourceLineNo">039</span>import ptolemy.kernel.util.InvalidStateException;<a name="line.39"></a>
+<span class="sourceLineNo">040</span>import ptolemy.kernel.util.NameDuplicationException;<a name="line.40"></a>
+<span class="sourceLineNo">041</span>import ptolemy.kernel.util.NamedObj;<a name="line.41"></a>
+<span class="sourceLineNo">042</span>import ptolemy.kernel.util.Workspace;<a name="line.42"></a>
+<span class="sourceLineNo">043</span><a name="line.43"></a>
+<span class="sourceLineNo">044</span>///////////////////////////////////////////////////////////////////<a name="line.44"></a>
+<span class="sourceLineNo">045</span>//// StaticSchedulingDirector<a name="line.45"></a>
+<span class="sourceLineNo">046</span><a name="line.46"></a>
+<span class="sourceLineNo">047</span>/**<a name="line.47"></a>
+<span class="sourceLineNo">048</span> A director that uses static scheduling to govern the execution of the<a name="line.48"></a>
+<span class="sourceLineNo">049</span> CompositeActor it belongs to. &lt;p&gt;<a name="line.49"></a>
+<span class="sourceLineNo">050</span><a name="line.50"></a>
+<span class="sourceLineNo">051</span> This class does not directly implement a scheduling algorithm, but<a name="line.51"></a>
+<span class="sourceLineNo">052</span> defers to its contained scheduler.  The contained scheduler creates an<a name="line.52"></a>
+<span class="sourceLineNo">053</span> instance of the Schedule class which determines the number of times<a name="line.53"></a>
+<span class="sourceLineNo">054</span> each actor should be fired and their firing order.  This allows new<a name="line.54"></a>
+<span class="sourceLineNo">055</span> scheduling algorithms to be easily created for existing domains.&lt;p&gt;<a name="line.55"></a>
+<span class="sourceLineNo">056</span><a name="line.56"></a>
+<span class="sourceLineNo">057</span> This class is generally useful for statically scheduled domains where<a name="line.57"></a>
+<span class="sourceLineNo">058</span> a schedule can be constructed once and used to repeatedly execute the<a name="line.58"></a>
+<span class="sourceLineNo">059</span> model.  The Scheduler class caches the schedule until the model changes<a name="line.59"></a>
+<span class="sourceLineNo">060</span> so that the schedule does not have to be recomputed.<a name="line.60"></a>
+<span class="sourceLineNo">061</span><a name="line.61"></a>
+<span class="sourceLineNo">062</span> @author Jie Liu, Steve Neuendorffer<a name="line.62"></a>
+<span class="sourceLineNo">063</span> @version $Id$<a name="line.63"></a>
+<span class="sourceLineNo">064</span> @since Ptolemy II 0.2<a name="line.64"></a>
+<span class="sourceLineNo">065</span> @Pt.ProposedRating Green (neuendor)<a name="line.65"></a>
+<span class="sourceLineNo">066</span> @Pt.AcceptedRating Yellow (neuendor)<a name="line.66"></a>
+<span class="sourceLineNo">067</span> @see ptolemy.actor.Director<a name="line.67"></a>
+<span class="sourceLineNo">068</span> @see Scheduler<a name="line.68"></a>
+<span class="sourceLineNo">069</span> @see Schedule<a name="line.69"></a>
+<span class="sourceLineNo">070</span> */<a name="line.70"></a>
+<span class="sourceLineNo">071</span>public class StaticSchedulingDirector extends Director {<a name="line.71"></a>
+<span class="sourceLineNo">072</span>    /** Construct a director in the default workspace with an empty string<a name="line.72"></a>
+<span class="sourceLineNo">073</span>     *  as its name. The director is added to the list of objects in<a name="line.73"></a>
+<span class="sourceLineNo">074</span>     *  the workspace. Increment the version number of the workspace.<a name="line.74"></a>
+<span class="sourceLineNo">075</span>     *  @exception NameDuplicationException If construction of Time objects fails.<a name="line.75"></a>
+<span class="sourceLineNo">076</span>     *  @exception IllegalActionException If construction of Time objects fails.<a name="line.76"></a>
+<span class="sourceLineNo">077</span>     */<a name="line.77"></a>
+<span class="sourceLineNo">078</span>    public StaticSchedulingDirector()<a name="line.78"></a>
+<span class="sourceLineNo">079</span>            throws IllegalActionException, NameDuplicationException {<a name="line.79"></a>
+<span class="sourceLineNo">080</span>        super();<a name="line.80"></a>
+<span class="sourceLineNo">081</span>    }<a name="line.81"></a>
+<span class="sourceLineNo">082</span><a name="line.82"></a>
+<span class="sourceLineNo">083</span>    /** Construct a director in the  workspace with an empty name.<a name="line.83"></a>
+<span class="sourceLineNo">084</span>     *  The director is added to the list of objects in the workspace.<a name="line.84"></a>
+<span class="sourceLineNo">085</span>     *  Increment the version number of the workspace.<a name="line.85"></a>
+<span class="sourceLineNo">086</span>     *  @param workspace The workspace of this object.<a name="line.86"></a>
+<span class="sourceLineNo">087</span>     *  @exception NameDuplicationException If construction of Time objects fails.<a name="line.87"></a>
+<span class="sourceLineNo">088</span>     *  @exception IllegalActionException If construction of Time objects fails.<a name="line.88"></a>
+<span class="sourceLineNo">089</span>     */<a name="line.89"></a>
+<span class="sourceLineNo">090</span>    public StaticSchedulingDirector(Workspace workspace)<a name="line.90"></a>
+<span class="sourceLineNo">091</span>            throws IllegalActionException, NameDuplicationException {<a name="line.91"></a>
+<span class="sourceLineNo">092</span>        super(workspace);<a name="line.92"></a>
+<span class="sourceLineNo">093</span>    }<a name="line.93"></a>
+<span class="sourceLineNo">094</span><a name="line.94"></a>
+<span class="sourceLineNo">095</span>    /** Construct a director in the given container with the given name.<a name="line.95"></a>
+<span class="sourceLineNo">096</span>     *  If the container argument must not be null, or a<a name="line.96"></a>
+<span class="sourceLineNo">097</span>     *  NullPointerException will be thrown.<a name="line.97"></a>
+<span class="sourceLineNo">098</span>     *  If the name argument is null, then the name is set to the<a name="line.98"></a>
+<span class="sourceLineNo">099</span>     *  empty string. Increment the version number of the workspace.<a name="line.99"></a>
+<span class="sourceLineNo">100</span>     *<a name="line.100"></a>
+<span class="sourceLineNo">101</span>     *  @param container The container of this director.<a name="line.101"></a>
+<span class="sourceLineNo">102</span>     *  @param name Name of this director.<a name="line.102"></a>
+<span class="sourceLineNo">103</span>     *  @exception IllegalActionException Not thrown in this base class.<a name="line.103"></a>
+<span class="sourceLineNo">104</span>     *   May be thrown in the derived classes if the director<a name="line.104"></a>
+<span class="sourceLineNo">105</span>     *  is not compatible with the specified container.<a name="line.105"></a>
+<span class="sourceLineNo">106</span>     *  @exception NameDuplicationException If the name collides with<a name="line.106"></a>
+<span class="sourceLineNo">107</span>     *  an attribute that already exists in the given container.<a name="line.107"></a>
+<span class="sourceLineNo">108</span>     */<a name="line.108"></a>
+<span class="sourceLineNo">109</span>    public StaticSchedulingDirector(CompositeEntity container, String name)<a name="line.109"></a>
+<span class="sourceLineNo">110</span>            throws IllegalActionException, NameDuplicationException {<a name="line.110"></a>
+<span class="sourceLineNo">111</span>        super(container, name);<a name="line.111"></a>
+<span class="sourceLineNo">112</span>    }<a name="line.112"></a>
+<span class="sourceLineNo">113</span><a name="line.113"></a>
+<span class="sourceLineNo">114</span>    ///////////////////////////////////////////////////////////////////<a name="line.114"></a>
+<span class="sourceLineNo">115</span>    ////                         public methods                    ////<a name="line.115"></a>
+<span class="sourceLineNo">116</span><a name="line.116"></a>
+<span class="sourceLineNo">117</span>    /** Override the base class to also listen to the scheduler, if there<a name="line.117"></a>
+<span class="sourceLineNo">118</span>     *  is one.<a name="line.118"></a>
+<span class="sourceLineNo">119</span>     *  @param listener The listener to which to send debug messages.<a name="line.119"></a>
+<span class="sourceLineNo">120</span>     *  @see #removeDebugListener(DebugListener)<a name="line.120"></a>
+<span class="sourceLineNo">121</span>     */<a name="line.121"></a>
+<span class="sourceLineNo">122</span>    @Override<a name="line.122"></a>
+<span class="sourceLineNo">123</span>    public synchronized void addDebugListener(DebugListener listener) {<a name="line.123"></a>
+<span class="sourceLineNo">124</span>        super.addDebugListener(listener);<a name="line.124"></a>
+<span class="sourceLineNo">125</span><a name="line.125"></a>
+<span class="sourceLineNo">126</span>        Scheduler scheduler = getScheduler();<a name="line.126"></a>
+<span class="sourceLineNo">127</span><a name="line.127"></a>
+<span class="sourceLineNo">128</span>        if (scheduler != null) {<a name="line.128"></a>
+<span class="sourceLineNo">129</span>            scheduler.addDebugListener(listener);<a name="line.129"></a>
+<span class="sourceLineNo">130</span>        }<a name="line.130"></a>
+<span class="sourceLineNo">131</span>    }<a name="line.131"></a>
+<span class="sourceLineNo">132</span><a name="line.132"></a>
+<span class="sourceLineNo">133</span>    /** Clone the object into the specified workspace. The new object is<a name="line.133"></a>
+<span class="sourceLineNo">134</span>     *  &lt;i&gt;not&lt;/i&gt; added to the directory of that workspace (you must do this<a name="line.134"></a>
+<span class="sourceLineNo">135</span>     *  yourself if you want it there).<a name="line.135"></a>
+<span class="sourceLineNo">136</span>     *  @param workspace The workspace for the cloned object.<a name="line.136"></a>
+<span class="sourceLineNo">137</span>     *  @exception CloneNotSupportedException Not thrown in this base class<a name="line.137"></a>
+<span class="sourceLineNo">138</span>     *  @return The new Attribute.<a name="line.138"></a>
+<span class="sourceLineNo">139</span>     */<a name="line.139"></a>
+<span class="sourceLineNo">140</span>    @Override<a name="line.140"></a>
+<span class="sourceLineNo">141</span>    public Object clone(Workspace workspace) throws CloneNotSupportedException {<a name="line.141"></a>
+<span class="sourceLineNo">142</span>        StaticSchedulingDirector newObject = (StaticSchedulingDirector) super.clone(<a name="line.142"></a>
+<span class="sourceLineNo">143</span>                workspace);<a name="line.143"></a>
+<span class="sourceLineNo">144</span>        Scheduler scheduler = getScheduler();<a name="line.144"></a>
+<span class="sourceLineNo">145</span>        if (scheduler == null) {<a name="line.145"></a>
+<span class="sourceLineNo">146</span>            newObject._setScheduler(null);<a name="line.146"></a>
+<span class="sourceLineNo">147</span>        } else {<a name="line.147"></a>
+<span class="sourceLineNo">148</span>            newObject._setScheduler((Scheduler) newObject<a name="line.148"></a>
+<span class="sourceLineNo">149</span>                    .getAttribute(getScheduler().getName()));<a name="line.149"></a>
+<span class="sourceLineNo">150</span>        }<a name="line.150"></a>
+<span class="sourceLineNo">151</span>        return newObject;<a name="line.151"></a>
+<span class="sourceLineNo">152</span>    }<a name="line.152"></a>
+<span class="sourceLineNo">153</span><a name="line.153"></a>
+<span class="sourceLineNo">154</span>    /** Initialize local variables.<a name="line.154"></a>
+<span class="sourceLineNo">155</span>     *  @exception IllegalActionException Thrown by super class.<a name="line.155"></a>
+<span class="sourceLineNo">156</span>     */<a name="line.156"></a>
+<span class="sourceLineNo">157</span>    @Override<a name="line.157"></a>
+<span class="sourceLineNo">158</span>    public void initialize() throws IllegalActionException {<a name="line.158"></a>
+<span class="sourceLineNo">159</span>        super.initialize();<a name="line.159"></a>
+<span class="sourceLineNo">160</span><a name="line.160"></a>
+<span class="sourceLineNo">161</span>        _savedSchedule = null;<a name="line.161"></a>
+<span class="sourceLineNo">162</span>        _savedSchedulePosition = -1;<a name="line.162"></a>
+<span class="sourceLineNo">163</span>        _savedIterationCount = 0;<a name="line.163"></a>
+<span class="sourceLineNo">164</span><a name="line.164"></a>
+<span class="sourceLineNo">165</span>        _actorFinished = false;<a name="line.165"></a>
+<span class="sourceLineNo">166</span>    };<a name="line.166"></a>
+<span class="sourceLineNo">167</span><a name="line.167"></a>
+<span class="sourceLineNo">168</span>    /** Calculate the current schedule, if necessary, and iterate the<a name="line.168"></a>
+<span class="sourceLineNo">169</span>     *  contained actors in the order given by the schedule.<a name="line.169"></a>
+<span class="sourceLineNo">170</span>     *  Iterating an actor involves calling the actor's iterate() method,<a name="line.170"></a>
+<span class="sourceLineNo">171</span>     *  which is equivalent to calling the actor's prefire(), fire() and<a name="line.171"></a>
+<span class="sourceLineNo">172</span>     *  postfire() methods in succession.  If iterate() returns NOT_READY,<a name="line.172"></a>
+<span class="sourceLineNo">173</span>     *  indicating that the actor is not ready to execute, then an<a name="line.173"></a>
+<span class="sourceLineNo">174</span>     *  IllegalActionException will be thrown. The values returned from<a name="line.174"></a>
+<span class="sourceLineNo">175</span>     *  iterate() are recorded and are used to determine the value that<a name="line.175"></a>
+<span class="sourceLineNo">176</span>     *  postfire() will return at the end of the director's iteration.<a name="line.176"></a>
+<span class="sourceLineNo">177</span>     *  NOTE: This method does not conform with the strict actor semantics<a name="line.177"></a>
+<span class="sourceLineNo">178</span>     *  because it calls postfire() of actors. Thus, it should not be used<a name="line.178"></a>
+<span class="sourceLineNo">179</span>     *  in domains that require a strict actor semantics, such as SR or<a name="line.179"></a>
+<span class="sourceLineNo">180</span>     *  Continuous.<a name="line.180"></a>
+<span class="sourceLineNo">181</span>     *  @exception IllegalActionException If any actor executed by this<a name="line.181"></a>
+<span class="sourceLineNo">182</span>     *   actor return false in prefire.<a name="line.182"></a>
+<span class="sourceLineNo">183</span>     *  @exception InvalidStateException If this director does not have a<a name="line.183"></a>
+<span class="sourceLineNo">184</span>     *   container.<a name="line.184"></a>
+<span class="sourceLineNo">185</span>     */<a name="line.185"></a>
+<span class="sourceLineNo">186</span>    @Override<a name="line.186"></a>
+<span class="sourceLineNo">187</span>    public void fire() throws IllegalActionException {<a name="line.187"></a>
+<span class="sourceLineNo">188</span>        // Don't call "super.fire();" here because if you do then<a name="line.188"></a>
+<span class="sourceLineNo">189</span>        // everything happens twice.<a name="line.189"></a>
+<span class="sourceLineNo">190</span>        Iterator firings = null;<a name="line.190"></a>
+<span class="sourceLineNo">191</span><a name="line.191"></a>
+<span class="sourceLineNo">192</span>        Scheduler scheduler = getScheduler();<a name="line.192"></a>
+<span class="sourceLineNo">193</span><a name="line.193"></a>
+<span class="sourceLineNo">194</span>        if (scheduler == null) {<a name="line.194"></a>
+<span class="sourceLineNo">195</span>            throw new IllegalActionException(<a name="line.195"></a>
+<span class="sourceLineNo">196</span>                    "Attempted to fire " + "system with no scheduler");<a name="line.196"></a>
+<span class="sourceLineNo">197</span>        }<a name="line.197"></a>
+<span class="sourceLineNo">198</span><a name="line.198"></a>
+<span class="sourceLineNo">199</span>        // This will throw IllegalActionException if this director<a name="line.199"></a>
+<span class="sourceLineNo">200</span>        // does not have a container.<a name="line.200"></a>
+<span class="sourceLineNo">201</span>        Schedule schedule = scheduler.getSchedule();<a name="line.201"></a>
+<span class="sourceLineNo">202</span>        firings = schedule.firingIterator();<a name="line.202"></a>
+<span class="sourceLineNo">203</span><a name="line.203"></a>
+<span class="sourceLineNo">204</span>        Firing firing = null;<a name="line.204"></a>
+<span class="sourceLineNo">205</span>        while (firings.hasNext() &amp;&amp; !_stopRequested) {<a name="line.205"></a>
+<span class="sourceLineNo">206</span>            firing = (Firing) firings.next();<a name="line.206"></a>
+<span class="sourceLineNo">207</span>            Actor actor = firing.getActor();<a name="line.207"></a>
+<span class="sourceLineNo">208</span><a name="line.208"></a>
+<span class="sourceLineNo">209</span>            int iterationCount = firing.getIterationCount();<a name="line.209"></a>
+<span class="sourceLineNo">210</span><a name="line.210"></a>
+<span class="sourceLineNo">211</span>            if (_debugging) {<a name="line.211"></a>
+<span class="sourceLineNo">212</span>                _debug(new FiringEvent(this, actor, FiringEvent.BEFORE_ITERATE,<a name="line.212"></a>
+<span class="sourceLineNo">213</span>                        iterationCount));<a name="line.213"></a>
+<span class="sourceLineNo">214</span>            }<a name="line.214"></a>
+<span class="sourceLineNo">215</span><a name="line.215"></a>
+<span class="sourceLineNo">216</span>            int returnValue = actor.iterate(iterationCount);<a name="line.216"></a>
+<span class="sourceLineNo">217</span><a name="line.217"></a>
+<span class="sourceLineNo">218</span>            if (returnValue == STOP_ITERATING) {<a name="line.218"></a>
+<span class="sourceLineNo">219</span>                _postfireReturns = false;<a name="line.219"></a>
+<span class="sourceLineNo">220</span>                if (_debugging) {<a name="line.220"></a>
+<span class="sourceLineNo">221</span>                    _debug("Actor requests no more firings: "<a name="line.221"></a>
+<span class="sourceLineNo">222</span>                            + actor.getFullName());<a name="line.222"></a>
+<span class="sourceLineNo">223</span>                }<a name="line.223"></a>
+<span class="sourceLineNo">224</span>            } else if (returnValue == NOT_READY) {<a name="line.224"></a>
+<span class="sourceLineNo">225</span>                // See de/test/auto/knownFailedTests/DESDFClockTest.xml<a name="line.225"></a>
+<span class="sourceLineNo">226</span>                throw new IllegalActionException(this, actor, "Actor "<a name="line.226"></a>
+<span class="sourceLineNo">227</span>                        + "is not ready to fire.  Perhaps " + actor.getName()<a name="line.227"></a>
+<span class="sourceLineNo">228</span>                        + ".prefire() returned false? "<a name="line.228"></a>
+<span class="sourceLineNo">229</span>                        + "Try debugging the actor by selecting "<a name="line.229"></a>
+<span class="sourceLineNo">230</span>                        + "\"Listen to Actor\".  Also, for SDF check moml for "<a name="line.230"></a>
+<span class="sourceLineNo">231</span>                        + "tokenConsumptionRate on input.");<a name="line.231"></a>
+<span class="sourceLineNo">232</span>            }<a name="line.232"></a>
+<span class="sourceLineNo">233</span><a name="line.233"></a>
+<span class="sourceLineNo">234</span>            if (_debugging) {<a name="line.234"></a>
+<span class="sourceLineNo">235</span>                _debug(new FiringEvent(this, actor, FiringEvent.AFTER_ITERATE,<a name="line.235"></a>
+<span class="sourceLineNo">236</span>                        iterationCount));<a name="line.236"></a>
+<span class="sourceLineNo">237</span>            }<a name="line.237"></a>
+<span class="sourceLineNo">238</span>        }<a name="line.238"></a>
+<span class="sourceLineNo">239</span>    }<a name="line.239"></a>
+<span class="sourceLineNo">240</span><a name="line.240"></a>
+<span class="sourceLineNo">241</span>    /** Return the scheduler that is responsible for scheduling the<a name="line.241"></a>
+<span class="sourceLineNo">242</span>     *  directed actors.  This method is read-synchronized on the<a name="line.242"></a>
+<span class="sourceLineNo">243</span>     *  workspace.<a name="line.243"></a>
+<span class="sourceLineNo">244</span>     *<a name="line.244"></a>
+<span class="sourceLineNo">245</span>     *  @return The contained scheduler.<a name="line.245"></a>
+<span class="sourceLineNo">246</span>     *  @see #setScheduler(Scheduler)<a name="line.246"></a>
+<span class="sourceLineNo">247</span>     */<a name="line.247"></a>
+<span class="sourceLineNo">248</span>    public Scheduler getScheduler() {<a name="line.248"></a>
+<span class="sourceLineNo">249</span>        try {<a name="line.249"></a>
+<span class="sourceLineNo">250</span>            workspace().getReadAccess();<a name="line.250"></a>
+<span class="sourceLineNo">251</span>            return _scheduler;<a name="line.251"></a>
+<span class="sourceLineNo">252</span>        } finally {<a name="line.252"></a>
+<span class="sourceLineNo">253</span>            workspace().doneReading();<a name="line.253"></a>
+<span class="sourceLineNo">254</span>        }<a name="line.254"></a>
+<span class="sourceLineNo">255</span>    }<a name="line.255"></a>
+<span class="sourceLineNo">256</span><a name="line.256"></a>
+<span class="sourceLineNo">257</span>    /** Indicate that a schedule for the model may no longer be valid.<a name="line.257"></a>
+<span class="sourceLineNo">258</span>     *  This method should be called when topology changes are made,<a name="line.258"></a>
+<span class="sourceLineNo">259</span>     *  or for that matter when any change that may invalidate the<a name="line.259"></a>
+<span class="sourceLineNo">260</span>     *  schedule is made.  In this base class, this method sets a flag<a name="line.260"></a>
+<span class="sourceLineNo">261</span>     *  that forces scheduling to be redone at the next opportunity.<a name="line.261"></a>
+<span class="sourceLineNo">262</span>     *  If there is no scheduler, do nothing.<a name="line.262"></a>
+<span class="sourceLineNo">263</span>     */<a name="line.263"></a>
+<span class="sourceLineNo">264</span>    @Override<a name="line.264"></a>
+<span class="sourceLineNo">265</span>    public void invalidateSchedule() {<a name="line.265"></a>
+<span class="sourceLineNo">266</span>        _debug("Invalidating schedule.");<a name="line.266"></a>
+<span class="sourceLineNo">267</span>        if (_scheduler != null) {<a name="line.267"></a>
+<span class="sourceLineNo">268</span>            _scheduler.setValid(false);<a name="line.268"></a>
+<span class="sourceLineNo">269</span>        }<a name="line.269"></a>
+<span class="sourceLineNo">270</span>    }<a name="line.270"></a>
+<span class="sourceLineNo">271</span><a name="line.271"></a>
+<span class="sourceLineNo">272</span>    /** Return true if the current (cached) schedule is valid.<a name="line.272"></a>
+<span class="sourceLineNo">273</span>     *  This calls the valid() method of Scheduler.<a name="line.273"></a>
+<span class="sourceLineNo">274</span>     *  @return true if the schedule is valid.<a name="line.274"></a>
+<span class="sourceLineNo">275</span>     *  @exception IllegalActionException If there's no scheduler.<a name="line.275"></a>
+<span class="sourceLineNo">276</span>     */<a name="line.276"></a>
+<span class="sourceLineNo">277</span>    public boolean isScheduleValid() throws IllegalActionException {<a name="line.277"></a>
+<span class="sourceLineNo">278</span>        if (_scheduler == null) {<a name="line.278"></a>
+<span class="sourceLineNo">279</span>            throw new IllegalActionException(this, "has no scheduler.");<a name="line.279"></a>
+<span class="sourceLineNo">280</span>        }<a name="line.280"></a>
+<span class="sourceLineNo">281</span><a name="line.281"></a>
+<span class="sourceLineNo">282</span>        return _scheduler.isValid();<a name="line.282"></a>
+<span class="sourceLineNo">283</span>    }<a name="line.283"></a>
+<span class="sourceLineNo">284</span><a name="line.284"></a>
+<span class="sourceLineNo">285</span>    /** Return true if the director wishes to be scheduled for another<a name="line.285"></a>
+<span class="sourceLineNo">286</span>     *  iteration. This base class returns true if all of the actors<a name="line.286"></a>
+<span class="sourceLineNo">287</span>     *  iterated since the last call to prefire returned true from their<a name="line.287"></a>
+<span class="sourceLineNo">288</span>     *  postfire() method and if stop() has not been called. Subclasses<a name="line.288"></a>
+<span class="sourceLineNo">289</span>     *  may override this method to perform additional<a name="line.289"></a>
+<span class="sourceLineNo">290</span>     *  domain-specific behavior.<a name="line.290"></a>
+<span class="sourceLineNo">291</span>     *  @return True if the Director wants to be fired again in the<a name="line.291"></a>
+<span class="sourceLineNo">292</span>     *  future.<a name="line.292"></a>
+<span class="sourceLineNo">293</span>     *  @exception IllegalActionException Not thrown in this base class.<a name="line.293"></a>
+<span class="sourceLineNo">294</span>     */<a name="line.294"></a>
+<span class="sourceLineNo">295</span>    @Override<a name="line.295"></a>
+<span class="sourceLineNo">296</span>    public boolean postfire() throws IllegalActionException {<a name="line.296"></a>
+<span class="sourceLineNo">297</span>        boolean result = super.postfire() &amp;&amp; _postfireReturns;<a name="line.297"></a>
+<span class="sourceLineNo">298</span>        if (_debugging) {<a name="line.298"></a>
+<span class="sourceLineNo">299</span>            _debug("Postfire returns: " + result);<a name="line.299"></a>
+<span class="sourceLineNo">300</span>        }<a name="line.300"></a>
+<span class="sourceLineNo">301</span>        return result;<a name="line.301"></a>
+<span class="sourceLineNo">302</span>    }<a name="line.302"></a>
+<span class="sourceLineNo">303</span><a name="line.303"></a>
+<span class="sourceLineNo">304</span>    /** Resume the execution of an actor that was previously blocked because<a name="line.304"></a>
+<span class="sourceLineNo">305</span>     *  it didn't have all the resources it needed for execution.<a name="line.305"></a>
+<span class="sourceLineNo">306</span>     *  @param actor The actor that resumes execution.<a name="line.306"></a>
+<span class="sourceLineNo">307</span>     *  @exception IllegalActionException Not thrown here but in derived classes.<a name="line.307"></a>
+<span class="sourceLineNo">308</span>     */<a name="line.308"></a>
+<span class="sourceLineNo">309</span>    @Override<a name="line.309"></a>
+<span class="sourceLineNo">310</span>    public void resumeActor(NamedObj actor) throws IllegalActionException {<a name="line.310"></a>
+<span class="sourceLineNo">311</span>        _actorFinished = true;<a name="line.311"></a>
+<span class="sourceLineNo">312</span>    }<a name="line.312"></a>
+<span class="sourceLineNo">313</span><a name="line.313"></a>
+<span class="sourceLineNo">314</span>    /** Return true if the director is ready to fire. This method is<a name="line.314"></a>
+<span class="sourceLineNo">315</span>     *  called by the container of this director to determine whether<a name="line.315"></a>
+<span class="sourceLineNo">316</span>     *  the director is ready to execute. It does &lt;i&gt;not&lt;/i&gt; call<a name="line.316"></a>
+<span class="sourceLineNo">317</span>     *  prefire() on the contained actors.  If this director is not at<a name="line.317"></a>
+<span class="sourceLineNo">318</span>     *  the top level of the hierarchy, and the current time of the<a name="line.318"></a>
+<span class="sourceLineNo">319</span>     *  enclosing model is greater than the current time of this<a name="line.319"></a>
+<span class="sourceLineNo">320</span>     *  director, then this base class updates current time to match<a name="line.320"></a>
+<span class="sourceLineNo">321</span>     *  that of the enclosing model.  &lt;p&gt;<a name="line.321"></a>
+<span class="sourceLineNo">322</span>     *<a name="line.322"></a>
+<span class="sourceLineNo">323</span>     *  In this base class, assume that the director is always ready<a name="line.323"></a>
+<span class="sourceLineNo">324</span>     *  to be fired, and so return true.  Domain directors should<a name="line.324"></a>
+<span class="sourceLineNo">325</span>     *  probably override this method to provide domain-specific<a name="line.325"></a>
+<span class="sourceLineNo">326</span>     *  operation.  However, they should call super.prefire() if they<a name="line.326"></a>
+<span class="sourceLineNo">327</span>     *  wish to propagate time as done here.<a name="line.327"></a>
+<span class="sourceLineNo">328</span>     *<a name="line.328"></a>
+<span class="sourceLineNo">329</span>     *  @return True.<a name="line.329"></a>
+<span class="sourceLineNo">330</span>     *  @exception IllegalActionException Not thrown in this base class.<a name="line.330"></a>
+<span class="sourceLineNo">331</span>     */<a name="line.331"></a>
+<span class="sourceLineNo">332</span>    @Override<a name="line.332"></a>
+<span class="sourceLineNo">333</span>    public boolean prefire() throws IllegalActionException {<a name="line.333"></a>
+<span class="sourceLineNo">334</span>        _postfireReturns = true;<a name="line.334"></a>
+<span class="sourceLineNo">335</span>        _prefire = super.prefire();<a name="line.335"></a>
+<span class="sourceLineNo">336</span>        if (_aspectsPresent &amp;&amp; _prefire) {<a name="line.336"></a>
+<span class="sourceLineNo">337</span><a name="line.337"></a>
+<span class="sourceLineNo">338</span>            Iterator firings = null;<a name="line.338"></a>
+<span class="sourceLineNo">339</span>            if (_savedSchedule == null) {<a name="line.339"></a>
+<span class="sourceLineNo">340</span>                Scheduler scheduler = getScheduler();<a name="line.340"></a>
+<span class="sourceLineNo">341</span>                Schedule schedule = scheduler.getSchedule();<a name="line.341"></a>
+<span class="sourceLineNo">342</span>                _savedSchedule = schedule;<a name="line.342"></a>
+<span class="sourceLineNo">343</span>                _savedSchedulePosition = 0;<a name="line.343"></a>
+<span class="sourceLineNo">344</span>                firings = schedule.firingIterator();<a name="line.344"></a>
+<span class="sourceLineNo">345</span>            } else {<a name="line.345"></a>
+<span class="sourceLineNo">346</span>                firings = _savedSchedule.firingIterator();<a name="line.346"></a>
+<span class="sourceLineNo">347</span>                for (int i = 0; i &lt; _savedSchedulePosition; i++) {<a name="line.347"></a>
+<span class="sourceLineNo">348</span>                    firings.next();<a name="line.348"></a>
+<span class="sourceLineNo">349</span>                }<a name="line.349"></a>
+<span class="sourceLineNo">350</span>            }<a name="line.350"></a>
+<span class="sourceLineNo">351</span><a name="line.351"></a>
+<span class="sourceLineNo">352</span>            Firing firing = null;<a name="line.352"></a>
+<span class="sourceLineNo">353</span>            while ((_savedIterationCount &gt; 0 || firings.hasNext())<a name="line.353"></a>
+<span class="sourceLineNo">354</span>                    &amp;&amp; !_stopRequested) {<a name="line.354"></a>
+<span class="sourceLineNo">355</span><a name="line.355"></a>
+<span class="sourceLineNo">356</span>                if (firing == null || _savedIterationCount == 0) {<a name="line.356"></a>
+<span class="sourceLineNo">357</span>                    firing = (Firing) firings.next();<a name="line.357"></a>
+<span class="sourceLineNo">358</span>                }<a name="line.358"></a>
+<span class="sourceLineNo">359</span>                Actor actor = firing.getActor();<a name="line.359"></a>
+<span class="sourceLineNo">360</span><a name="line.360"></a>
+<span class="sourceLineNo">361</span>                if (!_actorFinished) {<a name="line.361"></a>
+<span class="sourceLineNo">362</span>                    if (_tokenSentToCommunicationAspect) {<a name="line.362"></a>
+<span class="sourceLineNo">363</span>                        _tokenSentToCommunicationAspect = false;<a name="line.363"></a>
+<span class="sourceLineNo">364</span>                        if (((CompositeActor) getContainer())<a name="line.364"></a>
+<span class="sourceLineNo">365</span>                                .getContainer() != null) {<a name="line.365"></a>
+<span class="sourceLineNo">366</span>                            ((CompositeActor) getContainer())<a name="line.366"></a>
+<span class="sourceLineNo">367</span>                                    .getExecutiveDirector().fireAtCurrentTime(<a name="line.367"></a>
+<span class="sourceLineNo">368</span>                                            (CompositeActor) getContainer());<a name="line.368"></a>
+<span class="sourceLineNo">369</span>                        }<a name="line.369"></a>
+<span class="sourceLineNo">370</span>                        _prefire = false;<a name="line.370"></a>
+<span class="sourceLineNo">371</span>                        return false;<a name="line.371"></a>
+<span class="sourceLineNo">372</span>                    }<a name="line.372"></a>
+<span class="sourceLineNo">373</span>                    boolean finished = _schedule((NamedObj) actor,<a name="line.373"></a>
+<span class="sourceLineNo">374</span>                            getModelTime());<a name="line.374"></a>
+<span class="sourceLineNo">375</span>                    if (!finished) {<a name="line.375"></a>
+<span class="sourceLineNo">376</span>                        _prefire = false;<a name="line.376"></a>
+<span class="sourceLineNo">377</span>                        return false;<a name="line.377"></a>
+<span class="sourceLineNo">378</span>                    }<a name="line.378"></a>
+<span class="sourceLineNo">379</span>                }<a name="line.379"></a>
+<span class="sourceLineNo">380</span>                _actorFinished = false;<a name="line.380"></a>
+<span class="sourceLineNo">381</span><a name="line.381"></a>
+<span class="sourceLineNo">382</span>                if (_savedIterationCount == 0) {<a name="line.382"></a>
+<span class="sourceLineNo">383</span>                    _savedIterationCount = firing.getIterationCount();<a name="line.383"></a>
+<span class="sourceLineNo">384</span>                }<a name="line.384"></a>
+<span class="sourceLineNo">385</span><a name="line.385"></a>
+<span class="sourceLineNo">386</span>                _savedIterationCount--;<a name="line.386"></a>
+<span class="sourceLineNo">387</span>                if (_savedIterationCount == 0) {<a name="line.387"></a>
+<span class="sourceLineNo">388</span>                    _savedSchedulePosition++;<a name="line.388"></a>
+<span class="sourceLineNo">389</span>                }<a name="line.389"></a>
+<span class="sourceLineNo">390</span><a name="line.390"></a>
+<span class="sourceLineNo">391</span>            }<a name="line.391"></a>
+<span class="sourceLineNo">392</span>            if (_savedSchedule.size() &lt;= _savedSchedulePosition) {<a name="line.392"></a>
+<span class="sourceLineNo">393</span>                _savedSchedule = null;<a name="line.393"></a>
+<span class="sourceLineNo">394</span>            }<a name="line.394"></a>
+<span class="sourceLineNo">395</span>        }<a name="line.395"></a>
+<span class="sourceLineNo">396</span>        return _prefire;<a name="line.396"></a>
+<span class="sourceLineNo">397</span>    }<a name="line.397"></a>
+<span class="sourceLineNo">398</span><a name="line.398"></a>
+<span class="sourceLineNo">399</span>    /** Override the base class to also remove the listener from the scheduler,<a name="line.399"></a>
+<span class="sourceLineNo">400</span>     *  if there is one.<a name="line.400"></a>
+<span class="sourceLineNo">401</span>     *  @param listener The listener to remove from the list of listeners<a name="line.401"></a>
+<span class="sourceLineNo">402</span>     *   to which debug messages are sent.<a name="line.402"></a>
+<span class="sourceLineNo">403</span>     *  @see #addDebugListener(DebugListener)<a name="line.403"></a>
+<span class="sourceLineNo">404</span>     */<a name="line.404"></a>
+<span class="sourceLineNo">405</span>    @Override<a name="line.405"></a>
+<span class="sourceLineNo">406</span>    public synchronized void removeDebugListener(DebugListener listener) {<a name="line.406"></a>
+<span class="sourceLineNo">407</span>        super.removeDebugListener(listener);<a name="line.407"></a>
+<span class="sourceLineNo">408</span><a name="line.408"></a>
+<span class="sourceLineNo">409</span>        Scheduler scheduler = getScheduler();<a name="line.409"></a>
+<span class="sourceLineNo">410</span><a name="line.410"></a>
+<span class="sourceLineNo">411</span>        if (scheduler != null) {<a name="line.411"></a>
+<span class="sourceLineNo">412</span>            scheduler.removeDebugListener(listener);<a name="line.412"></a>
+<span class="sourceLineNo">413</span>        }<a name="line.413"></a>
+<span class="sourceLineNo">414</span>    }<a name="line.414"></a>
+<span class="sourceLineNo">415</span><a name="line.415"></a>
+<span class="sourceLineNo">416</span>    /** Set the scheduler for this StaticSchedulingDirector.<a name="line.416"></a>
+<span class="sourceLineNo">417</span>     *  The container of the specified scheduler is set to this director.<a name="line.417"></a>
+<span class="sourceLineNo">418</span>     *  If there was a previous scheduler, the container of that scheduler<a name="line.418"></a>
+<span class="sourceLineNo">419</span>     *  is set to null. This method is write-synchronized on the workspace.<a name="line.419"></a>
+<span class="sourceLineNo">420</span>     *  If the scheduler is not compatible with the director, an<a name="line.420"></a>
+<span class="sourceLineNo">421</span>     *  IllegalActionException is thrown.<a name="line.421"></a>
+<span class="sourceLineNo">422</span>     *  @param scheduler The scheduler that this director will use.<a name="line.422"></a>
+<span class="sourceLineNo">423</span>     *  @exception IllegalActionException Not thrown in this base class,<a name="line.423"></a>
+<span class="sourceLineNo">424</span>     *   but derived classes may throw it if the scheduler is not compatible.<a name="line.424"></a>
+<span class="sourceLineNo">425</span>     *  @exception NameDuplicationException Not thrown in this base class,<a name="line.425"></a>
+<span class="sourceLineNo">426</span>     *   but derived classes may throw it if the scheduler is not compatible.<a name="line.426"></a>
+<span class="sourceLineNo">427</span>     *  @see #getScheduler()<a name="line.427"></a>
+<span class="sourceLineNo">428</span>     */<a name="line.428"></a>
+<span class="sourceLineNo">429</span>    public void setScheduler(Scheduler scheduler)<a name="line.429"></a>
+<span class="sourceLineNo">430</span>            throws IllegalActionException, NameDuplicationException {<a name="line.430"></a>
+<span class="sourceLineNo">431</span>        if (scheduler != null) {<a name="line.431"></a>
+<span class="sourceLineNo">432</span>            scheduler.setContainer(this);<a name="line.432"></a>
+<span class="sourceLineNo">433</span>        } else {<a name="line.433"></a>
+<span class="sourceLineNo">434</span>            if (_scheduler != null) {<a name="line.434"></a>
+<span class="sourceLineNo">435</span>                _scheduler.setContainer(null);<a name="line.435"></a>
+<span class="sourceLineNo">436</span>            }<a name="line.436"></a>
+<span class="sourceLineNo">437</span>        }<a name="line.437"></a>
+<span class="sourceLineNo">438</span>        _setScheduler(scheduler);<a name="line.438"></a>
+<span class="sourceLineNo">439</span>    }<a name="line.439"></a>
+<span class="sourceLineNo">440</span><a name="line.440"></a>
+<span class="sourceLineNo">441</span>    ///////////////////////////////////////////////////////////////////<a name="line.441"></a>
+<span class="sourceLineNo">442</span>    ////                         protected methods                 ////<a name="line.442"></a>
+<span class="sourceLineNo">443</span><a name="line.443"></a>
+<span class="sourceLineNo">444</span>    /** Set the local scheduler for execution of this Director.<a name="line.444"></a>
+<span class="sourceLineNo">445</span>     *  This should not be called be directly.  Instead, call setContainer()<a name="line.445"></a>
+<span class="sourceLineNo">446</span>     *  on the scheduler.  This method removes any previous scheduler<a name="line.446"></a>
+<span class="sourceLineNo">447</span>     *  from this container, and caches a local reference to the scheduler<a name="line.447"></a>
+<span class="sourceLineNo">448</span>     *  so that this composite does not need to search its attributes each<a name="line.448"></a>
+<span class="sourceLineNo">449</span>     *  time the scheduler is accessed.<a name="line.449"></a>
+<span class="sourceLineNo">450</span>     *  @param scheduler The Scheduler responsible for execution.<a name="line.450"></a>
+<span class="sourceLineNo">451</span>     */<a name="line.451"></a>
+<span class="sourceLineNo">452</span>    protected void _setScheduler(Scheduler scheduler) {<a name="line.452"></a>
+<span class="sourceLineNo">453</span>        // If the scheduler is not changed, do nothing.<a name="line.453"></a>
+<span class="sourceLineNo">454</span>        if (_scheduler != scheduler) {<a name="line.454"></a>
+<span class="sourceLineNo">455</span>            _scheduler = scheduler;<a name="line.455"></a>
+<span class="sourceLineNo">456</span>            invalidateSchedule();<a name="line.456"></a>
+<span class="sourceLineNo">457</span>        }<a name="line.457"></a>
+<span class="sourceLineNo">458</span>    }<a name="line.458"></a>
+<span class="sourceLineNo">459</span><a name="line.459"></a>
+<span class="sourceLineNo">460</span>    ///////////////////////////////////////////////////////////////////<a name="line.460"></a>
+<span class="sourceLineNo">461</span>    ////                         protected variables               ////<a name="line.461"></a>
+<span class="sourceLineNo">462</span><a name="line.462"></a>
+<span class="sourceLineNo">463</span>    /** The value that the postfire method will return. */<a name="line.463"></a>
+<span class="sourceLineNo">464</span>    protected boolean _postfireReturns;<a name="line.464"></a>
+<span class="sourceLineNo">465</span><a name="line.465"></a>
+<span class="sourceLineNo">466</span>    ///////////////////////////////////////////////////////////////////<a name="line.466"></a>
+<span class="sourceLineNo">467</span>    ////                         private variables                 ////<a name="line.467"></a>
+<span class="sourceLineNo">468</span><a name="line.468"></a>
+<span class="sourceLineNo">469</span>    /** The value returned by the prefire() method. */<a name="line.469"></a>
+<span class="sourceLineNo">470</span>    protected boolean _prefire = false;<a name="line.470"></a>
+<span class="sourceLineNo">471</span><a name="line.471"></a>
+<span class="sourceLineNo">472</span>    private boolean _actorFinished;<a name="line.472"></a>
+<span class="sourceLineNo">473</span><a name="line.473"></a>
+<span class="sourceLineNo">474</span>    /** Computed schedule that has not been fully executed because this<a name="line.474"></a>
+<span class="sourceLineNo">475</span>     *  director is waiting for resources.<a name="line.475"></a>
+<span class="sourceLineNo">476</span>     */<a name="line.476"></a>
+<span class="sourceLineNo">477</span>    private Schedule _savedSchedule;<a name="line.477"></a>
+<span class="sourceLineNo">478</span><a name="line.478"></a>
+<span class="sourceLineNo">479</span>    /** Saved position in the fixed schedule. Resume execution from there.<a name="line.479"></a>
+<span class="sourceLineNo">480</span>     */<a name="line.480"></a>
+<span class="sourceLineNo">481</span>    private int _savedSchedulePosition;<a name="line.481"></a>
+<span class="sourceLineNo">482</span><a name="line.482"></a>
+<span class="sourceLineNo">483</span>    /** Number of iterations that have been performed already.<a name="line.483"></a>
+<span class="sourceLineNo">484</span>     */<a name="line.484"></a>
+<span class="sourceLineNo">485</span>    private int _savedIterationCount;<a name="line.485"></a>
+<span class="sourceLineNo">486</span><a name="line.486"></a>
+<span class="sourceLineNo">487</span>    /** The scheduler. */<a name="line.487"></a>
+<span class="sourceLineNo">488</span>    private Scheduler _scheduler;<a name="line.488"></a>
+<span class="sourceLineNo">489</span>}<a name="line.489"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

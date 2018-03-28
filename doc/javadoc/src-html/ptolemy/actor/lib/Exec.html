@@ -1,0 +1,875 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../../stylesheet.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>/* Execute a command in a subprocess.<a name="line.1"></a>
+<span class="sourceLineNo">002</span><a name="line.2"></a>
+<span class="sourceLineNo">003</span> Copyright (c) 2004-2015 The Regents of the University of California.<a name="line.3"></a>
+<span class="sourceLineNo">004</span> All rights reserved.<a name="line.4"></a>
+<span class="sourceLineNo">005</span> Permission is hereby granted, without written agreement and without<a name="line.5"></a>
+<span class="sourceLineNo">006</span> license or royalty fees, to use, copy, modify, and distribute this<a name="line.6"></a>
+<span class="sourceLineNo">007</span> software and its documentation for any purpose, provided that the above<a name="line.7"></a>
+<span class="sourceLineNo">008</span> copyright notice and the following two paragraphs appear in all copies<a name="line.8"></a>
+<span class="sourceLineNo">009</span> of this software.<a name="line.9"></a>
+<span class="sourceLineNo">010</span><a name="line.10"></a>
+<span class="sourceLineNo">011</span> IN NO EVENT SHALL THE UNIVERSITY OF CALIFORNIA BE LIABLE TO ANY PARTY<a name="line.11"></a>
+<span class="sourceLineNo">012</span> FOR DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES<a name="line.12"></a>
+<span class="sourceLineNo">013</span> ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION, EVEN IF<a name="line.13"></a>
+<span class="sourceLineNo">014</span> THE UNIVERSITY OF CALIFORNIA HAS BEEN ADVISED OF THE POSSIBILITY OF<a name="line.14"></a>
+<span class="sourceLineNo">015</span> SUCH DAMAGE.<a name="line.15"></a>
+<span class="sourceLineNo">016</span><a name="line.16"></a>
+<span class="sourceLineNo">017</span> THE UNIVERSITY OF CALIFORNIA SPECIFICALLY DISCLAIMS ANY WARRANTIES,<a name="line.17"></a>
+<span class="sourceLineNo">018</span> INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF<a name="line.18"></a>
+<span class="sourceLineNo">019</span> MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE<a name="line.19"></a>
+<span class="sourceLineNo">020</span> PROVIDED HEREUNDER IS ON AN "AS IS" BASIS, AND THE UNIVERSITY OF<a name="line.20"></a>
+<span class="sourceLineNo">021</span> CALIFORNIA HAS NO OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT, UPDATES,<a name="line.21"></a>
+<span class="sourceLineNo">022</span> ENHANCEMENTS, OR MODIFICATIONS.<a name="line.22"></a>
+<span class="sourceLineNo">023</span><a name="line.23"></a>
+<span class="sourceLineNo">024</span> PT_COPYRIGHT_VERSION_2<a name="line.24"></a>
+<span class="sourceLineNo">025</span> COPYRIGHTENDKEY<a name="line.25"></a>
+<span class="sourceLineNo">026</span><a name="line.26"></a>
+<span class="sourceLineNo">027</span> */<a name="line.27"></a>
+<span class="sourceLineNo">028</span>package ptolemy.actor.lib;<a name="line.28"></a>
+<span class="sourceLineNo">029</span><a name="line.29"></a>
+<span class="sourceLineNo">030</span>import java.io.BufferedWriter;<a name="line.30"></a>
+<span class="sourceLineNo">031</span>import java.io.File;<a name="line.31"></a>
+<span class="sourceLineNo">032</span>import java.io.IOException;<a name="line.32"></a>
+<span class="sourceLineNo">033</span>import java.io.InputStream;<a name="line.33"></a>
+<span class="sourceLineNo">034</span>import java.io.InputStreamReader;<a name="line.34"></a>
+<span class="sourceLineNo">035</span>import java.io.OutputStreamWriter;<a name="line.35"></a>
+<span class="sourceLineNo">036</span>import java.util.Arrays;<a name="line.36"></a>
+<span class="sourceLineNo">037</span>import java.util.LinkedList;<a name="line.37"></a>
+<span class="sourceLineNo">038</span>import java.util.List;<a name="line.38"></a>
+<span class="sourceLineNo">039</span><a name="line.39"></a>
+<span class="sourceLineNo">040</span>import ptolemy.actor.TypedIOPort;<a name="line.40"></a>
+<span class="sourceLineNo">041</span>import ptolemy.actor.parameters.PortParameter;<a name="line.41"></a>
+<span class="sourceLineNo">042</span>import ptolemy.data.ArrayToken;<a name="line.42"></a>
+<span class="sourceLineNo">043</span>import ptolemy.data.BooleanToken;<a name="line.43"></a>
+<span class="sourceLineNo">044</span>import ptolemy.data.IntToken;<a name="line.44"></a>
+<span class="sourceLineNo">045</span>import ptolemy.data.RecordToken;<a name="line.45"></a>
+<span class="sourceLineNo">046</span>import ptolemy.data.StringToken;<a name="line.46"></a>
+<span class="sourceLineNo">047</span>import ptolemy.data.expr.FileParameter;<a name="line.47"></a>
+<span class="sourceLineNo">048</span>import ptolemy.data.expr.Parameter;<a name="line.48"></a>
+<span class="sourceLineNo">049</span>import ptolemy.data.type.ArrayType;<a name="line.49"></a>
+<span class="sourceLineNo">050</span>import ptolemy.data.type.BaseType;<a name="line.50"></a>
+<span class="sourceLineNo">051</span>import ptolemy.data.type.RecordType;<a name="line.51"></a>
+<span class="sourceLineNo">052</span>import ptolemy.data.type.Type;<a name="line.52"></a>
+<span class="sourceLineNo">053</span>import ptolemy.kernel.CompositeEntity;<a name="line.53"></a>
+<span class="sourceLineNo">054</span>import ptolemy.kernel.util.IllegalActionException;<a name="line.54"></a>
+<span class="sourceLineNo">055</span>import ptolemy.kernel.util.InternalErrorException;<a name="line.55"></a>
+<span class="sourceLineNo">056</span>import ptolemy.kernel.util.NameDuplicationException;<a name="line.56"></a>
+<span class="sourceLineNo">057</span>import ptolemy.kernel.util.Nameable;<a name="line.57"></a>
+<span class="sourceLineNo">058</span>import ptolemy.util.StringUtilities;<a name="line.58"></a>
+<span class="sourceLineNo">059</span><a name="line.59"></a>
+<span class="sourceLineNo">060</span>///////////////////////////////////////////////////////////////////<a name="line.60"></a>
+<span class="sourceLineNo">061</span>//// Exec<a name="line.61"></a>
+<span class="sourceLineNo">062</span><a name="line.62"></a>
+<span class="sourceLineNo">063</span>/**<a name="line.63"></a>
+<span class="sourceLineNo">064</span> Execute a command as a separately running subprocess.<a name="line.64"></a>
+<span class="sourceLineNo">065</span><a name="line.65"></a>
+<span class="sourceLineNo">066</span> &lt;p&gt;This actor uses java.lang.Runtime.exec() to invoke a subprocess<a name="line.66"></a>
+<span class="sourceLineNo">067</span> named by the &lt;i&gt;command&lt;/i&gt; parameter in a specified &lt;i&gt;directory&lt;/i&gt; with a<a name="line.67"></a>
+<span class="sourceLineNo">068</span> specified  &lt;i&gt;environment&lt;/i&gt;.  Data from the &lt;i&gt;input&lt;/i&gt; port (if any) is<a name="line.68"></a>
+<span class="sourceLineNo">069</span> passed to the input of the subprocess.  The subprocess is run until it<a name="line.69"></a>
+<span class="sourceLineNo">070</span> exits and then contents of the output and error streams of the<a name="line.70"></a>
+<span class="sourceLineNo">071</span> subprocess (if any) are passed to the &lt;i&gt;output&lt;/i&gt; and &lt;i&gt;error&lt;/i&gt;<a name="line.71"></a>
+<span class="sourceLineNo">072</span> ports.&lt;/p&gt;<a name="line.72"></a>
+<span class="sourceLineNo">073</span><a name="line.73"></a>
+<span class="sourceLineNo">074</span> &lt;p&gt;If the subprocess generates no data on the output or error stream,<a name="line.74"></a>
+<span class="sourceLineNo">075</span> then the data on the corresponding port(s) will consist of the empty<a name="line.75"></a>
+<span class="sourceLineNo">076</span> string.&lt;/p&gt;<a name="line.76"></a>
+<span class="sourceLineNo">077</span><a name="line.77"></a>
+<span class="sourceLineNo">078</span> &lt;p&gt; To get the effect of executing a command provided in a shell interpreter, set the<a name="line.78"></a>
+<span class="sourceLineNo">079</span> &lt;i&gt;prependPlatformDependentShellCommand&lt;/i&gt; parameter to true.<a name="line.79"></a>
+<span class="sourceLineNo">080</span> This will prepend a default platform-dependent shell command to the command<a name="line.80"></a>
+<span class="sourceLineNo">081</span> you wish to execute so that your command is executed within the shell.<a name="line.81"></a>
+<span class="sourceLineNo">082</span> Alternatively, you can set &lt;i&gt;command&lt;/i&gt; to "cmd" (Windows) or "sh" (Windows with Cygwin<a name="line.82"></a>
+<span class="sourceLineNo">083</span> or Linux), and then provide commands at the &lt;i&gt;input&lt;/i&gt; port.<a name="line.83"></a>
+<span class="sourceLineNo">084</span> In this case, however, your model will only work on platforms that have the shell<a name="line.84"></a>
+<span class="sourceLineNo">085</span> command you have specified.<a name="line.85"></a>
+<span class="sourceLineNo">086</span> Note that in this case each command must be terminated with a newline.<a name="line.86"></a>
+<span class="sourceLineNo">087</span> For example, to open a model in vergil and run it, you can<a name="line.87"></a>
+<span class="sourceLineNo">088</span> set &lt;i&gt;command&lt;/i&gt; to "sh" and use a Const actor to provide<a name="line.88"></a>
+<span class="sourceLineNo">089</span> on the &lt;i&gt;input&lt;/i&gt; port the string:&lt;/p&gt;<a name="line.89"></a>
+<span class="sourceLineNo">090</span> &lt;pre&gt;<a name="line.90"></a>
+<span class="sourceLineNo">091</span> "vergil -run model.xml\n exit\n"<a name="line.91"></a>
+<span class="sourceLineNo">092</span> &lt;/pre&gt;<a name="line.92"></a>
+<span class="sourceLineNo">093</span><a name="line.93"></a>
+<span class="sourceLineNo">094</span> &lt;p&gt;A much more interesting actor could be written using a<a name="line.94"></a>
+<span class="sourceLineNo">095</span> Kahn Process Network.  This actor would generate output asynchronously<a name="line.95"></a>
+<span class="sourceLineNo">096</span> as the process was executing.&lt;/p&gt;<a name="line.96"></a>
+<span class="sourceLineNo">097</span><a name="line.97"></a>
+<span class="sourceLineNo">098</span> &lt;p&gt;For information about Runtime.exec(), see:<a name="line.98"></a>
+<span class="sourceLineNo">099</span> &lt;br&gt;&lt;a href="http://www.javaworld.com/javaworld/jw-12-2007/jw-1229-traps.html" target="_top"&gt;http://www.javaworld.com/javaworld/jw-12-2000/jw-1229-traps.html&lt;/a&gt;<a name="line.99"></a>
+<span class="sourceLineNo">100</span> and<a name="line.100"></a>
+<span class="sourceLineNo">101</span> &lt;a href="http://mindprod.com/jgloss/exec.html" target="_top"&gt;http://mindprod.com/jgloss/exec.html&lt;/a&gt;.<a name="line.101"></a>
+<span class="sourceLineNo">102</span> &lt;/p&gt;<a name="line.102"></a>
+<span class="sourceLineNo">103</span><a name="line.103"></a>
+<span class="sourceLineNo">104</span> @author Christopher Hylands Brooks, Contributors: Edward A. Lee, Daniel Crawl<a name="line.104"></a>
+<span class="sourceLineNo">105</span> @version $Id$<a name="line.105"></a>
+<span class="sourceLineNo">106</span> @since Ptolemy II 4.0<a name="line.106"></a>
+<span class="sourceLineNo">107</span> @Pt.ProposedRating Yellow (cxh) 2/5/04<a name="line.107"></a>
+<span class="sourceLineNo">108</span> @Pt.AcceptedRating Yellow (cxh) 2/24/04<a name="line.108"></a>
+<span class="sourceLineNo">109</span> */<a name="line.109"></a>
+<span class="sourceLineNo">110</span>public class Exec extends LimitedFiringSource {<a name="line.110"></a>
+<span class="sourceLineNo">111</span>    /** Construct an actor with the given container and name.<a name="line.111"></a>
+<span class="sourceLineNo">112</span>     *  @param container The container.<a name="line.112"></a>
+<span class="sourceLineNo">113</span>     *  @param name The name of this actor.<a name="line.113"></a>
+<span class="sourceLineNo">114</span>     *  @exception IllegalActionException If the actor cannot be contained<a name="line.114"></a>
+<span class="sourceLineNo">115</span>     *   by the proposed container.<a name="line.115"></a>
+<span class="sourceLineNo">116</span>     *  @exception NameDuplicationException If the container already has an<a name="line.116"></a>
+<span class="sourceLineNo">117</span>     *   actor with this name.<a name="line.117"></a>
+<span class="sourceLineNo">118</span>     */<a name="line.118"></a>
+<span class="sourceLineNo">119</span>    public Exec(CompositeEntity container, String name)<a name="line.119"></a>
+<span class="sourceLineNo">120</span>            throws NameDuplicationException, IllegalActionException {<a name="line.120"></a>
+<span class="sourceLineNo">121</span>        super(container, name);<a name="line.121"></a>
+<span class="sourceLineNo">122</span><a name="line.122"></a>
+<span class="sourceLineNo">123</span>        // Uncomment the next line to see debugging statements<a name="line.123"></a>
+<span class="sourceLineNo">124</span>        //addDebugListener(new ptolemy.kernel.util.StreamListener());<a name="line.124"></a>
+<span class="sourceLineNo">125</span>        command = new PortParameter(this, "command");<a name="line.125"></a>
+<span class="sourceLineNo">126</span>        // Make command be a StringParameter (no surrounding double quotes).<a name="line.126"></a>
+<span class="sourceLineNo">127</span>        command.setStringMode(true);<a name="line.127"></a>
+<span class="sourceLineNo">128</span>        command.setExpression("echo \"Hello world.\"");<a name="line.128"></a>
+<span class="sourceLineNo">129</span>        <a name="line.129"></a>
+<span class="sourceLineNo">130</span>        new Parameter(command.getPort(), "_showName", BooleanToken.TRUE);<a name="line.130"></a>
+<span class="sourceLineNo">131</span><a name="line.131"></a>
+<span class="sourceLineNo">132</span>        directory = new FileParameter(this, "directory");<a name="line.132"></a>
+<span class="sourceLineNo">133</span>        new Parameter(directory, "allowFiles", BooleanToken.FALSE);<a name="line.133"></a>
+<span class="sourceLineNo">134</span>        new Parameter(directory, "allowDirectories", BooleanToken.TRUE);<a name="line.134"></a>
+<span class="sourceLineNo">135</span>        directory.setExpression("$CWD");<a name="line.135"></a>
+<span class="sourceLineNo">136</span><a name="line.136"></a>
+<span class="sourceLineNo">137</span>        environment = new Parameter(this, "environment");<a name="line.137"></a>
+<span class="sourceLineNo">138</span><a name="line.138"></a>
+<span class="sourceLineNo">139</span>        String[] labels = new String[] { "name", "value" };<a name="line.139"></a>
+<span class="sourceLineNo">140</span>        Type[] values = new Type[] { BaseType.STRING, BaseType.STRING };<a name="line.140"></a>
+<span class="sourceLineNo">141</span><a name="line.141"></a>
+<span class="sourceLineNo">142</span>        // An array of records {{name = "", value = ""}}<a name="line.142"></a>
+<span class="sourceLineNo">143</span>        environment<a name="line.143"></a>
+<span class="sourceLineNo">144</span>                .setTypeEquals(new ArrayType(new RecordType(labels, values)));<a name="line.144"></a>
+<span class="sourceLineNo">145</span><a name="line.145"></a>
+<span class="sourceLineNo">146</span>        // Array with an empty name and value means<a name="line.146"></a>
+<span class="sourceLineNo">147</span>        // default environment of the calling process.<a name="line.147"></a>
+<span class="sourceLineNo">148</span>        environment.setExpression("{{name = \"\", value = \"\"}}");<a name="line.148"></a>
+<span class="sourceLineNo">149</span><a name="line.149"></a>
+<span class="sourceLineNo">150</span>        error = new TypedIOPort(this, "error", false, true);<a name="line.150"></a>
+<span class="sourceLineNo">151</span>        error.setTypeEquals(BaseType.STRING);<a name="line.151"></a>
+<span class="sourceLineNo">152</span>        new Parameter(error, "_showName", BooleanToken.TRUE);<a name="line.152"></a>
+<span class="sourceLineNo">153</span><a name="line.153"></a>
+<span class="sourceLineNo">154</span>        ignoreIOExceptionReadErrors = new Parameter(this,<a name="line.154"></a>
+<span class="sourceLineNo">155</span>                "ignoreIOExceptionReadErrors", BooleanToken.FALSE);<a name="line.155"></a>
+<span class="sourceLineNo">156</span>        ignoreIOExceptionReadErrors.setTypeEquals(BaseType.BOOLEAN);<a name="line.156"></a>
+<span class="sourceLineNo">157</span><a name="line.157"></a>
+<span class="sourceLineNo">158</span>        input = new TypedIOPort(this, "input", true, false);<a name="line.158"></a>
+<span class="sourceLineNo">159</span>        input.setTypeEquals(BaseType.STRING);<a name="line.159"></a>
+<span class="sourceLineNo">160</span>        new Parameter(input, "_showName", BooleanToken.TRUE);<a name="line.160"></a>
+<span class="sourceLineNo">161</span><a name="line.161"></a>
+<span class="sourceLineNo">162</span>        output.setTypeEquals(BaseType.STRING);<a name="line.162"></a>
+<span class="sourceLineNo">163</span>        new Parameter(output, "_showName", BooleanToken.TRUE);<a name="line.163"></a>
+<span class="sourceLineNo">164</span><a name="line.164"></a>
+<span class="sourceLineNo">165</span>        exitCode = new TypedIOPort(this, "exitCode", false, true);<a name="line.165"></a>
+<span class="sourceLineNo">166</span>        exitCode.setTypeEquals(BaseType.INT);<a name="line.166"></a>
+<span class="sourceLineNo">167</span>        new Parameter(exitCode, "_showName", BooleanToken.TRUE);<a name="line.167"></a>
+<span class="sourceLineNo">168</span><a name="line.168"></a>
+<span class="sourceLineNo">169</span>        prependPlatformDependentShellCommand = new Parameter(this,<a name="line.169"></a>
+<span class="sourceLineNo">170</span>                "prependPlatformDependentShellCommand", BooleanToken.FALSE);<a name="line.170"></a>
+<span class="sourceLineNo">171</span>        prependPlatformDependentShellCommand.setTypeEquals(BaseType.BOOLEAN);<a name="line.171"></a>
+<span class="sourceLineNo">172</span><a name="line.172"></a>
+<span class="sourceLineNo">173</span>        throwExceptionOnNonZeroReturn = new Parameter(this,<a name="line.173"></a>
+<span class="sourceLineNo">174</span>                "throwExceptionOnNonZeroReturn", BooleanToken.TRUE);<a name="line.174"></a>
+<span class="sourceLineNo">175</span>        throwExceptionOnNonZeroReturn.setTypeEquals(BaseType.BOOLEAN);<a name="line.175"></a>
+<span class="sourceLineNo">176</span><a name="line.176"></a>
+<span class="sourceLineNo">177</span>        waitForProcess = new Parameter(this, "waitForProcess",<a name="line.177"></a>
+<span class="sourceLineNo">178</span>                BooleanToken.TRUE);<a name="line.178"></a>
+<span class="sourceLineNo">179</span>        waitForProcess.setTypeEquals(BaseType.BOOLEAN);<a name="line.179"></a>
+<span class="sourceLineNo">180</span><a name="line.180"></a>
+<span class="sourceLineNo">181</span>        // Show the firingCountLimit parameter last.<a name="line.181"></a>
+<span class="sourceLineNo">182</span>        firingCountLimit.moveToLast();<a name="line.182"></a>
+<span class="sourceLineNo">183</span>    }<a name="line.183"></a>
+<span class="sourceLineNo">184</span><a name="line.184"></a>
+<span class="sourceLineNo">185</span>    ///////////////////////////////////////////////////////////////////<a name="line.185"></a>
+<span class="sourceLineNo">186</span>    ////                     ports and parameters                  ////<a name="line.186"></a>
+<span class="sourceLineNo">187</span><a name="line.187"></a>
+<span class="sourceLineNo">188</span>    /** The command to be executed.  The command is parsed by<a name="line.188"></a>
+<span class="sourceLineNo">189</span>     * {@link ptolemy.util.StringUtilities#tokenizeForExec(String)}<a name="line.189"></a>
+<span class="sourceLineNo">190</span>     * into tokens and then executed as a separate subprocess.<a name="line.190"></a>
+<span class="sourceLineNo">191</span>     * The initial default value is the string<a name="line.191"></a>
+<span class="sourceLineNo">192</span>     * &lt;code&gt;echo "Hello, world."&lt;/code&gt;.<a name="line.192"></a>
+<span class="sourceLineNo">193</span>     *<a name="line.193"></a>
+<span class="sourceLineNo">194</span>     * &lt;p&gt;The command parameter is read only once during fire().<a name="line.194"></a>
+<span class="sourceLineNo">195</span>     * If you want to spawn another different command,<a name="line.195"></a>
+<span class="sourceLineNo">196</span>     * use life cycle management actors such RunCompositeActor.&lt;/p&gt;<a name="line.196"></a>
+<span class="sourceLineNo">197</span>     */<a name="line.197"></a>
+<span class="sourceLineNo">198</span>    public PortParameter command;<a name="line.198"></a>
+<span class="sourceLineNo">199</span><a name="line.199"></a>
+<span class="sourceLineNo">200</span>    /** The directory in which to execute the command.<a name="line.200"></a>
+<span class="sourceLineNo">201</span>     *  This parameter is read each time the subprocess is started<a name="line.201"></a>
+<span class="sourceLineNo">202</span>     *  in fire(). Once the subprocess is running, this parameter is not<a name="line.202"></a>
+<span class="sourceLineNo">203</span>     *  read again until fire() is called again.<a name="line.203"></a>
+<span class="sourceLineNo">204</span>     *<a name="line.204"></a>
+<span class="sourceLineNo">205</span>     *  &lt;p&gt;The initial default value of this parameter $CWD, which<a name="line.205"></a>
+<span class="sourceLineNo">206</span>     *  corresponds with the value of the Java virtual machine<a name="line.206"></a>
+<span class="sourceLineNo">207</span>     *  user.dir property which is the user's current working<a name="line.207"></a>
+<span class="sourceLineNo">208</span>     *  directory.  Note that if we are running inside a menu launched<a name="line.208"></a>
+<span class="sourceLineNo">209</span>     *  application, then ptolemy.actor.gui.jnlp.MenuApplication will<a name="line.209"></a>
+<span class="sourceLineNo">210</span>     *  change user.dir to be the value of user.home, which is the<a name="line.210"></a>
+<span class="sourceLineNo">211</span>     *  name of the user's home directory.&lt;/p&gt;<a name="line.211"></a>
+<span class="sourceLineNo">212</span>     *<a name="line.212"></a>
+<span class="sourceLineNo">213</span>     *  &lt;p&gt;If the value of this parameter is the empty string,<a name="line.213"></a>
+<span class="sourceLineNo">214</span>     *  then the working directory of the subprocess with be<a name="line.214"></a>
+<span class="sourceLineNo">215</span>     *  inherited from the working directory of the parent<a name="line.215"></a>
+<span class="sourceLineNo">216</span>     *  process.  Typically, this is the value of the<a name="line.216"></a>
+<span class="sourceLineNo">217</span>     *  user.dir property.&lt;/p&gt;<a name="line.217"></a>
+<span class="sourceLineNo">218</span>     */<a name="line.218"></a>
+<span class="sourceLineNo">219</span>    public FileParameter directory;<a name="line.219"></a>
+<span class="sourceLineNo">220</span><a name="line.220"></a>
+<span class="sourceLineNo">221</span>    /** The environment in which to execute the command.<a name="line.221"></a>
+<span class="sourceLineNo">222</span>     *  This parameter is read each time the subprocess is started<a name="line.222"></a>
+<span class="sourceLineNo">223</span>     *  in fire(). Once the subprocess is running, this parameter is not<a name="line.223"></a>
+<span class="sourceLineNo">224</span>     *  read again until fire() is called again.<a name="line.224"></a>
+<span class="sourceLineNo">225</span>     *<a name="line.225"></a>
+<span class="sourceLineNo">226</span>     *  &lt;p&gt;This parameter is an array of records that name an environment<a name="line.226"></a>
+<span class="sourceLineNo">227</span>     *  variable and the value for the value.  The format is:&lt;/p&gt;<a name="line.227"></a>
+<span class="sourceLineNo">228</span>     *  &lt;pre&gt;<a name="line.228"></a>
+<span class="sourceLineNo">229</span>     *  {{name = "&lt;i&gt;NAME1&lt;/i&gt;", value = "&lt;i&gt;value1&lt;/i&gt;"}...}<a name="line.229"></a>
+<span class="sourceLineNo">230</span>     *  &lt;/pre&gt;<a name="line.230"></a>
+<span class="sourceLineNo">231</span>     *  Where &lt;code&gt;&lt;i&gt;NAME1&lt;/i&gt;&lt;/code&gt; is the name of the environment<a name="line.231"></a>
+<span class="sourceLineNo">232</span>     *  variable, and &lt;code&gt;&lt;i&gt;value1&lt;/i&gt;&lt;/code&gt; is the value.<a name="line.232"></a>
+<span class="sourceLineNo">233</span>     *  &lt;p&gt;For example &lt;code&gt;{{name = "PTII", value = "c:/ptII"}}&lt;/code&gt;<a name="line.233"></a>
+<span class="sourceLineNo">234</span>     *  would set the value of the &lt;code&gt;PTII&lt;/code&gt; to &lt;code&gt;c:/ptII&lt;/code&gt;.&lt;/p&gt;<a name="line.234"></a>
+<span class="sourceLineNo">235</span>     *<a name="line.235"></a>
+<span class="sourceLineNo">236</span>     *  &lt;p&gt;If the initial value of the parameter is &lt;code&gt;{{name="",<a name="line.236"></a>
+<span class="sourceLineNo">237</span>     *  value = ""}}&lt;/code&gt;, then the environment from the calling or parent<a name="line.237"></a>
+<span class="sourceLineNo">238</span>     *  process is used in the new command.&lt;/p&gt;<a name="line.238"></a>
+<span class="sourceLineNo">239</span>     *<a name="line.239"></a>
+<span class="sourceLineNo">240</span>     *  &lt;p&gt;Note that if this parameter sets any environment variable,<a name="line.240"></a>
+<span class="sourceLineNo">241</span>     *  then under Windows the other environment variables in the calling<a name="line.241"></a>
+<span class="sourceLineNo">242</span>     *  or parent process might not be passed to the subprocess.  This<a name="line.242"></a>
+<span class="sourceLineNo">243</span>     *  behaviour could be platform or JVM dependent. When in doubt,<a name="line.243"></a>
+<span class="sourceLineNo">244</span>     *  try setting the &lt;i&gt;command&lt;/i&gt; value to "env" to print out the<a name="line.244"></a>
+<span class="sourceLineNo">245</span>     *  environment.&lt;/p&gt;<a name="line.245"></a>
+<span class="sourceLineNo">246</span>     */<a name="line.246"></a>
+<span class="sourceLineNo">247</span>    public Parameter environment;<a name="line.247"></a>
+<span class="sourceLineNo">248</span><a name="line.248"></a>
+<span class="sourceLineNo">249</span>    /** Data that is generated by the subprocess on its standard<a name="line.249"></a>
+<span class="sourceLineNo">250</span>     *  error.  While the process is running, any error data generated<a name="line.250"></a>
+<span class="sourceLineNo">251</span>     *  by the subprocess is stored until the subprocess exits and<a name="line.251"></a>
+<span class="sourceLineNo">252</span>     *  then the stored error data is sent to the &lt;i&gt;error&lt;/i&gt; port.<a name="line.252"></a>
+<span class="sourceLineNo">253</span>     *  If the subprocess generates no data on standard error, then<a name="line.253"></a>
+<span class="sourceLineNo">254</span>     *  the empty string (a string of length zero) is generated.<a name="line.254"></a>
+<span class="sourceLineNo">255</span>     *  This port is an output port of type String.<a name="line.255"></a>
+<span class="sourceLineNo">256</span>     */<a name="line.256"></a>
+<span class="sourceLineNo">257</span>    public TypedIOPort error;<a name="line.257"></a>
+<span class="sourceLineNo">258</span><a name="line.258"></a>
+<span class="sourceLineNo">259</span>    /** The exit code of the subprocess. Usually, a non-zero exit code<a name="line.259"></a>
+<span class="sourceLineNo">260</span>     *  indicate that the subprocess had a problem.  This port is an output<a name="line.260"></a>
+<span class="sourceLineNo">261</span>     *  port of type int.<a name="line.261"></a>
+<span class="sourceLineNo">262</span>     */<a name="line.262"></a>
+<span class="sourceLineNo">263</span>    public TypedIOPort exitCode;<a name="line.263"></a>
+<span class="sourceLineNo">264</span><a name="line.264"></a>
+<span class="sourceLineNo">265</span>    /** If true, ignore IOException errors from the subprocess.<a name="line.265"></a>
+<span class="sourceLineNo">266</span>     *  The initial default value is false, indicating that<a name="line.266"></a>
+<span class="sourceLineNo">267</span>     *  read errors are not ignored.<a name="line.267"></a>
+<span class="sourceLineNo">268</span>     */<a name="line.268"></a>
+<span class="sourceLineNo">269</span>    public Parameter ignoreIOExceptionReadErrors;<a name="line.269"></a>
+<span class="sourceLineNo">270</span><a name="line.270"></a>
+<span class="sourceLineNo">271</span>    /** Strings to pass to the standard input of the subprocess.<a name="line.271"></a>
+<span class="sourceLineNo">272</span>     *  Note that a newline is not appended to the string.  If you<a name="line.272"></a>
+<span class="sourceLineNo">273</span>     *  require a newline, add one using the AddSubtract actor.<a name="line.273"></a>
+<span class="sourceLineNo">274</span>     *  This port is an input port of type String.<a name="line.274"></a>
+<span class="sourceLineNo">275</span>     */<a name="line.275"></a>
+<span class="sourceLineNo">276</span>    public TypedIOPort input;<a name="line.276"></a>
+<span class="sourceLineNo">277</span><a name="line.277"></a>
+<span class="sourceLineNo">278</span>    /** Data that is generated by the subprocess on standard out.<a name="line.278"></a>
+<span class="sourceLineNo">279</span>     *  While the process is running, any output data generated<a name="line.279"></a>
+<span class="sourceLineNo">280</span>     *  by the subprocess is stored until the subprocess exits and<a name="line.280"></a>
+<span class="sourceLineNo">281</span>     *  then the stored output data is sent to the &lt;i&gt;output&lt;/i&gt; port.<a name="line.281"></a>
+<span class="sourceLineNo">282</span>     *  If the subprocess generates no data on standard out, then<a name="line.282"></a>
+<span class="sourceLineNo">283</span>     *  the empty string (a string of length zero) is generated.<a name="line.283"></a>
+<span class="sourceLineNo">284</span>     *  This port is an output port of type String.<a name="line.284"></a>
+<span class="sourceLineNo">285</span>     */<a name="line.285"></a>
+<span class="sourceLineNo">286</span>    // NOTE: output port is inherited from parent class.<a name="line.286"></a>
+<span class="sourceLineNo">287</span>    //public TypedIOPort output;<a name="line.287"></a>
+<span class="sourceLineNo">288</span><a name="line.288"></a>
+<span class="sourceLineNo">289</span>    /** If true, then prepend the platform dependent shell command<a name="line.289"></a>
+<span class="sourceLineNo">290</span>     *  to the parsed value of the command parameter.<a name="line.290"></a>
+<span class="sourceLineNo">291</span>     *  By setting this argument to true, it is possible to invoke<a name="line.291"></a>
+<span class="sourceLineNo">292</span>     *  commands in a platform neutral method.<a name="line.292"></a>
+<span class="sourceLineNo">293</span>     *  &lt;p&gt;Under Windows NT or XP, the arguments "cmd.exe" and "/C"<a name="line.293"></a>
+<span class="sourceLineNo">294</span>     *  are prepended.  Under Windows 95, the arguments "command.com"<a name="line.294"></a>
+<span class="sourceLineNo">295</span>     *  and "/C" are prepended.  Under all other platforms, the<a name="line.295"></a>
+<span class="sourceLineNo">296</span>     *  arguments "/bin/sh" and "-c" are prepended.<a name="line.296"></a>
+<span class="sourceLineNo">297</span>     *  &lt;p&gt;By prepending sh or cmd, then this actor can use the<a name="line.297"></a>
+<span class="sourceLineNo">298</span>     *  file redirection operations.<a name="line.298"></a>
+<span class="sourceLineNo">299</span>     *  &lt;p&gt;The default value of this parameter is a boolean of value<a name="line.299"></a>
+<span class="sourceLineNo">300</span>     *  false, which allows the user to arbitrarily invoke /bin/sh<a name="line.300"></a>
+<span class="sourceLineNo">301</span>     *  scripts on all platforms.<a name="line.301"></a>
+<span class="sourceLineNo">302</span>     */<a name="line.302"></a>
+<span class="sourceLineNo">303</span>    public Parameter prependPlatformDependentShellCommand;<a name="line.303"></a>
+<span class="sourceLineNo">304</span><a name="line.304"></a>
+<span class="sourceLineNo">305</span>    /** If true, then throw an exception if the subprocess returns<a name="line.305"></a>
+<span class="sourceLineNo">306</span>     *  non-zero.<a name="line.306"></a>
+<span class="sourceLineNo">307</span>     *  The default is a boolean of value true.<a name="line.307"></a>
+<span class="sourceLineNo">308</span>     *  This parameter is ignored if &lt;i&gt;waitForProcess&lt;/i&gt; is false.<a name="line.308"></a>
+<span class="sourceLineNo">309</span>     */<a name="line.309"></a>
+<span class="sourceLineNo">310</span>    public Parameter throwExceptionOnNonZeroReturn;<a name="line.310"></a>
+<span class="sourceLineNo">311</span><a name="line.311"></a>
+<span class="sourceLineNo">312</span>    /** If true, then actor will wait until subprocess completes. The<a name="line.312"></a>
+<span class="sourceLineNo">313</span>     *  default is a boolean of value true.<a name="line.313"></a>
+<span class="sourceLineNo">314</span>     */<a name="line.314"></a>
+<span class="sourceLineNo">315</span>    public Parameter waitForProcess;<a name="line.315"></a>
+<span class="sourceLineNo">316</span><a name="line.316"></a>
+<span class="sourceLineNo">317</span>    ///////////////////////////////////////////////////////////////////<a name="line.317"></a>
+<span class="sourceLineNo">318</span>    ////                         public methods                    ////<a name="line.318"></a>
+<span class="sourceLineNo">319</span><a name="line.319"></a>
+<span class="sourceLineNo">320</span>    /** Invoke a subprocess, read the &lt;i&gt;input&lt;/i&gt; data (if any) and<a name="line.320"></a>
+<span class="sourceLineNo">321</span>     *  wait for the subprocess to terminate before sending any output<a name="line.321"></a>
+<span class="sourceLineNo">322</span>     *  or error data to the appropriate ports.<a name="line.322"></a>
+<span class="sourceLineNo">323</span>     *<a name="line.323"></a>
+<span class="sourceLineNo">324</span>     *  &lt;p&gt;If there is no data on the &lt;i&gt;input&lt;/i&gt; port, then the<a name="line.324"></a>
+<span class="sourceLineNo">325</span>     *  subprocess executes without reading any input. If there is no<a name="line.325"></a>
+<span class="sourceLineNo">326</span>     *  output or error data from the subprocess, then the empty<a name="line.326"></a>
+<span class="sourceLineNo">327</span>     *  string is sent to the appropriate port(s).&lt;/p&gt;<a name="line.327"></a>
+<span class="sourceLineNo">328</span>     *<a name="line.328"></a>
+<span class="sourceLineNo">329</span>     *  @exception IllegalActionException If the subprocess cannot be<a name="line.329"></a>
+<span class="sourceLineNo">330</span>     *  started, if the input of the subprocess cannot be written,<a name="line.330"></a>
+<span class="sourceLineNo">331</span>     *  if the subprocess gets interrupted, or if the return value<a name="line.331"></a>
+<span class="sourceLineNo">332</span>     *  of the process is non-zero.<a name="line.332"></a>
+<span class="sourceLineNo">333</span>     */<a name="line.333"></a>
+<span class="sourceLineNo">334</span>    @Override<a name="line.334"></a>
+<span class="sourceLineNo">335</span>    public void fire() throws IllegalActionException {<a name="line.335"></a>
+<span class="sourceLineNo">336</span>        // NOTE: This used to be synchronized, but this causes a<a name="line.336"></a>
+<span class="sourceLineNo">337</span>        // deadlock with the UI when parameters are edited while<a name="line.337"></a>
+<span class="sourceLineNo">338</span>        // model is running.<a name="line.338"></a>
+<span class="sourceLineNo">339</span>        super.fire();<a name="line.339"></a>
+<span class="sourceLineNo">340</span><a name="line.340"></a>
+<span class="sourceLineNo">341</span>        String line = null;<a name="line.341"></a>
+<span class="sourceLineNo">342</span><a name="line.342"></a>
+<span class="sourceLineNo">343</span>        _exec();<a name="line.343"></a>
+<span class="sourceLineNo">344</span><a name="line.344"></a>
+<span class="sourceLineNo">345</span>        if (input.numberOfSources() &gt; 0 &amp;&amp; input.hasToken(0)) {<a name="line.345"></a>
+<span class="sourceLineNo">346</span>            if ((line = ((StringToken) input.get(0)).stringValue()) != null) {<a name="line.346"></a>
+<span class="sourceLineNo">347</span>                if (_debugging) {<a name="line.347"></a>
+<span class="sourceLineNo">348</span>                    _debug("Exec: Input: '" + line + "'");<a name="line.348"></a>
+<span class="sourceLineNo">349</span>                }<a name="line.349"></a>
+<span class="sourceLineNo">350</span><a name="line.350"></a>
+<span class="sourceLineNo">351</span>                if (_inputBufferedWriter != null) {<a name="line.351"></a>
+<span class="sourceLineNo">352</span>                    try {<a name="line.352"></a>
+<span class="sourceLineNo">353</span>                        _inputBufferedWriter.write(line);<a name="line.353"></a>
+<span class="sourceLineNo">354</span>                        _inputBufferedWriter.flush();<a name="line.354"></a>
+<span class="sourceLineNo">355</span>                    } catch (IOException ex) {<a name="line.355"></a>
+<span class="sourceLineNo">356</span>                        throw new IllegalActionException(this, ex,<a name="line.356"></a>
+<span class="sourceLineNo">357</span>                                "Problem writing input '" + command + "'");<a name="line.357"></a>
+<span class="sourceLineNo">358</span>                    }<a name="line.358"></a>
+<span class="sourceLineNo">359</span>                }<a name="line.359"></a>
+<span class="sourceLineNo">360</span>            }<a name="line.360"></a>
+<span class="sourceLineNo">361</span>        }<a name="line.361"></a>
+<span class="sourceLineNo">362</span><a name="line.362"></a>
+<span class="sourceLineNo">363</span>        boolean alreadySentOutput = false;<a name="line.363"></a>
+<span class="sourceLineNo">364</span><a name="line.364"></a>
+<span class="sourceLineNo">365</span>        try {<a name="line.365"></a>
+<span class="sourceLineNo">366</span><a name="line.366"></a>
+<span class="sourceLineNo">367</span>            // Close the stdin of the subprocess.<a name="line.367"></a>
+<span class="sourceLineNo">368</span>            _process.getOutputStream().close();<a name="line.368"></a>
+<span class="sourceLineNo">369</span><a name="line.369"></a>
+<span class="sourceLineNo">370</span>            boolean waitForProcessValue = ((BooleanToken) waitForProcess<a name="line.370"></a>
+<span class="sourceLineNo">371</span>                    .getToken()).booleanValue();<a name="line.371"></a>
+<span class="sourceLineNo">372</span><a name="line.372"></a>
+<span class="sourceLineNo">373</span>            if (waitForProcessValue) {<a name="line.373"></a>
+<span class="sourceLineNo">374</span>                // The next line waits for the subprocess to finish.<a name="line.374"></a>
+<span class="sourceLineNo">375</span>                int processReturnCode = _process.waitFor();<a name="line.375"></a>
+<span class="sourceLineNo">376</span><a name="line.376"></a>
+<span class="sourceLineNo">377</span>                if (processReturnCode != 0) {<a name="line.377"></a>
+<span class="sourceLineNo">378</span>                    // We could have a parameter that would enable<a name="line.378"></a>
+<span class="sourceLineNo">379</span>                    // or disable this.<a name="line.379"></a>
+<span class="sourceLineNo">380</span>                    String outputString = "";<a name="line.380"></a>
+<span class="sourceLineNo">381</span>                    String errorString = "";<a name="line.381"></a>
+<span class="sourceLineNo">382</span><a name="line.382"></a>
+<span class="sourceLineNo">383</span>                    try {<a name="line.383"></a>
+<span class="sourceLineNo">384</span>                        errorString = _errorGobbler.getAndReset();<a name="line.384"></a>
+<span class="sourceLineNo">385</span>                    } catch (Exception ex) {<a name="line.385"></a>
+<span class="sourceLineNo">386</span>                        errorString = ex.toString();<a name="line.386"></a>
+<span class="sourceLineNo">387</span>                    }<a name="line.387"></a>
+<span class="sourceLineNo">388</span><a name="line.388"></a>
+<span class="sourceLineNo">389</span>                    try {<a name="line.389"></a>
+<span class="sourceLineNo">390</span>                        outputString = _outputGobbler.getAndReset();<a name="line.390"></a>
+<span class="sourceLineNo">391</span>                    } catch (Exception ex) {<a name="line.391"></a>
+<span class="sourceLineNo">392</span>                        outputString = ex.toString();<a name="line.392"></a>
+<span class="sourceLineNo">393</span>                    }<a name="line.393"></a>
+<span class="sourceLineNo">394</span><a name="line.394"></a>
+<span class="sourceLineNo">395</span>                    boolean throwExceptionOnNonZeroReturnValue = ((BooleanToken) throwExceptionOnNonZeroReturn<a name="line.395"></a>
+<span class="sourceLineNo">396</span>                            .getToken()).booleanValue();<a name="line.396"></a>
+<span class="sourceLineNo">397</span><a name="line.397"></a>
+<span class="sourceLineNo">398</span>                    if (throwExceptionOnNonZeroReturnValue) {<a name="line.398"></a>
+<span class="sourceLineNo">399</span>                        throw new IllegalActionException(this,<a name="line.399"></a>
+<span class="sourceLineNo">400</span>                                "Executing command \""<a name="line.400"></a>
+<span class="sourceLineNo">401</span>                                        + ((StringToken) command.getToken())<a name="line.401"></a>
+<span class="sourceLineNo">402</span>                                                .stringValue()<a name="line.402"></a>
+<span class="sourceLineNo">403</span>                                        + "\" returned a non-zero return value of "<a name="line.403"></a>
+<span class="sourceLineNo">404</span>                                        + processReturnCode<a name="line.404"></a>
+<span class="sourceLineNo">405</span>                                        + ".\nThe last input was: " + line<a name="line.405"></a>
+<span class="sourceLineNo">406</span>                                        + ".\nThe standard output was: "<a name="line.406"></a>
+<span class="sourceLineNo">407</span>                                        + outputString<a name="line.407"></a>
+<span class="sourceLineNo">408</span>                                        + "\nThe error output was: "<a name="line.408"></a>
+<span class="sourceLineNo">409</span>                                        + errorString);<a name="line.409"></a>
+<span class="sourceLineNo">410</span>                    } else {<a name="line.410"></a>
+<span class="sourceLineNo">411</span>                        error.send(0, new StringToken(errorString));<a name="line.411"></a>
+<span class="sourceLineNo">412</span>                        output.send(0, new StringToken(outputString));<a name="line.412"></a>
+<span class="sourceLineNo">413</span>                        alreadySentOutput = true;<a name="line.413"></a>
+<span class="sourceLineNo">414</span>                    }<a name="line.414"></a>
+<span class="sourceLineNo">415</span>                }<a name="line.415"></a>
+<span class="sourceLineNo">416</span><a name="line.416"></a>
+<span class="sourceLineNo">417</span>                exitCode.send(0, new IntToken(processReturnCode));<a name="line.417"></a>
+<span class="sourceLineNo">418</span><a name="line.418"></a>
+<span class="sourceLineNo">419</span>            }<a name="line.419"></a>
+<span class="sourceLineNo">420</span>        } catch (InterruptedException interrupted) {<a name="line.420"></a>
+<span class="sourceLineNo">421</span>            throw new InternalErrorException(this, interrupted,<a name="line.421"></a>
+<span class="sourceLineNo">422</span>                    "_process.waitFor() was interrupted");<a name="line.422"></a>
+<span class="sourceLineNo">423</span>        } catch (IOException io) {<a name="line.423"></a>
+<span class="sourceLineNo">424</span>            throw new IllegalActionException(this, io,<a name="line.424"></a>
+<span class="sourceLineNo">425</span>                    "Closing stdin of the subprocess threw an IOException.");<a name="line.425"></a>
+<span class="sourceLineNo">426</span><a name="line.426"></a>
+<span class="sourceLineNo">427</span>        }<a name="line.427"></a>
+<span class="sourceLineNo">428</span><a name="line.428"></a>
+<span class="sourceLineNo">429</span>        // if we sent output when the return value was non-zero, do not send<a name="line.429"></a>
+<span class="sourceLineNo">430</span>        // additional output.<a name="line.430"></a>
+<span class="sourceLineNo">431</span>        // see http://bugzilla.ecoinformatics.org/show_bug.cgi?id=4326<a name="line.431"></a>
+<span class="sourceLineNo">432</span>        if (!alreadySentOutput) {<a name="line.432"></a>
+<span class="sourceLineNo">433</span>            String outputString = _outputGobbler.getAndReset();<a name="line.433"></a>
+<span class="sourceLineNo">434</span>            String errorString = _errorGobbler.getAndReset();<a name="line.434"></a>
+<span class="sourceLineNo">435</span><a name="line.435"></a>
+<span class="sourceLineNo">436</span>            if (_debugging) {<a name="line.436"></a>
+<span class="sourceLineNo">437</span>                _debug("Exec: Error: '" + errorString + "'");<a name="line.437"></a>
+<span class="sourceLineNo">438</span>                _debug("Exec: Output: '" + outputString + "'");<a name="line.438"></a>
+<span class="sourceLineNo">439</span>            }<a name="line.439"></a>
+<span class="sourceLineNo">440</span><a name="line.440"></a>
+<span class="sourceLineNo">441</span>            // We could have a parameter that if it was set<a name="line.441"></a>
+<span class="sourceLineNo">442</span>            // we would throw an exception if there was any error data.<a name="line.442"></a>
+<span class="sourceLineNo">443</span>            error.send(0, new StringToken(errorString));<a name="line.443"></a>
+<span class="sourceLineNo">444</span>            output.send(0, new StringToken(outputString));<a name="line.444"></a>
+<span class="sourceLineNo">445</span>        }<a name="line.445"></a>
+<span class="sourceLineNo">446</span>    }<a name="line.446"></a>
+<span class="sourceLineNo">447</span><a name="line.447"></a>
+<span class="sourceLineNo">448</span>    /** Override the base class and terminate the process.<a name="line.448"></a>
+<span class="sourceLineNo">449</span>     */<a name="line.449"></a>
+<span class="sourceLineNo">450</span>    @Override<a name="line.450"></a>
+<span class="sourceLineNo">451</span>    public void stop() {<a name="line.451"></a>
+<span class="sourceLineNo">452</span>        // NOTE: This method used to be synchronized, as<a name="line.452"></a>
+<span class="sourceLineNo">453</span>        // was the fire() method, but this caused deadlocks.  EAL<a name="line.453"></a>
+<span class="sourceLineNo">454</span>        super.stop();<a name="line.454"></a>
+<span class="sourceLineNo">455</span>        _terminateProcess();<a name="line.455"></a>
+<span class="sourceLineNo">456</span><a name="line.456"></a>
+<span class="sourceLineNo">457</span>    }<a name="line.457"></a>
+<span class="sourceLineNo">458</span><a name="line.458"></a>
+<span class="sourceLineNo">459</span>    /** Override the base class to stop waiting for input data.<a name="line.459"></a>
+<span class="sourceLineNo">460</span>     */<a name="line.460"></a>
+<span class="sourceLineNo">461</span>    @Override<a name="line.461"></a>
+<span class="sourceLineNo">462</span>    public void stopFire() {<a name="line.462"></a>
+<span class="sourceLineNo">463</span>        // NOTE: This method used to be synchronized, as<a name="line.463"></a>
+<span class="sourceLineNo">464</span>        // was the fire() method, but this caused deadlocks.  EAL<a name="line.464"></a>
+<span class="sourceLineNo">465</span>        super.stopFire();<a name="line.465"></a>
+<span class="sourceLineNo">466</span>        _stopFireRequested = true;<a name="line.466"></a>
+<span class="sourceLineNo">467</span>        _terminateProcess();<a name="line.467"></a>
+<span class="sourceLineNo">468</span>    }<a name="line.468"></a>
+<span class="sourceLineNo">469</span><a name="line.469"></a>
+<span class="sourceLineNo">470</span>    /** Terminate the subprocess.<a name="line.470"></a>
+<span class="sourceLineNo">471</span>     *  This method is invoked exactly once per execution<a name="line.471"></a>
+<span class="sourceLineNo">472</span>     *  of an application.  None of the other action methods should be<a name="line.472"></a>
+<span class="sourceLineNo">473</span>     *  be invoked after it.<a name="line.473"></a>
+<span class="sourceLineNo">474</span>     *  @exception IllegalActionException Not thrown in this base class.<a name="line.474"></a>
+<span class="sourceLineNo">475</span>     */<a name="line.475"></a>
+<span class="sourceLineNo">476</span>    @Override<a name="line.476"></a>
+<span class="sourceLineNo">477</span>    public void wrapup() throws IllegalActionException {<a name="line.477"></a>
+<span class="sourceLineNo">478</span>        _terminateProcess();<a name="line.478"></a>
+<span class="sourceLineNo">479</span>    }<a name="line.479"></a>
+<span class="sourceLineNo">480</span><a name="line.480"></a>
+<span class="sourceLineNo">481</span>    ///////////////////////////////////////////////////////////////////<a name="line.481"></a>
+<span class="sourceLineNo">482</span>    ////                         private methods                   ////<a name="line.482"></a>
+<span class="sourceLineNo">483</span>    // Execute a command, set _process to point to the subprocess<a name="line.483"></a>
+<span class="sourceLineNo">484</span>    // and set up _errorGobbler and _outputGobbler to read data.<a name="line.484"></a>
+<span class="sourceLineNo">485</span>    private void _exec() throws IllegalActionException {<a name="line.485"></a>
+<span class="sourceLineNo">486</span>        // FIXME: Exec, KeyStoreActor, JTextAreaExec have duplicate code.<a name="line.486"></a>
+<span class="sourceLineNo">487</span>        // This is a private method because fire() was getting too long.<a name="line.487"></a>
+<span class="sourceLineNo">488</span>        File directoryAsFile = null;<a name="line.488"></a>
+<span class="sourceLineNo">489</span>        try {<a name="line.489"></a>
+<span class="sourceLineNo">490</span>            _stopFireRequested = false;<a name="line.490"></a>
+<span class="sourceLineNo">491</span><a name="line.491"></a>
+<span class="sourceLineNo">492</span>            if (_process != null) {<a name="line.492"></a>
+<span class="sourceLineNo">493</span>                // Note that we assume that _process is null upon entry<a name="line.493"></a>
+<span class="sourceLineNo">494</span>                // to this method, but we check again here just to be sure.<a name="line.494"></a>
+<span class="sourceLineNo">495</span>                _terminateProcess();<a name="line.495"></a>
+<span class="sourceLineNo">496</span>            }<a name="line.496"></a>
+<span class="sourceLineNo">497</span><a name="line.497"></a>
+<span class="sourceLineNo">498</span>            Runtime runtime = Runtime.getRuntime();<a name="line.498"></a>
+<span class="sourceLineNo">499</span><a name="line.499"></a>
+<span class="sourceLineNo">500</span>            command.update();<a name="line.500"></a>
+<span class="sourceLineNo">501</span><a name="line.501"></a>
+<span class="sourceLineNo">502</span>            List&lt;String&gt; commandList = new LinkedList&lt;String&gt;();<a name="line.502"></a>
+<span class="sourceLineNo">503</span><a name="line.503"></a>
+<span class="sourceLineNo">504</span>            boolean prependPlatformDependentShellCommandValue = ((BooleanToken) prependPlatformDependentShellCommand<a name="line.504"></a>
+<span class="sourceLineNo">505</span>                    .getToken()).booleanValue();<a name="line.505"></a>
+<span class="sourceLineNo">506</span>            if (prependPlatformDependentShellCommandValue) {<a name="line.506"></a>
+<span class="sourceLineNo">507</span>                commandList = _getCommandList();<a name="line.507"></a>
+<span class="sourceLineNo">508</span>            }<a name="line.508"></a>
+<span class="sourceLineNo">509</span><a name="line.509"></a>
+<span class="sourceLineNo">510</span>            // tokenizeForExec() handles substrings that start and end<a name="line.510"></a>
+<span class="sourceLineNo">511</span>            // with a double quote so the substring is considered to<a name="line.511"></a>
+<span class="sourceLineNo">512</span>            // be a single token and are returned as a single array<a name="line.512"></a>
+<span class="sourceLineNo">513</span>            // element.<a name="line.513"></a>
+<span class="sourceLineNo">514</span>            // FIXME: tokenizeForExec should return a List&lt;String&gt;<a name="line.514"></a>
+<span class="sourceLineNo">515</span>            String[] commandArray = StringUtilities.tokenizeForExec(<a name="line.515"></a>
+<span class="sourceLineNo">516</span>                    ((StringToken) command.getToken()).stringValue());<a name="line.516"></a>
+<span class="sourceLineNo">517</span>            commandList.addAll(Arrays.asList(commandArray));<a name="line.517"></a>
+<span class="sourceLineNo">518</span><a name="line.518"></a>
+<span class="sourceLineNo">519</span>            // If the directory parameter is the empty string,<a name="line.519"></a>
+<span class="sourceLineNo">520</span>            // then directoryAsFile will be null.<a name="line.520"></a>
+<span class="sourceLineNo">521</span>            // If we call java.lang.Runtime.exec() with a null<a name="line.521"></a>
+<span class="sourceLineNo">522</span>            // value for the directory, then the working directory<a name="line.522"></a>
+<span class="sourceLineNo">523</span>            // of the subprocess will be inherited from the current process.<a name="line.523"></a>
+<span class="sourceLineNo">524</span>            // See https://projects.ecoinformatics.org/ecoinfo/issues/6676<a name="line.524"></a>
+<span class="sourceLineNo">525</span>            directoryAsFile = directory.asFile();<a name="line.525"></a>
+<span class="sourceLineNo">526</span>            if (directoryAsFile != null &amp;&amp; !directoryAsFile.isDirectory()) {<a name="line.526"></a>
+<span class="sourceLineNo">527</span>                throw new IllegalActionException(<a name="line.527"></a>
+<span class="sourceLineNo">528</span>                        "No such directory: " + directoryAsFile);<a name="line.528"></a>
+<span class="sourceLineNo">529</span>            }<a name="line.529"></a>
+<span class="sourceLineNo">530</span><a name="line.530"></a>
+<span class="sourceLineNo">531</span>            if (_debugging) {<a name="line.531"></a>
+<span class="sourceLineNo">532</span>                StringBuffer commands = new StringBuffer();<a name="line.532"></a>
+<span class="sourceLineNo">533</span>                for (String aCommand : commandList) {<a name="line.533"></a>
+<span class="sourceLineNo">534</span>                    commands.append(aCommand + " ");<a name="line.534"></a>
+<span class="sourceLineNo">535</span>                }<a name="line.535"></a>
+<span class="sourceLineNo">536</span>                _debug("About to exec \"" + commands + "\"\n in \""<a name="line.536"></a>
+<span class="sourceLineNo">537</span>                        + (directoryAsFile == null<a name="line.537"></a>
+<span class="sourceLineNo">538</span>                                ? "the working directory of the parent process"<a name="line.538"></a>
+<span class="sourceLineNo">539</span>                                : directoryAsFile)<a name="line.539"></a>
+<span class="sourceLineNo">540</span>                        + "\"\n with environment:");<a name="line.540"></a>
+<span class="sourceLineNo">541</span>            }<a name="line.541"></a>
+<span class="sourceLineNo">542</span><a name="line.542"></a>
+<span class="sourceLineNo">543</span>            // Process the environment parameter.<a name="line.543"></a>
+<span class="sourceLineNo">544</span>            ArrayToken environmentTokens = (ArrayToken) environment.getToken();<a name="line.544"></a>
+<span class="sourceLineNo">545</span><a name="line.545"></a>
+<span class="sourceLineNo">546</span>            if (_debugging) {<a name="line.546"></a>
+<span class="sourceLineNo">547</span>                _debug("environmentTokens: " + environmentTokens);<a name="line.547"></a>
+<span class="sourceLineNo">548</span>            }<a name="line.548"></a>
+<span class="sourceLineNo">549</span><a name="line.549"></a>
+<span class="sourceLineNo">550</span>            String[] environmentArray = null;<a name="line.550"></a>
+<span class="sourceLineNo">551</span><a name="line.551"></a>
+<span class="sourceLineNo">552</span>            if (environmentTokens != null &amp;&amp; environmentTokens.length() &gt;= 1) {<a name="line.552"></a>
+<span class="sourceLineNo">553</span>                environmentArray = new String[environmentTokens.length()];<a name="line.553"></a>
+<span class="sourceLineNo">554</span><a name="line.554"></a>
+<span class="sourceLineNo">555</span>                for (int i = 0; i &lt; environmentTokens.length(); i++) {<a name="line.555"></a>
+<span class="sourceLineNo">556</span>                    StringToken nameToken = (StringToken) ((RecordToken) environmentTokens<a name="line.556"></a>
+<span class="sourceLineNo">557</span>                            .getElement(i)).get("name");<a name="line.557"></a>
+<span class="sourceLineNo">558</span>                    StringToken valueToken = (StringToken) ((RecordToken) environmentTokens<a name="line.558"></a>
+<span class="sourceLineNo">559</span>                            .getElement(i)).get("value");<a name="line.559"></a>
+<span class="sourceLineNo">560</span>                    environmentArray[i] = nameToken.stringValue() + "="<a name="line.560"></a>
+<span class="sourceLineNo">561</span>                            + valueToken.stringValue();<a name="line.561"></a>
+<span class="sourceLineNo">562</span><a name="line.562"></a>
+<span class="sourceLineNo">563</span>                    if (_debugging) {<a name="line.563"></a>
+<span class="sourceLineNo">564</span>                        _debug("  " + i + ". \"" + environmentArray[i] + "\"");<a name="line.564"></a>
+<span class="sourceLineNo">565</span>                    }<a name="line.565"></a>
+<span class="sourceLineNo">566</span><a name="line.566"></a>
+<span class="sourceLineNo">567</span>                    if (i == 0 &amp;&amp; environmentTokens.length() == 1<a name="line.567"></a>
+<span class="sourceLineNo">568</span>                            &amp;&amp; environmentArray[0].equals("=")) {<a name="line.568"></a>
+<span class="sourceLineNo">569</span>                        if (_debugging) {<a name="line.569"></a>
+<span class="sourceLineNo">570</span>                            _debug("There is only one element, "<a name="line.570"></a>
+<span class="sourceLineNo">571</span>                                    + "it is a string of length 0,\n so we "<a name="line.571"></a>
+<span class="sourceLineNo">572</span>                                    + "pass Runtime.exec() an null "<a name="line.572"></a>
+<span class="sourceLineNo">573</span>                                    + "environment so that we use\n "<a name="line.573"></a>
+<span class="sourceLineNo">574</span>                                    + "the default environment");<a name="line.574"></a>
+<span class="sourceLineNo">575</span>                        }<a name="line.575"></a>
+<span class="sourceLineNo">576</span><a name="line.576"></a>
+<span class="sourceLineNo">577</span>                        environmentArray = null;<a name="line.577"></a>
+<span class="sourceLineNo">578</span>                    }<a name="line.578"></a>
+<span class="sourceLineNo">579</span>                }<a name="line.579"></a>
+<span class="sourceLineNo">580</span>            }<a name="line.580"></a>
+<span class="sourceLineNo">581</span><a name="line.581"></a>
+<span class="sourceLineNo">582</span>            commandArray = commandList.toArray(new String[commandList.size()]);<a name="line.582"></a>
+<span class="sourceLineNo">583</span>            _process = runtime.exec(commandArray, environmentArray,<a name="line.583"></a>
+<span class="sourceLineNo">584</span>                    directoryAsFile);<a name="line.584"></a>
+<span class="sourceLineNo">585</span><a name="line.585"></a>
+<span class="sourceLineNo">586</span>            // Create two threads to read from the subprocess.<a name="line.586"></a>
+<span class="sourceLineNo">587</span>            _outputGobbler = new _StreamReaderThread(_process.getInputStream(),<a name="line.587"></a>
+<span class="sourceLineNo">588</span>                    "Exec Stdout Gobbler-" + _streamReaderThreadCount++, this);<a name="line.588"></a>
+<span class="sourceLineNo">589</span>            _errorGobbler = new _StreamReaderThread(_process.getErrorStream(),<a name="line.589"></a>
+<span class="sourceLineNo">590</span>                    "Exec Stderr Gobbler-" + _streamReaderThreadCount++, this);<a name="line.590"></a>
+<span class="sourceLineNo">591</span>            _errorGobbler.start();<a name="line.591"></a>
+<span class="sourceLineNo">592</span>            _outputGobbler.start();<a name="line.592"></a>
+<span class="sourceLineNo">593</span><a name="line.593"></a>
+<span class="sourceLineNo">594</span>            if (_streamReaderThreadCount &gt; 1000) {<a name="line.594"></a>
+<span class="sourceLineNo">595</span>                // Avoid overflow in the thread count.<a name="line.595"></a>
+<span class="sourceLineNo">596</span>                _streamReaderThreadCount = 0;<a name="line.596"></a>
+<span class="sourceLineNo">597</span>            }<a name="line.597"></a>
+<span class="sourceLineNo">598</span><a name="line.598"></a>
+<span class="sourceLineNo">599</span>            OutputStreamWriter inputStreamWriter = new OutputStreamWriter(<a name="line.599"></a>
+<span class="sourceLineNo">600</span>                    _process.getOutputStream());<a name="line.600"></a>
+<span class="sourceLineNo">601</span>            _inputBufferedWriter = new BufferedWriter(inputStreamWriter);<a name="line.601"></a>
+<span class="sourceLineNo">602</span>        } catch (IOException ex) {<a name="line.602"></a>
+<span class="sourceLineNo">603</span>            throw new IllegalActionException(this, ex,<a name="line.603"></a>
+<span class="sourceLineNo">604</span>                    "Problem executing the command '" + command.getExpression()<a name="line.604"></a>
+<span class="sourceLineNo">605</span>                            + "'\n" + "in the "<a name="line.605"></a>
+<span class="sourceLineNo">606</span>                            + (directoryAsFile == null<a name="line.606"></a>
+<span class="sourceLineNo">607</span>                                    ? "the working directory of the parent process."<a name="line.607"></a>
+<span class="sourceLineNo">608</span>                                    : directoryAsFile + " directory."));<a name="line.608"></a>
+<span class="sourceLineNo">609</span>        }<a name="line.609"></a>
+<span class="sourceLineNo">610</span>    }<a name="line.610"></a>
+<span class="sourceLineNo">611</span><a name="line.611"></a>
+<span class="sourceLineNo">612</span>    /** Get the command list arguments for exec. */<a name="line.612"></a>
+<span class="sourceLineNo">613</span>    private List&lt;String&gt; _getCommandList() {<a name="line.613"></a>
+<span class="sourceLineNo">614</span>        List&lt;String&gt; retval = new LinkedList&lt;String&gt;();<a name="line.614"></a>
+<span class="sourceLineNo">615</span><a name="line.615"></a>
+<span class="sourceLineNo">616</span>        String osName = System.getProperty("os.name");<a name="line.616"></a>
+<span class="sourceLineNo">617</span>        if (osName.equals("Windows 95")) {<a name="line.617"></a>
+<span class="sourceLineNo">618</span>            retval.add("command.com");<a name="line.618"></a>
+<span class="sourceLineNo">619</span>            retval.add("/C");<a name="line.619"></a>
+<span class="sourceLineNo">620</span>        } else if (osName.startsWith("Windows")) {<a name="line.620"></a>
+<span class="sourceLineNo">621</span>            retval.add("cmd.exe");<a name="line.621"></a>
+<span class="sourceLineNo">622</span>            retval.add("/C");<a name="line.622"></a>
+<span class="sourceLineNo">623</span>        } else {<a name="line.623"></a>
+<span class="sourceLineNo">624</span>            retval.add("/bin/sh");<a name="line.624"></a>
+<span class="sourceLineNo">625</span>            retval.add("-c");<a name="line.625"></a>
+<span class="sourceLineNo">626</span>        }<a name="line.626"></a>
+<span class="sourceLineNo">627</span>        return retval;<a name="line.627"></a>
+<span class="sourceLineNo">628</span>    }<a name="line.628"></a>
+<span class="sourceLineNo">629</span><a name="line.629"></a>
+<span class="sourceLineNo">630</span>    // Terminate the process and close any associated streams.<a name="line.630"></a>
+<span class="sourceLineNo">631</span>    private void _terminateProcess() {<a name="line.631"></a>
+<span class="sourceLineNo">632</span>        if (_process != null) {<a name="line.632"></a>
+<span class="sourceLineNo">633</span>            _process.destroy();<a name="line.633"></a>
+<span class="sourceLineNo">634</span>            _process = null;<a name="line.634"></a>
+<span class="sourceLineNo">635</span>        }<a name="line.635"></a>
+<span class="sourceLineNo">636</span>    }<a name="line.636"></a>
+<span class="sourceLineNo">637</span><a name="line.637"></a>
+<span class="sourceLineNo">638</span>    ///////////////////////////////////////////////////////////////////<a name="line.638"></a>
+<span class="sourceLineNo">639</span>    ////                         inner classes                     ////<a name="line.639"></a>
+<span class="sourceLineNo">640</span>    // Private class that reads a stream in a thread and updates the<a name="line.640"></a>
+<span class="sourceLineNo">641</span>    // stringBuffer.<a name="line.641"></a>
+<span class="sourceLineNo">642</span>    private class _StreamReaderThread extends Thread {<a name="line.642"></a>
+<span class="sourceLineNo">643</span>        /** Create a _StreamReaderThread.<a name="line.643"></a>
+<span class="sourceLineNo">644</span>         *  @param inputStream The stream to read from.<a name="line.644"></a>
+<span class="sourceLineNo">645</span>         *  @param name The name of this StreamReaderThread,<a name="line.645"></a>
+<span class="sourceLineNo">646</span>         *  which is useful for debugging.<a name="line.646"></a>
+<span class="sourceLineNo">647</span>         *  @param actor The parent actor of this thread, which<a name="line.647"></a>
+<span class="sourceLineNo">648</span>         *  is used in error messages.<a name="line.648"></a>
+<span class="sourceLineNo">649</span>         */<a name="line.649"></a>
+<span class="sourceLineNo">650</span>        _StreamReaderThread(InputStream inputStream, String name,<a name="line.650"></a>
+<span class="sourceLineNo">651</span>                Nameable actor) {<a name="line.651"></a>
+<span class="sourceLineNo">652</span>            super(name);<a name="line.652"></a>
+<span class="sourceLineNo">653</span>            _inputStream = inputStream;<a name="line.653"></a>
+<span class="sourceLineNo">654</span>            _inputStreamReader = new InputStreamReader(_inputStream,<a name="line.654"></a>
+<span class="sourceLineNo">655</span>                    java.nio.charset.Charset.defaultCharset());<a name="line.655"></a>
+<span class="sourceLineNo">656</span>            _actor = actor;<a name="line.656"></a>
+<span class="sourceLineNo">657</span>            _stringBuffer = new StringBuffer();<a name="line.657"></a>
+<span class="sourceLineNo">658</span>        }<a name="line.658"></a>
+<span class="sourceLineNo">659</span><a name="line.659"></a>
+<span class="sourceLineNo">660</span>        /** Read any remaining data in the input stream and return the<a name="line.660"></a>
+<span class="sourceLineNo">661</span>         *  data read thus far.  Calling this method resets the<a name="line.661"></a>
+<span class="sourceLineNo">662</span>         *  cache of data read thus far.<a name="line.662"></a>
+<span class="sourceLineNo">663</span>         */<a name="line.663"></a>
+<span class="sourceLineNo">664</span>        public String getAndReset() {<a name="line.664"></a>
+<span class="sourceLineNo">665</span>            if (_debugging) {<a name="line.665"></a>
+<span class="sourceLineNo">666</span>                try {<a name="line.666"></a>
+<span class="sourceLineNo">667</span>                    _debug("getAndReset: Gobbler '" + getName() + "' Ready: "<a name="line.667"></a>
+<span class="sourceLineNo">668</span>                            + _inputStreamReader.ready() + " Available: "<a name="line.668"></a>
+<span class="sourceLineNo">669</span>                            + _inputStream.available());<a name="line.669"></a>
+<span class="sourceLineNo">670</span>                } catch (Exception ex) {<a name="line.670"></a>
+<span class="sourceLineNo">671</span>                    throw new InternalErrorException(ex);<a name="line.671"></a>
+<span class="sourceLineNo">672</span>                }<a name="line.672"></a>
+<span class="sourceLineNo">673</span>            }<a name="line.673"></a>
+<span class="sourceLineNo">674</span><a name="line.674"></a>
+<span class="sourceLineNo">675</span>            try {<a name="line.675"></a>
+<span class="sourceLineNo">676</span>                // Read any remaining data.<a name="line.676"></a>
+<span class="sourceLineNo">677</span>                _read();<a name="line.677"></a>
+<span class="sourceLineNo">678</span>            } catch (Throwable throwable) {<a name="line.678"></a>
+<span class="sourceLineNo">679</span>                if (_debugging) {<a name="line.679"></a>
+<span class="sourceLineNo">680</span>                    _debug("WARNING: getAndReset(): _read() threw an "<a name="line.680"></a>
+<span class="sourceLineNo">681</span>                            + "exception, which we are ignoring.\n"<a name="line.681"></a>
+<span class="sourceLineNo">682</span>                            + throwable.getMessage());<a name="line.682"></a>
+<span class="sourceLineNo">683</span>                }<a name="line.683"></a>
+<span class="sourceLineNo">684</span>            }<a name="line.684"></a>
+<span class="sourceLineNo">685</span><a name="line.685"></a>
+<span class="sourceLineNo">686</span>            String results = _stringBuffer.toString();<a name="line.686"></a>
+<span class="sourceLineNo">687</span>            _stringBuffer = new StringBuffer();<a name="line.687"></a>
+<span class="sourceLineNo">688</span><a name="line.688"></a>
+<span class="sourceLineNo">689</span>            try {<a name="line.689"></a>
+<span class="sourceLineNo">690</span>                _inputStreamReader.close();<a name="line.690"></a>
+<span class="sourceLineNo">691</span>                _inputStreamReaderClosed = true;<a name="line.691"></a>
+<span class="sourceLineNo">692</span>            } catch (Exception ex) {<a name="line.692"></a>
+<span class="sourceLineNo">693</span>                throw new InternalErrorException(null, ex,<a name="line.693"></a>
+<span class="sourceLineNo">694</span>                        getName() + " failed to close.");<a name="line.694"></a>
+<span class="sourceLineNo">695</span>            }<a name="line.695"></a>
+<span class="sourceLineNo">696</span><a name="line.696"></a>
+<span class="sourceLineNo">697</span>            return results;<a name="line.697"></a>
+<span class="sourceLineNo">698</span>        }<a name="line.698"></a>
+<span class="sourceLineNo">699</span><a name="line.699"></a>
+<span class="sourceLineNo">700</span>        /** Read lines from the inputStream and append them to the<a name="line.700"></a>
+<span class="sourceLineNo">701</span>         *  stringBuffer.<a name="line.701"></a>
+<span class="sourceLineNo">702</span>         */<a name="line.702"></a>
+<span class="sourceLineNo">703</span>        @Override<a name="line.703"></a>
+<span class="sourceLineNo">704</span>        public synchronized void run() {<a name="line.704"></a>
+<span class="sourceLineNo">705</span>            if (!_inputStreamReaderClosed) {<a name="line.705"></a>
+<span class="sourceLineNo">706</span>                _read();<a name="line.706"></a>
+<span class="sourceLineNo">707</span>            }<a name="line.707"></a>
+<span class="sourceLineNo">708</span>        }<a name="line.708"></a>
+<span class="sourceLineNo">709</span><a name="line.709"></a>
+<span class="sourceLineNo">710</span>        // Read from the stream until we get to the end of the stream<a name="line.710"></a>
+<span class="sourceLineNo">711</span>        // This is synchronized so that it is not called simultaneously<a name="line.711"></a>
+<span class="sourceLineNo">712</span>        // from run() and getAndReset().<a name="line.712"></a>
+<span class="sourceLineNo">713</span>        private synchronized void _read() {<a name="line.713"></a>
+<span class="sourceLineNo">714</span>            // We read the data as a char[] instead of using readline()<a name="line.714"></a>
+<span class="sourceLineNo">715</span>            // so that we can get strings that do not end in end of<a name="line.715"></a>
+<span class="sourceLineNo">716</span>            // line chars.<a name="line.716"></a>
+<span class="sourceLineNo">717</span>            char[] chars = new char[80];<a name="line.717"></a>
+<span class="sourceLineNo">718</span>            int length; // Number of characters read.<a name="line.718"></a>
+<span class="sourceLineNo">719</span><a name="line.719"></a>
+<span class="sourceLineNo">720</span>            try {<a name="line.720"></a>
+<span class="sourceLineNo">721</span>                // Oddly, InputStreamReader.read() will return -1<a name="line.721"></a>
+<span class="sourceLineNo">722</span>                // if there is no data present, but the string can still<a name="line.722"></a>
+<span class="sourceLineNo">723</span>                // read.<a name="line.723"></a>
+<span class="sourceLineNo">724</span>                while ((length = _inputStreamReader.read(chars, 0, 80)) != -1<a name="line.724"></a>
+<span class="sourceLineNo">725</span>                        &amp;&amp; !_stopRequested &amp;&amp; !_stopFireRequested) {<a name="line.725"></a>
+<span class="sourceLineNo">726</span>                    if (_debugging) {<a name="line.726"></a>
+<span class="sourceLineNo">727</span>                        // Note that ready might be false here since<a name="line.727"></a>
+<span class="sourceLineNo">728</span>                        // we already read the data.<a name="line.728"></a>
+<span class="sourceLineNo">729</span>                        _debug("_read(): Gobbler '" + getName() + "' Ready: "<a name="line.729"></a>
+<span class="sourceLineNo">730</span>                                + _inputStreamReader.ready() + " Value: '"<a name="line.730"></a>
+<span class="sourceLineNo">731</span>                                + String.valueOf(chars, 0, length) + "'");<a name="line.731"></a>
+<span class="sourceLineNo">732</span>                    }<a name="line.732"></a>
+<span class="sourceLineNo">733</span><a name="line.733"></a>
+<span class="sourceLineNo">734</span>                    _stringBuffer.append(chars, 0, length);<a name="line.734"></a>
+<span class="sourceLineNo">735</span>                }<a name="line.735"></a>
+<span class="sourceLineNo">736</span>            } catch (Throwable throwable) {<a name="line.736"></a>
+<span class="sourceLineNo">737</span>                // We set ignoreExceptionReadErrors to true for ExecDemos so that<a name="line.737"></a>
+<span class="sourceLineNo">738</span>                // exporting html does not produce an error when the model exits after 30 seconds.<a name="line.738"></a>
+<span class="sourceLineNo">739</span>                boolean ignoreIOExceptionReadErrorsValue = false;<a name="line.739"></a>
+<span class="sourceLineNo">740</span><a name="line.740"></a>
+<span class="sourceLineNo">741</span>                try {<a name="line.741"></a>
+<span class="sourceLineNo">742</span>                    ignoreIOExceptionReadErrorsValue = ((BooleanToken) ignoreIOExceptionReadErrors<a name="line.742"></a>
+<span class="sourceLineNo">743</span>                            .getToken()).booleanValue();<a name="line.743"></a>
+<span class="sourceLineNo">744</span><a name="line.744"></a>
+<span class="sourceLineNo">745</span>                } catch (IllegalActionException ex) {<a name="line.745"></a>
+<span class="sourceLineNo">746</span>                    throw new InternalErrorException(_actor, ex, getName()<a name="line.746"></a>
+<span class="sourceLineNo">747</span>                            + ": Could not get the value of the ignoreIOExceptionReadErrors "<a name="line.747"></a>
+<span class="sourceLineNo">748</span>                            + "parameter while trying to throw " + throwable);<a name="line.748"></a>
+<span class="sourceLineNo">749</span>                }<a name="line.749"></a>
+<span class="sourceLineNo">750</span>                if (ignoreIOExceptionReadErrorsValue<a name="line.750"></a>
+<span class="sourceLineNo">751</span>                        &amp;&amp; throwable instanceof IOException) {<a name="line.751"></a>
+<span class="sourceLineNo">752</span>                    new Exception("Warning: " + getFullName()<a name="line.752"></a>
+<span class="sourceLineNo">753</span>                            + " had an exception, but "<a name="line.753"></a>
+<span class="sourceLineNo">754</span>                            + "ignoreIOExceptionReadErrors was true and the exception was an "<a name="line.754"></a>
+<span class="sourceLineNo">755</span>                            + "IOException, so it is being skipped.", throwable)<a name="line.755"></a>
+<span class="sourceLineNo">756</span>                                    .printStackTrace();<a name="line.756"></a>
+<span class="sourceLineNo">757</span>                } else {<a name="line.757"></a>
+<span class="sourceLineNo">758</span>                    throw new InternalErrorException(_actor, throwable,<a name="line.758"></a>
+<span class="sourceLineNo">759</span>                            getName() + ": Failed while reading from "<a name="line.759"></a>
+<span class="sourceLineNo">760</span>                                    + _inputStream<a name="line.760"></a>
+<span class="sourceLineNo">761</span>                                    + ". To avoid this, try setting the ignoreIOExceptionReadErrors parameter to true."<a name="line.761"></a>
+<span class="sourceLineNo">762</span>                                    + throwable.getCause());<a name="line.762"></a>
+<span class="sourceLineNo">763</span>                }<a name="line.763"></a>
+<span class="sourceLineNo">764</span>            }<a name="line.764"></a>
+<span class="sourceLineNo">765</span>        }<a name="line.765"></a>
+<span class="sourceLineNo">766</span><a name="line.766"></a>
+<span class="sourceLineNo">767</span>        // The actor associated with this stream reader.<a name="line.767"></a>
+<span class="sourceLineNo">768</span>        private Nameable _actor;<a name="line.768"></a>
+<span class="sourceLineNo">769</span><a name="line.769"></a>
+<span class="sourceLineNo">770</span>        // Stream from which to read.<a name="line.770"></a>
+<span class="sourceLineNo">771</span>        private InputStream _inputStream;<a name="line.771"></a>
+<span class="sourceLineNo">772</span><a name="line.772"></a>
+<span class="sourceLineNo">773</span>        // Stream from which to read.<a name="line.773"></a>
+<span class="sourceLineNo">774</span>        private InputStreamReader _inputStreamReader;<a name="line.774"></a>
+<span class="sourceLineNo">775</span><a name="line.775"></a>
+<span class="sourceLineNo">776</span>        // Indicator that the stream has been closed.<a name="line.776"></a>
+<span class="sourceLineNo">777</span>        private boolean _inputStreamReaderClosed = false;<a name="line.777"></a>
+<span class="sourceLineNo">778</span><a name="line.778"></a>
+<span class="sourceLineNo">779</span>        // StringBuffer to update.<a name="line.779"></a>
+<span class="sourceLineNo">780</span>        private StringBuffer _stringBuffer;<a name="line.780"></a>
+<span class="sourceLineNo">781</span>    }<a name="line.781"></a>
+<span class="sourceLineNo">782</span><a name="line.782"></a>
+<span class="sourceLineNo">783</span>    ///////////////////////////////////////////////////////////////////<a name="line.783"></a>
+<span class="sourceLineNo">784</span>    ////                         private variables                 ////<a name="line.784"></a>
+<span class="sourceLineNo">785</span>    // The subprocess gets its input from this BufferedWriter.<a name="line.785"></a>
+<span class="sourceLineNo">786</span>    private BufferedWriter _inputBufferedWriter;<a name="line.786"></a>
+<span class="sourceLineNo">787</span><a name="line.787"></a>
+<span class="sourceLineNo">788</span>    // StreamReader with which we read stderr.<a name="line.788"></a>
+<span class="sourceLineNo">789</span>    private _StreamReaderThread _errorGobbler;<a name="line.789"></a>
+<span class="sourceLineNo">790</span><a name="line.790"></a>
+<span class="sourceLineNo">791</span>    // StreamReader with which we read stdout.<a name="line.791"></a>
+<span class="sourceLineNo">792</span>    private _StreamReaderThread _outputGobbler;<a name="line.792"></a>
+<span class="sourceLineNo">793</span><a name="line.793"></a>
+<span class="sourceLineNo">794</span>    // The Process that we are running.<a name="line.794"></a>
+<span class="sourceLineNo">795</span>    private Process _process;<a name="line.795"></a>
+<span class="sourceLineNo">796</span><a name="line.796"></a>
+<span class="sourceLineNo">797</span>    // Indicator that stopFire() has been called.<a name="line.797"></a>
+<span class="sourceLineNo">798</span>    private boolean _stopFireRequested = false;<a name="line.798"></a>
+<span class="sourceLineNo">799</span><a name="line.799"></a>
+<span class="sourceLineNo">800</span>    // Instance count of output and error threads, used for debugging.<a name="line.800"></a>
+<span class="sourceLineNo">801</span>    // When the value is greater than 1000, we reset it to 0.<a name="line.801"></a>
+<span class="sourceLineNo">802</span>    private static int _streamReaderThreadCount = 0;<a name="line.802"></a>
+<span class="sourceLineNo">803</span>}<a name="line.803"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

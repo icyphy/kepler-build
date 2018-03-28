@@ -1,0 +1,349 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../stylesheet.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>/* Applet that displays a vergil block diagram.<a name="line.1"></a>
+<span class="sourceLineNo">002</span><a name="line.2"></a>
+<span class="sourceLineNo">003</span> Copyright (c) 1998-2016 The Regents of the University of California.<a name="line.3"></a>
+<span class="sourceLineNo">004</span> All rights reserved.<a name="line.4"></a>
+<span class="sourceLineNo">005</span> Permission is hereby granted, without written agreement and without<a name="line.5"></a>
+<span class="sourceLineNo">006</span> license or royalty fees, to use, copy, modify, and distribute this<a name="line.6"></a>
+<span class="sourceLineNo">007</span> software and its documentation for any purpose, provided that the above<a name="line.7"></a>
+<span class="sourceLineNo">008</span> copyright notice and the following two paragraphs appear in all copies<a name="line.8"></a>
+<span class="sourceLineNo">009</span> of this software.<a name="line.9"></a>
+<span class="sourceLineNo">010</span><a name="line.10"></a>
+<span class="sourceLineNo">011</span> IN NO EVENT SHALL THE UNIVERSITY OF CALIFORNIA BE LIABLE TO ANY PARTY<a name="line.11"></a>
+<span class="sourceLineNo">012</span> FOR DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES<a name="line.12"></a>
+<span class="sourceLineNo">013</span> ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION, EVEN IF<a name="line.13"></a>
+<span class="sourceLineNo">014</span> THE UNIVERSITY OF CALIFORNIA HAS BEEN ADVISED OF THE POSSIBILITY OF<a name="line.14"></a>
+<span class="sourceLineNo">015</span> SUCH DAMAGE.<a name="line.15"></a>
+<span class="sourceLineNo">016</span><a name="line.16"></a>
+<span class="sourceLineNo">017</span> THE UNIVERSITY OF CALIFORNIA SPECIFICALLY DISCLAIMS ANY WARRANTIES,<a name="line.17"></a>
+<span class="sourceLineNo">018</span> INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF<a name="line.18"></a>
+<span class="sourceLineNo">019</span> MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE<a name="line.19"></a>
+<span class="sourceLineNo">020</span> PROVIDED HEREUNDER IS ON AN "AS IS" BASIS, AND THE UNIVERSITY OF<a name="line.20"></a>
+<span class="sourceLineNo">021</span> CALIFORNIA HAS NO OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT, UPDATES,<a name="line.21"></a>
+<span class="sourceLineNo">022</span> ENHANCEMENTS, OR MODIFICATIONS.<a name="line.22"></a>
+<span class="sourceLineNo">023</span><a name="line.23"></a>
+<span class="sourceLineNo">024</span> PT_COPYRIGHT_VERSION_2<a name="line.24"></a>
+<span class="sourceLineNo">025</span> COPYRIGHTENDKEY<a name="line.25"></a>
+<span class="sourceLineNo">026</span><a name="line.26"></a>
+<span class="sourceLineNo">027</span> */<a name="line.27"></a>
+<span class="sourceLineNo">028</span>package ptolemy.vergil;<a name="line.28"></a>
+<span class="sourceLineNo">029</span><a name="line.29"></a>
+<span class="sourceLineNo">030</span>import java.awt.BorderLayout;<a name="line.30"></a>
+<span class="sourceLineNo">031</span>import java.awt.Dimension;<a name="line.31"></a>
+<span class="sourceLineNo">032</span>import java.net.URL;<a name="line.32"></a>
+<span class="sourceLineNo">033</span>import java.util.Locale;<a name="line.33"></a>
+<span class="sourceLineNo">034</span><a name="line.34"></a>
+<span class="sourceLineNo">035</span>import diva.graph.GraphModel;<a name="line.35"></a>
+<span class="sourceLineNo">036</span>import diva.graph.GraphPane;<a name="line.36"></a>
+<span class="sourceLineNo">037</span>import diva.graph.JGraph;<a name="line.37"></a>
+<span class="sourceLineNo">038</span>import ptolemy.actor.gui.Configuration;<a name="line.38"></a>
+<span class="sourceLineNo">039</span>import ptolemy.actor.gui.ConfigurationApplication;<a name="line.39"></a>
+<span class="sourceLineNo">040</span>import ptolemy.actor.gui.MoMLApplet;<a name="line.40"></a>
+<span class="sourceLineNo">041</span>import ptolemy.actor.gui.SizeAttribute;<a name="line.41"></a>
+<span class="sourceLineNo">042</span>import ptolemy.domains.modal.kernel.FSMActor;<a name="line.42"></a>
+<span class="sourceLineNo">043</span>import ptolemy.kernel.CompositeEntity;<a name="line.43"></a>
+<span class="sourceLineNo">044</span>import ptolemy.kernel.util.NamedObj;<a name="line.44"></a>
+<span class="sourceLineNo">045</span>import ptolemy.kernel.util.Workspace;<a name="line.45"></a>
+<span class="sourceLineNo">046</span>import ptolemy.vergil.actor.ActorGraphModel;<a name="line.46"></a>
+<span class="sourceLineNo">047</span>import ptolemy.vergil.actor.ActorViewerGraphController;<a name="line.47"></a>
+<span class="sourceLineNo">048</span>import ptolemy.vergil.modal.FSMGraphController;<a name="line.48"></a>
+<span class="sourceLineNo">049</span>import ptolemy.vergil.modal.FSMGraphModel;<a name="line.49"></a>
+<span class="sourceLineNo">050</span><a name="line.50"></a>
+<span class="sourceLineNo">051</span>///////////////////////////////////////////////////////////////////<a name="line.51"></a>
+<span class="sourceLineNo">052</span>//// MoMLViewerApplet<a name="line.52"></a>
+<span class="sourceLineNo">053</span><a name="line.53"></a>
+<span class="sourceLineNo">054</span>/**<a name="line.54"></a>
+<span class="sourceLineNo">055</span> This applet displays a graph view of a specified MoML file.<a name="line.55"></a>
+<span class="sourceLineNo">056</span> &lt;p&gt;<a name="line.56"></a>
+<span class="sourceLineNo">057</span> The applet parameters are:<a name="line.57"></a>
+<span class="sourceLineNo">058</span> &lt;ul&gt;<a name="line.58"></a>
+<span class="sourceLineNo">059</span> &lt;li&gt;<a name="line.59"></a>
+<span class="sourceLineNo">060</span> &lt;i&gt;background&lt;/i&gt;: The background color, typically given as a hex<a name="line.60"></a>
+<span class="sourceLineNo">061</span> number of the form "#&lt;i&gt;rrggbb&lt;/i&gt;" where &lt;i&gt;rr&lt;/i&gt; gives the red<a name="line.61"></a>
+<span class="sourceLineNo">062</span> component, &lt;i&gt;gg&lt;/i&gt; gives the green component, and &lt;i&gt;bb&lt;/i&gt; gives<a name="line.62"></a>
+<span class="sourceLineNo">063</span> the blue component.<a name="line.63"></a>
+<span class="sourceLineNo">064</span> &lt;li&gt;<a name="line.64"></a>
+<span class="sourceLineNo">065</span> &lt;i&gt;configuration&lt;/i&gt;:<a name="line.65"></a>
+<span class="sourceLineNo">066</span> The relative pathname to a Ptolemy II xml configuration file.<a name="line.66"></a>
+<span class="sourceLineNo">067</span> for example, if the configuration applet parameter is set to<a name="line.67"></a>
+<span class="sourceLineNo">068</span> "ptolemy/configs/full/configuration.xml", then the user will<a name="line.68"></a>
+<span class="sourceLineNo">069</span> have the full vergil interface, including look inside capability.<a name="line.69"></a>
+<span class="sourceLineNo">070</span> (&lt;b&gt;Experimental&lt;/b&gt;).<a name="line.70"></a>
+<span class="sourceLineNo">071</span> &lt;li&gt;<a name="line.71"></a>
+<span class="sourceLineNo">072</span> &lt;i&gt;controls&lt;/i&gt;:<a name="line.72"></a>
+<span class="sourceLineNo">073</span> This gives a comma-separated list<a name="line.73"></a>
+<span class="sourceLineNo">074</span> of any subset of the words "buttons", "topParameters", and<a name="line.74"></a>
+<span class="sourceLineNo">075</span> "directorParameters" (case insensitive), or the word "none".<a name="line.75"></a>
+<span class="sourceLineNo">076</span> If this parameter is not given, then it is equivalent to<a name="line.76"></a>
+<span class="sourceLineNo">077</span> giving "buttons", and only the control buttons mentioned above<a name="line.77"></a>
+<span class="sourceLineNo">078</span> will be displayed.  If the parameter is given, and its value is "none",<a name="line.78"></a>
+<span class="sourceLineNo">079</span> then no controls are placed on the screen.  If the word "topParameters"<a name="line.79"></a>
+<span class="sourceLineNo">080</span> is included in the comma-separated list, then controls for the<a name="line.80"></a>
+<span class="sourceLineNo">081</span> top-level parameters of the model are placed on the screen, below<a name="line.81"></a>
+<span class="sourceLineNo">082</span> the buttons.  If the word "directorParameters" is included,<a name="line.82"></a>
+<span class="sourceLineNo">083</span> then controls for the director parameters are also included.<a name="line.83"></a>
+<span class="sourceLineNo">084</span> This parameter is ignored unless &lt;i&gt;includeRunPanel&lt;/i&gt; is given as "true".<a name="line.84"></a>
+<span class="sourceLineNo">085</span> &lt;li&gt;<a name="line.85"></a>
+<span class="sourceLineNo">086</span> &lt;i&gt;includeRunPanel&lt;/i&gt;: An indicator to include a run panel below the<a name="line.86"></a>
+<span class="sourceLineNo">087</span> schematic.  The value must be "true" or no run panel will be displayed.<a name="line.87"></a>
+<span class="sourceLineNo">088</span> &lt;li&gt;<a name="line.88"></a>
+<span class="sourceLineNo">089</span> &lt;i&gt;modelURL&lt;/i&gt;: The name of a URI (or URL) containing the<a name="line.89"></a>
+<span class="sourceLineNo">090</span> MoML file that defines the model.<a name="line.90"></a>
+<span class="sourceLineNo">091</span> &lt;li&gt;<a name="line.91"></a>
+<span class="sourceLineNo">092</span> &lt;i&gt;orientation&lt;/i&gt;: This can have value "horizontal", "vertical", or<a name="line.92"></a>
+<span class="sourceLineNo">093</span> "controls_only" (case insensitive).  If it is "vertical", then the<a name="line.93"></a>
+<span class="sourceLineNo">094</span> controls are placed above the visual elements of the Placeable actors.<a name="line.94"></a>
+<span class="sourceLineNo">095</span> This is the default.  If it is "horizontal", then the controls<a name="line.95"></a>
+<span class="sourceLineNo">096</span> are placed to the left of the visual elements.  If it is "controls_only"<a name="line.96"></a>
+<span class="sourceLineNo">097</span> then no visual elements are placed.<a name="line.97"></a>
+<span class="sourceLineNo">098</span> &lt;/ul&gt;<a name="line.98"></a>
+<span class="sourceLineNo">099</span><a name="line.99"></a>
+<span class="sourceLineNo">100</span> @author  Steve Neuendorffer and Edward A. Lee<a name="line.100"></a>
+<span class="sourceLineNo">101</span> @version $Id$<a name="line.101"></a>
+<span class="sourceLineNo">102</span> @since Ptolemy II 1.0<a name="line.102"></a>
+<span class="sourceLineNo">103</span> @Pt.ProposedRating Red (eal)<a name="line.103"></a>
+<span class="sourceLineNo">104</span> @Pt.AcceptedRating Red (eal)<a name="line.104"></a>
+<span class="sourceLineNo">105</span> */<a name="line.105"></a>
+<span class="sourceLineNo">106</span>@SuppressWarnings("serial")<a name="line.106"></a>
+<span class="sourceLineNo">107</span>public class MoMLViewerApplet extends MoMLApplet {<a name="line.107"></a>
+<span class="sourceLineNo">108</span>    // FIXME: this is a total hack as a placeholder for a general<a name="line.108"></a>
+<span class="sourceLineNo">109</span>    // implementation going through configurations.<a name="line.109"></a>
+<span class="sourceLineNo">110</span>    // FIXME: Perhaps the context menu<a name="line.110"></a>
+<span class="sourceLineNo">111</span>    // should have a run-model option?<a name="line.111"></a>
+<span class="sourceLineNo">112</span>    ///////////////////////////////////////////////////////////////////<a name="line.112"></a>
+<span class="sourceLineNo">113</span>    ////                         public methods                    ////<a name="line.113"></a>
+<span class="sourceLineNo">114</span><a name="line.114"></a>
+<span class="sourceLineNo">115</span>    /** Describe the applet parameters.<a name="line.115"></a>
+<span class="sourceLineNo">116</span>     *  @return An array describing the applet parameters.<a name="line.116"></a>
+<span class="sourceLineNo">117</span>     */<a name="line.117"></a>
+<span class="sourceLineNo">118</span>    @Override<a name="line.118"></a>
+<span class="sourceLineNo">119</span>    public String[][] getParameterInfo() {<a name="line.119"></a>
+<span class="sourceLineNo">120</span>        String[][] newinfo = {<a name="line.120"></a>
+<span class="sourceLineNo">121</span>                { "includeRunPanel", "", "Indicator to include run panel" },<a name="line.121"></a>
+<span class="sourceLineNo">122</span>                { "configuration", "", "Ptolemy II configuration" }, };<a name="line.122"></a>
+<span class="sourceLineNo">123</span>        return _concatStringArrays(super.getParameterInfo(), newinfo);<a name="line.123"></a>
+<span class="sourceLineNo">124</span>    }<a name="line.124"></a>
+<span class="sourceLineNo">125</span><a name="line.125"></a>
+<span class="sourceLineNo">126</span>    /** Override the base class to not start<a name="line.126"></a>
+<span class="sourceLineNo">127</span>     *  execution of the model. This method is called by the<a name="line.127"></a>
+<span class="sourceLineNo">128</span>     *  browser or applet viewer to inform this applet that it should<a name="line.128"></a>
+<span class="sourceLineNo">129</span>     *  start its execution. It is called after the init method<a name="line.129"></a>
+<span class="sourceLineNo">130</span>     *  and each time the applet is revisited in a Web page.<a name="line.130"></a>
+<span class="sourceLineNo">131</span>     */<a name="line.131"></a>
+<span class="sourceLineNo">132</span>    @Override<a name="line.132"></a>
+<span class="sourceLineNo">133</span>    public void start() {<a name="line.133"></a>
+<span class="sourceLineNo">134</span>    }<a name="line.134"></a>
+<span class="sourceLineNo">135</span><a name="line.135"></a>
+<span class="sourceLineNo">136</span>    ///////////////////////////////////////////////////////////////////<a name="line.136"></a>
+<span class="sourceLineNo">137</span>    ////                         protected methods                 ////<a name="line.137"></a>
+<span class="sourceLineNo">138</span><a name="line.138"></a>
+<span class="sourceLineNo">139</span>    /** Read the model from the &lt;i&gt;modelURL&lt;/i&gt; applet parameter<a name="line.139"></a>
+<span class="sourceLineNo">140</span>     *  and do not filter out any graphical classes.<a name="line.140"></a>
+<span class="sourceLineNo">141</span>     *  @param workspace The workspace in which to create the model.<a name="line.141"></a>
+<span class="sourceLineNo">142</span>     *  @return A model.<a name="line.142"></a>
+<span class="sourceLineNo">143</span>     *  @exception Exception If something goes wrong.<a name="line.143"></a>
+<span class="sourceLineNo">144</span>     */<a name="line.144"></a>
+<span class="sourceLineNo">145</span>    @Override<a name="line.145"></a>
+<span class="sourceLineNo">146</span>    protected NamedObj _createModel(Workspace workspace) throws Exception {<a name="line.146"></a>
+<span class="sourceLineNo">147</span>        // Do not filter out graphical classes.<a name="line.147"></a>
+<span class="sourceLineNo">148</span>        // FIXME: if we have a configuration, then we are parsing<a name="line.148"></a>
+<span class="sourceLineNo">149</span>        // the model twice!!!<a name="line.149"></a>
+<span class="sourceLineNo">150</span>        return _createModel(workspace, false);<a name="line.150"></a>
+<span class="sourceLineNo">151</span>    }<a name="line.151"></a>
+<span class="sourceLineNo">152</span><a name="line.152"></a>
+<span class="sourceLineNo">153</span>    /** Override the base class to create a schematic view instead of<a name="line.153"></a>
+<span class="sourceLineNo">154</span>     *  a ModelPane.  If the toplevel model created by _createModel()<a name="line.154"></a>
+<span class="sourceLineNo">155</span>     *  is not an instance of CompositeEntity, then do nothing.<a name="line.155"></a>
+<span class="sourceLineNo">156</span>     */<a name="line.156"></a>
+<span class="sourceLineNo">157</span>    @Override<a name="line.157"></a>
+<span class="sourceLineNo">158</span>    protected void _createView() {<a name="line.158"></a>
+<span class="sourceLineNo">159</span>        if (!(_toplevel instanceof CompositeEntity)) {<a name="line.159"></a>
+<span class="sourceLineNo">160</span>            return;<a name="line.160"></a>
+<span class="sourceLineNo">161</span>        }<a name="line.161"></a>
+<span class="sourceLineNo">162</span><a name="line.162"></a>
+<span class="sourceLineNo">163</span>        // Get the configuration, if any<a name="line.163"></a>
+<span class="sourceLineNo">164</span>        String configurationPath = getParameter("configuration");<a name="line.164"></a>
+<span class="sourceLineNo">165</span><a name="line.165"></a>
+<span class="sourceLineNo">166</span>        if (configurationPath != null) {<a name="line.166"></a>
+<span class="sourceLineNo">167</span>            try {<a name="line.167"></a>
+<span class="sourceLineNo">168</span>                URL specificationURL = ConfigurationApplication<a name="line.168"></a>
+<span class="sourceLineNo">169</span>                        .specToURL(configurationPath);<a name="line.169"></a>
+<span class="sourceLineNo">170</span>                _configuration = ConfigurationApplication<a name="line.170"></a>
+<span class="sourceLineNo">171</span>                        .readConfiguration(specificationURL);<a name="line.171"></a>
+<span class="sourceLineNo">172</span>                report("Opened '" + specificationURL + "': " + _configuration);<a name="line.172"></a>
+<span class="sourceLineNo">173</span>            } catch (Exception ex) {<a name="line.173"></a>
+<span class="sourceLineNo">174</span>                throw new RuntimeException(<a name="line.174"></a>
+<span class="sourceLineNo">175</span>                        "Failed to open '" + configurationPath + "':", ex);<a name="line.175"></a>
+<span class="sourceLineNo">176</span>            }<a name="line.176"></a>
+<span class="sourceLineNo">177</span>        }<a name="line.177"></a>
+<span class="sourceLineNo">178</span><a name="line.178"></a>
+<span class="sourceLineNo">179</span>        //        if (_configuration != null) {<a name="line.179"></a>
+<span class="sourceLineNo">180</span>        //            // We have a configuration<a name="line.180"></a>
+<span class="sourceLineNo">181</span>        //            try {<a name="line.181"></a>
+<span class="sourceLineNo">182</span>        //                //URL docBase = getDocumentBase();<a name="line.182"></a>
+<span class="sourceLineNo">183</span>        //                //URL inURL = new URL(docBase, _modelURL);<a name="line.183"></a>
+<span class="sourceLineNo">184</span>        //                //String key = inURL.toExternalForm();<a name="line.184"></a>
+<span class="sourceLineNo">185</span>        //                // Now defer to the model reader.<a name="line.185"></a>
+<span class="sourceLineNo">186</span>        //                //Tableau tableau = _configuration.openModel(inURL, inURL,<a name="line.186"></a>
+<span class="sourceLineNo">187</span>        //                //        key);<a name="line.187"></a>
+<span class="sourceLineNo">188</span>        //                //JFrame frame = new JFrame();<a name="line.188"></a>
+<span class="sourceLineNo">189</span>        //                //tableau.setFrame(frame);<a name="line.189"></a>
+<span class="sourceLineNo">190</span>        //                //getContentPane().add(tableau.getFrame().getContentPane(),<a name="line.190"></a>
+<span class="sourceLineNo">191</span>        //                //        BorderLayout.NORTH);<a name="line.191"></a>
+<span class="sourceLineNo">192</span>        //            } catch (Exception ex) {<a name="line.192"></a>
+<span class="sourceLineNo">193</span>        //                throw new RuntimeException("Failed to open '" + _modelURL<a name="line.193"></a>
+<span class="sourceLineNo">194</span>        //                        + "'.", ex);<a name="line.194"></a>
+<span class="sourceLineNo">195</span>        //            }<a name="line.195"></a>
+<span class="sourceLineNo">196</span>        //        }<a name="line.196"></a>
+<span class="sourceLineNo">197</span><a name="line.197"></a>
+<span class="sourceLineNo">198</span>        GraphPane pane = null;<a name="line.198"></a>
+<span class="sourceLineNo">199</span><a name="line.199"></a>
+<span class="sourceLineNo">200</span>        // FIXME: Temporary hack so we can view FSMs properly.<a name="line.200"></a>
+<span class="sourceLineNo">201</span>        // This should be replaced with a proper tableau mechanism.<a name="line.201"></a>
+<span class="sourceLineNo">202</span>        if (_toplevel instanceof FSMActor) {<a name="line.202"></a>
+<span class="sourceLineNo">203</span>            FSMGraphController controller = new FSMGraphController();<a name="line.203"></a>
+<span class="sourceLineNo">204</span>            FSMGraphModel graphModel = new FSMGraphModel((FSMActor) _toplevel);<a name="line.204"></a>
+<span class="sourceLineNo">205</span><a name="line.205"></a>
+<span class="sourceLineNo">206</span>            // FIXME: To get things like open documentation to work, have<a name="line.206"></a>
+<span class="sourceLineNo">207</span>            // to specify a configuration.  But currently, there isn't one.<a name="line.207"></a>
+<span class="sourceLineNo">208</span>            if (_configuration != null) {<a name="line.208"></a>
+<span class="sourceLineNo">209</span>                controller.setConfiguration(_configuration);<a name="line.209"></a>
+<span class="sourceLineNo">210</span>            }<a name="line.210"></a>
+<span class="sourceLineNo">211</span><a name="line.211"></a>
+<span class="sourceLineNo">212</span>            pane = new GraphPane(controller, graphModel);<a name="line.212"></a>
+<span class="sourceLineNo">213</span>        } else {<a name="line.213"></a>
+<span class="sourceLineNo">214</span>            // top level is not an FSM actor.<a name="line.214"></a>
+<span class="sourceLineNo">215</span>            ActorViewerGraphController controller = new ActorViewerGraphController();<a name="line.215"></a>
+<span class="sourceLineNo">216</span><a name="line.216"></a>
+<span class="sourceLineNo">217</span>            // FIXME: To get things like open documentation to work, have<a name="line.217"></a>
+<span class="sourceLineNo">218</span>            // to specify a configuration.  But currently, there isn't one.<a name="line.218"></a>
+<span class="sourceLineNo">219</span>            if (_configuration != null) {<a name="line.219"></a>
+<span class="sourceLineNo">220</span>                controller.setConfiguration(_configuration);<a name="line.220"></a>
+<span class="sourceLineNo">221</span>            }<a name="line.221"></a>
+<span class="sourceLineNo">222</span><a name="line.222"></a>
+<span class="sourceLineNo">223</span>            GraphModel model = new ActorGraphModel(_toplevel);<a name="line.223"></a>
+<span class="sourceLineNo">224</span>            pane = new GraphPane(controller, model);<a name="line.224"></a>
+<span class="sourceLineNo">225</span>        }<a name="line.225"></a>
+<span class="sourceLineNo">226</span><a name="line.226"></a>
+<span class="sourceLineNo">227</span>        JGraph modelViewer = new JGraph(pane);<a name="line.227"></a>
+<span class="sourceLineNo">228</span><a name="line.228"></a>
+<span class="sourceLineNo">229</span>        // Get dimensions from the model, if they are present.<a name="line.229"></a>
+<span class="sourceLineNo">230</span>        // Otherwise, use the same defaults used by vergil.<a name="line.230"></a>
+<span class="sourceLineNo">231</span>        boolean boundsSet = false;<a name="line.231"></a>
+<span class="sourceLineNo">232</span><a name="line.232"></a>
+<span class="sourceLineNo">233</span>        try {<a name="line.233"></a>
+<span class="sourceLineNo">234</span>            SizeAttribute vergilBounds = (SizeAttribute) _toplevel<a name="line.234"></a>
+<span class="sourceLineNo">235</span>                    .getAttribute("_vergilSize", SizeAttribute.class);<a name="line.235"></a>
+<span class="sourceLineNo">236</span>            if (vergilBounds != null) {<a name="line.236"></a>
+<span class="sourceLineNo">237</span>                boundsSet = vergilBounds.setSize(modelViewer);<a name="line.237"></a>
+<span class="sourceLineNo">238</span>            }<a name="line.238"></a>
+<span class="sourceLineNo">239</span>        } catch (Throwable throwable) {<a name="line.239"></a>
+<span class="sourceLineNo">240</span>            // Ignore and set to default.<a name="line.240"></a>
+<span class="sourceLineNo">241</span>        }<a name="line.241"></a>
+<span class="sourceLineNo">242</span><a name="line.242"></a>
+<span class="sourceLineNo">243</span>        if (!boundsSet) {<a name="line.243"></a>
+<span class="sourceLineNo">244</span>            // Set default size<a name="line.244"></a>
+<span class="sourceLineNo">245</span>            Dimension size = new Dimension(400, 300);<a name="line.245"></a>
+<span class="sourceLineNo">246</span>            modelViewer.setMinimumSize(size);<a name="line.246"></a>
+<span class="sourceLineNo">247</span>            modelViewer.setPreferredSize(size);<a name="line.247"></a>
+<span class="sourceLineNo">248</span>        }<a name="line.248"></a>
+<span class="sourceLineNo">249</span><a name="line.249"></a>
+<span class="sourceLineNo">250</span>        // Inherit the background color from the applet parameter.<a name="line.250"></a>
+<span class="sourceLineNo">251</span>        modelViewer.setBackground(getBackground());<a name="line.251"></a>
+<span class="sourceLineNo">252</span><a name="line.252"></a>
+<span class="sourceLineNo">253</span>        // Do not include a scroll pane, since generally we size the<a name="line.253"></a>
+<span class="sourceLineNo">254</span>        // applet to show the entire model.<a name="line.254"></a>
+<span class="sourceLineNo">255</span>        // JScrollPane scrollPane = new JScrollPane(modelViewer);<a name="line.255"></a>
+<span class="sourceLineNo">256</span>        // getContentPane().add(scrollPane, BorderLayout.NORTH);<a name="line.256"></a>
+<span class="sourceLineNo">257</span>        // scrollPane.setBackground(getBackground());<a name="line.257"></a>
+<span class="sourceLineNo">258</span>        getContentPane().add(modelViewer, BorderLayout.NORTH);<a name="line.258"></a>
+<span class="sourceLineNo">259</span><a name="line.259"></a>
+<span class="sourceLineNo">260</span>        // Call the superclass here to get a control panel<a name="line.260"></a>
+<span class="sourceLineNo">261</span>        // below the schematic.<a name="line.261"></a>
+<span class="sourceLineNo">262</span>        String panelFlag = getParameter("includeRunPanel");<a name="line.262"></a>
+<span class="sourceLineNo">263</span><a name="line.263"></a>
+<span class="sourceLineNo">264</span>        if (panelFlag != null &amp;&amp; panelFlag.trim()<a name="line.264"></a>
+<span class="sourceLineNo">265</span>                .toLowerCase(Locale.getDefault()).equals("true")) {<a name="line.265"></a>
+<span class="sourceLineNo">266</span>            // NOTE: We could create a separator between the schematic<a name="line.266"></a>
+<span class="sourceLineNo">267</span>            // and the control panel here.<a name="line.267"></a>
+<span class="sourceLineNo">268</span>            super._createView();<a name="line.268"></a>
+<span class="sourceLineNo">269</span>        }<a name="line.269"></a>
+<span class="sourceLineNo">270</span>    }<a name="line.270"></a>
+<span class="sourceLineNo">271</span><a name="line.271"></a>
+<span class="sourceLineNo">272</span>    ///////////////////////////////////////////////////////////////////<a name="line.272"></a>
+<span class="sourceLineNo">273</span>    ////                         private fields                    ////<a name="line.273"></a>
+<span class="sourceLineNo">274</span><a name="line.274"></a>
+<span class="sourceLineNo">275</span>    /** The configuration that is read from the configuration applet param. */<a name="line.275"></a>
+<span class="sourceLineNo">276</span>    private Configuration _configuration;<a name="line.276"></a>
+<span class="sourceLineNo">277</span>}<a name="line.277"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

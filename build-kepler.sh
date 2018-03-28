@@ -27,7 +27,6 @@ svn update
 mkdir logs
 LOG=logs/change-to.txt
 echo "Running 'ant change-to -Dsuite=nightly', redirecting output to $LOG: `date`"
-ant change-to -Dsuite=nightly 2>&1 | grep -v GITHUB_TOKEN > $LOG
 
 echo "Last 100 lines of $LOG: `date`"
 tail -100 $LOG
@@ -43,7 +42,6 @@ ant compile eclipse netbeans idea
 which javadoc
 LOG=logs/javadoc.txt
 echo "Running 'ant change-to -Dsuite=nightly', redirecting output to $LOG: `date`"
-ant javadoc 2>&1 | grep -v GITHUB_TOKEN > $LOG
 
 echo "Last 100 lines of $LOG: `date`"
 tail -100 $LOG

@@ -1,0 +1,635 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../../../../stylesheet.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>/*<a name="line.1"></a>
+<span class="sourceLineNo">002</span> * Copyright (c) 2009-2012 The Regents of the University of California.<a name="line.2"></a>
+<span class="sourceLineNo">003</span> * All rights reserved.<a name="line.3"></a>
+<span class="sourceLineNo">004</span> *<a name="line.4"></a>
+<span class="sourceLineNo">005</span> * '$Author: crawl $'<a name="line.5"></a>
+<span class="sourceLineNo">006</span> * '$Date: 2012-11-26 14:19:36 -0800 (Mon, 26 Nov 2012) $' <a name="line.6"></a>
+<span class="sourceLineNo">007</span> * '$Revision: 31113 $'<a name="line.7"></a>
+<span class="sourceLineNo">008</span> * <a name="line.8"></a>
+<span class="sourceLineNo">009</span> * Permission is hereby granted, without written agreement and without<a name="line.9"></a>
+<span class="sourceLineNo">010</span> * license or royalty fees, to use, copy, modify, and distribute this<a name="line.10"></a>
+<span class="sourceLineNo">011</span> * software and its documentation for any purpose, provided that the above<a name="line.11"></a>
+<span class="sourceLineNo">012</span> * copyright notice and the following two paragraphs appear in all copies<a name="line.12"></a>
+<span class="sourceLineNo">013</span> * of this software.<a name="line.13"></a>
+<span class="sourceLineNo">014</span> *<a name="line.14"></a>
+<span class="sourceLineNo">015</span> * IN NO EVENT SHALL THE UNIVERSITY OF CALIFORNIA BE LIABLE TO ANY PARTY<a name="line.15"></a>
+<span class="sourceLineNo">016</span> * FOR DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES<a name="line.16"></a>
+<span class="sourceLineNo">017</span> * ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION, EVEN IF<a name="line.17"></a>
+<span class="sourceLineNo">018</span> * THE UNIVERSITY OF CALIFORNIA HAS BEEN ADVISED OF THE POSSIBILITY OF<a name="line.18"></a>
+<span class="sourceLineNo">019</span> * SUCH DAMAGE.<a name="line.19"></a>
+<span class="sourceLineNo">020</span> *<a name="line.20"></a>
+<span class="sourceLineNo">021</span> * THE UNIVERSITY OF CALIFORNIA SPECIFICALLY DISCLAIMS ANY WARRANTIES,<a name="line.21"></a>
+<span class="sourceLineNo">022</span> * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF<a name="line.22"></a>
+<span class="sourceLineNo">023</span> * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE<a name="line.23"></a>
+<span class="sourceLineNo">024</span> * PROVIDED HEREUNDER IS ON AN "AS IS" BASIS, AND THE UNIVERSITY OF<a name="line.24"></a>
+<span class="sourceLineNo">025</span> * CALIFORNIA HAS NO OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT, UPDATES,<a name="line.25"></a>
+<span class="sourceLineNo">026</span> * ENHANCEMENTS, OR MODIFICATIONS.<a name="line.26"></a>
+<span class="sourceLineNo">027</span> *<a name="line.27"></a>
+<span class="sourceLineNo">028</span> */<a name="line.28"></a>
+<span class="sourceLineNo">029</span><a name="line.29"></a>
+<span class="sourceLineNo">030</span>package org.sdm.spa.actors.transport;<a name="line.30"></a>
+<span class="sourceLineNo">031</span><a name="line.31"></a>
+<span class="sourceLineNo">032</span>import java.io.ByteArrayOutputStream;<a name="line.32"></a>
+<span class="sourceLineNo">033</span>import java.io.File;<a name="line.33"></a>
+<span class="sourceLineNo">034</span>import java.io.OutputStream;<a name="line.34"></a>
+<span class="sourceLineNo">035</span><a name="line.35"></a>
+<span class="sourceLineNo">036</span>import org.apache.commons.logging.Log;<a name="line.36"></a>
+<span class="sourceLineNo">037</span>import org.apache.commons.logging.LogFactory;<a name="line.37"></a>
+<span class="sourceLineNo">038</span>import org.kepler.ssh.ExecException;<a name="line.38"></a>
+<span class="sourceLineNo">039</span>import org.kepler.ssh.SshException;<a name="line.39"></a>
+<span class="sourceLineNo">040</span>import org.kepler.ssh.SshExec;<a name="line.40"></a>
+<span class="sourceLineNo">041</span>import org.sdm.spa.actors.transport.vo.ConnectionDetails;<a name="line.41"></a>
+<span class="sourceLineNo">042</span><a name="line.42"></a>
+<span class="sourceLineNo">043</span>/**<a name="line.43"></a>
+<span class="sourceLineNo">044</span> * This class provides methods to copy files across two remote machines using<a name="line.44"></a>
+<span class="sourceLineNo">045</span> * bbcp. It generates the command based on the user input, connects to the<a name="line.45"></a>
+<span class="sourceLineNo">046</span> * source machine using ssh and executes the commands. Internally uses<a name="line.46"></a>
+<span class="sourceLineNo">047</span> * &lt;code&gt;SshExec&lt;/code&gt; methods to execute command.<a name="line.47"></a>
+<span class="sourceLineNo">048</span> * &lt;p&gt;<a name="line.48"></a>
+<span class="sourceLineNo">049</span> * Copy operation would fail if file with the same name already exists. Command<a name="line.49"></a>
+<span class="sourceLineNo">050</span> * line options can be set to override the default behavior<a name="line.50"></a>
+<span class="sourceLineNo">051</span> * &lt;p&gt;<a name="line.51"></a>
+<span class="sourceLineNo">052</span> * The path of bbcp executable on the remote machine should be set in the class<a name="line.52"></a>
+<span class="sourceLineNo">053</span> * variable 'protocolPathDest', if bbcp is installed on a non standard path. On<a name="line.53"></a>
+<span class="sourceLineNo">054</span> * the local machine or remote source machine, if the variable protocolPathSrc<a name="line.54"></a>
+<span class="sourceLineNo">055</span> * is not set, attempt is made to search the most common locations user's home<a name="line.55"></a>
+<span class="sourceLineNo">056</span> * directory, /usr/bin, /bin, and /usr/local/bin. If the executable is not found<a name="line.56"></a>
+<span class="sourceLineNo">057</span> * in the above paths, an error is reported<a name="line.57"></a>
+<span class="sourceLineNo">058</span> * &lt;p&gt;<a name="line.58"></a>
+<span class="sourceLineNo">059</span> * <a name="line.59"></a>
+<span class="sourceLineNo">060</span> * @author Chandrika Sivaramakrishnan<a name="line.60"></a>
+<span class="sourceLineNo">061</span> * <a name="line.61"></a>
+<span class="sourceLineNo">062</span> */<a name="line.62"></a>
+<span class="sourceLineNo">063</span>public class BbcpCopier extends FileCopierBase {<a name="line.63"></a>
+<span class="sourceLineNo">064</span><a name="line.64"></a>
+<span class="sourceLineNo">065</span>        // /////////////////////Private Variables/////////////////////////////////<a name="line.65"></a>
+<span class="sourceLineNo">066</span>        private static final Log log = LogFactory<a name="line.66"></a>
+<span class="sourceLineNo">067</span>                        .getLog(BbcpCopier.class.getName());<a name="line.67"></a>
+<span class="sourceLineNo">068</span>        private static final boolean isDebugging = log.isDebugEnabled();<a name="line.68"></a>
+<span class="sourceLineNo">069</span><a name="line.69"></a>
+<span class="sourceLineNo">070</span>        // //////////////////Protected Methods////////////////////////////////////<a name="line.70"></a>
+<span class="sourceLineNo">071</span><a name="line.71"></a>
+<span class="sourceLineNo">072</span>        /*<a name="line.72"></a>
+<span class="sourceLineNo">073</span>         * Generates the bbcp command to copy from remote host to local host.<a name="line.73"></a>
+<span class="sourceLineNo">074</span>         * Executes the command using SshExec class<a name="line.74"></a>
+<span class="sourceLineNo">075</span>         * <a name="line.75"></a>
+<span class="sourceLineNo">076</span>         * @see<a name="line.76"></a>
+<span class="sourceLineNo">077</span>         * org.sdm.spa.actors.transport.FileCopier#copyFrom(org.sdm.spa.actors.transport<a name="line.77"></a>
+<span class="sourceLineNo">078</span>         * .vo.ConnectionDetails, java.lang.String, java.lang.String, boolean)<a name="line.78"></a>
+<span class="sourceLineNo">079</span>         */<a name="line.79"></a>
+<span class="sourceLineNo">080</span>        @Override<a name="line.80"></a>
+<span class="sourceLineNo">081</span>        // ANUSUA Change -Starts<a name="line.81"></a>
+<span class="sourceLineNo">082</span>        protected CopyResult copyFrom(ConnectionDetails srcDetails, String srcFile,<a name="line.82"></a>
+<span class="sourceLineNo">083</span>                        String destFile, boolean recursive) throws SshException {<a name="line.83"></a>
+<span class="sourceLineNo">084</span>                // force copy - overwrite files if already exist<a name="line.84"></a>
+<span class="sourceLineNo">085</span>                cmdLineOptions += "-f";<a name="line.85"></a>
+<span class="sourceLineNo">086</span>                String osname = (System.getProperty("os.name")).toLowerCase();<a name="line.86"></a>
+<span class="sourceLineNo">087</span>                /*<a name="line.87"></a>
+<span class="sourceLineNo">088</span>                 * if (osname.contains("windows")) { throw new<a name="line.88"></a>
+<span class="sourceLineNo">089</span>                 * SshException("BBCP is not supported on Windows machines"); }<a name="line.89"></a>
+<span class="sourceLineNo">090</span>                 */<a name="line.90"></a>
+<span class="sourceLineNo">091</span><a name="line.91"></a>
+<span class="sourceLineNo">092</span>                int exitCode = 0;<a name="line.92"></a>
+<span class="sourceLineNo">093</span>                StringBuffer cmd = new StringBuffer(100);<a name="line.93"></a>
+<span class="sourceLineNo">094</span>                OutputStream streamOut = new ByteArrayOutputStream();<a name="line.94"></a>
+<span class="sourceLineNo">095</span>                OutputStream streamErr = new ByteArrayOutputStream();<a name="line.95"></a>
+<span class="sourceLineNo">096</span>                // Connecting to local destination<a name="line.96"></a>
+<span class="sourceLineNo">097</span>                SshExec localSshObj = new SshExec(System.getProperty("user.name"),<a name="line.97"></a>
+<span class="sourceLineNo">098</span>                                "localhost");<a name="line.98"></a>
+<span class="sourceLineNo">099</span>                localSshObj.setTimeout(timeout, false, false);<a name="line.99"></a>
+<span class="sourceLineNo">100</span>                localSshObj.setPseudoTerminal(true);<a name="line.100"></a>
+<span class="sourceLineNo">101</span>                localSshObj.setForcedCleanUp(forcedCleanup);<a name="line.101"></a>
+<span class="sourceLineNo">102</span>                String cmdWithPath="";<a name="line.102"></a>
+<span class="sourceLineNo">103</span>                File single_srcFileObj = null;<a name="line.103"></a>
+<span class="sourceLineNo">104</span>                File srcFile_Obj = null;<a name="line.104"></a>
+<span class="sourceLineNo">105</span>                File srcFileObjlst = null;<a name="line.105"></a>
+<span class="sourceLineNo">106</span>                boolean flag = false;<a name="line.106"></a>
+<span class="sourceLineNo">107</span>                String[] srcFileList = null;<a name="line.107"></a>
+<span class="sourceLineNo">108</span>                String[] srcFile_list = null;<a name="line.108"></a>
+<span class="sourceLineNo">109</span>                String wildcardFileList;<a name="line.109"></a>
+<span class="sourceLineNo">110</span>                StringBuffer warn = new StringBuffer(100);<a name="line.110"></a>
+<span class="sourceLineNo">111</span>                boolean warn_flag = false;<a name="line.111"></a>
+<span class="sourceLineNo">112</span><a name="line.112"></a>
+<span class="sourceLineNo">113</span>                SshExec sshObject = new SshExec(srcDetails.getUser(), srcDetails<a name="line.113"></a>
+<span class="sourceLineNo">114</span>                                .getHost(), srcDetails.getPort());<a name="line.114"></a>
+<span class="sourceLineNo">115</span><a name="line.115"></a>
+<span class="sourceLineNo">116</span>                if (!(srcFile.contains(","))) {<a name="line.116"></a>
+<span class="sourceLineNo">117</span>                        if (srcFile.startsWith("/")) {<a name="line.117"></a>
+<span class="sourceLineNo">118</span>                                srcFile_list = new String[1];<a name="line.118"></a>
+<span class="sourceLineNo">119</span>                                srcFile_list[0] = srcFile.trim();<a name="line.119"></a>
+<span class="sourceLineNo">120</span>                        } else {<a name="line.120"></a>
+<span class="sourceLineNo">121</span>                                return new CopyResult(<a name="line.121"></a>
+<span class="sourceLineNo">122</span>                                                1,<a name="line.122"></a>
+<span class="sourceLineNo">123</span>                                                "",<a name="line.123"></a>
+<span class="sourceLineNo">124</span>                                                srcFile<a name="line.124"></a>
+<span class="sourceLineNo">125</span>                                                                + " does not contain full path to the file. Please provide full path. ");<a name="line.125"></a>
+<span class="sourceLineNo">126</span>                        }<a name="line.126"></a>
+<span class="sourceLineNo">127</span>                } else {<a name="line.127"></a>
+<span class="sourceLineNo">128</span>                        if (srcFile.contains(",")) {<a name="line.128"></a>
+<span class="sourceLineNo">129</span>                                srcFileList = srcFile.split(",");<a name="line.129"></a>
+<span class="sourceLineNo">130</span>                                srcFile_list = new String[srcFileList.length];<a name="line.130"></a>
+<span class="sourceLineNo">131</span>                                for (int count = 0; count &lt; srcFileList.length; count++) {<a name="line.131"></a>
+<span class="sourceLineNo">132</span>                                        if ((srcFileList[count].trim()).startsWith("/")) {<a name="line.132"></a>
+<span class="sourceLineNo">133</span>                                                srcFile_list[count] = srcFileList[count].trim();<a name="line.133"></a>
+<span class="sourceLineNo">134</span>                                        } else {<a name="line.134"></a>
+<span class="sourceLineNo">135</span>                                                warn.append(srcFile_list[count].trim() + " ");<a name="line.135"></a>
+<span class="sourceLineNo">136</span>                                                if (!warn_flag)<a name="line.136"></a>
+<span class="sourceLineNo">137</span>                                                        warn_flag = true;<a name="line.137"></a>
+<span class="sourceLineNo">138</span>                                        }<a name="line.138"></a>
+<span class="sourceLineNo">139</span>                                }<a name="line.139"></a>
+<span class="sourceLineNo">140</span>                        }<a name="line.140"></a>
+<span class="sourceLineNo">141</span>                }<a name="line.141"></a>
+<span class="sourceLineNo">142</span><a name="line.142"></a>
+<span class="sourceLineNo">143</span>                if (warn_flag) {<a name="line.143"></a>
+<span class="sourceLineNo">144</span>                        warn<a name="line.144"></a>
+<span class="sourceLineNo">145</span>                                        .append(" does not contain full path to the source file. Please provide full path. ");<a name="line.145"></a>
+<span class="sourceLineNo">146</span>                        warn_flag = false;<a name="line.146"></a>
+<span class="sourceLineNo">147</span>                }<a name="line.147"></a>
+<span class="sourceLineNo">148</span><a name="line.148"></a>
+<span class="sourceLineNo">149</span>                try {<a name="line.149"></a>
+<span class="sourceLineNo">150</span>                        cmd.append("bbcp ");<a name="line.150"></a>
+<span class="sourceLineNo">151</span>                        cmd.append(cmdLineOptions); // Review - Check if cmdLineOptions<a name="line.151"></a>
+<span class="sourceLineNo">152</span>                        // already has a -z******************#DONE<a name="line.152"></a>
+<span class="sourceLineNo">153</span>                        if (!(cmdLineOptions.equals("-z"))) {// dealing with firewall<a name="line.153"></a>
+<span class="sourceLineNo">154</span>                                cmd.append(" -z ");<a name="line.154"></a>
+<span class="sourceLineNo">155</span>                        }<a name="line.155"></a>
+<span class="sourceLineNo">156</span>                        // BBCP does not handle error when directory is specified without<a name="line.156"></a>
+<span class="sourceLineNo">157</span>                        // recursive flag.<a name="line.157"></a>
+<span class="sourceLineNo">158</span>                        // Better to have recursive always on, rather than giving out wrong<a name="line.158"></a>
+<span class="sourceLineNo">159</span>                        // output.<a name="line.159"></a>
+<span class="sourceLineNo">160</span>                        cmd.append("-r ");<a name="line.160"></a>
+<span class="sourceLineNo">161</span><a name="line.161"></a>
+<span class="sourceLineNo">162</span>                        if (!protocolPathSrc.equals("")) {<a name="line.162"></a>
+<span class="sourceLineNo">163</span>                                cmd.append("-S \"ssh -l %U %H ");<a name="line.163"></a>
+<span class="sourceLineNo">164</span>                                cmd.append(protocolPathSrc);<a name="line.164"></a>
+<span class="sourceLineNo">165</span>                                cmd.append("bbcp\" ");<a name="line.165"></a>
+<span class="sourceLineNo">166</span>                        }<a name="line.166"></a>
+<span class="sourceLineNo">167</span>                        if (!protocolPathDest.equals("")) {<a name="line.167"></a>
+<span class="sourceLineNo">168</span>                                cmd.append("-T \"ssh -l %U %H ");<a name="line.168"></a>
+<span class="sourceLineNo">169</span>                                cmd.append(protocolPathDest);<a name="line.169"></a>
+<span class="sourceLineNo">170</span>                                cmd.append("bbcp\" ");<a name="line.170"></a>
+<span class="sourceLineNo">171</span>                        }<a name="line.171"></a>
+<span class="sourceLineNo">172</span>                        cmd.append(srcDetails.toString());<a name="line.172"></a>
+<span class="sourceLineNo">173</span>                        cmd.append(":");<a name="line.173"></a>
+<span class="sourceLineNo">174</span><a name="line.174"></a>
+<span class="sourceLineNo">175</span>                        for (int i = 0; i &lt; srcFile_list.length; i++) {<a name="line.175"></a>
+<span class="sourceLineNo">176</span>                                if (srcFile_list[i].contains("*")<a name="line.176"></a>
+<span class="sourceLineNo">177</span>                                                || (srcFile_list[i].contains("+"))) {<a name="line.177"></a>
+<span class="sourceLineNo">178</span>                                        // BBCP cannot handle wildcard pattern * if copy is<a name="line.178"></a>
+<span class="sourceLineNo">179</span>                                        // being done from destination to source. We need<a name="line.179"></a>
+<span class="sourceLineNo">180</span>                                        // function to list files matching the pattern<a name="line.180"></a>
+<span class="sourceLineNo">181</span>                                        System.out.println("wildcard found in filename :"<a name="line.181"></a>
+<span class="sourceLineNo">182</span>                                                        + srcFile_list[i]);<a name="line.182"></a>
+<span class="sourceLineNo">183</span>                                        wildcardFileList = sshObject.getwildcardFileListingBBCP(<a name="line.183"></a>
+<span class="sourceLineNo">184</span>                                                        srcDetails.toString(), srcFile_list[i]);<a name="line.184"></a>
+<span class="sourceLineNo">185</span>                                        cmd.append(wildcardFileList);<a name="line.185"></a>
+<span class="sourceLineNo">186</span>                                } else {<a name="line.186"></a>
+<span class="sourceLineNo">187</span>                                        // quotes if file contains wildcard - it might contain space<a name="line.187"></a>
+<span class="sourceLineNo">188</span>                                        // in file name<a name="line.188"></a>
+<span class="sourceLineNo">189</span>                                        cmd.append(srcDetails.toString());<a name="line.189"></a>
+<span class="sourceLineNo">190</span>                                        cmd.append(":");<a name="line.190"></a>
+<span class="sourceLineNo">191</span>                                        cmd.append("\"");<a name="line.191"></a>
+<span class="sourceLineNo">192</span>                                        cmd.append(srcFile_list[i]);<a name="line.192"></a>
+<span class="sourceLineNo">193</span>                                        cmd.append("\"");<a name="line.193"></a>
+<span class="sourceLineNo">194</span>                                        cmd.append(" ");<a name="line.194"></a>
+<span class="sourceLineNo">195</span>                                }<a name="line.195"></a>
+<span class="sourceLineNo">196</span>                        }<a name="line.196"></a>
+<span class="sourceLineNo">197</span>                        cmd.append(" ");<a name="line.197"></a>
+<span class="sourceLineNo">198</span>                        cmd.append(destFile);// Review - check if dest is<a name="line.198"></a>
+<span class="sourceLineNo">199</span>                        // dir**********#DONE, Checked earlier<a name="line.199"></a>
+<span class="sourceLineNo">200</span><a name="line.200"></a>
+<span class="sourceLineNo">201</span>                        if (protocolPathDest.equals("")) {<a name="line.201"></a>
+<span class="sourceLineNo">202</span>                                cmdWithPath = getCmdWithDefaultPath(cmd);<a name="line.202"></a>
+<span class="sourceLineNo">203</span>                        } else {<a name="line.203"></a>
+<span class="sourceLineNo">204</span>                                cmdWithPath = protocolPathDest + cmd;<a name="line.204"></a>
+<span class="sourceLineNo">205</span>                        }<a name="line.205"></a>
+<span class="sourceLineNo">206</span>                        // Execute bbcp command<a name="line.206"></a>
+<span class="sourceLineNo">207</span>                        if (isDebugging)<a name="line.207"></a>
+<span class="sourceLineNo">208</span>                                log.debug("copy cmd=" + cmdWithPath);<a name="line.208"></a>
+<span class="sourceLineNo">209</span><a name="line.209"></a>
+<span class="sourceLineNo">210</span>                        System.out.println("BBCP command is : " + cmdWithPath);<a name="line.210"></a>
+<span class="sourceLineNo">211</span><a name="line.211"></a>
+<span class="sourceLineNo">212</span>                        exitCode = localSshObj.executeCmd(cmdWithPath, streamOut,<a name="line.212"></a>
+<span class="sourceLineNo">213</span>                                        streamErr, srcDetails.toString());<a name="line.213"></a>
+<span class="sourceLineNo">214</span><a name="line.214"></a>
+<span class="sourceLineNo">215</span>                } catch (Exception e) {<a name="line.215"></a>
+<span class="sourceLineNo">216</span>                        return new CopyResult(1, e.toString(), "");<a name="line.216"></a>
+<span class="sourceLineNo">217</span>                }<a name="line.217"></a>
+<span class="sourceLineNo">218</span>                if (exitCode &gt; 0) {<a name="line.218"></a>
+<span class="sourceLineNo">219</span>                        log.error("Output on stdout:" + streamOut);<a name="line.219"></a>
+<span class="sourceLineNo">220</span>                        log.error("Output on stderr:" + streamErr);<a name="line.220"></a>
+<span class="sourceLineNo">221</span>                }<a name="line.221"></a>
+<span class="sourceLineNo">222</span><a name="line.222"></a>
+<span class="sourceLineNo">223</span>                String message = streamErr.toString();<a name="line.223"></a>
+<span class="sourceLineNo">224</span>                if (message == null || message.trim().equals("")) {<a name="line.224"></a>
+<span class="sourceLineNo">225</span>                        message = streamOut.toString();<a name="line.225"></a>
+<span class="sourceLineNo">226</span>                }<a name="line.226"></a>
+<span class="sourceLineNo">227</span>                return new CopyResult(exitCode, message, warn.toString());<a name="line.227"></a>
+<span class="sourceLineNo">228</span><a name="line.228"></a>
+<span class="sourceLineNo">229</span>        }<a name="line.229"></a>
+<span class="sourceLineNo">230</span><a name="line.230"></a>
+<span class="sourceLineNo">231</span>        /*<a name="line.231"></a>
+<span class="sourceLineNo">232</span>         * Generates the bbcp command to copy from local host to remote host.<a name="line.232"></a>
+<span class="sourceLineNo">233</span>         * Executes the command using SshExec class<a name="line.233"></a>
+<span class="sourceLineNo">234</span>         * <a name="line.234"></a>
+<span class="sourceLineNo">235</span>         * @see org.sdm.spa.actors.transport.FileCopier#copyTo(java.lang.String,<a name="line.235"></a>
+<span class="sourceLineNo">236</span>         * org.sdm.spa.actors.transport.vo.ConnectionDetails, java.lang.String,<a name="line.236"></a>
+<span class="sourceLineNo">237</span>         * boolean)<a name="line.237"></a>
+<span class="sourceLineNo">238</span>         */<a name="line.238"></a>
+<span class="sourceLineNo">239</span>        @Override<a name="line.239"></a>
+<span class="sourceLineNo">240</span>        protected CopyResult copyTo(String srcFile, ConnectionDetails destDetails,<a name="line.240"></a>
+<span class="sourceLineNo">241</span>                        String destFile, boolean recursive) throws SshException {<a name="line.241"></a>
+<span class="sourceLineNo">242</span>                cmdLineOptions = ""; // Review - don't forcefully rewrite.<a name="line.242"></a>
+<span class="sourceLineNo">243</span>                // If user wants to overwrite he can set it as command line option, but<a name="line.243"></a>
+<span class="sourceLineNo">244</span>                // if you<a name="line.244"></a>
+<span class="sourceLineNo">245</span>                // set it, he can't override it with any command line<a name="line.245"></a>
+<span class="sourceLineNo">246</span>                // option*********#DONE<a name="line.246"></a>
+<span class="sourceLineNo">247</span>                String osname = (System.getProperty("os.name")).toLowerCase();<a name="line.247"></a>
+<span class="sourceLineNo">248</span>                String userhome = (System.getProperty("user.home")).toLowerCase();<a name="line.248"></a>
+<span class="sourceLineNo">249</span>                if (osname.contains("windows")) {<a name="line.249"></a>
+<span class="sourceLineNo">250</span>                        throw new SshException("BBCP is not supported on Windows machines");<a name="line.250"></a>
+<span class="sourceLineNo">251</span>                }<a name="line.251"></a>
+<span class="sourceLineNo">252</span><a name="line.252"></a>
+<span class="sourceLineNo">253</span>                int exitCode = 0;<a name="line.253"></a>
+<span class="sourceLineNo">254</span>                String cmdWithPath;<a name="line.254"></a>
+<span class="sourceLineNo">255</span>                File srcFile_Obj = null;<a name="line.255"></a>
+<span class="sourceLineNo">256</span>                boolean flag = false;<a name="line.256"></a>
+<span class="sourceLineNo">257</span>                String[] srcFileList = null;<a name="line.257"></a>
+<span class="sourceLineNo">258</span>                String[] srcFile_list = null;<a name="line.258"></a>
+<span class="sourceLineNo">259</span>                StringBuffer warn = new StringBuffer(100);<a name="line.259"></a>
+<span class="sourceLineNo">260</span><a name="line.260"></a>
+<span class="sourceLineNo">261</span>                OutputStream streamOut = new ByteArrayOutputStream();<a name="line.261"></a>
+<span class="sourceLineNo">262</span>                OutputStream streamErr = new ByteArrayOutputStream();<a name="line.262"></a>
+<span class="sourceLineNo">263</span>                StringBuffer cmd = new StringBuffer(100);<a name="line.263"></a>
+<span class="sourceLineNo">264</span>                SshExec localSshObj = new SshExec(System.getProperty("user.name"),<a name="line.264"></a>
+<span class="sourceLineNo">265</span>                                "localhost");<a name="line.265"></a>
+<span class="sourceLineNo">266</span>                localSshObj.setTimeout(timeout, false, false);<a name="line.266"></a>
+<span class="sourceLineNo">267</span>                localSshObj.setPseudoTerminal(true);<a name="line.267"></a>
+<span class="sourceLineNo">268</span>                localSshObj.setForcedCleanUp(forcedCleanup);<a name="line.268"></a>
+<span class="sourceLineNo">269</span>                System.out.println("Initial str : " + srcFile);<a name="line.269"></a>
+<span class="sourceLineNo">270</span>                if (srcFile.contains(",")) {<a name="line.270"></a>
+<span class="sourceLineNo">271</span>                        // Anand: list of files<a name="line.271"></a>
+<span class="sourceLineNo">272</span>                        System.out.println("list of files************");<a name="line.272"></a>
+<span class="sourceLineNo">273</span>                        srcFileList = srcFile.split(",");<a name="line.273"></a>
+<span class="sourceLineNo">274</span>                        srcFile_list = new String[srcFileList.length];<a name="line.274"></a>
+<span class="sourceLineNo">275</span>                        for (int count = 0; count &lt; srcFileList.length; count++) {<a name="line.275"></a>
+<span class="sourceLineNo">276</span>                                System.out.println("before : " + srcFileList[count]);<a name="line.276"></a>
+<span class="sourceLineNo">277</span><a name="line.277"></a>
+<span class="sourceLineNo">278</span>                                if ((srcFileList[count].trim()).startsWith("/")) {<a name="line.278"></a>
+<span class="sourceLineNo">279</span>                                        srcFile_list[count] = srcFileList[count].trim();<a name="line.279"></a>
+<span class="sourceLineNo">280</span>                                } else {<a name="line.280"></a>
+<span class="sourceLineNo">281</span>                                        srcFile_list[count] = userhome + "/"<a name="line.281"></a>
+<span class="sourceLineNo">282</span>                                                        + srcFileList[count].trim();<a name="line.282"></a>
+<span class="sourceLineNo">283</span>                                }<a name="line.283"></a>
+<span class="sourceLineNo">284</span>                                srcFile_Obj = new File(srcFileList[count]);<a name="line.284"></a>
+<span class="sourceLineNo">285</span>                                if (srcFile_Obj.isDirectory()) {<a name="line.285"></a>
+<span class="sourceLineNo">286</span>                                        flag = true;<a name="line.286"></a>
+<span class="sourceLineNo">287</span>                                }<a name="line.287"></a>
+<span class="sourceLineNo">288</span>                                System.out.println("after : " + srcFile_list[count]);<a name="line.288"></a>
+<span class="sourceLineNo">289</span>                        }<a name="line.289"></a>
+<span class="sourceLineNo">290</span>                } else {<a name="line.290"></a>
+<span class="sourceLineNo">291</span>                        System.out.println("single files************");<a name="line.291"></a>
+<span class="sourceLineNo">292</span>                        // Anand: single file<a name="line.292"></a>
+<span class="sourceLineNo">293</span>                        srcFile_list = new String[1];<a name="line.293"></a>
+<span class="sourceLineNo">294</span>                        srcFile = srcFile.trim();<a name="line.294"></a>
+<span class="sourceLineNo">295</span>                        if (srcFile.startsWith("/")) {<a name="line.295"></a>
+<span class="sourceLineNo">296</span>                                srcFile_list[0] = srcFile;<a name="line.296"></a>
+<span class="sourceLineNo">297</span>                        } else {<a name="line.297"></a>
+<span class="sourceLineNo">298</span>                                srcFile_list[0] = userhome + "/" + srcFile;<a name="line.298"></a>
+<span class="sourceLineNo">299</span>                        }<a name="line.299"></a>
+<span class="sourceLineNo">300</span>                        srcFile_Obj = new File(srcFile);<a name="line.300"></a>
+<span class="sourceLineNo">301</span>                        if (srcFile_Obj.isDirectory()) {<a name="line.301"></a>
+<span class="sourceLineNo">302</span>                                flag = true;<a name="line.302"></a>
+<span class="sourceLineNo">303</span>                        }<a name="line.303"></a>
+<span class="sourceLineNo">304</span>                }<a name="line.304"></a>
+<span class="sourceLineNo">305</span><a name="line.305"></a>
+<span class="sourceLineNo">306</span>                // build bbcp command<a name="line.306"></a>
+<span class="sourceLineNo">307</span>                cmd.append("bbcp ");<a name="line.307"></a>
+<span class="sourceLineNo">308</span>                cmd.append(cmdLineOptions);<a name="line.308"></a>
+<span class="sourceLineNo">309</span>                cmd.append(" ");<a name="line.309"></a>
+<span class="sourceLineNo">310</span>                if (recursive || flag) {<a name="line.310"></a>
+<span class="sourceLineNo">311</span>                        cmd.append("-r ");<a name="line.311"></a>
+<span class="sourceLineNo">312</span>                }<a name="line.312"></a>
+<span class="sourceLineNo">313</span>                if (!protocolPathSrc.equals("")) {<a name="line.313"></a>
+<span class="sourceLineNo">314</span>                        cmd.append("-S \"ssh -l %U %H ");<a name="line.314"></a>
+<span class="sourceLineNo">315</span>                        cmd.append(protocolPathSrc);<a name="line.315"></a>
+<span class="sourceLineNo">316</span>                        cmd.append("bbcp\" ");<a name="line.316"></a>
+<span class="sourceLineNo">317</span>                }<a name="line.317"></a>
+<span class="sourceLineNo">318</span>                if (!protocolPathDest.equals("")) {<a name="line.318"></a>
+<span class="sourceLineNo">319</span>                        cmd.append("-T \"ssh -l %U %H ");<a name="line.319"></a>
+<span class="sourceLineNo">320</span>                        cmd.append(protocolPathDest);<a name="line.320"></a>
+<span class="sourceLineNo">321</span>                        cmd.append("bbcp\" ");<a name="line.321"></a>
+<span class="sourceLineNo">322</span>                }<a name="line.322"></a>
+<span class="sourceLineNo">323</span>                // all files are in the srcFile_list (single file too)<a name="line.323"></a>
+<span class="sourceLineNo">324</span>                for (int i = 0; i &lt; srcFile_list.length; i++) {<a name="line.324"></a>
+<span class="sourceLineNo">325</span>                        if (srcFile_list[i].contains("*")<a name="line.325"></a>
+<span class="sourceLineNo">326</span>                                        || (srcFile_list[i].contains("*"))) {<a name="line.326"></a>
+<span class="sourceLineNo">327</span>                                // no quotes if file contains wildcard<a name="line.327"></a>
+<span class="sourceLineNo">328</span>                                cmd.append(srcFile_list[i]);<a name="line.328"></a>
+<span class="sourceLineNo">329</span>                                cmd.append(" ");<a name="line.329"></a>
+<span class="sourceLineNo">330</span>                        } else {<a name="line.330"></a>
+<span class="sourceLineNo">331</span>                                // quotes if file does not contain wildcard - it might contain<a name="line.331"></a>
+<span class="sourceLineNo">332</span>                                // space in file name<a name="line.332"></a>
+<span class="sourceLineNo">333</span>                                cmd.append("\"");<a name="line.333"></a>
+<span class="sourceLineNo">334</span>                                cmd.append(srcFile_list[i]);<a name="line.334"></a>
+<span class="sourceLineNo">335</span>                                cmd.append("\"");<a name="line.335"></a>
+<span class="sourceLineNo">336</span>                                cmd.append(" ");<a name="line.336"></a>
+<span class="sourceLineNo">337</span>                        }<a name="line.337"></a>
+<span class="sourceLineNo">338</span>                }<a name="line.338"></a>
+<span class="sourceLineNo">339</span>                cmd.append(destDetails.toString());<a name="line.339"></a>
+<span class="sourceLineNo">340</span>                cmd.append(":");<a name="line.340"></a>
+<span class="sourceLineNo">341</span>                cmd.append(destFile);<a name="line.341"></a>
+<span class="sourceLineNo">342</span><a name="line.342"></a>
+<span class="sourceLineNo">343</span>                if (protocolPathSrc.equals("")) {<a name="line.343"></a>
+<span class="sourceLineNo">344</span>                        cmdWithPath = getCmdWithDefaultPath(cmd);<a name="line.344"></a>
+<span class="sourceLineNo">345</span>                } else {<a name="line.345"></a>
+<span class="sourceLineNo">346</span>                        cmdWithPath = protocolPathSrc + cmd;<a name="line.346"></a>
+<span class="sourceLineNo">347</span>                }<a name="line.347"></a>
+<span class="sourceLineNo">348</span>                System.out.println("BBCP Command to be executed is : " + cmdWithPath);<a name="line.348"></a>
+<span class="sourceLineNo">349</span>                if (isDebugging)<a name="line.349"></a>
+<span class="sourceLineNo">350</span>                        log.debug("copy cmd=" + cmdWithPath);<a name="line.350"></a>
+<span class="sourceLineNo">351</span>                try {<a name="line.351"></a>
+<span class="sourceLineNo">352</span>                        exitCode = localSshObj.executeCmd(cmdWithPath, streamOut,<a name="line.352"></a>
+<span class="sourceLineNo">353</span>                                        streamErr, destDetails.toString());<a name="line.353"></a>
+<span class="sourceLineNo">354</span>                } catch (ExecException e) {<a name="line.354"></a>
+<span class="sourceLineNo">355</span>                        return new CopyResult(1, e.toString(), "");<a name="line.355"></a>
+<span class="sourceLineNo">356</span>                }<a name="line.356"></a>
+<span class="sourceLineNo">357</span>                if (exitCode &gt; 0) {<a name="line.357"></a>
+<span class="sourceLineNo">358</span>                        log.error("Output on stdout:" + streamOut);<a name="line.358"></a>
+<span class="sourceLineNo">359</span>                        log.error("Output on stderr:" + streamErr);<a name="line.359"></a>
+<span class="sourceLineNo">360</span>                }<a name="line.360"></a>
+<span class="sourceLineNo">361</span>                String message = streamErr.toString();<a name="line.361"></a>
+<span class="sourceLineNo">362</span>                if (message == null || message.trim().equals("")) {<a name="line.362"></a>
+<span class="sourceLineNo">363</span>                        message = streamOut.toString();<a name="line.363"></a>
+<span class="sourceLineNo">364</span>                }<a name="line.364"></a>
+<span class="sourceLineNo">365</span>                return new CopyResult(exitCode, message, warn.toString());<a name="line.365"></a>
+<span class="sourceLineNo">366</span>        }<a name="line.366"></a>
+<span class="sourceLineNo">367</span><a name="line.367"></a>
+<span class="sourceLineNo">368</span>        /*<a name="line.368"></a>
+<span class="sourceLineNo">369</span>         * Generates the bbcp command to copy from a remote host to another remote<a name="line.369"></a>
+<span class="sourceLineNo">370</span>         * host. Executes the command using SshExec class<a name="line.370"></a>
+<span class="sourceLineNo">371</span>         * <a name="line.371"></a>
+<span class="sourceLineNo">372</span>         * @see<a name="line.372"></a>
+<span class="sourceLineNo">373</span>         * org.sdm.spa.actors.transport.FileCopier#copyRemote(org.sdm.spa.actors<a name="line.373"></a>
+<span class="sourceLineNo">374</span>         * .transport.vo.ConnectionDetails, java.lang.String,<a name="line.374"></a>
+<span class="sourceLineNo">375</span>         * org.sdm.spa.actors.transport.vo.ConnectionDetails, java.lang.String,<a name="line.375"></a>
+<span class="sourceLineNo">376</span>         * boolean)<a name="line.376"></a>
+<span class="sourceLineNo">377</span>         */<a name="line.377"></a>
+<span class="sourceLineNo">378</span>        @Override<a name="line.378"></a>
+<span class="sourceLineNo">379</span>        protected CopyResult copyRemote(ConnectionDetails srcDetails,<a name="line.379"></a>
+<span class="sourceLineNo">380</span>                        String srcFile, ConnectionDetails destDetails, String destFile,<a name="line.380"></a>
+<span class="sourceLineNo">381</span>                        boolean recursive) throws ExecException {<a name="line.381"></a>
+<span class="sourceLineNo">382</span>                cmdLineOptions = ""; // Review - don't force overwrite***********#DONE<a name="line.382"></a>
+<span class="sourceLineNo">383</span>                if (isDebugging)<a name="line.383"></a>
+<span class="sourceLineNo">384</span>                        log.debug("remote bbcp copy");<a name="line.384"></a>
+<span class="sourceLineNo">385</span>                OutputStream cmdStdout = new ByteArrayOutputStream();<a name="line.385"></a>
+<span class="sourceLineNo">386</span>                OutputStream cmdStderr = new ByteArrayOutputStream();<a name="line.386"></a>
+<span class="sourceLineNo">387</span>                // OutputStream streamOut = new ByteArrayOutputStream();<a name="line.387"></a>
+<span class="sourceLineNo">388</span>                // OutputStream streamErr = new ByteArrayOutputStream();<a name="line.388"></a>
+<span class="sourceLineNo">389</span>                String remoteHostStr = "";<a name="line.389"></a>
+<span class="sourceLineNo">390</span>                SshExec sshObjectSrc = null;<a name="line.390"></a>
+<span class="sourceLineNo">391</span>                SshExec sshObjectDest = null;<a name="line.391"></a>
+<span class="sourceLineNo">392</span>                // File single_srcFileObj = null;<a name="line.392"></a>
+<span class="sourceLineNo">393</span>                // File srcFile_Obj = null;<a name="line.393"></a>
+<span class="sourceLineNo">394</span>                // File srcFileObjlst = null;<a name="line.394"></a>
+<span class="sourceLineNo">395</span>                // boolean flag = false;<a name="line.395"></a>
+<span class="sourceLineNo">396</span>                String[] srcFileList = null;<a name="line.396"></a>
+<span class="sourceLineNo">397</span>                String[] srcFile_list = null;<a name="line.397"></a>
+<span class="sourceLineNo">398</span>                String wildcardFileList = "";<a name="line.398"></a>
+<span class="sourceLineNo">399</span>                StringBuffer warn = new StringBuffer(100);<a name="line.399"></a>
+<span class="sourceLineNo">400</span>                boolean warn_flag = false;<a name="line.400"></a>
+<span class="sourceLineNo">401</span><a name="line.401"></a>
+<span class="sourceLineNo">402</span>                // bbcp needs pseudo terminal enabled, so that password request is sent<a name="line.402"></a>
+<span class="sourceLineNo">403</span>                // to stdout instead of terminal<a name="line.403"></a>
+<span class="sourceLineNo">404</span>                // source connection object<a name="line.404"></a>
+<span class="sourceLineNo">405</span>                sshObjectSrc = new SshExec(srcDetails.getUser(), srcDetails.getHost(),<a name="line.405"></a>
+<span class="sourceLineNo">406</span>                                srcDetails.getPort());<a name="line.406"></a>
+<span class="sourceLineNo">407</span>                sshObjectSrc.setTimeout(timeout, false, false);<a name="line.407"></a>
+<span class="sourceLineNo">408</span>                sshObjectSrc.setForcedCleanUp(forcedCleanup);<a name="line.408"></a>
+<span class="sourceLineNo">409</span>                sshObjectSrc.setPseudoTerminal(true);<a name="line.409"></a>
+<span class="sourceLineNo">410</span><a name="line.410"></a>
+<span class="sourceLineNo">411</span>                // destination connection object<a name="line.411"></a>
+<span class="sourceLineNo">412</span>                sshObjectDest = new SshExec(destDetails.getUser(), destDetails<a name="line.412"></a>
+<span class="sourceLineNo">413</span>                                .getHost(), destDetails.getPort());<a name="line.413"></a>
+<span class="sourceLineNo">414</span>                sshObjectDest.setTimeout(timeout, false, false);<a name="line.414"></a>
+<span class="sourceLineNo">415</span>                sshObjectDest.setForcedCleanUp(forcedCleanup);<a name="line.415"></a>
+<span class="sourceLineNo">416</span>                sshObjectDest.setPseudoTerminal(true);<a name="line.416"></a>
+<span class="sourceLineNo">417</span><a name="line.417"></a>
+<span class="sourceLineNo">418</span>                if (srcDetails.isConnectionOrigin()) {<a name="line.418"></a>
+<span class="sourceLineNo">419</span>                        remoteHostStr = destDetails.toString();<a name="line.419"></a>
+<span class="sourceLineNo">420</span>                } else {<a name="line.420"></a>
+<span class="sourceLineNo">421</span>                        remoteHostStr = srcDetails.toString();<a name="line.421"></a>
+<span class="sourceLineNo">422</span>                }<a name="line.422"></a>
+<span class="sourceLineNo">423</span><a name="line.423"></a>
+<span class="sourceLineNo">424</span>                StringBuffer cmd = new StringBuffer(100);<a name="line.424"></a>
+<span class="sourceLineNo">425</span>                String cmdWithPath = null;<a name="line.425"></a>
+<span class="sourceLineNo">426</span>                int exitCode = 0;<a name="line.426"></a>
+<span class="sourceLineNo">427</span><a name="line.427"></a>
+<span class="sourceLineNo">428</span>                if (srcFile.contains(",")) {<a name="line.428"></a>
+<span class="sourceLineNo">429</span>                        // list of files<a name="line.429"></a>
+<span class="sourceLineNo">430</span>                        srcFileList = srcFile.split(",");<a name="line.430"></a>
+<span class="sourceLineNo">431</span>                        srcFile_list = new String[srcFileList.length];<a name="line.431"></a>
+<span class="sourceLineNo">432</span>                        for (int count = 0; count &lt; srcFileList.length; count++) {<a name="line.432"></a>
+<span class="sourceLineNo">433</span>                                if ((srcFileList[count].trim()).startsWith("/")) {<a name="line.433"></a>
+<span class="sourceLineNo">434</span>                                        srcFile_list[count] = srcFileList[count].trim();<a name="line.434"></a>
+<span class="sourceLineNo">435</span>                                } else {<a name="line.435"></a>
+<span class="sourceLineNo">436</span>                                        warn.append(srcFileList[count].trim() + " ");<a name="line.436"></a>
+<span class="sourceLineNo">437</span>                                        if (!warn_flag)<a name="line.437"></a>
+<span class="sourceLineNo">438</span>                                                warn_flag = true;<a name="line.438"></a>
+<span class="sourceLineNo">439</span>                                }<a name="line.439"></a>
+<span class="sourceLineNo">440</span>                        }<a name="line.440"></a>
+<span class="sourceLineNo">441</span>                        if (warn_flag) {<a name="line.441"></a>
+<span class="sourceLineNo">442</span>                                warn<a name="line.442"></a>
+<span class="sourceLineNo">443</span>                                                .append(" does not contain full path to the source file. Please provide full path. ");<a name="line.443"></a>
+<span class="sourceLineNo">444</span>                                warn_flag = false;<a name="line.444"></a>
+<span class="sourceLineNo">445</span>                        }<a name="line.445"></a>
+<span class="sourceLineNo">446</span>                } else {<a name="line.446"></a>
+<span class="sourceLineNo">447</span>                        // single file<a name="line.447"></a>
+<span class="sourceLineNo">448</span>                        if (srcFile.startsWith("/")) {<a name="line.448"></a>
+<span class="sourceLineNo">449</span>                                srcFile_list = new String[1];<a name="line.449"></a>
+<span class="sourceLineNo">450</span>                                srcFile_list[0] = srcFile.trim();<a name="line.450"></a>
+<span class="sourceLineNo">451</span>                        } else {<a name="line.451"></a>
+<span class="sourceLineNo">452</span>                                throw new SshException(<a name="line.452"></a>
+<span class="sourceLineNo">453</span>                                                srcFile<a name="line.453"></a>
+<span class="sourceLineNo">454</span>                                                                + "does not contain full path to the file. Please provide full path.");<a name="line.454"></a>
+<span class="sourceLineNo">455</span>                        }<a name="line.455"></a>
+<span class="sourceLineNo">456</span>                }<a name="line.456"></a>
+<span class="sourceLineNo">457</span>                // build bbcp command<a name="line.457"></a>
+<span class="sourceLineNo">458</span>                try {<a name="line.458"></a>
+<span class="sourceLineNo">459</span>                        cmd.append("bbcp ");<a name="line.459"></a>
+<span class="sourceLineNo">460</span>                        cmd.append(cmdLineOptions);<a name="line.460"></a>
+<span class="sourceLineNo">461</span>                        if (!srcDetails.isConnectionOrigin()) {<a name="line.461"></a>
+<span class="sourceLineNo">462</span>                                // -z option for destination to source copy<a name="line.462"></a>
+<span class="sourceLineNo">463</span>                                cmd.append(" -z ");<a name="line.463"></a>
+<span class="sourceLineNo">464</span>                        }<a name="line.464"></a>
+<span class="sourceLineNo">465</span>                        // if (recursive) {<a name="line.465"></a>
+<span class="sourceLineNo">466</span>                        // BBCP does not handle error when directory is specified without<a name="line.466"></a>
+<span class="sourceLineNo">467</span>                        // recursive flag.<a name="line.467"></a>
+<span class="sourceLineNo">468</span>                        // Better to have recursive always on, rather than giving out wrong<a name="line.468"></a>
+<span class="sourceLineNo">469</span>                        // output.<a name="line.469"></a>
+<span class="sourceLineNo">470</span>                        cmd.append("-r ");<a name="line.470"></a>
+<span class="sourceLineNo">471</span>                        // }<a name="line.471"></a>
+<span class="sourceLineNo">472</span>                        log.debug("Protocol path src =" + protocolPathSrc);<a name="line.472"></a>
+<span class="sourceLineNo">473</span>                        if (!protocolPathSrc.equals("")) {<a name="line.473"></a>
+<span class="sourceLineNo">474</span>                                cmd.append("-S \"ssh -l %U %H ");<a name="line.474"></a>
+<span class="sourceLineNo">475</span>                                cmd.append(protocolPathSrc);<a name="line.475"></a>
+<span class="sourceLineNo">476</span>                                cmd.append("bbcp\" ");<a name="line.476"></a>
+<span class="sourceLineNo">477</span>                        }<a name="line.477"></a>
+<span class="sourceLineNo">478</span>                        if (!protocolPathDest.equals("")) {<a name="line.478"></a>
+<span class="sourceLineNo">479</span>                                cmd.append("-T \"ssh -l %U %H ");<a name="line.479"></a>
+<span class="sourceLineNo">480</span>                                cmd.append(protocolPathDest);<a name="line.480"></a>
+<span class="sourceLineNo">481</span>                                cmd.append("bbcp\" ");<a name="line.481"></a>
+<span class="sourceLineNo">482</span>                        }<a name="line.482"></a>
+<span class="sourceLineNo">483</span>                        if (srcDetails.isConnectionOrigin()) {<a name="line.483"></a>
+<span class="sourceLineNo">484</span>                                // BBCP can handle wildcard pattern * if copy is done<a name="line.484"></a>
+<span class="sourceLineNo">485</span>                                // from source machine to destination machine<a name="line.485"></a>
+<span class="sourceLineNo">486</span>                                for (int i = 0; i &lt; srcFile_list.length; i++) {<a name="line.486"></a>
+<span class="sourceLineNo">487</span>                                        if (srcFile_list[i].contains("*")<a name="line.487"></a>
+<span class="sourceLineNo">488</span>                                                        || (srcFile_list[i].contains("+"))) {<a name="line.488"></a>
+<span class="sourceLineNo">489</span>                                                cmd.append(srcFile_list[i]);<a name="line.489"></a>
+<span class="sourceLineNo">490</span>                                                cmd.append(" ");<a name="line.490"></a>
+<span class="sourceLineNo">491</span>                                        } else {<a name="line.491"></a>
+<span class="sourceLineNo">492</span>                                                cmd.append("\"");<a name="line.492"></a>
+<span class="sourceLineNo">493</span>                                                cmd.append(srcFile_list[i]);<a name="line.493"></a>
+<span class="sourceLineNo">494</span>                                                cmd.append("\"");<a name="line.494"></a>
+<span class="sourceLineNo">495</span>                                                cmd.append(" ");<a name="line.495"></a>
+<span class="sourceLineNo">496</span>                                        }<a name="line.496"></a>
+<span class="sourceLineNo">497</span>                                }<a name="line.497"></a>
+<span class="sourceLineNo">498</span>                                cmd.append(destDetails.toString());<a name="line.498"></a>
+<span class="sourceLineNo">499</span>                                cmd.append(":");<a name="line.499"></a>
+<span class="sourceLineNo">500</span>                                cmd.append(destFile);<a name="line.500"></a>
+<span class="sourceLineNo">501</span>                        } else {<a name="line.501"></a>
+<span class="sourceLineNo">502</span>                                for (int i = 0; i &lt; srcFile_list.length; i++) {<a name="line.502"></a>
+<span class="sourceLineNo">503</span>                                        // BBCP cannot handle wildcard pattern * if copy is<a name="line.503"></a>
+<span class="sourceLineNo">504</span>                                        // being done from destination to source. We need<a name="line.504"></a>
+<span class="sourceLineNo">505</span>                                        // function to list files matching the pattern<a name="line.505"></a>
+<span class="sourceLineNo">506</span>                                        if (srcFile_list[i].contains("*")<a name="line.506"></a>
+<span class="sourceLineNo">507</span>                                                        || (srcFile_list[i].contains("+"))) {<a name="line.507"></a>
+<span class="sourceLineNo">508</span>                                                wildcardFileList = sshObjectSrc<a name="line.508"></a>
+<span class="sourceLineNo">509</span>                                                                .getwildcardFileListingBBCP(srcDetails<a name="line.509"></a>
+<span class="sourceLineNo">510</span>                                                                                .toString(), srcFile_list[i]);<a name="line.510"></a>
+<span class="sourceLineNo">511</span>                                                cmd.append(wildcardFileList);<a name="line.511"></a>
+<span class="sourceLineNo">512</span>                                        } else {<a name="line.512"></a>
+<span class="sourceLineNo">513</span>                                                cmd.append(srcDetails.toString());<a name="line.513"></a>
+<span class="sourceLineNo">514</span>                                                cmd.append(":");<a name="line.514"></a>
+<span class="sourceLineNo">515</span>                                                cmd.append("\"");<a name="line.515"></a>
+<span class="sourceLineNo">516</span>                                                cmd.append(srcFile_list[i]);<a name="line.516"></a>
+<span class="sourceLineNo">517</span>                                                cmd.append("\"");<a name="line.517"></a>
+<span class="sourceLineNo">518</span>                                                cmd.append(" ");<a name="line.518"></a>
+<span class="sourceLineNo">519</span>                                        }<a name="line.519"></a>
+<span class="sourceLineNo">520</span>                                }<a name="line.520"></a>
+<span class="sourceLineNo">521</span>                                // cmd.append(destDetails.toString());<a name="line.521"></a>
+<span class="sourceLineNo">522</span>                                // cmd.append(":");<a name="line.522"></a>
+<span class="sourceLineNo">523</span>                                cmd.append(destFile);<a name="line.523"></a>
+<span class="sourceLineNo">524</span>                        }<a name="line.524"></a>
+<span class="sourceLineNo">525</span>                        if (protocolPathDest.equals("")) {<a name="line.525"></a>
+<span class="sourceLineNo">526</span>                                cmdWithPath = getCmdWithDefaultPath(cmd);<a name="line.526"></a>
+<span class="sourceLineNo">527</span>                        } else {<a name="line.527"></a>
+<span class="sourceLineNo">528</span>                                cmdWithPath = protocolPathDest + cmd;<a name="line.528"></a>
+<span class="sourceLineNo">529</span>                        }<a name="line.529"></a>
+<span class="sourceLineNo">530</span><a name="line.530"></a>
+<span class="sourceLineNo">531</span>                        log.debug("copy cmd without default path=" + cmd);<a name="line.531"></a>
+<span class="sourceLineNo">532</span>                        if (isDebugging)<a name="line.532"></a>
+<span class="sourceLineNo">533</span>                                log.debug("remote copy cmd=" + cmdWithPath);<a name="line.533"></a>
+<span class="sourceLineNo">534</span><a name="line.534"></a>
+<span class="sourceLineNo">535</span>                        System.out.println("cmdwithpath : " + cmdWithPath);<a name="line.535"></a>
+<span class="sourceLineNo">536</span>                        if (srcDetails.isConnectionOrigin()) {<a name="line.536"></a>
+<span class="sourceLineNo">537</span>                                exitCode = sshObjectSrc.executeCmd(cmdWithPath, cmdStdout,<a name="line.537"></a>
+<span class="sourceLineNo">538</span>                                                cmdStderr, remoteHostStr);<a name="line.538"></a>
+<span class="sourceLineNo">539</span>                        } else {<a name="line.539"></a>
+<span class="sourceLineNo">540</span>                                exitCode = sshObjectDest.executeCmd(cmdWithPath, cmdStdout,<a name="line.540"></a>
+<span class="sourceLineNo">541</span>                                                cmdStderr, remoteHostStr);<a name="line.541"></a>
+<span class="sourceLineNo">542</span>                        }<a name="line.542"></a>
+<span class="sourceLineNo">543</span><a name="line.543"></a>
+<span class="sourceLineNo">544</span>                } catch (ExecException e) {<a name="line.544"></a>
+<span class="sourceLineNo">545</span>                        return new CopyResult(1, e.toString(), "");<a name="line.545"></a>
+<span class="sourceLineNo">546</span>                }<a name="line.546"></a>
+<span class="sourceLineNo">547</span>                if (exitCode &gt; 0) {<a name="line.547"></a>
+<span class="sourceLineNo">548</span>                        log.error("Output on stdout:" + cmdStdout);<a name="line.548"></a>
+<span class="sourceLineNo">549</span>                        log.error("Output on stderr:" + cmdStderr);<a name="line.549"></a>
+<span class="sourceLineNo">550</span>                }<a name="line.550"></a>
+<span class="sourceLineNo">551</span>                String message = cmdStderr.toString();<a name="line.551"></a>
+<span class="sourceLineNo">552</span>                if (message == null || message.trim().equals("")) {<a name="line.552"></a>
+<span class="sourceLineNo">553</span>                        message = cmdStdout.toString();<a name="line.553"></a>
+<span class="sourceLineNo">554</span>                }<a name="line.554"></a>
+<span class="sourceLineNo">555</span>                return new CopyResult(exitCode, message, warn.toString());<a name="line.555"></a>
+<span class="sourceLineNo">556</span>        }<a name="line.556"></a>
+<span class="sourceLineNo">557</span><a name="line.557"></a>
+<span class="sourceLineNo">558</span>        @Override<a name="line.558"></a>
+<span class="sourceLineNo">559</span>        protected int getDefaultPort() {<a name="line.559"></a>
+<span class="sourceLineNo">560</span>                return -1;<a name="line.560"></a>
+<span class="sourceLineNo">561</span>        }<a name="line.561"></a>
+<span class="sourceLineNo">562</span><a name="line.562"></a>
+<span class="sourceLineNo">563</span>}<a name="line.563"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

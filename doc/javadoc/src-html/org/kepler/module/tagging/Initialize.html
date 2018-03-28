@@ -1,0 +1,233 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../../../stylesheet.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>/*<a name="line.1"></a>
+<span class="sourceLineNo">002</span> * Copyright (c) 2010 The Regents of the University of California.<a name="line.2"></a>
+<span class="sourceLineNo">003</span> * All rights reserved.<a name="line.3"></a>
+<span class="sourceLineNo">004</span> *<a name="line.4"></a>
+<span class="sourceLineNo">005</span> * '$Author: crawl $'<a name="line.5"></a>
+<span class="sourceLineNo">006</span> * '$Date: 2012-11-26 14:24:42 -0800 (Mon, 26 Nov 2012) $' <a name="line.6"></a>
+<span class="sourceLineNo">007</span> * '$Revision: 31130 $'<a name="line.7"></a>
+<span class="sourceLineNo">008</span> * <a name="line.8"></a>
+<span class="sourceLineNo">009</span> * Permission is hereby granted, without written agreement and without<a name="line.9"></a>
+<span class="sourceLineNo">010</span> * license or royalty fees, to use, copy, modify, and distribute this<a name="line.10"></a>
+<span class="sourceLineNo">011</span> * software and its documentation for any purpose, provided that the above<a name="line.11"></a>
+<span class="sourceLineNo">012</span> * copyright notice and the following two paragraphs appear in all copies<a name="line.12"></a>
+<span class="sourceLineNo">013</span> * of this software.<a name="line.13"></a>
+<span class="sourceLineNo">014</span> *<a name="line.14"></a>
+<span class="sourceLineNo">015</span> * IN NO EVENT SHALL THE UNIVERSITY OF CALIFORNIA BE LIABLE TO ANY PARTY<a name="line.15"></a>
+<span class="sourceLineNo">016</span> * FOR DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES<a name="line.16"></a>
+<span class="sourceLineNo">017</span> * ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION, EVEN IF<a name="line.17"></a>
+<span class="sourceLineNo">018</span> * THE UNIVERSITY OF CALIFORNIA HAS BEEN ADVISED OF THE POSSIBILITY OF<a name="line.18"></a>
+<span class="sourceLineNo">019</span> * SUCH DAMAGE.<a name="line.19"></a>
+<span class="sourceLineNo">020</span> *<a name="line.20"></a>
+<span class="sourceLineNo">021</span> * THE UNIVERSITY OF CALIFORNIA SPECIFICALLY DISCLAIMS ANY WARRANTIES,<a name="line.21"></a>
+<span class="sourceLineNo">022</span> * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF<a name="line.22"></a>
+<span class="sourceLineNo">023</span> * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE<a name="line.23"></a>
+<span class="sourceLineNo">024</span> * PROVIDED HEREUNDER IS ON AN "AS IS" BASIS, AND THE UNIVERSITY OF<a name="line.24"></a>
+<span class="sourceLineNo">025</span> * CALIFORNIA HAS NO OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT, UPDATES,<a name="line.25"></a>
+<span class="sourceLineNo">026</span> * ENHANCEMENTS, OR MODIFICATIONS.<a name="line.26"></a>
+<span class="sourceLineNo">027</span> *<a name="line.27"></a>
+<span class="sourceLineNo">028</span> */<a name="line.28"></a>
+<span class="sourceLineNo">029</span><a name="line.29"></a>
+<span class="sourceLineNo">030</span>package org.kepler.module.tagging;<a name="line.30"></a>
+<span class="sourceLineNo">031</span><a name="line.31"></a>
+<span class="sourceLineNo">032</span>import java.io.File;<a name="line.32"></a>
+<span class="sourceLineNo">033</span>import java.lang.reflect.InvocationTargetException;<a name="line.33"></a>
+<span class="sourceLineNo">034</span>import java.lang.reflect.Method;<a name="line.34"></a>
+<span class="sourceLineNo">035</span>import java.util.List;<a name="line.35"></a>
+<span class="sourceLineNo">036</span>import java.util.Set;<a name="line.36"></a>
+<span class="sourceLineNo">037</span><a name="line.37"></a>
+<span class="sourceLineNo">038</span>import org.apache.commons.logging.Log;<a name="line.38"></a>
+<span class="sourceLineNo">039</span>import org.apache.commons.logging.LogFactory;<a name="line.39"></a>
+<span class="sourceLineNo">040</span>import org.kepler.configuration.ConfigurationUtilities;<a name="line.40"></a>
+<span class="sourceLineNo">041</span>import org.kepler.gui.KeplerGraphFrame;<a name="line.41"></a>
+<span class="sourceLineNo">042</span>import org.kepler.module.ModuleInitializer;<a name="line.42"></a>
+<span class="sourceLineNo">043</span>import org.kepler.sms.NamedOntClass;<a name="line.43"></a>
+<span class="sourceLineNo">044</span>import org.kepler.sms.SMSServices;<a name="line.44"></a>
+<span class="sourceLineNo">045</span>import org.kepler.sms.SMSTagChangeListener;<a name="line.45"></a>
+<span class="sourceLineNo">046</span>import org.kepler.sms.util.OntologyConfiguration;<a name="line.46"></a>
+<span class="sourceLineNo">047</span>import org.kepler.tagging.TagReloadType;<a name="line.47"></a>
+<span class="sourceLineNo">048</span>import org.kepler.tagging.TaggingContextManager;<a name="line.48"></a>
+<span class="sourceLineNo">049</span>import org.kepler.tagging.WindowIdentifier;<a name="line.49"></a>
+<span class="sourceLineNo">050</span>import org.kepler.util.DotKeplerManager;<a name="line.50"></a>
+<span class="sourceLineNo">051</span>import org.kepler.util.FileUtil;<a name="line.51"></a>
+<span class="sourceLineNo">052</span>import org.sdm.spa.actors.transport.FileCopierBase;<a name="line.52"></a>
+<span class="sourceLineNo">053</span>import org.sdm.spa.actors.transport.FileCopierFactory;<a name="line.53"></a>
+<span class="sourceLineNo">054</span><a name="line.54"></a>
+<span class="sourceLineNo">055</span>import ptolemy.actor.gui.Configuration;<a name="line.55"></a>
+<span class="sourceLineNo">056</span>import ptolemy.actor.gui.Effigy;<a name="line.56"></a>
+<span class="sourceLineNo">057</span>import ptolemy.kernel.util.NamedObj;<a name="line.57"></a>
+<span class="sourceLineNo">058</span><a name="line.58"></a>
+<span class="sourceLineNo">059</span>/**<a name="line.59"></a>
+<span class="sourceLineNo">060</span> * Created by IntelliJ IDEA. User: sean Date: Aug 4, 2009 Time: 2:54:11 PM<a name="line.60"></a>
+<span class="sourceLineNo">061</span> */<a name="line.61"></a>
+<span class="sourceLineNo">062</span>public class Initialize implements ModuleInitializer {<a name="line.62"></a>
+<span class="sourceLineNo">063</span><a name="line.63"></a>
+<span class="sourceLineNo">064</span>        public void initializeModule() {<a name="line.64"></a>
+<span class="sourceLineNo">065</span>                setupCatalogFile();<a name="line.65"></a>
+<span class="sourceLineNo">066</span>                listenForExternalSemanticChanges();<a name="line.66"></a>
+<span class="sourceLineNo">067</span>                <a name="line.67"></a>
+<span class="sourceLineNo">068</span>        //System.out.println("start of workflow-scheduler-gui module initializing");<a name="line.68"></a>
+<span class="sourceLineNo">069</span>                ConfigurationUtilities.copyAllProperties("uiMenuMappings", "gui", "tagging");<a name="line.69"></a>
+<span class="sourceLineNo">070</span>        }<a name="line.70"></a>
+<span class="sourceLineNo">071</span><a name="line.71"></a>
+<span class="sourceLineNo">072</span>        private void listenForExternalSemanticChanges() {<a name="line.72"></a>
+<span class="sourceLineNo">073</span>                <a name="line.73"></a>
+<span class="sourceLineNo">074</span>                SMSTagChangeListener listener = new TagsChangedListener();<a name="line.74"></a>
+<span class="sourceLineNo">075</span>                SMSServices.addListener( listener );<a name="line.75"></a>
+<span class="sourceLineNo">076</span>        }<a name="line.76"></a>
+<span class="sourceLineNo">077</span><a name="line.77"></a>
+<span class="sourceLineNo">078</span>        private void setupCatalogFile() {<a name="line.78"></a>
+<span class="sourceLineNo">079</span>                OntologyConfiguration oc = OntologyConfiguration.instance();<a name="line.79"></a>
+<span class="sourceLineNo">080</span><a name="line.80"></a>
+<span class="sourceLineNo">081</span>                String ontCatFileStr = "configs/ptolemy/configs/kepler/ontologies/ontology_catalog.xml";<a name="line.81"></a>
+<span class="sourceLineNo">082</span>                File original = FileUtil.getHighestRankedFile(ontCatFileStr);<a name="line.82"></a>
+<span class="sourceLineNo">083</span><a name="line.83"></a>
+<span class="sourceLineNo">084</span>                // TODO get module name from somewhere<a name="line.84"></a>
+<span class="sourceLineNo">085</span>                File dotKeplerTaggingCacheDir = DotKeplerManager.getInstance()<a name="line.85"></a>
+<span class="sourceLineNo">086</span>                                .getTransientModuleDirectory("tagging");<a name="line.86"></a>
+<span class="sourceLineNo">087</span><a name="line.87"></a>
+<span class="sourceLineNo">088</span>                // shouldn't be necessary, but shouldn't hurt<a name="line.88"></a>
+<span class="sourceLineNo">089</span>                // noinspection ResultOfMethodCallIgnored<a name="line.89"></a>
+<span class="sourceLineNo">090</span>                dotKeplerTaggingCacheDir.mkdirs();<a name="line.90"></a>
+<span class="sourceLineNo">091</span><a name="line.91"></a>
+<span class="sourceLineNo">092</span>                File catalogLocation = new File(dotKeplerTaggingCacheDir,<a name="line.92"></a>
+<span class="sourceLineNo">093</span>                                "ontology_catalog.xml");<a name="line.93"></a>
+<span class="sourceLineNo">094</span>                if (!catalogLocation.isFile()) {<a name="line.94"></a>
+<span class="sourceLineNo">095</span>                        // Copy it<a name="line.95"></a>
+<span class="sourceLineNo">096</span>                        FileCopierBase copier = FileCopierFactory.getFileCopier("local");<a name="line.96"></a>
+<span class="sourceLineNo">097</span><a name="line.97"></a>
+<span class="sourceLineNo">098</span>                        // Whizbang reflection goes here<a name="line.98"></a>
+<span class="sourceLineNo">099</span>                        try {<a name="line.99"></a>
+<span class="sourceLineNo">100</span>                                Method copyMethod = FileCopierBase.class.getDeclaredMethod("copyLocal", String.class, String.class, boolean.class);<a name="line.100"></a>
+<span class="sourceLineNo">101</span>                                copyMethod.setAccessible(true);<a name="line.101"></a>
+<span class="sourceLineNo">102</span>                                Object obj = copyMethod.invoke(copier, original.getAbsolutePath(), catalogLocation.getAbsolutePath(), false);<a name="line.102"></a>
+<span class="sourceLineNo">103</span>                                FileCopierBase.CopyResult cr = (FileCopierBase.CopyResult) obj;<a name="line.103"></a>
+<span class="sourceLineNo">104</span>                        }<a name="line.104"></a>
+<span class="sourceLineNo">105</span>                        catch (NoSuchMethodException ex) {<a name="line.105"></a>
+<span class="sourceLineNo">106</span>                                ex.printStackTrace();<a name="line.106"></a>
+<span class="sourceLineNo">107</span>                        }<a name="line.107"></a>
+<span class="sourceLineNo">108</span>                        catch (InvocationTargetException ex) {<a name="line.108"></a>
+<span class="sourceLineNo">109</span>                                ex.printStackTrace();<a name="line.109"></a>
+<span class="sourceLineNo">110</span>                        }<a name="line.110"></a>
+<span class="sourceLineNo">111</span>                        catch (IllegalAccessException ex) {<a name="line.111"></a>
+<span class="sourceLineNo">112</span>                                ex.printStackTrace();<a name="line.112"></a>
+<span class="sourceLineNo">113</span>                        }<a name="line.113"></a>
+<span class="sourceLineNo">114</span><a name="line.114"></a>
+<span class="sourceLineNo">115</span>                }<a name="line.115"></a>
+<span class="sourceLineNo">116</span>                oc.setIndexFile(catalogLocation);<a name="line.116"></a>
+<span class="sourceLineNo">117</span>                oc.initialize();<a name="line.117"></a>
+<span class="sourceLineNo">118</span>        }<a name="line.118"></a>
+<span class="sourceLineNo">119</span><a name="line.119"></a>
+<span class="sourceLineNo">120</span>        /** <a name="line.120"></a>
+<span class="sourceLineNo">121</span>         * SMSTagChangeListener<a name="line.121"></a>
+<span class="sourceLineNo">122</span>         */<a name="line.122"></a>
+<span class="sourceLineNo">123</span>        class TagsChangedListener implements SMSTagChangeListener {<a name="line.123"></a>
+<span class="sourceLineNo">124</span>                <a name="line.124"></a>
+<span class="sourceLineNo">125</span>                public void tagsChanged(NamedObj object, List&lt;NamedOntClass&gt; added,<a name="line.125"></a>
+<span class="sourceLineNo">126</span>                                List&lt;NamedOntClass&gt; removed) {<a name="line.126"></a>
+<span class="sourceLineNo">127</span>                        // This has to fire a tag change event iff the object to be<a name="line.127"></a>
+<span class="sourceLineNo">128</span>                        // tagged is a top-level workflow.<a name="line.128"></a>
+<span class="sourceLineNo">129</span>                        if (object.depthInHierarchy() != 0) {<a name="line.129"></a>
+<span class="sourceLineNo">130</span>                                // It's not top-level, so no notification sent<a name="line.130"></a>
+<span class="sourceLineNo">131</span>                                return;<a name="line.131"></a>
+<span class="sourceLineNo">132</span>                        }<a name="line.132"></a>
+<span class="sourceLineNo">133</span>                        // else this is top level, so send notification<a name="line.133"></a>
+<span class="sourceLineNo">134</span>                        Set&lt;WindowIdentifier&gt; identifiers = TaggingContextManager<a name="line.134"></a>
+<span class="sourceLineNo">135</span>                                        .getInstanceKeys();<a name="line.135"></a>
+<span class="sourceLineNo">136</span>                        if (Configuration.findEffigy(object) == null)<a name="line.136"></a>
+<span class="sourceLineNo">137</span>                                return;<a name="line.137"></a>
+<span class="sourceLineNo">138</span>                        <a name="line.138"></a>
+<span class="sourceLineNo">139</span>                        Effigy effigy = Configuration.findEffigy(object).topEffigy();<a name="line.139"></a>
+<span class="sourceLineNo">140</span>                        for (WindowIdentifier identifier : identifiers) {<a name="line.140"></a>
+<span class="sourceLineNo">141</span>                                KeplerGraphFrame kgf = identifier.getKeplerGraphFrame();<a name="line.141"></a>
+<span class="sourceLineNo">142</span>                                if (kgf.getEffigy() == null) {<a name="line.142"></a>
+<span class="sourceLineNo">143</span>                                        log.debug("Skipping notification of " + identifier<a name="line.143"></a>
+<span class="sourceLineNo">144</span>                                                        + " due to non-existent effigy");<a name="line.144"></a>
+<span class="sourceLineNo">145</span>                                        continue;<a name="line.145"></a>
+<span class="sourceLineNo">146</span>                                }<a name="line.146"></a>
+<span class="sourceLineNo">147</span>                                if (kgf.getEffigy().topEffigy() == effigy) {<a name="line.147"></a>
+<span class="sourceLineNo">148</span>                                        // System.out.println("Match found on: " + identifier);<a name="line.148"></a>
+<span class="sourceLineNo">149</span>                                        TaggingContextManager tcm = TaggingContextManager<a name="line.149"></a>
+<span class="sourceLineNo">150</span>                                                        .getInstance(identifier);<a name="line.150"></a>
+<span class="sourceLineNo">151</span>                                        for (TagReloadType change : TagReloadType<a name="line.151"></a>
+<span class="sourceLineNo">152</span>                                                        .createExternalChanges(object, added, removed)) {<a name="line.152"></a>
+<span class="sourceLineNo">153</span>                                                tcm.reloadTags(true, change);<a name="line.153"></a>
+<span class="sourceLineNo">154</span>                                        }<a name="line.154"></a>
+<span class="sourceLineNo">155</span>                                }<a name="line.155"></a>
+<span class="sourceLineNo">156</span>                        }<a name="line.156"></a>
+<span class="sourceLineNo">157</span>                }<a name="line.157"></a>
+<span class="sourceLineNo">158</span>        }<a name="line.158"></a>
+<span class="sourceLineNo">159</span>        <a name="line.159"></a>
+<span class="sourceLineNo">160</span>        private static Log log = LogFactory.getLog(Initialize.class);<a name="line.160"></a>
+<span class="sourceLineNo">161</span>}<a name="line.161"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

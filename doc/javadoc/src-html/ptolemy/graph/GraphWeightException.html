@@ -1,0 +1,162 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../stylesheet.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>/* Exception for unweighted graphs or graphs with improper weights.<a name="line.1"></a>
+<span class="sourceLineNo">002</span><a name="line.2"></a>
+<span class="sourceLineNo">003</span> Copyright (c) 2002-2014 The University of Maryland.<a name="line.3"></a>
+<span class="sourceLineNo">004</span> All rights reserved.<a name="line.4"></a>
+<span class="sourceLineNo">005</span> Permission is hereby granted, without written agreement and without<a name="line.5"></a>
+<span class="sourceLineNo">006</span> license or royalty fees, to use, copy, modify, and distribute this<a name="line.6"></a>
+<span class="sourceLineNo">007</span> software and its documentation for any purpose, provided that the above<a name="line.7"></a>
+<span class="sourceLineNo">008</span> copyright notice and the following two paragraphs appear in all copies<a name="line.8"></a>
+<span class="sourceLineNo">009</span> of this software.<a name="line.9"></a>
+<span class="sourceLineNo">010</span><a name="line.10"></a>
+<span class="sourceLineNo">011</span> IN NO EVENT SHALL THE UNIVERSITY OF MARYLAND BE LIABLE TO ANY PARTY<a name="line.11"></a>
+<span class="sourceLineNo">012</span> FOR DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES<a name="line.12"></a>
+<span class="sourceLineNo">013</span> ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION, EVEN IF<a name="line.13"></a>
+<span class="sourceLineNo">014</span> THE UNIVERSITY OF MARYLAND HAS BEEN ADVISED OF THE POSSIBILITY OF<a name="line.14"></a>
+<span class="sourceLineNo">015</span> SUCH DAMAGE.<a name="line.15"></a>
+<span class="sourceLineNo">016</span><a name="line.16"></a>
+<span class="sourceLineNo">017</span> THE UNIVERSITY OF MARYLAND SPECIFICALLY DISCLAIMS ANY WARRANTIES,<a name="line.17"></a>
+<span class="sourceLineNo">018</span> INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF<a name="line.18"></a>
+<span class="sourceLineNo">019</span> MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE<a name="line.19"></a>
+<span class="sourceLineNo">020</span> PROVIDED HEREUNDER IS ON AN "AS IS" BASIS, AND THE UNIVERSITY OF<a name="line.20"></a>
+<span class="sourceLineNo">021</span> MARYLAND HAS NO OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT, UPDATES,<a name="line.21"></a>
+<span class="sourceLineNo">022</span> ENHANCEMENTS, OR MODIFICATIONS.<a name="line.22"></a>
+<span class="sourceLineNo">023</span><a name="line.23"></a>
+<span class="sourceLineNo">024</span> */<a name="line.24"></a>
+<span class="sourceLineNo">025</span>package ptolemy.graph;<a name="line.25"></a>
+<span class="sourceLineNo">026</span><a name="line.26"></a>
+<span class="sourceLineNo">027</span>///////////////////////////////////////////////////////////////////<a name="line.27"></a>
+<span class="sourceLineNo">028</span>//// GraphWeightException<a name="line.28"></a>
+<span class="sourceLineNo">029</span><a name="line.29"></a>
+<span class="sourceLineNo">030</span>/** Exception for unweighted graphs or graphs with improper weights.<a name="line.30"></a>
+<span class="sourceLineNo">031</span> This exception can also be thrown due to accessing elements with<a name="line.31"></a>
+<span class="sourceLineNo">032</span> incorrect weights.<a name="line.32"></a>
+<span class="sourceLineNo">033</span><a name="line.33"></a>
+<span class="sourceLineNo">034</span> @author Mingyung Ko<a name="line.34"></a>
+<span class="sourceLineNo">035</span> @version $Id$<a name="line.35"></a>
+<span class="sourceLineNo">036</span> @since Ptolemy II 2.1<a name="line.36"></a>
+<span class="sourceLineNo">037</span> @Pt.ProposedRating Red (myko)<a name="line.37"></a>
+<span class="sourceLineNo">038</span> @Pt.AcceptedRating Red (ssb)<a name="line.38"></a>
+<span class="sourceLineNo">039</span> */<a name="line.39"></a>
+<span class="sourceLineNo">040</span>@SuppressWarnings("serial")<a name="line.40"></a>
+<span class="sourceLineNo">041</span>public class GraphWeightException extends GraphException {<a name="line.41"></a>
+<span class="sourceLineNo">042</span>    /** Constructor for a given message.<a name="line.42"></a>
+<span class="sourceLineNo">043</span>     *  @param message The message.<a name="line.43"></a>
+<span class="sourceLineNo">044</span>     */<a name="line.44"></a>
+<span class="sourceLineNo">045</span>    public GraphWeightException(String message) {<a name="line.45"></a>
+<span class="sourceLineNo">046</span>        super(message);<a name="line.46"></a>
+<span class="sourceLineNo">047</span>    }<a name="line.47"></a>
+<span class="sourceLineNo">048</span><a name="line.48"></a>
+<span class="sourceLineNo">049</span>    /** Constructor with arguments of weight, element, graph,<a name="line.49"></a>
+<span class="sourceLineNo">050</span>     *  and a message.<a name="line.50"></a>
+<span class="sourceLineNo">051</span>     *  This exception is generally thrown because of invalid weight<a name="line.51"></a>
+<span class="sourceLineNo">052</span>     *  association to a specific element. It can also be thrown for<a name="line.52"></a>
+<span class="sourceLineNo">053</span>     *  unspecific elements by setting the &lt;code&gt;element&lt;/code&gt; argument<a name="line.53"></a>
+<span class="sourceLineNo">054</span>     *  to &lt;code&gt;null&lt;/code&gt;.<a name="line.54"></a>
+<span class="sourceLineNo">055</span>     *<a name="line.55"></a>
+<span class="sourceLineNo">056</span>     *  @param weight The invalid weight.<a name="line.56"></a>
+<span class="sourceLineNo">057</span>     *  @param element The element to associate the invalid weight. Set<a name="line.57"></a>
+<span class="sourceLineNo">058</span>     *         &lt;code&gt;null&lt;/code&gt; for unspecific elements.<a name="line.58"></a>
+<span class="sourceLineNo">059</span>     *  @param graph The graph accessed.<a name="line.59"></a>
+<span class="sourceLineNo">060</span>     *  @param message The exception message.<a name="line.60"></a>
+<span class="sourceLineNo">061</span>     */<a name="line.61"></a>
+<span class="sourceLineNo">062</span>    public GraphWeightException(Object weight, Element element, Graph graph,<a name="line.62"></a>
+<span class="sourceLineNo">063</span>            String message) {<a name="line.63"></a>
+<span class="sourceLineNo">064</span>        super(_argumentsToString(weight, element, graph, message));<a name="line.64"></a>
+<span class="sourceLineNo">065</span>    }<a name="line.65"></a>
+<span class="sourceLineNo">066</span><a name="line.66"></a>
+<span class="sourceLineNo">067</span>    ///////////////////////////////////////////////////////////////////<a name="line.67"></a>
+<span class="sourceLineNo">068</span>    ////                         private methods                   ////<a name="line.68"></a>
+<span class="sourceLineNo">069</span><a name="line.69"></a>
+<span class="sourceLineNo">070</span>    /*  A method for generating proper string dumps.<a name="line.70"></a>
+<span class="sourceLineNo">071</span>     *  @param weight The invalid weight.<a name="line.71"></a>
+<span class="sourceLineNo">072</span>     *  @param element The element the invalid weight tries to associate.<a name="line.72"></a>
+<span class="sourceLineNo">073</span>     *  @param graph The graph to access.<a name="line.73"></a>
+<span class="sourceLineNo">074</span>     *  @param message The exception message given by users.<a name="line.74"></a>
+<span class="sourceLineNo">075</span>     *  @return The desired exception message.<a name="line.75"></a>
+<span class="sourceLineNo">076</span>     */<a name="line.76"></a>
+<span class="sourceLineNo">077</span>    static private String _argumentsToString(Object weight, Element element,<a name="line.77"></a>
+<span class="sourceLineNo">078</span>            Graph graph, String message) {<a name="line.78"></a>
+<span class="sourceLineNo">079</span>        StringBuffer outputMessage = new StringBuffer(<a name="line.79"></a>
+<span class="sourceLineNo">080</span>                message + weightDump(weight));<a name="line.80"></a>
+<span class="sourceLineNo">081</span><a name="line.81"></a>
+<span class="sourceLineNo">082</span>        if (element != null) {<a name="line.82"></a>
+<span class="sourceLineNo">083</span>            outputMessage.append(elementDump(element, graph));<a name="line.83"></a>
+<span class="sourceLineNo">084</span>        } else {<a name="line.84"></a>
+<span class="sourceLineNo">085</span>            outputMessage.append(graphDump(graph));<a name="line.85"></a>
+<span class="sourceLineNo">086</span>        }<a name="line.86"></a>
+<span class="sourceLineNo">087</span><a name="line.87"></a>
+<span class="sourceLineNo">088</span>        return outputMessage.toString();<a name="line.88"></a>
+<span class="sourceLineNo">089</span>    }<a name="line.89"></a>
+<span class="sourceLineNo">090</span>}<a name="line.90"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

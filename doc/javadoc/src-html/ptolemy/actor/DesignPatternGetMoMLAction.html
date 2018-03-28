@@ -1,0 +1,356 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../stylesheet.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>/* An action that generates the Moml for a group of states to be used as a<a name="line.1"></a>
+<span class="sourceLineNo">002</span> design pattern.<a name="line.2"></a>
+<span class="sourceLineNo">003</span><a name="line.3"></a>
+<span class="sourceLineNo">004</span> Copyright (c) 2008-2014 The Regents of the University of California.<a name="line.4"></a>
+<span class="sourceLineNo">005</span> All rights reserved.<a name="line.5"></a>
+<span class="sourceLineNo">006</span> Permission is hereby granted, without written agreement and without<a name="line.6"></a>
+<span class="sourceLineNo">007</span> license or royalty fees, to use, copy, modify, and distribute this<a name="line.7"></a>
+<span class="sourceLineNo">008</span> software and its documentation for any purpose, provided that the above<a name="line.8"></a>
+<span class="sourceLineNo">009</span> copyright notice and the following two paragraphs appear in all copies<a name="line.9"></a>
+<span class="sourceLineNo">010</span> of this software.<a name="line.10"></a>
+<span class="sourceLineNo">011</span><a name="line.11"></a>
+<span class="sourceLineNo">012</span> IN NO EVENT SHALL THE UNIVERSITY OF CALIFORNIA BE LIABLE TO ANY PARTY<a name="line.12"></a>
+<span class="sourceLineNo">013</span> FOR DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES<a name="line.13"></a>
+<span class="sourceLineNo">014</span> ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION, EVEN IF<a name="line.14"></a>
+<span class="sourceLineNo">015</span> THE UNIVERSITY OF CALIFORNIA HAS BEEN ADVISED OF THE POSSIBILITY OF<a name="line.15"></a>
+<span class="sourceLineNo">016</span> SUCH DAMAGE.<a name="line.16"></a>
+<span class="sourceLineNo">017</span><a name="line.17"></a>
+<span class="sourceLineNo">018</span> THE UNIVERSITY OF CALIFORNIA SPECIFICALLY DISCLAIMS ANY WARRANTIES,<a name="line.18"></a>
+<span class="sourceLineNo">019</span> INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF<a name="line.19"></a>
+<span class="sourceLineNo">020</span> MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE<a name="line.20"></a>
+<span class="sourceLineNo">021</span> PROVIDED HEREUNDER IS ON AN "AS IS" BASIS, AND THE UNIVERSITY OF<a name="line.21"></a>
+<span class="sourceLineNo">022</span> CALIFORNIA HAS NO OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT, UPDATES,<a name="line.22"></a>
+<span class="sourceLineNo">023</span> ENHANCEMENTS, OR MODIFICATIONS.<a name="line.23"></a>
+<span class="sourceLineNo">024</span><a name="line.24"></a>
+<span class="sourceLineNo">025</span> PT_COPYRIGHT_VERSION_2<a name="line.25"></a>
+<span class="sourceLineNo">026</span> COPYRIGHTENDKEY<a name="line.26"></a>
+<span class="sourceLineNo">027</span><a name="line.27"></a>
+<span class="sourceLineNo">028</span> */<a name="line.28"></a>
+<span class="sourceLineNo">029</span>package ptolemy.actor;<a name="line.29"></a>
+<span class="sourceLineNo">030</span><a name="line.30"></a>
+<span class="sourceLineNo">031</span>import java.io.StringWriter;<a name="line.31"></a>
+<span class="sourceLineNo">032</span>import java.util.HashMap;<a name="line.32"></a>
+<span class="sourceLineNo">033</span>import java.util.HashSet;<a name="line.33"></a>
+<span class="sourceLineNo">034</span>import java.util.List;<a name="line.34"></a>
+<span class="sourceLineNo">035</span><a name="line.35"></a>
+<span class="sourceLineNo">036</span>import ptolemy.data.BooleanToken;<a name="line.36"></a>
+<span class="sourceLineNo">037</span>import ptolemy.data.expr.Parameter;<a name="line.37"></a>
+<span class="sourceLineNo">038</span>import ptolemy.data.expr.StringParameter;<a name="line.38"></a>
+<span class="sourceLineNo">039</span>import ptolemy.kernel.ComponentEntity;<a name="line.39"></a>
+<span class="sourceLineNo">040</span>import ptolemy.kernel.ComponentRelation;<a name="line.40"></a>
+<span class="sourceLineNo">041</span>import ptolemy.kernel.CompositeEntity;<a name="line.41"></a>
+<span class="sourceLineNo">042</span>import ptolemy.kernel.Port;<a name="line.42"></a>
+<span class="sourceLineNo">043</span>import ptolemy.kernel.util.Attribute;<a name="line.43"></a>
+<span class="sourceLineNo">044</span>import ptolemy.kernel.util.InternalErrorException;<a name="line.44"></a>
+<span class="sourceLineNo">045</span>import ptolemy.kernel.util.NamedObj;<a name="line.45"></a>
+<span class="sourceLineNo">046</span>import ptolemy.util.StringUtilities;<a name="line.46"></a>
+<span class="sourceLineNo">047</span><a name="line.47"></a>
+<span class="sourceLineNo">048</span>/**<a name="line.48"></a>
+<span class="sourceLineNo">049</span>  An action that generates the Moml for a group of states to be used as a<a name="line.49"></a>
+<span class="sourceLineNo">050</span>  design pattern.<a name="line.50"></a>
+<span class="sourceLineNo">051</span><a name="line.51"></a>
+<span class="sourceLineNo">052</span>  @author Thomas Huining Feng<a name="line.52"></a>
+<span class="sourceLineNo">053</span>  @version $Id$<a name="line.53"></a>
+<span class="sourceLineNo">054</span>  @since Ptolemy II 8.0<a name="line.54"></a>
+<span class="sourceLineNo">055</span>  @Pt.ProposedRating Red (tfeng)<a name="line.55"></a>
+<span class="sourceLineNo">056</span>  @Pt.AcceptedRating Red (tfeng)<a name="line.56"></a>
+<span class="sourceLineNo">057</span> */<a name="line.57"></a>
+<span class="sourceLineNo">058</span>public class DesignPatternGetMoMLAction {<a name="line.58"></a>
+<span class="sourceLineNo">059</span><a name="line.59"></a>
+<span class="sourceLineNo">060</span>    /** Generate the Moml string for the given object. If the object is a group<a name="line.60"></a>
+<span class="sourceLineNo">061</span>     *  of states, then the contents of the group are generated; otherwise, the<a name="line.61"></a>
+<span class="sourceLineNo">062</span>     *  Moml of the object itself is generated with {@link<a name="line.62"></a>
+<span class="sourceLineNo">063</span>     *  NamedObj#exportMoML(String)}.<a name="line.63"></a>
+<span class="sourceLineNo">064</span>     *<a name="line.64"></a>
+<span class="sourceLineNo">065</span>     *  @param object The object.<a name="line.65"></a>
+<span class="sourceLineNo">066</span>     *  @param name The name to be used for the object in the generated Moml.<a name="line.66"></a>
+<span class="sourceLineNo">067</span>     *  @return The Moml string.<a name="line.67"></a>
+<span class="sourceLineNo">068</span>     */<a name="line.68"></a>
+<span class="sourceLineNo">069</span>    public String getMoml(NamedObj object, String name) {<a name="line.69"></a>
+<span class="sourceLineNo">070</span>        CompositeEntity group = (CompositeEntity) object;<a name="line.70"></a>
+<span class="sourceLineNo">071</span>        Attribute before = object.getAttribute("Before");<a name="line.71"></a>
+<span class="sourceLineNo">072</span>        Attribute after = object.getAttribute("After");<a name="line.72"></a>
+<span class="sourceLineNo">073</span>        StringWriter buffer = new StringWriter();<a name="line.73"></a>
+<span class="sourceLineNo">074</span>        int extraIndent = 0;<a name="line.74"></a>
+<span class="sourceLineNo">075</span>        try {<a name="line.75"></a>
+<span class="sourceLineNo">076</span>            buffer.write("&lt;group&gt;\n");<a name="line.76"></a>
+<span class="sourceLineNo">077</span><a name="line.77"></a>
+<span class="sourceLineNo">078</span>            if (before != null) {<a name="line.78"></a>
+<span class="sourceLineNo">079</span>                String oldType = null;<a name="line.79"></a>
+<span class="sourceLineNo">080</span>                StringParameter typeParameter = (StringParameter) before<a name="line.80"></a>
+<span class="sourceLineNo">081</span>                        .getAttribute("_type");<a name="line.81"></a>
+<span class="sourceLineNo">082</span>                if (typeParameter == null) {<a name="line.82"></a>
+<span class="sourceLineNo">083</span>                    typeParameter = new StringParameter(before, "_type");<a name="line.83"></a>
+<span class="sourceLineNo">084</span>                } else {<a name="line.84"></a>
+<span class="sourceLineNo">085</span>                    oldType = typeParameter.getExpression();<a name="line.85"></a>
+<span class="sourceLineNo">086</span>                }<a name="line.86"></a>
+<span class="sourceLineNo">087</span>                typeParameter.setExpression("immediate");<a name="line.87"></a>
+<span class="sourceLineNo">088</span>                try {<a name="line.88"></a>
+<span class="sourceLineNo">089</span>                    buffer.write(<a name="line.89"></a>
+<span class="sourceLineNo">090</span>                            StringUtilities.getIndentPrefix(1) + "&lt;group&gt;\n");<a name="line.90"></a>
+<span class="sourceLineNo">091</span>                    before.exportMoML(buffer, 2);<a name="line.91"></a>
+<span class="sourceLineNo">092</span>                    buffer.write(<a name="line.92"></a>
+<span class="sourceLineNo">093</span>                            StringUtilities.getIndentPrefix(1) + "&lt;/group&gt;\n");<a name="line.93"></a>
+<span class="sourceLineNo">094</span>                } finally {<a name="line.94"></a>
+<span class="sourceLineNo">095</span>                    if (oldType == null) {<a name="line.95"></a>
+<span class="sourceLineNo">096</span>                        typeParameter.setContainer(null);<a name="line.96"></a>
+<span class="sourceLineNo">097</span>                    } else {<a name="line.97"></a>
+<span class="sourceLineNo">098</span>                        typeParameter.setExpression(oldType);<a name="line.98"></a>
+<span class="sourceLineNo">099</span>                    }<a name="line.99"></a>
+<span class="sourceLineNo">100</span>                }<a name="line.100"></a>
+<span class="sourceLineNo">101</span>            }<a name="line.101"></a>
+<span class="sourceLineNo">102</span><a name="line.102"></a>
+<span class="sourceLineNo">103</span>            if (after != null || before != null) {<a name="line.103"></a>
+<span class="sourceLineNo">104</span>                extraIndent++;<a name="line.104"></a>
+<span class="sourceLineNo">105</span>                buffer.write(StringUtilities.getIndentPrefix(extraIndent)<a name="line.105"></a>
+<span class="sourceLineNo">106</span>                        + "&lt;group&gt;\n");<a name="line.106"></a>
+<span class="sourceLineNo">107</span>            }<a name="line.107"></a>
+<span class="sourceLineNo">108</span><a name="line.108"></a>
+<span class="sourceLineNo">109</span>            List&lt;Attribute&gt; attributes = group.attributeList();<a name="line.109"></a>
+<span class="sourceLineNo">110</span>            for (Attribute attribute : attributes) {<a name="line.110"></a>
+<span class="sourceLineNo">111</span>                if (!_IGNORED_ATTRIBUTES.contains(attribute.getName())<a name="line.111"></a>
+<span class="sourceLineNo">112</span>                        &amp;&amp; (after == null || attribute != after)<a name="line.112"></a>
+<span class="sourceLineNo">113</span>                        &amp;&amp; (before == null || attribute != before)) {<a name="line.113"></a>
+<span class="sourceLineNo">114</span>                    attribute.exportMoML(buffer, extraIndent + 1);<a name="line.114"></a>
+<span class="sourceLineNo">115</span>                    if (attribute instanceof Parameter) {<a name="line.115"></a>
+<span class="sourceLineNo">116</span>                        String parameterName = attribute.getName();<a name="line.116"></a>
+<span class="sourceLineNo">117</span>                        String expression = _overriddenParameters<a name="line.117"></a>
+<span class="sourceLineNo">118</span>                                .get(parameterName);<a name="line.118"></a>
+<span class="sourceLineNo">119</span>                        if (expression != null) {<a name="line.119"></a>
+<span class="sourceLineNo">120</span>                            buffer.write(StringUtilities<a name="line.120"></a>
+<span class="sourceLineNo">121</span>                                    .getIndentPrefix(extraIndent + 1)<a name="line.121"></a>
+<span class="sourceLineNo">122</span>                                    + "&lt;property name=\"" + parameterName<a name="line.122"></a>
+<span class="sourceLineNo">123</span>                                    + "\" value=\"" + expression + "\"&gt;\n");<a name="line.123"></a>
+<span class="sourceLineNo">124</span>                            buffer.write(StringUtilities.getIndentPrefix(<a name="line.124"></a>
+<span class="sourceLineNo">125</span>                                    extraIndent + 1) + "&lt;/property&gt;\n");<a name="line.125"></a>
+<span class="sourceLineNo">126</span>                        }<a name="line.126"></a>
+<span class="sourceLineNo">127</span>                    }<a name="line.127"></a>
+<span class="sourceLineNo">128</span>                }<a name="line.128"></a>
+<span class="sourceLineNo">129</span>            }<a name="line.129"></a>
+<span class="sourceLineNo">130</span><a name="line.130"></a>
+<span class="sourceLineNo">131</span>            List&lt;Port&gt; ports = group.portList();<a name="line.131"></a>
+<span class="sourceLineNo">132</span>            for (Port port : ports) {<a name="line.132"></a>
+<span class="sourceLineNo">133</span>                buffer.write(StringUtilities.getIndentPrefix(extraIndent + 1)<a name="line.133"></a>
+<span class="sourceLineNo">134</span>                        + "&lt;port name=\"" + port.getName() + "\"&gt;\n");<a name="line.134"></a>
+<span class="sourceLineNo">135</span>                if (port instanceof IOPort) {<a name="line.135"></a>
+<span class="sourceLineNo">136</span>                    IOPort ioPort = (IOPort) port;<a name="line.136"></a>
+<span class="sourceLineNo">137</span>                    boolean isInput = ioPort.isInput();<a name="line.137"></a>
+<span class="sourceLineNo">138</span>                    boolean isOutput = ioPort.isOutput();<a name="line.138"></a>
+<span class="sourceLineNo">139</span>                    if (isInput) {<a name="line.139"></a>
+<span class="sourceLineNo">140</span>                        buffer.write(<a name="line.140"></a>
+<span class="sourceLineNo">141</span>                                StringUtilities.getIndentPrefix(extraIndent + 2)<a name="line.141"></a>
+<span class="sourceLineNo">142</span>                                        + "&lt;property name=\"input\"/&gt;\n");<a name="line.142"></a>
+<span class="sourceLineNo">143</span>                    }<a name="line.143"></a>
+<span class="sourceLineNo">144</span>                    if (isOutput) {<a name="line.144"></a>
+<span class="sourceLineNo">145</span>                        buffer.write(<a name="line.145"></a>
+<span class="sourceLineNo">146</span>                                StringUtilities.getIndentPrefix(extraIndent + 2)<a name="line.146"></a>
+<span class="sourceLineNo">147</span>                                        + "&lt;property name=\"output\"/&gt;\n");<a name="line.147"></a>
+<span class="sourceLineNo">148</span>                    }<a name="line.148"></a>
+<span class="sourceLineNo">149</span>                    if (ioPort.isMultiport()) {<a name="line.149"></a>
+<span class="sourceLineNo">150</span>                        buffer.write(<a name="line.150"></a>
+<span class="sourceLineNo">151</span>                                StringUtilities.getIndentPrefix(extraIndent + 2)<a name="line.151"></a>
+<span class="sourceLineNo">152</span>                                        + "&lt;property name=\"multiport\"/&gt;\n");<a name="line.152"></a>
+<span class="sourceLineNo">153</span>                    }<a name="line.153"></a>
+<span class="sourceLineNo">154</span>                }<a name="line.154"></a>
+<span class="sourceLineNo">155</span>                attributes = port.attributeList();<a name="line.155"></a>
+<span class="sourceLineNo">156</span>                for (Attribute attribute : attributes) {<a name="line.156"></a>
+<span class="sourceLineNo">157</span>                    if (!_IGNORED_ATTRIBUTES.contains(attribute.getName())) {<a name="line.157"></a>
+<span class="sourceLineNo">158</span>                        attribute.exportMoML(buffer, extraIndent + 2);<a name="line.158"></a>
+<span class="sourceLineNo">159</span>                    }<a name="line.159"></a>
+<span class="sourceLineNo">160</span>                }<a name="line.160"></a>
+<span class="sourceLineNo">161</span>                buffer.write(StringUtilities.getIndentPrefix(extraIndent + 1)<a name="line.161"></a>
+<span class="sourceLineNo">162</span>                        + "&lt;/port&gt;\n");<a name="line.162"></a>
+<span class="sourceLineNo">163</span>            }<a name="line.163"></a>
+<span class="sourceLineNo">164</span><a name="line.164"></a>
+<span class="sourceLineNo">165</span>            List&lt;ComponentEntity&gt; classes = group.classDefinitionList();<a name="line.165"></a>
+<span class="sourceLineNo">166</span>            for (ComponentEntity entity : classes) {<a name="line.166"></a>
+<span class="sourceLineNo">167</span>                Attribute attribute = entity.getAttribute("_noAutonaming");<a name="line.167"></a>
+<span class="sourceLineNo">168</span>                if (attribute != null<a name="line.168"></a>
+<span class="sourceLineNo">169</span>                        &amp;&amp; ((BooleanToken) ((Parameter) attribute).getToken())<a name="line.169"></a>
+<span class="sourceLineNo">170</span>                                .booleanValue()) {<a name="line.170"></a>
+<span class="sourceLineNo">171</span>                    entity.exportMoML(buffer, extraIndent + 2);<a name="line.171"></a>
+<span class="sourceLineNo">172</span>                }<a name="line.172"></a>
+<span class="sourceLineNo">173</span>            }<a name="line.173"></a>
+<span class="sourceLineNo">174</span><a name="line.174"></a>
+<span class="sourceLineNo">175</span>            List&lt;ComponentEntity&gt; entities = group.entityList();<a name="line.175"></a>
+<span class="sourceLineNo">176</span>            for (ComponentEntity entity : entities) {<a name="line.176"></a>
+<span class="sourceLineNo">177</span>                Attribute attribute = entity.getAttribute("_noAutonaming");<a name="line.177"></a>
+<span class="sourceLineNo">178</span>                if (attribute != null<a name="line.178"></a>
+<span class="sourceLineNo">179</span>                        &amp;&amp; ((BooleanToken) ((Parameter) attribute).getToken())<a name="line.179"></a>
+<span class="sourceLineNo">180</span>                                .booleanValue()) {<a name="line.180"></a>
+<span class="sourceLineNo">181</span>                    entity.exportMoML(buffer, extraIndent + 2);<a name="line.181"></a>
+<span class="sourceLineNo">182</span>                }<a name="line.182"></a>
+<span class="sourceLineNo">183</span>            }<a name="line.183"></a>
+<span class="sourceLineNo">184</span><a name="line.184"></a>
+<span class="sourceLineNo">185</span>            buffer.write(StringUtilities.getIndentPrefix(extraIndent + 1)<a name="line.185"></a>
+<span class="sourceLineNo">186</span>                    + "&lt;group name=\"auto\"&gt;\n");<a name="line.186"></a>
+<span class="sourceLineNo">187</span><a name="line.187"></a>
+<span class="sourceLineNo">188</span>            classes = group.classDefinitionList();<a name="line.188"></a>
+<span class="sourceLineNo">189</span>            for (ComponentEntity entity : classes) {<a name="line.189"></a>
+<span class="sourceLineNo">190</span>                Attribute attribute = entity.getAttribute("_noAutonaming");<a name="line.190"></a>
+<span class="sourceLineNo">191</span>                if (attribute == null<a name="line.191"></a>
+<span class="sourceLineNo">192</span>                        || !((BooleanToken) ((Parameter) attribute).getToken())<a name="line.192"></a>
+<span class="sourceLineNo">193</span>                                .booleanValue()) {<a name="line.193"></a>
+<span class="sourceLineNo">194</span>                    entity.exportMoML(buffer, extraIndent + 2);<a name="line.194"></a>
+<span class="sourceLineNo">195</span>                }<a name="line.195"></a>
+<span class="sourceLineNo">196</span>            }<a name="line.196"></a>
+<span class="sourceLineNo">197</span><a name="line.197"></a>
+<span class="sourceLineNo">198</span>            entities = group.entityList();<a name="line.198"></a>
+<span class="sourceLineNo">199</span>            for (ComponentEntity entity : entities) {<a name="line.199"></a>
+<span class="sourceLineNo">200</span>                Attribute attribute = entity.getAttribute("_noAutonaming");<a name="line.200"></a>
+<span class="sourceLineNo">201</span>                if (attribute == null<a name="line.201"></a>
+<span class="sourceLineNo">202</span>                        || !((BooleanToken) ((Parameter) attribute).getToken())<a name="line.202"></a>
+<span class="sourceLineNo">203</span>                                .booleanValue()) {<a name="line.203"></a>
+<span class="sourceLineNo">204</span>                    entity.exportMoML(buffer, extraIndent + 2);<a name="line.204"></a>
+<span class="sourceLineNo">205</span>                }<a name="line.205"></a>
+<span class="sourceLineNo">206</span>            }<a name="line.206"></a>
+<span class="sourceLineNo">207</span><a name="line.207"></a>
+<span class="sourceLineNo">208</span>            List&lt;ComponentRelation&gt; relations = group.relationList();<a name="line.208"></a>
+<span class="sourceLineNo">209</span>            for (ComponentRelation relation : relations) {<a name="line.209"></a>
+<span class="sourceLineNo">210</span>                relation.exportMoML(buffer, extraIndent + 2);<a name="line.210"></a>
+<span class="sourceLineNo">211</span>            }<a name="line.211"></a>
+<span class="sourceLineNo">212</span><a name="line.212"></a>
+<span class="sourceLineNo">213</span>            buffer.write(group.exportLinks(extraIndent + 2, null));<a name="line.213"></a>
+<span class="sourceLineNo">214</span>            buffer.write(StringUtilities.getIndentPrefix(extraIndent + 1)<a name="line.214"></a>
+<span class="sourceLineNo">215</span>                    + "&lt;/group&gt;\n");<a name="line.215"></a>
+<span class="sourceLineNo">216</span>            if (after != null || before != null) {<a name="line.216"></a>
+<span class="sourceLineNo">217</span>                buffer.write(StringUtilities.getIndentPrefix(extraIndent)<a name="line.217"></a>
+<span class="sourceLineNo">218</span>                        + "&lt;/group&gt;\n");<a name="line.218"></a>
+<span class="sourceLineNo">219</span>            }<a name="line.219"></a>
+<span class="sourceLineNo">220</span><a name="line.220"></a>
+<span class="sourceLineNo">221</span>            if (after != null) {<a name="line.221"></a>
+<span class="sourceLineNo">222</span>                String oldType = null;<a name="line.222"></a>
+<span class="sourceLineNo">223</span>                StringParameter typeParameter = (StringParameter) after<a name="line.223"></a>
+<span class="sourceLineNo">224</span>                        .getAttribute("_type");<a name="line.224"></a>
+<span class="sourceLineNo">225</span>                if (typeParameter == null) {<a name="line.225"></a>
+<span class="sourceLineNo">226</span>                    typeParameter = new StringParameter(after, "_type");<a name="line.226"></a>
+<span class="sourceLineNo">227</span>                } else {<a name="line.227"></a>
+<span class="sourceLineNo">228</span>                    oldType = typeParameter.getExpression();<a name="line.228"></a>
+<span class="sourceLineNo">229</span>                }<a name="line.229"></a>
+<span class="sourceLineNo">230</span>                typeParameter.setExpression("delayed");<a name="line.230"></a>
+<span class="sourceLineNo">231</span>                try {<a name="line.231"></a>
+<span class="sourceLineNo">232</span>                    buffer.write(<a name="line.232"></a>
+<span class="sourceLineNo">233</span>                            StringUtilities.getIndentPrefix(1) + "&lt;group&gt;\n");<a name="line.233"></a>
+<span class="sourceLineNo">234</span>                    after.exportMoML(buffer, 2);<a name="line.234"></a>
+<span class="sourceLineNo">235</span>                    buffer.write(<a name="line.235"></a>
+<span class="sourceLineNo">236</span>                            StringUtilities.getIndentPrefix(1) + "&lt;/group&gt;\n");<a name="line.236"></a>
+<span class="sourceLineNo">237</span>                } finally {<a name="line.237"></a>
+<span class="sourceLineNo">238</span>                    if (oldType == null) {<a name="line.238"></a>
+<span class="sourceLineNo">239</span>                        typeParameter.setContainer(null);<a name="line.239"></a>
+<span class="sourceLineNo">240</span>                    } else {<a name="line.240"></a>
+<span class="sourceLineNo">241</span>                        typeParameter.setExpression(oldType);<a name="line.241"></a>
+<span class="sourceLineNo">242</span>                    }<a name="line.242"></a>
+<span class="sourceLineNo">243</span>                }<a name="line.243"></a>
+<span class="sourceLineNo">244</span>            }<a name="line.244"></a>
+<span class="sourceLineNo">245</span><a name="line.245"></a>
+<span class="sourceLineNo">246</span>            buffer.write("&lt;/group&gt;\n");<a name="line.246"></a>
+<span class="sourceLineNo">247</span><a name="line.247"></a>
+<span class="sourceLineNo">248</span>            return buffer.toString();<a name="line.248"></a>
+<span class="sourceLineNo">249</span>        } catch (Throwable throwable) {<a name="line.249"></a>
+<span class="sourceLineNo">250</span>            // This should not occur.<a name="line.250"></a>
+<span class="sourceLineNo">251</span>            throw new InternalErrorException(null, throwable,<a name="line.251"></a>
+<span class="sourceLineNo">252</span>                    "Unable to get the " + "Moml content for group "<a name="line.252"></a>
+<span class="sourceLineNo">253</span>                            + group.getName() + ".");<a name="line.253"></a>
+<span class="sourceLineNo">254</span>        }<a name="line.254"></a>
+<span class="sourceLineNo">255</span>    }<a name="line.255"></a>
+<span class="sourceLineNo">256</span><a name="line.256"></a>
+<span class="sourceLineNo">257</span>    /** Add a parameter and expression to the map of parameters<a name="line.257"></a>
+<span class="sourceLineNo">258</span>     *  to override.<a name="line.258"></a>
+<span class="sourceLineNo">259</span>     *  @param name The name of the parameter.<a name="line.259"></a>
+<span class="sourceLineNo">260</span>     *  @param expression The expression of the parameter.<a name="line.260"></a>
+<span class="sourceLineNo">261</span>     */<a name="line.261"></a>
+<span class="sourceLineNo">262</span>    public void overrideParameter(String name, String expression) {<a name="line.262"></a>
+<span class="sourceLineNo">263</span>        _overriddenParameters.put(name, expression);<a name="line.263"></a>
+<span class="sourceLineNo">264</span>    }<a name="line.264"></a>
+<span class="sourceLineNo">265</span><a name="line.265"></a>
+<span class="sourceLineNo">266</span>    /** The set of attribute names that need to be ignored while generating<a name="line.266"></a>
+<span class="sourceLineNo">267</span>     *  the Moml.<a name="line.267"></a>
+<span class="sourceLineNo">268</span>     */<a name="line.268"></a>
+<span class="sourceLineNo">269</span>    private static final HashSet&lt;String&gt; _IGNORED_ATTRIBUTES = new HashSet&lt;String&gt;();<a name="line.269"></a>
+<span class="sourceLineNo">270</span><a name="line.270"></a>
+<span class="sourceLineNo">271</span>    private HashMap&lt;String, String&gt; _overriddenParameters = new HashMap&lt;String, String&gt;();<a name="line.271"></a>
+<span class="sourceLineNo">272</span><a name="line.272"></a>
+<span class="sourceLineNo">273</span>    static {<a name="line.273"></a>
+<span class="sourceLineNo">274</span>        _IGNORED_ATTRIBUTES.add("GroupIcon");<a name="line.274"></a>
+<span class="sourceLineNo">275</span>        _IGNORED_ATTRIBUTES.add("_alternateGetMomlAction");<a name="line.275"></a>
+<span class="sourceLineNo">276</span>        _IGNORED_ATTRIBUTES.add("_createdBy");<a name="line.276"></a>
+<span class="sourceLineNo">277</span>        _IGNORED_ATTRIBUTES.add("_designPatternIcon");<a name="line.277"></a>
+<span class="sourceLineNo">278</span>        _IGNORED_ATTRIBUTES.add("_hideName");<a name="line.278"></a>
+<span class="sourceLineNo">279</span>        _IGNORED_ATTRIBUTES.add("_vergilSize");<a name="line.279"></a>
+<span class="sourceLineNo">280</span>        _IGNORED_ATTRIBUTES.add("_vergilZoomFactor");<a name="line.280"></a>
+<span class="sourceLineNo">281</span>        _IGNORED_ATTRIBUTES.add("_vergilCenter");<a name="line.281"></a>
+<span class="sourceLineNo">282</span>        _IGNORED_ATTRIBUTES.add("_windowProperties");<a name="line.282"></a>
+<span class="sourceLineNo">283</span>    }<a name="line.283"></a>
+<span class="sourceLineNo">284</span>}<a name="line.284"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

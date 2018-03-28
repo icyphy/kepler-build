@@ -1,0 +1,241 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../../stylesheet.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>/* An actor that outputs a random sequence with a triangular distribution.<a name="line.1"></a>
+<span class="sourceLineNo">002</span><a name="line.2"></a>
+<span class="sourceLineNo">003</span> Copyright (c) 2006-2014 The Regents of the University of California.<a name="line.3"></a>
+<span class="sourceLineNo">004</span> All rights reserved.<a name="line.4"></a>
+<span class="sourceLineNo">005</span> Permission is hereby granted, without written agreement and without<a name="line.5"></a>
+<span class="sourceLineNo">006</span> license or royalty fees, to use, copy, modify, and distribute this<a name="line.6"></a>
+<span class="sourceLineNo">007</span> software and its documentation for any purpose, provided that the above<a name="line.7"></a>
+<span class="sourceLineNo">008</span> copyright notice and the following two paragraphs appear in all copies<a name="line.8"></a>
+<span class="sourceLineNo">009</span> of this software.<a name="line.9"></a>
+<span class="sourceLineNo">010</span><a name="line.10"></a>
+<span class="sourceLineNo">011</span> IN NO EVENT SHALL THE UNIVERSITY OF CALIFORNIA BE LIABLE TO ANY PARTY<a name="line.11"></a>
+<span class="sourceLineNo">012</span> FOR DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES<a name="line.12"></a>
+<span class="sourceLineNo">013</span> ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION, EVEN IF<a name="line.13"></a>
+<span class="sourceLineNo">014</span> THE UNIVERSITY OF CALIFORNIA HAS BEEN ADVISED OF THE POSSIBILITY OF<a name="line.14"></a>
+<span class="sourceLineNo">015</span> SUCH DAMAGE.<a name="line.15"></a>
+<span class="sourceLineNo">016</span><a name="line.16"></a>
+<span class="sourceLineNo">017</span> THE UNIVERSITY OF CALIFORNIA SPECIFICALLY DISCLAIMS ANY WARRANTIES,<a name="line.17"></a>
+<span class="sourceLineNo">018</span> INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF<a name="line.18"></a>
+<span class="sourceLineNo">019</span> MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE<a name="line.19"></a>
+<span class="sourceLineNo">020</span> PROVIDED HEREUNDER IS ON AN "AS IS" BASIS, AND THE UNIVERSITY OF<a name="line.20"></a>
+<span class="sourceLineNo">021</span> CALIFORNIA HAS NO OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT, UPDATES,<a name="line.21"></a>
+<span class="sourceLineNo">022</span> ENHANCEMENTS, OR MODIFICATIONS.<a name="line.22"></a>
+<span class="sourceLineNo">023</span><a name="line.23"></a>
+<span class="sourceLineNo">024</span> PT_COPYRIGHT_VERSION_2<a name="line.24"></a>
+<span class="sourceLineNo">025</span> COPYRIGHTENDKEY<a name="line.25"></a>
+<span class="sourceLineNo">026</span><a name="line.26"></a>
+<span class="sourceLineNo">027</span> */<a name="line.27"></a>
+<span class="sourceLineNo">028</span>package ptolemy.actor.lib;<a name="line.28"></a>
+<span class="sourceLineNo">029</span><a name="line.29"></a>
+<span class="sourceLineNo">030</span>import ptolemy.actor.parameters.PortParameter;<a name="line.30"></a>
+<span class="sourceLineNo">031</span>import ptolemy.data.BooleanToken;<a name="line.31"></a>
+<span class="sourceLineNo">032</span>import ptolemy.data.DoubleToken;<a name="line.32"></a>
+<span class="sourceLineNo">033</span>import ptolemy.data.expr.SingletonParameter;<a name="line.33"></a>
+<span class="sourceLineNo">034</span>import ptolemy.data.type.BaseType;<a name="line.34"></a>
+<span class="sourceLineNo">035</span>import ptolemy.kernel.CompositeEntity;<a name="line.35"></a>
+<span class="sourceLineNo">036</span>import ptolemy.kernel.util.IllegalActionException;<a name="line.36"></a>
+<span class="sourceLineNo">037</span>import ptolemy.kernel.util.NameDuplicationException;<a name="line.37"></a>
+<span class="sourceLineNo">038</span><a name="line.38"></a>
+<span class="sourceLineNo">039</span>///////////////////////////////////////////////////////////////////<a name="line.39"></a>
+<span class="sourceLineNo">040</span>//// Triangular<a name="line.40"></a>
+<span class="sourceLineNo">041</span><a name="line.41"></a>
+<span class="sourceLineNo">042</span>/**<a name="line.42"></a>
+<span class="sourceLineNo">043</span> Produce a random sequence with a triangular distribution.  On each iteration,<a name="line.43"></a>
+<span class="sourceLineNo">044</span> a new random number is produced.  The output port is of type double.<a name="line.44"></a>
+<span class="sourceLineNo">045</span> The values that are generated are independent and identically distributed<a name="line.45"></a>
+<span class="sourceLineNo">046</span> with mode and bounds as defined by the parameters.  In addition, the<a name="line.46"></a>
+<span class="sourceLineNo">047</span> seed can be specified as a parameter to control the sequence that is<a name="line.47"></a>
+<span class="sourceLineNo">048</span> generated.<a name="line.48"></a>
+<span class="sourceLineNo">049</span><a name="line.49"></a>
+<span class="sourceLineNo">050</span> @author Raymond A. Cardillo<a name="line.50"></a>
+<span class="sourceLineNo">051</span> @version $Id$<a name="line.51"></a>
+<span class="sourceLineNo">052</span> @since Ptolemy II 5.2<a name="line.52"></a>
+<span class="sourceLineNo">053</span> @Pt.ProposedRating Red (cxh)<a name="line.53"></a>
+<span class="sourceLineNo">054</span> @Pt.AcceptedRating Red (cxh)<a name="line.54"></a>
+<span class="sourceLineNo">055</span> @see ptolemy.actor.lib.Bernoulli<a name="line.55"></a>
+<span class="sourceLineNo">056</span> @see ptolemy.actor.lib.DiscreteRandomSource<a name="line.56"></a>
+<span class="sourceLineNo">057</span> @see ptolemy.actor.lib.Rician<a name="line.57"></a>
+<span class="sourceLineNo">058</span> @see ptolemy.actor.lib.Uniform<a name="line.58"></a>
+<span class="sourceLineNo">059</span> */<a name="line.59"></a>
+<span class="sourceLineNo">060</span>public class Triangular extends RandomSource {<a name="line.60"></a>
+<span class="sourceLineNo">061</span>    /** Construct an actor with the given container and name.<a name="line.61"></a>
+<span class="sourceLineNo">062</span>     *  @param container The container.<a name="line.62"></a>
+<span class="sourceLineNo">063</span>     *  @param name The name of this actor.<a name="line.63"></a>
+<span class="sourceLineNo">064</span>     *  @exception IllegalActionException If the actor cannot be contained<a name="line.64"></a>
+<span class="sourceLineNo">065</span>     *   by the proposed container.<a name="line.65"></a>
+<span class="sourceLineNo">066</span>     *  @exception NameDuplicationException If the container already has an<a name="line.66"></a>
+<span class="sourceLineNo">067</span>     *   actor with this name.<a name="line.67"></a>
+<span class="sourceLineNo">068</span>     */<a name="line.68"></a>
+<span class="sourceLineNo">069</span>    public Triangular(CompositeEntity container, String name)<a name="line.69"></a>
+<span class="sourceLineNo">070</span>            throws NameDuplicationException, IllegalActionException {<a name="line.70"></a>
+<span class="sourceLineNo">071</span>        super(container, name);<a name="line.71"></a>
+<span class="sourceLineNo">072</span><a name="line.72"></a>
+<span class="sourceLineNo">073</span>        output.setTypeEquals(BaseType.DOUBLE);<a name="line.73"></a>
+<span class="sourceLineNo">074</span><a name="line.74"></a>
+<span class="sourceLineNo">075</span>        mode = new PortParameter(this, "mode", new DoubleToken(0.5));<a name="line.75"></a>
+<span class="sourceLineNo">076</span>        mode.setTypeEquals(BaseType.DOUBLE);<a name="line.76"></a>
+<span class="sourceLineNo">077</span>        new SingletonParameter(mode.getPort(), "_showName")<a name="line.77"></a>
+<span class="sourceLineNo">078</span>                .setToken(BooleanToken.TRUE);<a name="line.78"></a>
+<span class="sourceLineNo">079</span><a name="line.79"></a>
+<span class="sourceLineNo">080</span>        min = new PortParameter(this, "min", new DoubleToken(0.0));<a name="line.80"></a>
+<span class="sourceLineNo">081</span>        min.setTypeEquals(BaseType.DOUBLE);<a name="line.81"></a>
+<span class="sourceLineNo">082</span>        new SingletonParameter(min.getPort(), "_showName")<a name="line.82"></a>
+<span class="sourceLineNo">083</span>                .setToken(BooleanToken.TRUE);<a name="line.83"></a>
+<span class="sourceLineNo">084</span><a name="line.84"></a>
+<span class="sourceLineNo">085</span>        max = new PortParameter(this, "max", new DoubleToken(1.0));<a name="line.85"></a>
+<span class="sourceLineNo">086</span>        max.setTypeEquals(BaseType.DOUBLE);<a name="line.86"></a>
+<span class="sourceLineNo">087</span>        new SingletonParameter(max.getPort(), "_showName")<a name="line.87"></a>
+<span class="sourceLineNo">088</span>                .setToken(BooleanToken.TRUE);<a name="line.88"></a>
+<span class="sourceLineNo">089</span>    }<a name="line.89"></a>
+<span class="sourceLineNo">090</span><a name="line.90"></a>
+<span class="sourceLineNo">091</span>    ///////////////////////////////////////////////////////////////////<a name="line.91"></a>
+<span class="sourceLineNo">092</span>    ////                     ports and parameters                  ////<a name="line.92"></a>
+<span class="sourceLineNo">093</span><a name="line.93"></a>
+<span class="sourceLineNo">094</span>    /** The minimum value.<a name="line.94"></a>
+<span class="sourceLineNo">095</span>     *  This parameter contains a DoubleToken, initially with value 0.0.<a name="line.95"></a>
+<span class="sourceLineNo">096</span>     */<a name="line.96"></a>
+<span class="sourceLineNo">097</span>    public PortParameter min;<a name="line.97"></a>
+<span class="sourceLineNo">098</span><a name="line.98"></a>
+<span class="sourceLineNo">099</span>    /** The maximum value.<a name="line.99"></a>
+<span class="sourceLineNo">100</span>     *  This parameter contains a DoubleToken, initially with value 1.0.<a name="line.100"></a>
+<span class="sourceLineNo">101</span>     */<a name="line.101"></a>
+<span class="sourceLineNo">102</span>    public PortParameter max;<a name="line.102"></a>
+<span class="sourceLineNo">103</span><a name="line.103"></a>
+<span class="sourceLineNo">104</span>    /** The mode of the distribution (peak of triangle).<a name="line.104"></a>
+<span class="sourceLineNo">105</span>     *  This parameter contains a DoubleToken, initially with value 0.5.<a name="line.105"></a>
+<span class="sourceLineNo">106</span>     */<a name="line.106"></a>
+<span class="sourceLineNo">107</span>    public PortParameter mode;<a name="line.107"></a>
+<span class="sourceLineNo">108</span><a name="line.108"></a>
+<span class="sourceLineNo">109</span>    ///////////////////////////////////////////////////////////////////<a name="line.109"></a>
+<span class="sourceLineNo">110</span>    ////                         public methods                    ////<a name="line.110"></a>
+<span class="sourceLineNo">111</span><a name="line.111"></a>
+<span class="sourceLineNo">112</span>    /** Send a random number with a triangular distribution to the output.<a name="line.112"></a>
+<span class="sourceLineNo">113</span>     *  This number is only changed in the prefire() method, so it will<a name="line.113"></a>
+<span class="sourceLineNo">114</span>     *  remain constant throughout an iteration.<a name="line.114"></a>
+<span class="sourceLineNo">115</span>     *  @exception IllegalActionException If there is no director.<a name="line.115"></a>
+<span class="sourceLineNo">116</span>     */<a name="line.116"></a>
+<span class="sourceLineNo">117</span>    @Override<a name="line.117"></a>
+<span class="sourceLineNo">118</span>    public void fire() throws IllegalActionException {<a name="line.118"></a>
+<span class="sourceLineNo">119</span>        mode.update();<a name="line.119"></a>
+<span class="sourceLineNo">120</span>        min.update();<a name="line.120"></a>
+<span class="sourceLineNo">121</span>        max.update();<a name="line.121"></a>
+<span class="sourceLineNo">122</span>        super.fire();<a name="line.122"></a>
+<span class="sourceLineNo">123</span>        output.send(0, new DoubleToken(_current));<a name="line.123"></a>
+<span class="sourceLineNo">124</span>    }<a name="line.124"></a>
+<span class="sourceLineNo">125</span><a name="line.125"></a>
+<span class="sourceLineNo">126</span>    ///////////////////////////////////////////////////////////////////<a name="line.126"></a>
+<span class="sourceLineNo">127</span>    ////                         protected methods                 ////<a name="line.127"></a>
+<span class="sourceLineNo">128</span><a name="line.128"></a>
+<span class="sourceLineNo">129</span>    /** Generate a new random number.<a name="line.129"></a>
+<span class="sourceLineNo">130</span>     *  @exception IllegalActionException If parameter values are incorrect.<a name="line.130"></a>
+<span class="sourceLineNo">131</span>     */<a name="line.131"></a>
+<span class="sourceLineNo">132</span>    @Override<a name="line.132"></a>
+<span class="sourceLineNo">133</span>    protected void _generateRandomNumber() throws IllegalActionException {<a name="line.133"></a>
+<span class="sourceLineNo">134</span>        double minValue = ((DoubleToken) min.getToken()).doubleValue();<a name="line.134"></a>
+<span class="sourceLineNo">135</span>        double maxValue = ((DoubleToken) max.getToken()).doubleValue();<a name="line.135"></a>
+<span class="sourceLineNo">136</span>        double modeValue = ((DoubleToken) mode.getToken()).doubleValue();<a name="line.136"></a>
+<span class="sourceLineNo">137</span><a name="line.137"></a>
+<span class="sourceLineNo">138</span>        if (minValue &gt; maxValue) {<a name="line.138"></a>
+<span class="sourceLineNo">139</span>            throw new IllegalActionException(this,<a name="line.139"></a>
+<span class="sourceLineNo">140</span>                    "Invalid bounds: min is greater than max.");<a name="line.140"></a>
+<span class="sourceLineNo">141</span>        }<a name="line.141"></a>
+<span class="sourceLineNo">142</span><a name="line.142"></a>
+<span class="sourceLineNo">143</span>        if (modeValue &lt; minValue) {<a name="line.143"></a>
+<span class="sourceLineNo">144</span>            throw new IllegalActionException(this,<a name="line.144"></a>
+<span class="sourceLineNo">145</span>                    "Invalid bounds: mode is less than min.");<a name="line.145"></a>
+<span class="sourceLineNo">146</span>        }<a name="line.146"></a>
+<span class="sourceLineNo">147</span><a name="line.147"></a>
+<span class="sourceLineNo">148</span>        if (modeValue &gt; maxValue) {<a name="line.148"></a>
+<span class="sourceLineNo">149</span>            throw new IllegalActionException(this,<a name="line.149"></a>
+<span class="sourceLineNo">150</span>                    "Invalid bounds: mode is greater than max.");<a name="line.150"></a>
+<span class="sourceLineNo">151</span>        }<a name="line.151"></a>
+<span class="sourceLineNo">152</span><a name="line.152"></a>
+<span class="sourceLineNo">153</span>        double rawNum = _random.nextDouble();<a name="line.153"></a>
+<span class="sourceLineNo">154</span>        double left = modeValue - minValue;<a name="line.154"></a>
+<span class="sourceLineNo">155</span>        double whole = maxValue - minValue;<a name="line.155"></a>
+<span class="sourceLineNo">156</span>        double right = maxValue - modeValue;<a name="line.156"></a>
+<span class="sourceLineNo">157</span><a name="line.157"></a>
+<span class="sourceLineNo">158</span>        if (rawNum &lt;= left / whole) {<a name="line.158"></a>
+<span class="sourceLineNo">159</span>            _current = minValue + Math.sqrt(rawNum * whole * left);<a name="line.159"></a>
+<span class="sourceLineNo">160</span>        } else {<a name="line.160"></a>
+<span class="sourceLineNo">161</span>            _current = maxValue - Math.sqrt((1.0d - rawNum) * whole * right);<a name="line.161"></a>
+<span class="sourceLineNo">162</span>        }<a name="line.162"></a>
+<span class="sourceLineNo">163</span>    }<a name="line.163"></a>
+<span class="sourceLineNo">164</span><a name="line.164"></a>
+<span class="sourceLineNo">165</span>    ///////////////////////////////////////////////////////////////////<a name="line.165"></a>
+<span class="sourceLineNo">166</span>    ////                         private variables                 ////<a name="line.166"></a>
+<span class="sourceLineNo">167</span>    // The random number for the current iteration.<a name="line.167"></a>
+<span class="sourceLineNo">168</span>    private double _current;<a name="line.168"></a>
+<span class="sourceLineNo">169</span>}<a name="line.169"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

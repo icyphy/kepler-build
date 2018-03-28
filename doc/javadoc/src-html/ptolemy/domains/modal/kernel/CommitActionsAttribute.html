@@ -1,0 +1,431 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../../../stylesheet.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>/* An action that sends outputs or sets variable values.<a name="line.1"></a>
+<span class="sourceLineNo">002</span><a name="line.2"></a>
+<span class="sourceLineNo">003</span> Copyright (c) 2000-2014 The Regents of the University of California.<a name="line.3"></a>
+<span class="sourceLineNo">004</span> All rights reserved.<a name="line.4"></a>
+<span class="sourceLineNo">005</span> Permission is hereby granted, without written agreement and without<a name="line.5"></a>
+<span class="sourceLineNo">006</span> license or royalty fees, to use, copy, modify, and distribute this<a name="line.6"></a>
+<span class="sourceLineNo">007</span> software and its documentation for any purpose, provided that the above<a name="line.7"></a>
+<span class="sourceLineNo">008</span> copyright notice and the following two paragraphs appear in all copies<a name="line.8"></a>
+<span class="sourceLineNo">009</span> of this software.<a name="line.9"></a>
+<span class="sourceLineNo">010</span><a name="line.10"></a>
+<span class="sourceLineNo">011</span> IN NO EVENT SHALL THE UNIVERSITY OF CALIFORNIA BE LIABLE TO ANY PARTY<a name="line.11"></a>
+<span class="sourceLineNo">012</span> FOR DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES<a name="line.12"></a>
+<span class="sourceLineNo">013</span> ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION, EVEN IF<a name="line.13"></a>
+<span class="sourceLineNo">014</span> THE UNIVERSITY OF CALIFORNIA HAS BEEN ADVISED OF THE POSSIBILITY OF<a name="line.14"></a>
+<span class="sourceLineNo">015</span> SUCH DAMAGE.<a name="line.15"></a>
+<span class="sourceLineNo">016</span><a name="line.16"></a>
+<span class="sourceLineNo">017</span> THE UNIVERSITY OF CALIFORNIA SPECIFICALLY DISCLAIMS ANY WARRANTIES,<a name="line.17"></a>
+<span class="sourceLineNo">018</span> INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF<a name="line.18"></a>
+<span class="sourceLineNo">019</span> MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE<a name="line.19"></a>
+<span class="sourceLineNo">020</span> PROVIDED HEREUNDER IS ON AN "AS IS" BASIS, AND THE UNIVERSITY OF<a name="line.20"></a>
+<span class="sourceLineNo">021</span> CALIFORNIA HAS NO OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT, UPDATES,<a name="line.21"></a>
+<span class="sourceLineNo">022</span> ENHANCEMENTS, OR MODIFICATIONS.<a name="line.22"></a>
+<span class="sourceLineNo">023</span><a name="line.23"></a>
+<span class="sourceLineNo">024</span> PT_COPYRIGHT_VERSION_2<a name="line.24"></a>
+<span class="sourceLineNo">025</span> COPYRIGHTENDKEY<a name="line.25"></a>
+<span class="sourceLineNo">026</span> */<a name="line.26"></a>
+<span class="sourceLineNo">027</span>package ptolemy.domains.modal.kernel;<a name="line.27"></a>
+<span class="sourceLineNo">028</span><a name="line.28"></a>
+<span class="sourceLineNo">029</span>import java.util.Iterator;<a name="line.29"></a>
+<span class="sourceLineNo">030</span><a name="line.30"></a>
+<span class="sourceLineNo">031</span>import ptolemy.actor.IOPort;<a name="line.31"></a>
+<span class="sourceLineNo">032</span>import ptolemy.actor.NoRoomException;<a name="line.32"></a>
+<span class="sourceLineNo">033</span>import ptolemy.data.Token;<a name="line.33"></a>
+<span class="sourceLineNo">034</span>import ptolemy.data.expr.ASTPtRootNode;<a name="line.34"></a>
+<span class="sourceLineNo">035</span>import ptolemy.data.expr.UnknownResultException;<a name="line.35"></a>
+<span class="sourceLineNo">036</span>import ptolemy.data.expr.Variable;<a name="line.36"></a>
+<span class="sourceLineNo">037</span>import ptolemy.kernel.CompositeEntity;<a name="line.37"></a>
+<span class="sourceLineNo">038</span>import ptolemy.kernel.Entity;<a name="line.38"></a>
+<span class="sourceLineNo">039</span>import ptolemy.kernel.util.Attribute;<a name="line.39"></a>
+<span class="sourceLineNo">040</span>import ptolemy.kernel.util.IllegalActionException;<a name="line.40"></a>
+<span class="sourceLineNo">041</span>import ptolemy.kernel.util.NameDuplicationException;<a name="line.41"></a>
+<span class="sourceLineNo">042</span>import ptolemy.kernel.util.Nameable;<a name="line.42"></a>
+<span class="sourceLineNo">043</span>import ptolemy.kernel.util.NamedObj;<a name="line.43"></a>
+<span class="sourceLineNo">044</span>import ptolemy.kernel.util.Workspace;<a name="line.44"></a>
+<span class="sourceLineNo">045</span><a name="line.45"></a>
+<span class="sourceLineNo">046</span>///////////////////////////////////////////////////////////////////<a name="line.46"></a>
+<span class="sourceLineNo">047</span>//// CommitActionsAttribute<a name="line.47"></a>
+<span class="sourceLineNo">048</span><a name="line.48"></a>
+<span class="sourceLineNo">049</span>/**<a name="line.49"></a>
+<span class="sourceLineNo">050</span> An action that changes the state of the system. Typical commit actions set<a name="line.50"></a>
+<span class="sourceLineNo">051</span> variables either in the containing FSMActor or in a state refinement.<a name="line.51"></a>
+<span class="sourceLineNo">052</span> This action is contained by a transition,<a name="line.52"></a>
+<span class="sourceLineNo">053</span> and is evaluated whenever that transition is taken.  The evaluation<a name="line.53"></a>
+<span class="sourceLineNo">054</span> is done in the postfire() method of the FSMActor that contains the<a name="line.54"></a>
+<span class="sourceLineNo">055</span> transition (hereafter called "the FSM actor").<a name="line.55"></a>
+<span class="sourceLineNo">056</span> To specify an action that is executed earlier, in the fire()<a name="line.56"></a>
+<span class="sourceLineNo">057</span> method, when the transition is enabled rather than taken,<a name="line.57"></a>
+<span class="sourceLineNo">058</span> use the class OutputActionsAttribute.<a name="line.58"></a>
+<span class="sourceLineNo">059</span> &lt;p&gt;<a name="line.59"></a>
+<span class="sourceLineNo">060</span> The value of this attribute is a semicolon separated list of commands,<a name="line.60"></a>
+<span class="sourceLineNo">061</span> where each command gives a destination and a value.<a name="line.61"></a>
+<span class="sourceLineNo">062</span> The actions are given by calling setExpression() with<a name="line.62"></a>
+<span class="sourceLineNo">063</span> a string of the form:<a name="line.63"></a>
+<span class="sourceLineNo">064</span> &lt;pre&gt;<a name="line.64"></a>
+<span class="sourceLineNo">065</span> &lt;i&gt;command&lt;/i&gt;; &lt;i&gt;command&lt;/i&gt;; ...<a name="line.65"></a>
+<span class="sourceLineNo">066</span> &lt;/pre&gt;<a name="line.66"></a>
+<span class="sourceLineNo">067</span> where each &lt;i&gt;command&lt;/i&gt; has the form:<a name="line.67"></a>
+<span class="sourceLineNo">068</span> &lt;pre&gt;<a name="line.68"></a>
+<span class="sourceLineNo">069</span> &lt;i&gt;destination&lt;/i&gt; = &lt;i&gt;expression&lt;/i&gt;<a name="line.69"></a>
+<span class="sourceLineNo">070</span> &lt;/pre&gt;<a name="line.70"></a>
+<span class="sourceLineNo">071</span> where &lt;i&gt;destination&lt;/i&gt; is &lt;i&gt;variableName&lt;/i&gt;,<a name="line.71"></a>
+<span class="sourceLineNo">072</span> where &lt;i&gt;variableName&lt;/i&gt; is either a variable or parameter of<a name="line.72"></a>
+<span class="sourceLineNo">073</span> the FSM actor, or a variable or parameter of a refinement state.<a name="line.73"></a>
+<span class="sourceLineNo">074</span> To give a variable of a refinement state, use a dotted name,<a name="line.74"></a>
+<span class="sourceLineNo">075</span> as follows:<a name="line.75"></a>
+<span class="sourceLineNo">076</span> &lt;pre&gt;<a name="line.76"></a>
+<span class="sourceLineNo">077</span> &lt;i&gt;refinementStateName&lt;/i&gt;.&lt;i&gt;variableName&lt;/i&gt;<a name="line.77"></a>
+<span class="sourceLineNo">078</span> &lt;/pre&gt;<a name="line.78"></a>
+<span class="sourceLineNo">079</span> &lt;p&gt;<a name="line.79"></a>
+<span class="sourceLineNo">080</span> The &lt;i&gt;expression&lt;/i&gt; is a string giving an expression in the usual<a name="line.80"></a>
+<span class="sourceLineNo">081</span> Ptolemy II expression language.  The expression may include references<a name="line.81"></a>
+<span class="sourceLineNo">082</span> to variables and parameters contained by the FSM actor.<a name="line.82"></a>
+<span class="sourceLineNo">083</span> &lt;p&gt;<a name="line.83"></a>
+<span class="sourceLineNo">084</span> The &lt;i&gt;destination&lt;/i&gt; can also be a port, however, this is discouraged.<a name="line.84"></a>
+<span class="sourceLineNo">085</span> Commit actions are not executed until postfire(), and the Ptolemy II<a name="line.85"></a>
+<span class="sourceLineNo">086</span> abstract semantics requires that outputs be produced in fire().<a name="line.86"></a>
+<span class="sourceLineNo">087</span> Nonetheless, this is supported. In this case, the &lt;i&gt;destination&lt;/i&gt; is<a name="line.87"></a>
+<span class="sourceLineNo">088</span> either<a name="line.88"></a>
+<span class="sourceLineNo">089</span> &lt;pre&gt;<a name="line.89"></a>
+<span class="sourceLineNo">090</span> &lt;i&gt;portName&lt;/i&gt;<a name="line.90"></a>
+<span class="sourceLineNo">091</span> &lt;/pre&gt;<a name="line.91"></a>
+<span class="sourceLineNo">092</span> or<a name="line.92"></a>
+<span class="sourceLineNo">093</span> &lt;pre&gt;<a name="line.93"></a>
+<span class="sourceLineNo">094</span> &lt;i&gt;portName&lt;/i&gt;(&lt;i&gt;channelNumber&lt;/i&gt;)<a name="line.94"></a>
+<span class="sourceLineNo">095</span> &lt;/pre&gt;<a name="line.95"></a>
+<span class="sourceLineNo">096</span> Here, &lt;i&gt;portName&lt;/i&gt; is the name of a port of the FSM actor,<a name="line.96"></a>
+<span class="sourceLineNo">097</span> If no &lt;i&gt;channelNumber&lt;/i&gt; is given, then the value<a name="line.97"></a>
+<span class="sourceLineNo">098</span> is broadcast to all channels of the port.<a name="line.98"></a>
+<span class="sourceLineNo">099</span> If destination name is given where there is both a port and a variable<a name="line.99"></a>
+<span class="sourceLineNo">100</span> with that name, then the port will be used.<a name="line.100"></a>
+<span class="sourceLineNo">101</span><a name="line.101"></a>
+<span class="sourceLineNo">102</span> @author Xiaojun Liu and Edward A. Lee<a name="line.102"></a>
+<span class="sourceLineNo">103</span> @version $Id$<a name="line.103"></a>
+<span class="sourceLineNo">104</span> @since Ptolemy II 8.0<a name="line.104"></a>
+<span class="sourceLineNo">105</span> @Pt.ProposedRating Yellow (eal)<a name="line.105"></a>
+<span class="sourceLineNo">106</span> @Pt.AcceptedRating Red (eal)<a name="line.106"></a>
+<span class="sourceLineNo">107</span> @see CommitActionsAttribute<a name="line.107"></a>
+<span class="sourceLineNo">108</span> @see Transition<a name="line.108"></a>
+<span class="sourceLineNo">109</span> @see FSMActor<a name="line.109"></a>
+<span class="sourceLineNo">110</span> */<a name="line.110"></a>
+<span class="sourceLineNo">111</span>public class CommitActionsAttribute extends AbstractActionsAttribute<a name="line.111"></a>
+<span class="sourceLineNo">112</span>        implements CommitAction {<a name="line.112"></a>
+<span class="sourceLineNo">113</span>    /** Construct an action in the specified workspace with an empty<a name="line.113"></a>
+<span class="sourceLineNo">114</span>     *  string as a name.<a name="line.114"></a>
+<span class="sourceLineNo">115</span>     *  The object is added to the directory of the workspace.<a name="line.115"></a>
+<span class="sourceLineNo">116</span>     *  Increment the version number of the workspace.<a name="line.116"></a>
+<span class="sourceLineNo">117</span>     *  @param workspace The workspace that will list the attribute.<a name="line.117"></a>
+<span class="sourceLineNo">118</span>     */<a name="line.118"></a>
+<span class="sourceLineNo">119</span>    public CommitActionsAttribute(Workspace workspace) {<a name="line.119"></a>
+<span class="sourceLineNo">120</span>        super(workspace);<a name="line.120"></a>
+<span class="sourceLineNo">121</span>    }<a name="line.121"></a>
+<span class="sourceLineNo">122</span><a name="line.122"></a>
+<span class="sourceLineNo">123</span>    /** Construct an action with the given name contained<a name="line.123"></a>
+<span class="sourceLineNo">124</span>     *  by the specified transition. The &lt;i&gt;transition&lt;/i&gt; argument must not<a name="line.124"></a>
+<span class="sourceLineNo">125</span>     *  be null, or a NullPointerException will be thrown. This action will<a name="line.125"></a>
+<span class="sourceLineNo">126</span>     *  use the workspace of the transition for synchronization and<a name="line.126"></a>
+<span class="sourceLineNo">127</span>     *  version counts. If the name argument is null, then the name is<a name="line.127"></a>
+<span class="sourceLineNo">128</span>     *  set to the empty string.<a name="line.128"></a>
+<span class="sourceLineNo">129</span>     *  This increments the version of the workspace.<a name="line.129"></a>
+<span class="sourceLineNo">130</span>     *  @param transition The transition that contains this action.<a name="line.130"></a>
+<span class="sourceLineNo">131</span>     *  @param name The name of this action.<a name="line.131"></a>
+<span class="sourceLineNo">132</span>     *  @exception IllegalActionException If the action is not of an<a name="line.132"></a>
+<span class="sourceLineNo">133</span>     *   acceptable class for the container.<a name="line.133"></a>
+<span class="sourceLineNo">134</span>     *  @exception NameDuplicationException If the transition already<a name="line.134"></a>
+<span class="sourceLineNo">135</span>     *   has an attribute with the name.<a name="line.135"></a>
+<span class="sourceLineNo">136</span>     */<a name="line.136"></a>
+<span class="sourceLineNo">137</span>    public CommitActionsAttribute(Transition transition, String name)<a name="line.137"></a>
+<span class="sourceLineNo">138</span>            throws IllegalActionException, NameDuplicationException {<a name="line.138"></a>
+<span class="sourceLineNo">139</span>        super(transition, name);<a name="line.139"></a>
+<span class="sourceLineNo">140</span>    }<a name="line.140"></a>
+<span class="sourceLineNo">141</span><a name="line.141"></a>
+<span class="sourceLineNo">142</span>    ///////////////////////////////////////////////////////////////////<a name="line.142"></a>
+<span class="sourceLineNo">143</span>    ////                         public methods                    ////<a name="line.143"></a>
+<span class="sourceLineNo">144</span><a name="line.144"></a>
+<span class="sourceLineNo">145</span>    /** Send tokens to the designated outputs.  Each token is determined<a name="line.145"></a>
+<span class="sourceLineNo">146</span>     *  by evaluating the expression portion of the action.<a name="line.146"></a>
+<span class="sourceLineNo">147</span>     *  @exception IllegalActionException If expression evaluation fails,<a name="line.147"></a>
+<span class="sourceLineNo">148</span>     *   or the specified port is not found, or sending to one of the<a name="line.148"></a>
+<span class="sourceLineNo">149</span>     *   channels of the port throws a NoRoomException.<a name="line.149"></a>
+<span class="sourceLineNo">150</span>     */<a name="line.150"></a>
+<span class="sourceLineNo">151</span>    @Override<a name="line.151"></a>
+<span class="sourceLineNo">152</span>    public void execute() throws IllegalActionException {<a name="line.152"></a>
+<span class="sourceLineNo">153</span>        super.execute();<a name="line.153"></a>
+<span class="sourceLineNo">154</span><a name="line.154"></a>
+<span class="sourceLineNo">155</span>        if (_destinations != null &amp;&amp; _destinations.size() &gt; 0) {<a name="line.155"></a>
+<span class="sourceLineNo">156</span>            Iterator destinations = _destinations.iterator();<a name="line.156"></a>
+<span class="sourceLineNo">157</span>            Iterator channels = getChannelNumberList().iterator();<a name="line.157"></a>
+<span class="sourceLineNo">158</span>            Iterator parseTrees = _parseTrees.iterator();<a name="line.158"></a>
+<span class="sourceLineNo">159</span><a name="line.159"></a>
+<span class="sourceLineNo">160</span>            while (destinations.hasNext()) {<a name="line.160"></a>
+<span class="sourceLineNo">161</span>                NamedObj nextDestination = (NamedObj) destinations.next();<a name="line.161"></a>
+<span class="sourceLineNo">162</span><a name="line.162"></a>
+<span class="sourceLineNo">163</span>                // Need to get the next channel even if it's not used.<a name="line.163"></a>
+<span class="sourceLineNo">164</span>                Integer channel = (Integer) channels.next();<a name="line.164"></a>
+<span class="sourceLineNo">165</span>                ASTPtRootNode parseTree = (ASTPtRootNode) parseTrees.next();<a name="line.165"></a>
+<span class="sourceLineNo">166</span>                Token token;<a name="line.166"></a>
+<span class="sourceLineNo">167</span><a name="line.167"></a>
+<span class="sourceLineNo">168</span>                try {<a name="line.168"></a>
+<span class="sourceLineNo">169</span>                    token = _parseTreeEvaluator.evaluateParseTree(parseTree,<a name="line.169"></a>
+<span class="sourceLineNo">170</span>                            _getParserScope());<a name="line.170"></a>
+<span class="sourceLineNo">171</span>                } catch (IllegalActionException ex) {<a name="line.171"></a>
+<span class="sourceLineNo">172</span>                    // Chain exceptions to get the actor that<a name="line.172"></a>
+<span class="sourceLineNo">173</span>                    // threw the exception.<a name="line.173"></a>
+<span class="sourceLineNo">174</span>                    throw new IllegalActionException(this, ex,<a name="line.174"></a>
+<span class="sourceLineNo">175</span>                            "Expression invalid.");<a name="line.175"></a>
+<span class="sourceLineNo">176</span>                }<a name="line.176"></a>
+<span class="sourceLineNo">177</span><a name="line.177"></a>
+<span class="sourceLineNo">178</span>                if (nextDestination instanceof IOPort) {<a name="line.178"></a>
+<span class="sourceLineNo">179</span>                    IOPort destination = (IOPort) nextDestination;<a name="line.179"></a>
+<span class="sourceLineNo">180</span><a name="line.180"></a>
+<span class="sourceLineNo">181</span>                    // FIXME: Domain-polymorphic actors should<a name="line.181"></a>
+<span class="sourceLineNo">182</span>                    // not be writing to output ports in commit actions.<a name="line.182"></a>
+<span class="sourceLineNo">183</span>                    // Should we through an exception?  Also:<a name="line.183"></a>
+<span class="sourceLineNo">184</span>                    // If the IOPort is an input as well as an output,<a name="line.184"></a>
+<span class="sourceLineNo">185</span>                    // then we need to set its shadow variables.<a name="line.185"></a>
+<span class="sourceLineNo">186</span><a name="line.186"></a>
+<span class="sourceLineNo">187</span>                    try {<a name="line.187"></a>
+<span class="sourceLineNo">188</span>                        if (channel != null) {<a name="line.188"></a>
+<span class="sourceLineNo">189</span>                            destination.send(channel.intValue(), token);<a name="line.189"></a>
+<span class="sourceLineNo">190</span><a name="line.190"></a>
+<span class="sourceLineNo">191</span>                            if (_debugging) {<a name="line.191"></a>
+<span class="sourceLineNo">192</span>                                _debug(getFullName() + " port: "<a name="line.192"></a>
+<span class="sourceLineNo">193</span>                                        + destination.getName() + " channel: "<a name="line.193"></a>
+<span class="sourceLineNo">194</span>                                        + channel.intValue() + ", token: "<a name="line.194"></a>
+<span class="sourceLineNo">195</span>                                        + token);<a name="line.195"></a>
+<span class="sourceLineNo">196</span>                            }<a name="line.196"></a>
+<span class="sourceLineNo">197</span>                        } else {<a name="line.197"></a>
+<span class="sourceLineNo">198</span>                            if (token == null) {<a name="line.198"></a>
+<span class="sourceLineNo">199</span>                                destination.broadcastClear();<a name="line.199"></a>
+<span class="sourceLineNo">200</span><a name="line.200"></a>
+<span class="sourceLineNo">201</span>                                if (_debugging) {<a name="line.201"></a>
+<span class="sourceLineNo">202</span>                                    _debug(getFullName() + " port: "<a name="line.202"></a>
+<span class="sourceLineNo">203</span>                                            + destination.getName()<a name="line.203"></a>
+<span class="sourceLineNo">204</span>                                            + " broadcast Clear!");<a name="line.204"></a>
+<span class="sourceLineNo">205</span>                                }<a name="line.205"></a>
+<span class="sourceLineNo">206</span>                            } else {<a name="line.206"></a>
+<span class="sourceLineNo">207</span>                                destination.broadcast(token);<a name="line.207"></a>
+<span class="sourceLineNo">208</span><a name="line.208"></a>
+<span class="sourceLineNo">209</span>                                if (_debugging) {<a name="line.209"></a>
+<span class="sourceLineNo">210</span>                                    _debug(getFullName() + " port: "<a name="line.210"></a>
+<span class="sourceLineNo">211</span>                                            + destination.getName()<a name="line.211"></a>
+<span class="sourceLineNo">212</span>                                            + " broadcast token: " + token);<a name="line.212"></a>
+<span class="sourceLineNo">213</span>                                }<a name="line.213"></a>
+<span class="sourceLineNo">214</span>                            }<a name="line.214"></a>
+<span class="sourceLineNo">215</span>                        }<a name="line.215"></a>
+<span class="sourceLineNo">216</span>                    } catch (NoRoomException ex) {<a name="line.216"></a>
+<span class="sourceLineNo">217</span>                        throw new IllegalActionException(this,<a name="line.217"></a>
+<span class="sourceLineNo">218</span>                                "Cannot complete action: " + ex.getMessage());<a name="line.218"></a>
+<span class="sourceLineNo">219</span>                    } catch (UnknownResultException ex) {<a name="line.219"></a>
+<span class="sourceLineNo">220</span>                        // Produce no output.<a name="line.220"></a>
+<span class="sourceLineNo">221</span>                    }<a name="line.221"></a>
+<span class="sourceLineNo">222</span>                } else if (nextDestination instanceof Variable) {<a name="line.222"></a>
+<span class="sourceLineNo">223</span>                    Variable destination = (Variable) nextDestination;<a name="line.223"></a>
+<span class="sourceLineNo">224</span><a name="line.224"></a>
+<span class="sourceLineNo">225</span>                    try {<a name="line.225"></a>
+<span class="sourceLineNo">226</span>                        //Token token = variable.getToken();<a name="line.226"></a>
+<span class="sourceLineNo">227</span>                        destination.setToken(token);<a name="line.227"></a>
+<span class="sourceLineNo">228</span><a name="line.228"></a>
+<span class="sourceLineNo">229</span>                        // Force all dependents to re-evaluate.<a name="line.229"></a>
+<span class="sourceLineNo">230</span>                        // This makes the parameters in the actors of<a name="line.230"></a>
+<span class="sourceLineNo">231</span>                        // the refinement take on new values immediately<a name="line.231"></a>
+<span class="sourceLineNo">232</span>                        // after the action is committed.<a name="line.232"></a>
+<span class="sourceLineNo">233</span>                        destination.validate();<a name="line.233"></a>
+<span class="sourceLineNo">234</span><a name="line.234"></a>
+<span class="sourceLineNo">235</span>                        if (_debugging) {<a name="line.235"></a>
+<span class="sourceLineNo">236</span>                            _debug(getFullName() + " variable: "<a name="line.236"></a>
+<span class="sourceLineNo">237</span>                                    + destination.getName() + ", value: "<a name="line.237"></a>
+<span class="sourceLineNo">238</span>                                    + token);<a name="line.238"></a>
+<span class="sourceLineNo">239</span>                        }<a name="line.239"></a>
+<span class="sourceLineNo">240</span>                    } catch (UnknownResultException ex) {<a name="line.240"></a>
+<span class="sourceLineNo">241</span>                        destination.setUnknown(true);<a name="line.241"></a>
+<span class="sourceLineNo">242</span>                    }<a name="line.242"></a>
+<span class="sourceLineNo">243</span>                } else {<a name="line.243"></a>
+<span class="sourceLineNo">244</span>                    throw new IllegalActionException(this,<a name="line.244"></a>
+<span class="sourceLineNo">245</span>                            "Destination is neither an IOPort nor a Variable: "<a name="line.245"></a>
+<span class="sourceLineNo">246</span>                                    + nextDestination.getFullName());<a name="line.246"></a>
+<span class="sourceLineNo">247</span>                }<a name="line.247"></a>
+<span class="sourceLineNo">248</span>            }<a name="line.248"></a>
+<span class="sourceLineNo">249</span>        }<a name="line.249"></a>
+<span class="sourceLineNo">250</span>    }<a name="line.250"></a>
+<span class="sourceLineNo">251</span><a name="line.251"></a>
+<span class="sourceLineNo">252</span>    ///////////////////////////////////////////////////////////////////<a name="line.252"></a>
+<span class="sourceLineNo">253</span>    ////                         protected methods                 ////<a name="line.253"></a>
+<span class="sourceLineNo">254</span><a name="line.254"></a>
+<span class="sourceLineNo">255</span>    /** Given a destination name, return a NamedObj that matches that<a name="line.255"></a>
+<span class="sourceLineNo">256</span>     *  destination.<a name="line.256"></a>
+<span class="sourceLineNo">257</span>     *  @param name The name of the destination, or null if none is found.<a name="line.257"></a>
+<span class="sourceLineNo">258</span>     *  @return An object (like a port or a variable) with the specified name.<a name="line.258"></a>
+<span class="sourceLineNo">259</span>     *  @exception IllegalActionException If the associated FSMActor<a name="line.259"></a>
+<span class="sourceLineNo">260</span>     *   does not have a destination with the specified name.<a name="line.260"></a>
+<span class="sourceLineNo">261</span>     */<a name="line.261"></a>
+<span class="sourceLineNo">262</span>    @Override<a name="line.262"></a>
+<span class="sourceLineNo">263</span>    protected NamedObj _getDestination(String name)<a name="line.263"></a>
+<span class="sourceLineNo">264</span>            throws IllegalActionException {<a name="line.264"></a>
+<span class="sourceLineNo">265</span>        Transition transition = (Transition) getContainer();<a name="line.265"></a>
+<span class="sourceLineNo">266</span><a name="line.266"></a>
+<span class="sourceLineNo">267</span>        if (transition == null) {<a name="line.267"></a>
+<span class="sourceLineNo">268</span>            throw new IllegalActionException(this,<a name="line.268"></a>
+<span class="sourceLineNo">269</span>                    "Action has no container transition.");<a name="line.269"></a>
+<span class="sourceLineNo">270</span>        }<a name="line.270"></a>
+<span class="sourceLineNo">271</span><a name="line.271"></a>
+<span class="sourceLineNo">272</span>        Entity fsm = (Entity) transition.getContainer();<a name="line.272"></a>
+<span class="sourceLineNo">273</span><a name="line.273"></a>
+<span class="sourceLineNo">274</span>        if (fsm == null) {<a name="line.274"></a>
+<span class="sourceLineNo">275</span>            throw new IllegalActionException(this, transition,<a name="line.275"></a>
+<span class="sourceLineNo">276</span>                    "Transition has no container.");<a name="line.276"></a>
+<span class="sourceLineNo">277</span>        }<a name="line.277"></a>
+<span class="sourceLineNo">278</span><a name="line.278"></a>
+<span class="sourceLineNo">279</span>        IOPort port = (IOPort) fsm.getPort(name);<a name="line.279"></a>
+<span class="sourceLineNo">280</span><a name="line.280"></a>
+<span class="sourceLineNo">281</span>        if (port == null) {<a name="line.281"></a>
+<span class="sourceLineNo">282</span>            // No port found.  Try for a variable.<a name="line.282"></a>
+<span class="sourceLineNo">283</span>            Attribute variable = fsm.getAttribute(name);<a name="line.283"></a>
+<span class="sourceLineNo">284</span><a name="line.284"></a>
+<span class="sourceLineNo">285</span>            if (variable == null) {<a name="line.285"></a>
+<span class="sourceLineNo">286</span>                // Try for a refinement variable.<a name="line.286"></a>
+<span class="sourceLineNo">287</span>                int period = name.indexOf(".");<a name="line.287"></a>
+<span class="sourceLineNo">288</span><a name="line.288"></a>
+<span class="sourceLineNo">289</span>                if (period &gt; 0) {<a name="line.289"></a>
+<span class="sourceLineNo">290</span>                    String refinementName = name.substring(0, period);<a name="line.290"></a>
+<span class="sourceLineNo">291</span>                    String entryName = name.substring(period + 1);<a name="line.291"></a>
+<span class="sourceLineNo">292</span><a name="line.292"></a>
+<span class="sourceLineNo">293</span>                    // FIXME: Look in the container of the fsm???<a name="line.293"></a>
+<span class="sourceLineNo">294</span>                    // Below we look for an attribute only in the fsm<a name="line.294"></a>
+<span class="sourceLineNo">295</span>                    // itself.<a name="line.295"></a>
+<span class="sourceLineNo">296</span>                    Nameable fsmContainer = fsm.getContainer();<a name="line.296"></a>
+<span class="sourceLineNo">297</span><a name="line.297"></a>
+<span class="sourceLineNo">298</span>                    if (fsmContainer instanceof CompositeEntity) {<a name="line.298"></a>
+<span class="sourceLineNo">299</span>                        Entity refinement = ((CompositeEntity) fsmContainer)<a name="line.299"></a>
+<span class="sourceLineNo">300</span>                                .getEntity(refinementName);<a name="line.300"></a>
+<span class="sourceLineNo">301</span><a name="line.301"></a>
+<span class="sourceLineNo">302</span>                        if (refinement != null) {<a name="line.302"></a>
+<span class="sourceLineNo">303</span>                            Attribute entry = refinement<a name="line.303"></a>
+<span class="sourceLineNo">304</span>                                    .getAttribute(entryName);<a name="line.304"></a>
+<span class="sourceLineNo">305</span><a name="line.305"></a>
+<span class="sourceLineNo">306</span>                            if (entry instanceof Variable) {<a name="line.306"></a>
+<span class="sourceLineNo">307</span>                                return entry;<a name="line.307"></a>
+<span class="sourceLineNo">308</span>                            }<a name="line.308"></a>
+<span class="sourceLineNo">309</span>                        }<a name="line.309"></a>
+<span class="sourceLineNo">310</span>                    }<a name="line.310"></a>
+<span class="sourceLineNo">311</span>                }<a name="line.311"></a>
+<span class="sourceLineNo">312</span><a name="line.312"></a>
+<span class="sourceLineNo">313</span>                // FIXME: If not found, instead of throwing an exception, we<a name="line.313"></a>
+<span class="sourceLineNo">314</span>                // look for an attribute with the given name in the containers.<a name="line.314"></a>
+<span class="sourceLineNo">315</span>                // This, however, split the name by periods, so it only looks<a name="line.315"></a>
+<span class="sourceLineNo">316</span>                // for attributes with the exact given name. Look at<a name="line.316"></a>
+<span class="sourceLineNo">317</span>                // ptolemy.domains.ptera.kernel.ActionsAttribute for a solution.<a name="line.317"></a>
+<span class="sourceLineNo">318</span>                NamedObj container = getContainer();<a name="line.318"></a>
+<span class="sourceLineNo">319</span>                while (container != null) {<a name="line.319"></a>
+<span class="sourceLineNo">320</span>                    Attribute attribute = container.getAttribute(name);<a name="line.320"></a>
+<span class="sourceLineNo">321</span>                    if (attribute != null) {<a name="line.321"></a>
+<span class="sourceLineNo">322</span>                        return attribute;<a name="line.322"></a>
+<span class="sourceLineNo">323</span>                    }<a name="line.323"></a>
+<span class="sourceLineNo">324</span>                    NamedObj containerContainer = container.getContainer();<a name="line.324"></a>
+<span class="sourceLineNo">325</span>                    if (container instanceof RefinementActor) {<a name="line.325"></a>
+<span class="sourceLineNo">326</span>                        State state = ((RefinementActor) container)<a name="line.326"></a>
+<span class="sourceLineNo">327</span>                                .getRefinedState();<a name="line.327"></a>
+<span class="sourceLineNo">328</span>                        if (state == null) {<a name="line.328"></a>
+<span class="sourceLineNo">329</span>                            container = containerContainer;<a name="line.329"></a>
+<span class="sourceLineNo">330</span>                        } else {<a name="line.330"></a>
+<span class="sourceLineNo">331</span>                            container = state.getContainer();<a name="line.331"></a>
+<span class="sourceLineNo">332</span>                        }<a name="line.332"></a>
+<span class="sourceLineNo">333</span>                    } else {<a name="line.333"></a>
+<span class="sourceLineNo">334</span>                        container = containerContainer;<a name="line.334"></a>
+<span class="sourceLineNo">335</span>                    }<a name="line.335"></a>
+<span class="sourceLineNo">336</span>                }<a name="line.336"></a>
+<span class="sourceLineNo">337</span><a name="line.337"></a>
+<span class="sourceLineNo">338</span>                throw new IllegalActionException(fsm, this,<a name="line.338"></a>
+<span class="sourceLineNo">339</span>                        "Cannot find port or variable with the name: " + name);<a name="line.339"></a>
+<span class="sourceLineNo">340</span>            } else {<a name="line.340"></a>
+<span class="sourceLineNo">341</span>                if (!(variable instanceof Variable)) {<a name="line.341"></a>
+<span class="sourceLineNo">342</span>                    throw new IllegalActionException(fsm, this,<a name="line.342"></a>
+<span class="sourceLineNo">343</span>                            "The attribute with name \"" + name<a name="line.343"></a>
+<span class="sourceLineNo">344</span>                                    + "\" is not an "<a name="line.344"></a>
+<span class="sourceLineNo">345</span>                                    + "instance of Variable.");<a name="line.345"></a>
+<span class="sourceLineNo">346</span>                }<a name="line.346"></a>
+<span class="sourceLineNo">347</span><a name="line.347"></a>
+<span class="sourceLineNo">348</span>                return variable;<a name="line.348"></a>
+<span class="sourceLineNo">349</span>            }<a name="line.349"></a>
+<span class="sourceLineNo">350</span>        } else {<a name="line.350"></a>
+<span class="sourceLineNo">351</span>            if (!port.isOutput()) {<a name="line.351"></a>
+<span class="sourceLineNo">352</span>                throw new IllegalActionException(fsm, this,<a name="line.352"></a>
+<span class="sourceLineNo">353</span>                        "The port is not an output port: " + name);<a name="line.353"></a>
+<span class="sourceLineNo">354</span>            }<a name="line.354"></a>
+<span class="sourceLineNo">355</span><a name="line.355"></a>
+<span class="sourceLineNo">356</span>            return port;<a name="line.356"></a>
+<span class="sourceLineNo">357</span>        }<a name="line.357"></a>
+<span class="sourceLineNo">358</span>    }<a name="line.358"></a>
+<span class="sourceLineNo">359</span>}<a name="line.359"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

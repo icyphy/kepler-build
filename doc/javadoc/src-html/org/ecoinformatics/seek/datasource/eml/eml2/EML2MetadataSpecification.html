@@ -1,0 +1,546 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../../../../../stylesheet.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>/*<a name="line.1"></a>
+<span class="sourceLineNo">002</span> * Copyright (c) 2004-2010 The Regents of the University of California.<a name="line.2"></a>
+<span class="sourceLineNo">003</span> * All rights reserved.<a name="line.3"></a>
+<span class="sourceLineNo">004</span> *<a name="line.4"></a>
+<span class="sourceLineNo">005</span> * '$Author: barseghian $'<a name="line.5"></a>
+<span class="sourceLineNo">006</span> * '$Date: 2011-11-10 17:31:50 -0800 (Thu, 10 Nov 2011) $' <a name="line.6"></a>
+<span class="sourceLineNo">007</span> * '$Revision: 28928 $'<a name="line.7"></a>
+<span class="sourceLineNo">008</span> * <a name="line.8"></a>
+<span class="sourceLineNo">009</span> * Permission is hereby granted, without written agreement and without<a name="line.9"></a>
+<span class="sourceLineNo">010</span> * license or royalty fees, to use, copy, modify, and distribute this<a name="line.10"></a>
+<span class="sourceLineNo">011</span> * software and its documentation for any purpose, provided that the above<a name="line.11"></a>
+<span class="sourceLineNo">012</span> * copyright notice and the following two paragraphs appear in all copies<a name="line.12"></a>
+<span class="sourceLineNo">013</span> * of this software.<a name="line.13"></a>
+<span class="sourceLineNo">014</span> *<a name="line.14"></a>
+<span class="sourceLineNo">015</span> * IN NO EVENT SHALL THE UNIVERSITY OF CALIFORNIA BE LIABLE TO ANY PARTY<a name="line.15"></a>
+<span class="sourceLineNo">016</span> * FOR DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES<a name="line.16"></a>
+<span class="sourceLineNo">017</span> * ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION, EVEN IF<a name="line.17"></a>
+<span class="sourceLineNo">018</span> * THE UNIVERSITY OF CALIFORNIA HAS BEEN ADVISED OF THE POSSIBILITY OF<a name="line.18"></a>
+<span class="sourceLineNo">019</span> * SUCH DAMAGE.<a name="line.19"></a>
+<span class="sourceLineNo">020</span> *<a name="line.20"></a>
+<span class="sourceLineNo">021</span> * THE UNIVERSITY OF CALIFORNIA SPECIFICALLY DISCLAIMS ANY WARRANTIES,<a name="line.21"></a>
+<span class="sourceLineNo">022</span> * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF<a name="line.22"></a>
+<span class="sourceLineNo">023</span> * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE<a name="line.23"></a>
+<span class="sourceLineNo">024</span> * PROVIDED HEREUNDER IS ON AN "AS IS" BASIS, AND THE UNIVERSITY OF<a name="line.24"></a>
+<span class="sourceLineNo">025</span> * CALIFORNIA HAS NO OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT, UPDATES,<a name="line.25"></a>
+<span class="sourceLineNo">026</span> * ENHANCEMENTS, OR MODIFICATIONS.<a name="line.26"></a>
+<span class="sourceLineNo">027</span> *<a name="line.27"></a>
+<span class="sourceLineNo">028</span> */<a name="line.28"></a>
+<span class="sourceLineNo">029</span><a name="line.29"></a>
+<span class="sourceLineNo">030</span>package org.ecoinformatics.seek.datasource.eml.eml2;<a name="line.30"></a>
+<span class="sourceLineNo">031</span><a name="line.31"></a>
+<span class="sourceLineNo">032</span>import java.io.IOException;<a name="line.32"></a>
+<span class="sourceLineNo">033</span>import java.util.Collections;<a name="line.33"></a>
+<span class="sourceLineNo">034</span>import java.util.Hashtable;<a name="line.34"></a>
+<span class="sourceLineNo">035</span>import java.util.List;<a name="line.35"></a>
+<span class="sourceLineNo">036</span>import java.util.Vector;<a name="line.36"></a>
+<span class="sourceLineNo">037</span><a name="line.37"></a>
+<span class="sourceLineNo">038</span>import org.apache.commons.logging.Log;<a name="line.38"></a>
+<span class="sourceLineNo">039</span>import org.apache.commons.logging.LogFactory;<a name="line.39"></a>
+<span class="sourceLineNo">040</span>import org.ecoinformatics.ecogrid.queryservice.query.QueryType;<a name="line.40"></a>
+<span class="sourceLineNo">041</span>import org.ecoinformatics.ecogrid.queryservice.resultset.ResultsetType;<a name="line.41"></a>
+<span class="sourceLineNo">042</span>import org.ecoinformatics.ecogrid.queryservice.resultset.ResultsetTypeRecord;<a name="line.42"></a>
+<span class="sourceLineNo">043</span>import org.ecoinformatics.ecogrid.queryservice.resultset.ResultsetTypeRecordReturnField;<a name="line.43"></a>
+<span class="sourceLineNo">044</span>import org.ecoinformatics.ecogrid.queryservice.resultset.ResultsetTypeResultsetMetadata;<a name="line.44"></a>
+<span class="sourceLineNo">045</span>import org.ecoinformatics.ecogrid.queryservice.resultset.ResultsetTypeResultsetMetadataNamespace;<a name="line.45"></a>
+<span class="sourceLineNo">046</span>import org.ecoinformatics.ecogrid.queryservice.resultset.ResultsetTypeResultsetMetadataRecordStructure;<a name="line.46"></a>
+<span class="sourceLineNo">047</span>import org.ecoinformatics.ecogrid.queryservice.resultset.ResultsetTypeResultsetMetadataRecordStructureReturnField;<a name="line.47"></a>
+<span class="sourceLineNo">048</span>import org.ecoinformatics.seek.ecogrid.MetadataSpecificationInterface;<a name="line.48"></a>
+<span class="sourceLineNo">049</span>import org.ecoinformatics.seek.ecogrid.exception.EcoGridException;<a name="line.49"></a>
+<span class="sourceLineNo">050</span>import org.ecoinformatics.seek.ecogrid.exception.InvalidEcogridQueryException;<a name="line.50"></a>
+<span class="sourceLineNo">051</span>import org.ecoinformatics.seek.ecogrid.quicksearch.ResultRecord;<a name="line.51"></a>
+<span class="sourceLineNo">052</span>import org.ecoinformatics.seek.ecogrid.quicksearch.SearchQueryGenerator;<a name="line.52"></a>
+<span class="sourceLineNo">053</span>import org.ecoinformatics.seek.ecogrid.quicksearch.SortableResultRecord;<a name="line.53"></a>
+<span class="sourceLineNo">054</span>import org.ecoinformatics.seek.ecogrid.quicksearch.SortableResultRecordComparator;<a name="line.54"></a>
+<span class="sourceLineNo">055</span>import org.kepler.configuration.ConfigurationManager;<a name="line.55"></a>
+<span class="sourceLineNo">056</span>import org.kepler.configuration.ConfigurationProperty;<a name="line.56"></a>
+<span class="sourceLineNo">057</span>import org.kepler.kar.KARCacheContent;<a name="line.57"></a>
+<span class="sourceLineNo">058</span>import org.kepler.kar.KARCacheManager;<a name="line.58"></a>
+<span class="sourceLineNo">059</span>import org.kepler.moml.NamedObjId;<a name="line.59"></a>
+<span class="sourceLineNo">060</span>import org.kepler.objectmanager.lsid.KeplerLSID;<a name="line.60"></a>
+<span class="sourceLineNo">061</span>import org.xml.sax.SAXException;<a name="line.61"></a>
+<span class="sourceLineNo">062</span><a name="line.62"></a>
+<span class="sourceLineNo">063</span>import ptolemy.kernel.CompositeEntity;<a name="line.63"></a>
+<span class="sourceLineNo">064</span>import ptolemy.kernel.util.IllegalActionException;<a name="line.64"></a>
+<span class="sourceLineNo">065</span>import ptolemy.kernel.util.NameDuplicationException;<a name="line.65"></a>
+<span class="sourceLineNo">066</span><a name="line.66"></a>
+<span class="sourceLineNo">067</span>/**<a name="line.67"></a>
+<span class="sourceLineNo">068</span> * This class is a plugin for eml200 namespace to transfer query group to<a name="line.68"></a>
+<span class="sourceLineNo">069</span> * ecogrid query type. It also provide a method to create quick search query<a name="line.69"></a>
+<span class="sourceLineNo">070</span> * <a name="line.70"></a>
+<span class="sourceLineNo">071</span> * @author Jing Tao<a name="line.71"></a>
+<span class="sourceLineNo">072</span> */<a name="line.72"></a>
+<span class="sourceLineNo">073</span><a name="line.73"></a>
+<span class="sourceLineNo">074</span>public class EML2MetadataSpecification extends MetadataSpecificationInterface {<a name="line.74"></a>
+<span class="sourceLineNo">075</span>        public static final String EML200NAMESPACE = "eml://ecoinformatics.org/eml-2.0.0";<a name="line.75"></a>
+<span class="sourceLineNo">076</span>        private static final int NAMESPACEARRAYLENGTH = 1;<a name="line.76"></a>
+<span class="sourceLineNo">077</span>        private static final String OPERATOR = "LIKE";<a name="line.77"></a>
+<span class="sourceLineNo">078</span>        private static final String FILERFIELD = "filerField";<a name="line.78"></a>
+<span class="sourceLineNo">079</span>        private static final String UNKNOWNTITLE = "unknownTitle";<a name="line.79"></a>
+<span class="sourceLineNo">080</span>        private static final String REPLACE = "#value#";<a name="line.80"></a>
+<span class="sourceLineNo">081</span>        private static final String QUERYID = "eml200-quick-search-query";<a name="line.81"></a>
+<span class="sourceLineNo">082</span><a name="line.82"></a>
+<span class="sourceLineNo">083</span>        private int _numResults = 0;<a name="line.83"></a>
+<span class="sourceLineNo">084</span>        protected String namespace = null;<a name="line.84"></a>
+<span class="sourceLineNo">085</span>        protected String queryId = null;<a name="line.85"></a>
+<span class="sourceLineNo">086</span><a name="line.86"></a>
+<span class="sourceLineNo">087</span>        protected final static Log log;<a name="line.87"></a>
+<span class="sourceLineNo">088</span>        protected final static boolean isDebugging;<a name="line.88"></a>
+<span class="sourceLineNo">089</span>        static {<a name="line.89"></a>
+<span class="sourceLineNo">090</span>                log = LogFactory<a name="line.90"></a>
+<span class="sourceLineNo">091</span>                                .getLog("org.ecoinformatics.seek.ecogrid.EML2MetadataSpecification");<a name="line.91"></a>
+<span class="sourceLineNo">092</span>                isDebugging = log.isDebugEnabled();<a name="line.92"></a>
+<span class="sourceLineNo">093</span>        }<a name="line.93"></a>
+<span class="sourceLineNo">094</span><a name="line.94"></a>
+<span class="sourceLineNo">095</span>        // private String recordTitle = null;<a name="line.95"></a>
+<span class="sourceLineNo">096</span>        // private Vector entityName = null;<a name="line.96"></a>
+<span class="sourceLineNo">097</span><a name="line.97"></a>
+<span class="sourceLineNo">098</span>        /**<a name="line.98"></a>
+<span class="sourceLineNo">099</span>         * Default constructor<a name="line.99"></a>
+<span class="sourceLineNo">100</span>         */<a name="line.100"></a>
+<span class="sourceLineNo">101</span>        public EML2MetadataSpecification() {<a name="line.101"></a>
+<span class="sourceLineNo">102</span>                namespace = EML200NAMESPACE;<a name="line.102"></a>
+<span class="sourceLineNo">103</span>                queryId = QUERYID;<a name="line.103"></a>
+<span class="sourceLineNo">104</span>        }// Eml200EcoGridQueryTransfer<a name="line.104"></a>
+<span class="sourceLineNo">105</span><a name="line.105"></a>
+<span class="sourceLineNo">106</span>        /**<a name="line.106"></a>
+<span class="sourceLineNo">107</span>         * Method to create a quick query search<a name="line.107"></a>
+<span class="sourceLineNo">108</span>         * <a name="line.108"></a>
+<span class="sourceLineNo">109</span>         * @param value<a name="line.109"></a>
+<span class="sourceLineNo">110</span>         *            String<a name="line.110"></a>
+<span class="sourceLineNo">111</span>         * @return QueryType<a name="line.111"></a>
+<span class="sourceLineNo">112</span>         */<a name="line.112"></a>
+<span class="sourceLineNo">113</span>        public QueryType getQuickSearchEcoGridQuery(String value)<a name="line.113"></a>
+<span class="sourceLineNo">114</span>                        throws InvalidEcogridQueryException {<a name="line.114"></a>
+<span class="sourceLineNo">115</span>                Hashtable replaceMapping = new Hashtable();<a name="line.115"></a>
+<span class="sourceLineNo">116</span>                replaceMapping.put(REPLACE, value);<a name="line.116"></a>
+<span class="sourceLineNo">117</span>                SearchQueryGenerator eml200QueryGenerator = new SearchQueryGenerator(<a name="line.117"></a>
+<span class="sourceLineNo">118</span>                                queryId, replaceMapping);<a name="line.118"></a>
+<span class="sourceLineNo">119</span>                QueryType ecogridQuery = eml200QueryGenerator.getQuery();<a name="line.119"></a>
+<span class="sourceLineNo">120</span>                return ecogridQuery;<a name="line.120"></a>
+<span class="sourceLineNo">121</span><a name="line.121"></a>
+<span class="sourceLineNo">122</span>        }// getQuickSearchEcoGridQuery<a name="line.122"></a>
+<span class="sourceLineNo">123</span><a name="line.123"></a>
+<span class="sourceLineNo">124</span>        /**<a name="line.124"></a>
+<span class="sourceLineNo">125</span>         * Method to create a ecogrid query<a name="line.125"></a>
+<span class="sourceLineNo">126</span>         * <a name="line.126"></a>
+<span class="sourceLineNo">127</span>         * @return QueryType<a name="line.127"></a>
+<span class="sourceLineNo">128</span>         */<a name="line.128"></a>
+<span class="sourceLineNo">129</span>        public QueryType getEcoGridQuery() {<a name="line.129"></a>
+<span class="sourceLineNo">130</span>                QueryType ecogridQuery = null;<a name="line.130"></a>
+<span class="sourceLineNo">131</span>                return ecogridQuery;<a name="line.131"></a>
+<span class="sourceLineNo">132</span>        }// getEcoGridQuery<a name="line.132"></a>
+<span class="sourceLineNo">133</span><a name="line.133"></a>
+<span class="sourceLineNo">134</span>        /**<a name="line.134"></a>
+<span class="sourceLineNo">135</span>         * This method will transfer ResultsetType java object to array of<a name="line.135"></a>
+<span class="sourceLineNo">136</span>         * ResultRecord java object. The ResultRecord object can be shown in kepler.<a name="line.136"></a>
+<span class="sourceLineNo">137</span>         * If the results is null or there is no record in the result, null will be<a name="line.137"></a>
+<span class="sourceLineNo">138</span>         * return<a name="line.138"></a>
+<span class="sourceLineNo">139</span>         * <a name="line.139"></a>
+<span class="sourceLineNo">140</span>         * @param ResultsetType<a name="line.140"></a>
+<span class="sourceLineNo">141</span>         *            results the result need to be transform<a name="line.141"></a>
+<span class="sourceLineNo">142</span>         * @param String<a name="line.142"></a>
+<span class="sourceLineNo">143</span>         *            endpoints the search end point<a name="line.143"></a>
+<span class="sourceLineNo">144</span>         * @return ResultRecord[] the resultrecord need be returned.<a name="line.144"></a>
+<span class="sourceLineNo">145</span>         */<a name="line.145"></a>
+<span class="sourceLineNo">146</span>        public ResultRecord[] transformResultset(ResultsetType results,<a name="line.146"></a>
+<span class="sourceLineNo">147</span>                        String endpoint, CompositeEntity container) throws SAXException,<a name="line.147"></a>
+<span class="sourceLineNo">148</span>                        IOException, EcoGridException, NameDuplicationException,<a name="line.148"></a>
+<span class="sourceLineNo">149</span>                        IllegalActionException {<a name="line.149"></a>
+<span class="sourceLineNo">150</span>                Eml200DataSource[] resultRecordArray = null;<a name="line.150"></a>
+<span class="sourceLineNo">151</span>                if (results == null) {<a name="line.151"></a>
+<span class="sourceLineNo">152</span>                        return resultRecordArray;<a name="line.152"></a>
+<span class="sourceLineNo">153</span>                }<a name="line.153"></a>
+<span class="sourceLineNo">154</span><a name="line.154"></a>
+<span class="sourceLineNo">155</span>                // get titlstring and entity name string from configure file<a name="line.155"></a>
+<span class="sourceLineNo">156</span>                String titleReturnFieldString = null;<a name="line.156"></a>
+<span class="sourceLineNo">157</span>                String entityReturnFieldString = null;<a name="line.157"></a>
+<span class="sourceLineNo">158</span>                // xpath for config file<a name="line.158"></a>
+<span class="sourceLineNo">159</span>                String titlePath = "//" + ECOGRIDPATH + "/" + RETURNFIELDTYPELIST + "/"<a name="line.159"></a>
+<span class="sourceLineNo">160</span>                                + RETURNFIELD + "[@" + NAMESPACE + "='" + namespace + "' and @"<a name="line.160"></a>
+<span class="sourceLineNo">161</span>                                + RETURNFIELDTYPE + "='" + RETURNFIELDTITLE + "']";<a name="line.161"></a>
+<span class="sourceLineNo">162</span>        <a name="line.162"></a>
+<span class="sourceLineNo">163</span>                String entityPath = "//" + ECOGRIDPATH + "/" + RETURNFIELDTYPELIST<a name="line.163"></a>
+<span class="sourceLineNo">164</span>                                + "/" + RETURNFIELD + "[@" + NAMESPACE + "='" + namespace<a name="line.164"></a>
+<span class="sourceLineNo">165</span>                                + "' and @" + RETURNFIELDTYPE + "='" + RETURNFIELDENTITY + "']";<a name="line.165"></a>
+<span class="sourceLineNo">166</span>        <a name="line.166"></a>
+<span class="sourceLineNo">167</span>                List titlePathList = null;<a name="line.167"></a>
+<span class="sourceLineNo">168</span>                List entityPathList = null;<a name="line.168"></a>
+<span class="sourceLineNo">169</span>    <a name="line.169"></a>
+<span class="sourceLineNo">170</span>    //get the specific configuration we want<a name="line.170"></a>
+<span class="sourceLineNo">171</span>    ConfigurationProperty ecogridProperty = ConfigurationManager.getInstance().getProperty(ConfigurationManager.getModule("ecogrid"));<a name="line.171"></a>
+<span class="sourceLineNo">172</span>    ConfigurationProperty returnFieldTypeList = ecogridProperty.getProperty("returnFieldTypeList");<a name="line.172"></a>
+<span class="sourceLineNo">173</span>    //findthe namespace properties<a name="line.173"></a>
+<span class="sourceLineNo">174</span>    List returnFieldTypeNamespaceList = returnFieldTypeList.findProperties(NAMESPACE, namespace, true  );<a name="line.174"></a>
+<span class="sourceLineNo">175</span>    //find the properties out of the correct namespace properties that also have the correct returnfieldtype<a name="line.175"></a>
+<span class="sourceLineNo">176</span>    titlePathList = ConfigurationProperty.findProperties(returnFieldTypeNamespaceList, RETURNFIELDTYPE, RETURNFIELDTITLE, false);<a name="line.176"></a>
+<span class="sourceLineNo">177</span>    //get the value list for the properties<a name="line.177"></a>
+<span class="sourceLineNo">178</span>    titlePathList = ConfigurationProperty.getValueList(titlePathList, "value", true);<a name="line.178"></a>
+<span class="sourceLineNo">179</span>        <a name="line.179"></a>
+<span class="sourceLineNo">180</span>                if (titlePathList.isEmpty()) {<a name="line.180"></a>
+<span class="sourceLineNo">181</span>                        log<a name="line.181"></a>
+<span class="sourceLineNo">182</span>                                        .debug("Couldn't get title from config Eml200EcoGridQueryTransfer.transformResultset");<a name="line.182"></a>
+<span class="sourceLineNo">183</span>                        throw new EcoGridException(<a name="line.183"></a>
+<span class="sourceLineNo">184</span>                                        "Couldn't get title returnfield from config");<a name="line.184"></a>
+<span class="sourceLineNo">185</span>                }<a name="line.185"></a>
+<span class="sourceLineNo">186</span><a name="line.186"></a>
+<span class="sourceLineNo">187</span>    entityPathList = ConfigurationProperty.findProperties(returnFieldTypeNamespaceList, RETURNFIELDTYPE, RETURNFIELDENTITY, false);<a name="line.187"></a>
+<span class="sourceLineNo">188</span>    //get the value list for the properties<a name="line.188"></a>
+<span class="sourceLineNo">189</span>    entityPathList = ConfigurationProperty.getValueList(entityPathList, "value", true);<a name="line.189"></a>
+<span class="sourceLineNo">190</span>    <a name="line.190"></a>
+<span class="sourceLineNo">191</span>                if (entityPathList.isEmpty()) {<a name="line.191"></a>
+<span class="sourceLineNo">192</span>                        log<a name="line.192"></a>
+<span class="sourceLineNo">193</span>                                        .debug("Couldn't get entity returnfield from config Eml200EcoGridQueryTransfer.transformResultset");<a name="line.193"></a>
+<span class="sourceLineNo">194</span>                        throw new EcoGridException(<a name="line.194"></a>
+<span class="sourceLineNo">195</span>                                        "Couldn't get entity returnfield from config");<a name="line.195"></a>
+<span class="sourceLineNo">196</span>                }<a name="line.196"></a>
+<span class="sourceLineNo">197</span>                // only choose the first one in vector as title returnfied or<a name="line.197"></a>
+<span class="sourceLineNo">198</span>                // entityreturn<a name="line.198"></a>
+<span class="sourceLineNo">199</span>                // field<a name="line.199"></a>
+<span class="sourceLineNo">200</span>                titleReturnFieldString = (String) titlePathList.get(0);<a name="line.200"></a>
+<span class="sourceLineNo">201</span>                entityReturnFieldString = (String) entityPathList.get(0);<a name="line.201"></a>
+<span class="sourceLineNo">202</span><a name="line.202"></a>
+<span class="sourceLineNo">203</span>                // transfer ResultType to a vector of eml2resultsetItem and<a name="line.203"></a>
+<span class="sourceLineNo">204</span>                // sorted the vector<a name="line.204"></a>
+<span class="sourceLineNo">205</span>                Vector resultsetItemList = transformResultsetType(results,<a name="line.205"></a>
+<span class="sourceLineNo">206</span>                                titleReturnFieldString, entityReturnFieldString);<a name="line.206"></a>
+<span class="sourceLineNo">207</span>                // transfer the sored vector (contains eml2resultsetitem object to an<a name="line.207"></a>
+<span class="sourceLineNo">208</span>                // array<a name="line.208"></a>
+<span class="sourceLineNo">209</span>                // of ResultRecord<a name="line.209"></a>
+<span class="sourceLineNo">210</span>                int arraySize = resultsetItemList.size();<a name="line.210"></a>
+<span class="sourceLineNo">211</span>                _numResults = arraySize;<a name="line.211"></a>
+<span class="sourceLineNo">212</span><a name="line.212"></a>
+<span class="sourceLineNo">213</span>                resultRecordArray = new Eml200DataSource[arraySize];<a name="line.213"></a>
+<span class="sourceLineNo">214</span>                Hashtable titleList = new Hashtable();// This hashtable is for keeping<a name="line.214"></a>
+<span class="sourceLineNo">215</span>                                                                                                // track<a name="line.215"></a>
+<span class="sourceLineNo">216</span>                // if there is a duplicate title<a name="line.216"></a>
+<span class="sourceLineNo">217</span>                <a name="line.217"></a>
+<span class="sourceLineNo">218</span>                KeplerLSID EML200ActorLSID = null;<a name="line.218"></a>
+<span class="sourceLineNo">219</span>                for (int i = 0; i &lt; arraySize; i++) {<a name="line.219"></a>
+<span class="sourceLineNo">220</span>                        try {<a name="line.220"></a>
+<span class="sourceLineNo">221</span>                                SortableResultRecord source = (SortableResultRecord) resultsetItemList<a name="line.221"></a>
+<span class="sourceLineNo">222</span>                                                .elementAt(i);<a name="line.222"></a>
+<span class="sourceLineNo">223</span>                                String title = source.getTitle();<a name="line.223"></a>
+<span class="sourceLineNo">224</span>                                log.debug("The title is " + title);<a name="line.224"></a>
+<span class="sourceLineNo">225</span>                                String id = source.getId();<a name="line.225"></a>
+<span class="sourceLineNo">226</span>                                log.debug("The id is " + id);<a name="line.226"></a>
+<span class="sourceLineNo">227</span>                                Vector entityList = source.getEntityList();<a name="line.227"></a>
+<span class="sourceLineNo">228</span>                                // if couldn't find id, skip this record<a name="line.228"></a>
+<span class="sourceLineNo">229</span>                                if (id == null || id.trim().equals("")) {<a name="line.229"></a>
+<span class="sourceLineNo">230</span>                                        continue;<a name="line.230"></a>
+<span class="sourceLineNo">231</span>                                }<a name="line.231"></a>
+<span class="sourceLineNo">232</span><a name="line.232"></a>
+<span class="sourceLineNo">233</span>                                // if couldn't find title, assign a one to it -- &lt;j&gt;<a name="line.233"></a>
+<span class="sourceLineNo">234</span>                                if (title == null || title.trim().equals("")) {<a name="line.234"></a>
+<span class="sourceLineNo">235</span>                                        title = "&lt;" + i + "&gt;";<a name="line.235"></a>
+<span class="sourceLineNo">236</span>                                }<a name="line.236"></a>
+<span class="sourceLineNo">237</span>                                if (titleList.containsKey(title)) {<a name="line.237"></a>
+<span class="sourceLineNo">238</span>                                        title = title + " " + i;<a name="line.238"></a>
+<span class="sourceLineNo">239</span>                                }<a name="line.239"></a>
+<span class="sourceLineNo">240</span>                                //make it unique in the result tree<a name="line.240"></a>
+<span class="sourceLineNo">241</span>                                if (container.getEntity(title) != null) {<a name="line.241"></a>
+<span class="sourceLineNo">242</span>                                        String hint = "another service";<a name="line.242"></a>
+<span class="sourceLineNo">243</span>                                        if (endpoint.lastIndexOf("/") &gt; -1) {<a name="line.243"></a>
+<span class="sourceLineNo">244</span>                                                hint = endpoint.substring(endpoint.lastIndexOf("/") + 1);<a name="line.244"></a>
+<span class="sourceLineNo">245</span>                                        }       <a name="line.245"></a>
+<span class="sourceLineNo">246</span>                                        title = title + " (" + hint  + ")";<a name="line.246"></a>
+<span class="sourceLineNo">247</span>                                }<a name="line.247"></a>
+<span class="sourceLineNo">248</span>                                titleList.put(title, title);<a name="line.248"></a>
+<span class="sourceLineNo">249</span>                                Eml200DataSource newRecord = new Eml200DataSource(container, title);<a name="line.249"></a>
+<span class="sourceLineNo">250</span>                                newRecord.setRecordId(id);<a name="line.250"></a>
+<span class="sourceLineNo">251</span>                                newRecord.setEndpoint(endpoint);<a name="line.251"></a>
+<span class="sourceLineNo">252</span>                                newRecord.setNamespace(namespace);<a name="line.252"></a>
+<span class="sourceLineNo">253</span>                                for (int j = 0; j &lt; entityList.size(); j++) {<a name="line.253"></a>
+<span class="sourceLineNo">254</span>                                        String entityNameString = (String) entityList.elementAt(j);<a name="line.254"></a>
+<span class="sourceLineNo">255</span>                                        log.debug("The entiy name will be " + entityNameString);<a name="line.255"></a>
+<span class="sourceLineNo">256</span>                                        newRecord.addRecordDetail(entityNameString);<a name="line.256"></a>
+<span class="sourceLineNo">257</span><a name="line.257"></a>
+<span class="sourceLineNo">258</span>                                }<a name="line.258"></a>
+<span class="sourceLineNo">259</span>                                Eml200DataSource.generateDocumentationForInstance(newRecord);<a name="line.259"></a>
+<span class="sourceLineNo">260</span>                                <a name="line.260"></a>
+<span class="sourceLineNo">261</span>                                // look up EML200DataSource class LSID and create and add<a name="line.261"></a>
+<span class="sourceLineNo">262</span>                                // NamedObjID attribute to instance<a name="line.262"></a>
+<span class="sourceLineNo">263</span>                                if (EML200ActorLSID == null){<a name="line.263"></a>
+<span class="sourceLineNo">264</span>                                        KARCacheManager kcm = KARCacheManager.getInstance();<a name="line.264"></a>
+<span class="sourceLineNo">265</span>                                        Vector&lt;KARCacheContent&gt; list = kcm.getKARCacheContents();<a name="line.265"></a>
+<span class="sourceLineNo">266</span>                                        for(KARCacheContent content : list) {<a name="line.266"></a>
+<span class="sourceLineNo">267</span>                                                if(content.getCacheContent().getClassName().equals(Eml200DataSource.class.getName())) {<a name="line.267"></a>
+<span class="sourceLineNo">268</span>                                                        EML200ActorLSID = content.getLsid();<a name="line.268"></a>
+<span class="sourceLineNo">269</span>                                                }<a name="line.269"></a>
+<span class="sourceLineNo">270</span>                                        }<a name="line.270"></a>
+<span class="sourceLineNo">271</span>                                }<a name="line.271"></a>
+<span class="sourceLineNo">272</span>                                NamedObjId lsidSA = new NamedObjId(newRecord, NamedObjId.NAME);<a name="line.272"></a>
+<span class="sourceLineNo">273</span>                                lsidSA.setExpression(EML200ActorLSID);<a name="line.273"></a>
+<span class="sourceLineNo">274</span><a name="line.274"></a>
+<span class="sourceLineNo">275</span>                                resultRecordArray[i] = newRecord;<a name="line.275"></a>
+<span class="sourceLineNo">276</span>                        } catch (Exception e) {<a name="line.276"></a>
+<span class="sourceLineNo">277</span>                                continue;<a name="line.277"></a>
+<span class="sourceLineNo">278</span>                        }<a name="line.278"></a>
+<span class="sourceLineNo">279</span>                }// for<a name="line.279"></a>
+<span class="sourceLineNo">280</span>                return resultRecordArray;<a name="line.280"></a>
+<span class="sourceLineNo">281</span>        }<a name="line.281"></a>
+<span class="sourceLineNo">282</span><a name="line.282"></a>
+<span class="sourceLineNo">283</span>        /*<a name="line.283"></a>
+<span class="sourceLineNo">284</span>         * Method to transform array of AnyRecordType to array of EML2ResultsetItem<a name="line.284"></a>
+<span class="sourceLineNo">285</span>         */<a name="line.285"></a>
+<span class="sourceLineNo">286</span>        private Vector transformResultsetType(ResultsetType result,<a name="line.286"></a>
+<span class="sourceLineNo">287</span>                        String titleReturnFieldString, String entityReturnFieldString) {<a name="line.287"></a>
+<span class="sourceLineNo">288</span>                Vector itemList = new Vector();<a name="line.288"></a>
+<span class="sourceLineNo">289</span>                if (result == null) {<a name="line.289"></a>
+<span class="sourceLineNo">290</span>                        return itemList;<a name="line.290"></a>
+<span class="sourceLineNo">291</span>                }<a name="line.291"></a>
+<span class="sourceLineNo">292</span>                ResultsetTypeRecord[] records = result.getRecord();<a name="line.292"></a>
+<span class="sourceLineNo">293</span>                if (records == null) {<a name="line.293"></a>
+<span class="sourceLineNo">294</span>                        return itemList;<a name="line.294"></a>
+<span class="sourceLineNo">295</span>                }<a name="line.295"></a>
+<span class="sourceLineNo">296</span><a name="line.296"></a>
+<span class="sourceLineNo">297</span>                ResultsetTypeResultsetMetadata metadata = result.getResultsetMetadata();<a name="line.297"></a>
+<span class="sourceLineNo">298</span>                String titleId = getIdForGivenReturnField(titleReturnFieldString,<a name="line.298"></a>
+<span class="sourceLineNo">299</span>                                namespace, metadata);<a name="line.299"></a>
+<span class="sourceLineNo">300</span>                log.debug("The title id for eml2 is " + titleId);<a name="line.300"></a>
+<span class="sourceLineNo">301</span>                String entityId = getIdForGivenReturnField(entityReturnFieldString,<a name="line.301"></a>
+<span class="sourceLineNo">302</span>                                namespace, metadata);<a name="line.302"></a>
+<span class="sourceLineNo">303</span>                log.debug("The entity id for eml2 is " + entityId);<a name="line.303"></a>
+<span class="sourceLineNo">304</span>                int arraySize = records.length;<a name="line.304"></a>
+<span class="sourceLineNo">305</span>                // transfer every records from source to a dest - EML2ResultsetItem obj<a name="line.305"></a>
+<span class="sourceLineNo">306</span>                for (int i = 0; i &lt; arraySize; i++) {<a name="line.306"></a>
+<span class="sourceLineNo">307</span>                        ResultsetTypeRecord currentRecord = records[i];<a name="line.307"></a>
+<span class="sourceLineNo">308</span>                        if (currentRecord == null) {<a name="line.308"></a>
+<span class="sourceLineNo">309</span>                                continue;<a name="line.309"></a>
+<span class="sourceLineNo">310</span>                        }<a name="line.310"></a>
+<span class="sourceLineNo">311</span>                        String docid = currentRecord.getIdentifier();<a name="line.311"></a>
+<span class="sourceLineNo">312</span>                        log.debug("The doc id after parsing resultset is " + docid);<a name="line.312"></a>
+<span class="sourceLineNo">313</span>                        // if couldn't find identifier, we don't need it<a name="line.313"></a>
+<span class="sourceLineNo">314</span>                        if (docid == null || docid.trim().equals("")) {<a name="line.314"></a>
+<span class="sourceLineNo">315</span>                                continue;<a name="line.315"></a>
+<span class="sourceLineNo">316</span>                        }<a name="line.316"></a>
+<span class="sourceLineNo">317</span>                        String recordTitle = null;<a name="line.317"></a>
+<span class="sourceLineNo">318</span>                        Vector entityNameList = new Vector();<a name="line.318"></a>
+<span class="sourceLineNo">319</span>                        ResultsetTypeRecordReturnField[] recordReturnFieldList = currentRecord<a name="line.319"></a>
+<span class="sourceLineNo">320</span>                                        .getReturnField();<a name="line.320"></a>
+<span class="sourceLineNo">321</span>                        if (recordReturnFieldList == null) {<a name="line.321"></a>
+<span class="sourceLineNo">322</span>                                continue;<a name="line.322"></a>
+<span class="sourceLineNo">323</span>                        }<a name="line.323"></a>
+<span class="sourceLineNo">324</span>                        int length = recordReturnFieldList.length;<a name="line.324"></a>
+<span class="sourceLineNo">325</span>                        for (int j = 0; j &lt; length; j++) {<a name="line.325"></a>
+<span class="sourceLineNo">326</span>                                ResultsetTypeRecordReturnField currentReturnField = recordReturnFieldList[j];<a name="line.326"></a>
+<span class="sourceLineNo">327</span>                                if (currentReturnField == null) {<a name="line.327"></a>
+<span class="sourceLineNo">328</span>                                        continue;<a name="line.328"></a>
+<span class="sourceLineNo">329</span>                                }<a name="line.329"></a>
+<span class="sourceLineNo">330</span>                                String returnFieldId = currentReturnField.getId();<a name="line.330"></a>
+<span class="sourceLineNo">331</span>                                String returnFieldValue = currentReturnField.get_value();<a name="line.331"></a>
+<span class="sourceLineNo">332</span>                                if (returnFieldId != null &amp;&amp; !returnFieldId.trim().equals("")) {<a name="line.332"></a>
+<span class="sourceLineNo">333</span>                                        if (titleId != null &amp;&amp; returnFieldId.equals(titleId)) {<a name="line.333"></a>
+<span class="sourceLineNo">334</span>                                                log.debug("The title after parsing is  "<a name="line.334"></a>
+<span class="sourceLineNo">335</span>                                                                + returnFieldValue);<a name="line.335"></a>
+<span class="sourceLineNo">336</span>                                                recordTitle = returnFieldValue;<a name="line.336"></a>
+<span class="sourceLineNo">337</span>                                                recordTitle = replaceDotByDash(recordTitle);<a name="line.337"></a>
+<span class="sourceLineNo">338</span>                                        }<a name="line.338"></a>
+<span class="sourceLineNo">339</span>                                        if (entityId != null &amp;&amp; returnFieldId.equals(entityId)) {<a name="line.339"></a>
+<span class="sourceLineNo">340</span>                                                log.debug("The original entity is " + returnFieldValue);<a name="line.340"></a>
+<span class="sourceLineNo">341</span>                                                returnFieldValue = replaceDotByDash(returnFieldValue);<a name="line.341"></a>
+<span class="sourceLineNo">342</span>                                                entityNameList.add(returnFieldValue);<a name="line.342"></a>
+<span class="sourceLineNo">343</span>                                        }<a name="line.343"></a>
+<span class="sourceLineNo">344</span>                                }<a name="line.344"></a>
+<span class="sourceLineNo">345</span><a name="line.345"></a>
+<span class="sourceLineNo">346</span>                        }// for<a name="line.346"></a>
+<span class="sourceLineNo">347</span>                        if (recordTitle == null) {<a name="line.347"></a>
+<span class="sourceLineNo">348</span>                                recordTitle = UNKNOWNTITLE + i;<a name="line.348"></a>
+<span class="sourceLineNo">349</span>                        }<a name="line.349"></a>
+<span class="sourceLineNo">350</span>                        SortableResultRecord newItem = new SortableResultRecord(<a name="line.350"></a>
+<span class="sourceLineNo">351</span>                                        recordTitle, docid, entityNameList);<a name="line.351"></a>
+<span class="sourceLineNo">352</span>                        itemList.add(newItem);<a name="line.352"></a>
+<span class="sourceLineNo">353</span><a name="line.353"></a>
+<span class="sourceLineNo">354</span>                }// for<a name="line.354"></a>
+<span class="sourceLineNo">355</span>                Collections.sort(itemList, new SortableResultRecordComparator());<a name="line.355"></a>
+<span class="sourceLineNo">356</span>                return itemList;<a name="line.356"></a>
+<span class="sourceLineNo">357</span>        }<a name="line.357"></a>
+<span class="sourceLineNo">358</span><a name="line.358"></a>
+<span class="sourceLineNo">359</span>        /*<a name="line.359"></a>
+<span class="sourceLineNo">360</span>         * A method to get an id for given returnfield and namespace in a metadata. if<a name="line.360"></a>
+<span class="sourceLineNo">361</span>         * more than one can be found, we only chose the first one<a name="line.361"></a>
+<span class="sourceLineNo">362</span>         */<a name="line.362"></a>
+<span class="sourceLineNo">363</span>        private String getIdForGivenReturnField(String givenReturnField,<a name="line.363"></a>
+<span class="sourceLineNo">364</span>                        String givenNameSpace, ResultsetTypeResultsetMetadata metadata) {<a name="line.364"></a>
+<span class="sourceLineNo">365</span>                String id = null;<a name="line.365"></a>
+<span class="sourceLineNo">366</span>                if (givenReturnField == null || givenNameSpace == null<a name="line.366"></a>
+<span class="sourceLineNo">367</span>                                || metadata == null) {<a name="line.367"></a>
+<span class="sourceLineNo">368</span>                        return id;<a name="line.368"></a>
+<span class="sourceLineNo">369</span>                }<a name="line.369"></a>
+<span class="sourceLineNo">370</span><a name="line.370"></a>
+<span class="sourceLineNo">371</span>                ResultsetTypeResultsetMetadataRecordStructure structure = metadata<a name="line.371"></a>
+<span class="sourceLineNo">372</span>                                .getRecordStructure();<a name="line.372"></a>
+<span class="sourceLineNo">373</span>                if (structure != null) {<a name="line.373"></a>
+<span class="sourceLineNo">374</span>                        <a name="line.374"></a>
+<span class="sourceLineNo">375</span>                        ResultsetTypeResultsetMetadataNamespace[] rtrmn = metadata.getNamespace();<a name="line.375"></a>
+<span class="sourceLineNo">376</span>                        for (int i=0; i&lt; rtrmn.length; i++){<a name="line.376"></a>
+<span class="sourceLineNo">377</span>                                //String nameSpace = metadata.getNamespace().get_value().toString();<a name="line.377"></a>
+<span class="sourceLineNo">378</span>                                String nameSpace = rtrmn[i].get_value().toString();<a name="line.378"></a>
+<span class="sourceLineNo">379</span>                                if (nameSpace != null &amp;&amp; nameSpace.equals(givenNameSpace)) {<a name="line.379"></a>
+<span class="sourceLineNo">380</span>                                        log.debug("The target namespace " + nameSpace + " is found");<a name="line.380"></a>
+<span class="sourceLineNo">381</span>                                        ResultsetTypeResultsetMetadataRecordStructureReturnField[] returnFieldList = structure<a name="line.381"></a>
+<span class="sourceLineNo">382</span>                                                .getReturnField();<a name="line.382"></a>
+<span class="sourceLineNo">383</span>                                        if (returnFieldList != null) {<a name="line.383"></a>
+<span class="sourceLineNo">384</span>                                                int length = returnFieldList.length;<a name="line.384"></a>
+<span class="sourceLineNo">385</span>                                                for (int j = 0; j &lt; length; j++) {<a name="line.385"></a>
+<span class="sourceLineNo">386</span>                                                        ResultsetTypeResultsetMetadataRecordStructureReturnField currentReturnField = returnFieldList[j];<a name="line.386"></a>
+<span class="sourceLineNo">387</span>                                                        if (currentReturnField != null) {<a name="line.387"></a>
+<span class="sourceLineNo">388</span>                                                                String returnFieldName = currentReturnField<a name="line.388"></a>
+<span class="sourceLineNo">389</span>                                                                        .getName();<a name="line.389"></a>
+<span class="sourceLineNo">390</span>                                                                String returnFieldId = currentReturnField.getId();<a name="line.390"></a>
+<span class="sourceLineNo">391</span>                                                                if (returnFieldName != null<a name="line.391"></a>
+<span class="sourceLineNo">392</span>                                                                        &amp;&amp; returnFieldName.equals(givenReturnField)) {<a name="line.392"></a>
+<span class="sourceLineNo">393</span>                                                                        id = returnFieldId;<a name="line.393"></a>
+<span class="sourceLineNo">394</span>                                                                        if (id != null) {<a name="line.394"></a>
+<span class="sourceLineNo">395</span>                                                                                log.debug("find the id " + id);<a name="line.395"></a>
+<span class="sourceLineNo">396</span>                                                                                break;<a name="line.396"></a>
+<span class="sourceLineNo">397</span>                                                                        }<a name="line.397"></a>
+<span class="sourceLineNo">398</span>                                                                }<a name="line.398"></a>
+<span class="sourceLineNo">399</span>                                                        }// if currentReturnField != null)<a name="line.399"></a>
+<span class="sourceLineNo">400</span>                                                }// for<a name="line.400"></a>
+<span class="sourceLineNo">401</span>                                        }// if returnFieldList !=null<a name="line.401"></a>
+<span class="sourceLineNo">402</span>                                }// if namespace !=null<a name="line.402"></a>
+<span class="sourceLineNo">403</span>                        }// for i &lt; rtrmn.length<a name="line.403"></a>
+<span class="sourceLineNo">404</span>                } // if structure != null<a name="line.404"></a>
+<span class="sourceLineNo">405</span>                log.debug("the final id  for given namespace" + givenNameSpace<a name="line.405"></a>
+<span class="sourceLineNo">406</span>                                + " and given return field " + givenReturnField + " is " + id);<a name="line.406"></a>
+<span class="sourceLineNo">407</span>                return id;<a name="line.407"></a>
+<span class="sourceLineNo">408</span>        }<a name="line.408"></a>
+<span class="sourceLineNo">409</span><a name="line.409"></a>
+<span class="sourceLineNo">410</span>        /**<a name="line.410"></a>
+<span class="sourceLineNo">411</span>         * Creates a the ResultRecord items (derived from Source) and adds them into<a name="line.411"></a>
+<span class="sourceLineNo">412</span>         * the container<a name="line.412"></a>
+<span class="sourceLineNo">413</span>         * <a name="line.413"></a>
+<span class="sourceLineNo">414</span>         * @param aResults<a name="line.414"></a>
+<span class="sourceLineNo">415</span>         * @param aEndPointURLStr<a name="line.415"></a>
+<span class="sourceLineNo">416</span>         * @param aContainer<a name="line.416"></a>
+<span class="sourceLineNo">417</span>         * @param aResultList<a name="line.417"></a>
+<span class="sourceLineNo">418</span>         * @throws SAXException<a name="line.418"></a>
+<span class="sourceLineNo">419</span>         * @throws IOException<a name="line.419"></a>
+<span class="sourceLineNo">420</span>         * @throws EcoGridException<a name="line.420"></a>
+<span class="sourceLineNo">421</span>         * @throws NameDuplicationException<a name="line.421"></a>
+<span class="sourceLineNo">422</span>         * @throws IllegalActionException<a name="line.422"></a>
+<span class="sourceLineNo">423</span>         */<a name="line.423"></a>
+<span class="sourceLineNo">424</span>        public boolean addResultsetRecordsToContainer(ResultsetType results,<a name="line.424"></a>
+<span class="sourceLineNo">425</span>                        String endpoint, CompositeEntity container, Vector aResultList)<a name="line.425"></a>
+<span class="sourceLineNo">426</span>                        throws SAXException, IOException, EcoGridException,<a name="line.426"></a>
+<span class="sourceLineNo">427</span>                        NameDuplicationException, IllegalActionException {<a name="line.427"></a>
+<span class="sourceLineNo">428</span>                // parse the resultset into ResultRecord array and stored it into<a name="line.428"></a>
+<span class="sourceLineNo">429</span>                // a vector<a name="line.429"></a>
+<span class="sourceLineNo">430</span>                try {<a name="line.430"></a>
+<span class="sourceLineNo">431</span><a name="line.431"></a>
+<span class="sourceLineNo">432</span>                        ResultRecord[] recordArray = transformResultset(results, endpoint,<a name="line.432"></a>
+<span class="sourceLineNo">433</span>                                        container);<a name="line.433"></a>
+<span class="sourceLineNo">434</span>                        if (recordArray != null) {<a name="line.434"></a>
+<span class="sourceLineNo">435</span>                                // put the array into vector which will store the ResultRecord<a name="line.435"></a>
+<span class="sourceLineNo">436</span>                                // from one<a name="line.436"></a>
+<span class="sourceLineNo">437</span>                                // search scope<a name="line.437"></a>
+<span class="sourceLineNo">438</span>                                ResultRecord.transformResultRecordArrayToVector(recordArray,<a name="line.438"></a>
+<span class="sourceLineNo">439</span>                                                aResultList);<a name="line.439"></a>
+<span class="sourceLineNo">440</span>                        }<a name="line.440"></a>
+<span class="sourceLineNo">441</span><a name="line.441"></a>
+<span class="sourceLineNo">442</span>                        return true;<a name="line.442"></a>
+<span class="sourceLineNo">443</span>                } catch (Exception ee) {<a name="line.443"></a>
+<span class="sourceLineNo">444</span>                        log.debug("The error to transform from resultset to ResultRecord ",<a name="line.444"></a>
+<span class="sourceLineNo">445</span>                                        ee);<a name="line.445"></a>
+<span class="sourceLineNo">446</span>                }<a name="line.446"></a>
+<span class="sourceLineNo">447</span>                return false;<a name="line.447"></a>
+<span class="sourceLineNo">448</span>        }<a name="line.448"></a>
+<span class="sourceLineNo">449</span><a name="line.449"></a>
+<span class="sourceLineNo">450</span>        /**<a name="line.450"></a>
+<span class="sourceLineNo">451</span>         * <a name="line.451"></a>
+<span class="sourceLineNo">452</span>         * @return Returns a unique name that describes this class, often it is the<a name="line.452"></a>
+<span class="sourceLineNo">453</span>         *         name of the class that implements the interface<a name="line.453"></a>
+<span class="sourceLineNo">454</span>         */<a name="line.454"></a>
+<span class="sourceLineNo">455</span>        public String getName() {<a name="line.455"></a>
+<span class="sourceLineNo">456</span>                return getClass().getName();<a name="line.456"></a>
+<span class="sourceLineNo">457</span>        }<a name="line.457"></a>
+<span class="sourceLineNo">458</span><a name="line.458"></a>
+<span class="sourceLineNo">459</span>        /**<a name="line.459"></a>
+<span class="sourceLineNo">460</span>     * <a name="line.460"></a>
+<span class="sourceLineNo">461</span>     */<a name="line.461"></a>
+<span class="sourceLineNo">462</span>        public String getBriefName() {<a name="line.462"></a>
+<span class="sourceLineNo">463</span>                return "Ecological";<a name="line.463"></a>
+<span class="sourceLineNo">464</span>        }<a name="line.464"></a>
+<span class="sourceLineNo">465</span><a name="line.465"></a>
+<span class="sourceLineNo">466</span>        /**<a name="line.466"></a>
+<span class="sourceLineNo">467</span>         * <a name="line.467"></a>
+<span class="sourceLineNo">468</span>         * @return returns the number of results that for this data.<a name="line.468"></a>
+<span class="sourceLineNo">469</span>         */<a name="line.469"></a>
+<span class="sourceLineNo">470</span>        public int getNumResults() {<a name="line.470"></a>
+<span class="sourceLineNo">471</span>                return _numResults;<a name="line.471"></a>
+<span class="sourceLineNo">472</span>        }<a name="line.472"></a>
+<span class="sourceLineNo">473</span><a name="line.473"></a>
+<span class="sourceLineNo">474</span>}// Eml200EcoGridQueryTransfer<a name="line.474"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

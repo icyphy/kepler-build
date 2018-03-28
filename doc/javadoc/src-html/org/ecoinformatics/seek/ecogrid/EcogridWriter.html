@@ -1,0 +1,688 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../../../stylesheet.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>/*<a name="line.1"></a>
+<span class="sourceLineNo">002</span> * Copyright (c) 2003-2012 The Regents of the University of California.<a name="line.2"></a>
+<span class="sourceLineNo">003</span> * All rights reserved.<a name="line.3"></a>
+<span class="sourceLineNo">004</span> *<a name="line.4"></a>
+<span class="sourceLineNo">005</span> * '$Author: barseghian $'<a name="line.5"></a>
+<span class="sourceLineNo">006</span> * '$Date: 2012-08-18 00:37:31 -0700 (Sat, 18 Aug 2012) $' <a name="line.6"></a>
+<span class="sourceLineNo">007</span> * '$Revision: 30476 $'<a name="line.7"></a>
+<span class="sourceLineNo">008</span> * <a name="line.8"></a>
+<span class="sourceLineNo">009</span> * Permission is hereby granted, without written agreement and without<a name="line.9"></a>
+<span class="sourceLineNo">010</span> * license or royalty fees, to use, copy, modify, and distribute this<a name="line.10"></a>
+<span class="sourceLineNo">011</span> * software and its documentation for any purpose, provided that the above<a name="line.11"></a>
+<span class="sourceLineNo">012</span> * copyright notice and the following two paragraphs appear in all copies<a name="line.12"></a>
+<span class="sourceLineNo">013</span> * of this software.<a name="line.13"></a>
+<span class="sourceLineNo">014</span> *<a name="line.14"></a>
+<span class="sourceLineNo">015</span> * IN NO EVENT SHALL THE UNIVERSITY OF CALIFORNIA BE LIABLE TO ANY PARTY<a name="line.15"></a>
+<span class="sourceLineNo">016</span> * FOR DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES<a name="line.16"></a>
+<span class="sourceLineNo">017</span> * ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION, EVEN IF<a name="line.17"></a>
+<span class="sourceLineNo">018</span> * THE UNIVERSITY OF CALIFORNIA HAS BEEN ADVISED OF THE POSSIBILITY OF<a name="line.18"></a>
+<span class="sourceLineNo">019</span> * SUCH DAMAGE.<a name="line.19"></a>
+<span class="sourceLineNo">020</span> *<a name="line.20"></a>
+<span class="sourceLineNo">021</span> * THE UNIVERSITY OF CALIFORNIA SPECIFICALLY DISCLAIMS ANY WARRANTIES,<a name="line.21"></a>
+<span class="sourceLineNo">022</span> * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF<a name="line.22"></a>
+<span class="sourceLineNo">023</span> * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE<a name="line.23"></a>
+<span class="sourceLineNo">024</span> * PROVIDED HEREUNDER IS ON AN "AS IS" BASIS, AND THE UNIVERSITY OF<a name="line.24"></a>
+<span class="sourceLineNo">025</span> * CALIFORNIA HAS NO OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT, UPDATES,<a name="line.25"></a>
+<span class="sourceLineNo">026</span> * ENHANCEMENTS, OR MODIFICATIONS.<a name="line.26"></a>
+<span class="sourceLineNo">027</span> *<a name="line.27"></a>
+<span class="sourceLineNo">028</span> */<a name="line.28"></a>
+<span class="sourceLineNo">029</span><a name="line.29"></a>
+<span class="sourceLineNo">030</span>package org.ecoinformatics.seek.ecogrid;<a name="line.30"></a>
+<span class="sourceLineNo">031</span><a name="line.31"></a>
+<span class="sourceLineNo">032</span>import java.io.StringReader;<a name="line.32"></a>
+<span class="sourceLineNo">033</span>import java.io.StringWriter;<a name="line.33"></a>
+<span class="sourceLineNo">034</span>import java.util.UUID;<a name="line.34"></a>
+<span class="sourceLineNo">035</span><a name="line.35"></a>
+<span class="sourceLineNo">036</span>import javax.xml.parsers.DocumentBuilder;<a name="line.36"></a>
+<span class="sourceLineNo">037</span>import javax.xml.parsers.DocumentBuilderFactory;<a name="line.37"></a>
+<span class="sourceLineNo">038</span>import javax.xml.parsers.ParserConfigurationException;<a name="line.38"></a>
+<span class="sourceLineNo">039</span><a name="line.39"></a>
+<span class="sourceLineNo">040</span>import org.apache.commons.logging.Log;<a name="line.40"></a>
+<span class="sourceLineNo">041</span>import org.apache.commons.logging.LogFactory;<a name="line.41"></a>
+<span class="sourceLineNo">042</span>import org.apache.xml.serialize.XMLSerializer;<a name="line.42"></a>
+<span class="sourceLineNo">043</span>import org.apache.xpath.XPathAPI;<a name="line.43"></a>
+<span class="sourceLineNo">044</span>import org.ecoinformatics.ecogrid.EcogridObjType;<a name="line.44"></a>
+<span class="sourceLineNo">045</span>import org.ecoinformatics.ecogrid.client.AuthenticationServiceClient;<a name="line.45"></a>
+<span class="sourceLineNo">046</span>import org.ecoinformatics.ecogrid.client.PutServiceClient;<a name="line.46"></a>
+<span class="sourceLineNo">047</span>import org.ecoinformatics.seek.datasource.eml.eml2.Eml200Parser;<a name="line.47"></a>
+<span class="sourceLineNo">048</span>import org.w3c.dom.Document;<a name="line.48"></a>
+<span class="sourceLineNo">049</span>import org.w3c.dom.Node;<a name="line.49"></a>
+<span class="sourceLineNo">050</span>import org.w3c.dom.NodeList;<a name="line.50"></a>
+<span class="sourceLineNo">051</span>import org.xml.sax.InputSource;<a name="line.51"></a>
+<span class="sourceLineNo">052</span><a name="line.52"></a>
+<span class="sourceLineNo">053</span>import ptolemy.actor.TypedAtomicActor;<a name="line.53"></a>
+<span class="sourceLineNo">054</span>import ptolemy.actor.TypedIOPort;<a name="line.54"></a>
+<span class="sourceLineNo">055</span>import ptolemy.data.ObjectToken;<a name="line.55"></a>
+<span class="sourceLineNo">056</span>import ptolemy.data.StringToken;<a name="line.56"></a>
+<span class="sourceLineNo">057</span>import ptolemy.data.expr.Parameter;<a name="line.57"></a>
+<span class="sourceLineNo">058</span>import ptolemy.data.expr.StringParameter;<a name="line.58"></a>
+<span class="sourceLineNo">059</span>import ptolemy.data.type.BaseType;<a name="line.59"></a>
+<span class="sourceLineNo">060</span>import ptolemy.kernel.CompositeEntity;<a name="line.60"></a>
+<span class="sourceLineNo">061</span>import ptolemy.kernel.util.Attribute;<a name="line.61"></a>
+<span class="sourceLineNo">062</span>import ptolemy.kernel.util.IllegalActionException;<a name="line.62"></a>
+<span class="sourceLineNo">063</span>import ptolemy.kernel.util.NameDuplicationException;<a name="line.63"></a>
+<span class="sourceLineNo">064</span>import util.StaticUtil;<a name="line.64"></a>
+<span class="sourceLineNo">065</span><a name="line.65"></a>
+<span class="sourceLineNo">066</span>/**<a name="line.66"></a>
+<span class="sourceLineNo">067</span> * The EcogridWriter actor writes a data file and the EML metadata describing that<a name="line.67"></a>
+<span class="sourceLineNo">068</span> * data file to a remote EcoGrid repositiory. Identifiers for the data and<a name="line.68"></a>
+<span class="sourceLineNo">069</span> * metadata are created and these IDs are sent to the output ports. These IDs<a name="line.69"></a>
+<span class="sourceLineNo">070</span> * might be used for future access to the data and metadata files. Note also<a name="line.70"></a>
+<span class="sourceLineNo">071</span> * that the ID of the data file is inserted into the metadata file as a<a name="line.71"></a>
+<span class="sourceLineNo">072</span> * reference (i.e., a pointer from the metadata to the data).<a name="line.72"></a>
+<span class="sourceLineNo">073</span> * <a name="line.73"></a>
+<span class="sourceLineNo">074</span> * The EcoGrid is a distributed network providing scientists access to<a name="line.74"></a>
+<span class="sourceLineNo">075</span> * ecological, biodiversity, and environmental data and analytic resources. The<a name="line.75"></a>
+<span class="sourceLineNo">076</span> * EcoGrid can be used to store ecological data, or to model or analyze it via<a name="line.76"></a>
+<span class="sourceLineNo">077</span> * remote EcoGrid services.<a name="line.77"></a>
+<span class="sourceLineNo">078</span> * <a name="line.78"></a>
+<span class="sourceLineNo">079</span> * Ecological Metadata Language (EML) is a standard set of terms and definitions<a name="line.79"></a>
+<span class="sourceLineNo">080</span> * used to describe ecological data. For example, EML metadata might contain<a name="line.80"></a>
+<span class="sourceLineNo">081</span> * infomation about a data set's units of measurement, date of collection,<a name="line.81"></a>
+<span class="sourceLineNo">082</span> * location, etc.<a name="line.82"></a>
+<span class="sourceLineNo">083</span> * <a name="line.83"></a>
+<span class="sourceLineNo">084</span> * @author tao<a name="line.84"></a>
+<span class="sourceLineNo">085</span> */<a name="line.85"></a>
+<span class="sourceLineNo">086</span>public class EcogridWriter extends TypedAtomicActor {<a name="line.86"></a>
+<span class="sourceLineNo">087</span><a name="line.87"></a>
+<span class="sourceLineNo">088</span><a name="line.88"></a>
+<span class="sourceLineNo">089</span>        /**<a name="line.89"></a>
+<span class="sourceLineNo">090</span>         * Accepts the file name and path of the local data file to upload to the EcoGrid service.<a name="line.90"></a>
+<span class="sourceLineNo">091</span>         * WARNING: This port is ignored if you supply data to dataPort.<a name="line.91"></a>
+<span class="sourceLineNo">092</span>         */<a name="line.92"></a>
+<span class="sourceLineNo">093</span>        public TypedIOPort sourceFileNamePort = null;<a name="line.93"></a>
+<span class="sourceLineNo">094</span>        <a name="line.94"></a>
+<span class="sourceLineNo">095</span>        /**<a name="line.95"></a>
+<span class="sourceLineNo">096</span>         * Can be used in lieu of supplying a file name to dataFileNamePort.<a name="line.96"></a>
+<span class="sourceLineNo">097</span>         * The byte[] of the input object will be uploaded.<a name="line.97"></a>
+<span class="sourceLineNo">098</span>         */<a name="line.98"></a>
+<span class="sourceLineNo">099</span>        public TypedIOPort sourceDataPort;<a name="line.99"></a>
+<span class="sourceLineNo">100</span>        <a name="line.100"></a>
+<span class="sourceLineNo">101</span>        /**<a name="line.101"></a>
+<span class="sourceLineNo">102</span>         * Accepts a string of metadata describing the data file. This string will be uploaded to Ecogrid service as metadata<a name="line.102"></a>
+<span class="sourceLineNo">103</span>         */<a name="line.103"></a>
+<span class="sourceLineNo">104</span>        public TypedIOPort metadataPort = null;<a name="line.104"></a>
+<span class="sourceLineNo">105</span>        <a name="line.105"></a>
+<span class="sourceLineNo">106</span>        /**<a name="line.106"></a>
+<span class="sourceLineNo">107</span>         * An output port that broadcasts the metadata doc ID, which is generated by the actor for future reference.<a name="line.107"></a>
+<span class="sourceLineNo">108</span>         */<a name="line.108"></a>
+<span class="sourceLineNo">109</span>        public TypedIOPort metadataDocidPort = null;<a name="line.109"></a>
+<span class="sourceLineNo">110</span>        <a name="line.110"></a>
+<span class="sourceLineNo">111</span>        /**<a name="line.111"></a>
+<span class="sourceLineNo">112</span>         * Broadcasts the data docid, which is generated by the actor for future reference.<a name="line.112"></a>
+<span class="sourceLineNo">113</span>         */<a name="line.113"></a>
+<span class="sourceLineNo">114</span>        public TypedIOPort dataDocidPort = null;<a name="line.114"></a>
+<span class="sourceLineNo">115</span><a name="line.115"></a>
+<span class="sourceLineNo">116</span>        private String metadataDocid = null;<a name="line.116"></a>
+<span class="sourceLineNo">117</span>        private String dataDocid = null;<a name="line.117"></a>
+<span class="sourceLineNo">118</span>        private String metadataUserName = null;<a name="line.118"></a>
+<span class="sourceLineNo">119</span>        private String metadataPasswd = null;<a name="line.119"></a>
+<span class="sourceLineNo">120</span>        private String metadataDestination = null;<a name="line.120"></a>
+<span class="sourceLineNo">121</span><a name="line.121"></a>
+<span class="sourceLineNo">122</span>        private String authenURL = null;<a name="line.122"></a>
+<span class="sourceLineNo">123</span>        private String localDataFileName = null;<a name="line.123"></a>
+<span class="sourceLineNo">124</span>        private byte[] localData;<a name="line.124"></a>
+<span class="sourceLineNo">125</span>        private String metadataContent = null;<a name="line.125"></a>
+<span class="sourceLineNo">126</span><a name="line.126"></a>
+<span class="sourceLineNo">127</span>        protected final static Log log;<a name="line.127"></a>
+<span class="sourceLineNo">128</span>        protected final static boolean isDebugging;<a name="line.128"></a>
+<span class="sourceLineNo">129</span>        static {<a name="line.129"></a>
+<span class="sourceLineNo">130</span>                log = LogFactory<a name="line.130"></a>
+<span class="sourceLineNo">131</span>                                .getLog("org.ecoinformatics.seek.ecogrid.EcoGridServicesController");<a name="line.131"></a>
+<span class="sourceLineNo">132</span>                isDebugging = log.isDebugEnabled();<a name="line.132"></a>
+<span class="sourceLineNo">133</span>        }<a name="line.133"></a>
+<span class="sourceLineNo">134</span><a name="line.134"></a>
+<span class="sourceLineNo">135</span>        private String docIdSuffix = "doc";<a name="line.135"></a>
+<span class="sourceLineNo">136</span><a name="line.136"></a>
+<span class="sourceLineNo">137</span>        private static final String DATAFILENAMEPORT = "dataFileNamePort";<a name="line.137"></a>
+<span class="sourceLineNo">138</span>        private static final String DATAPORT = "dataPort";<a name="line.138"></a>
+<span class="sourceLineNo">139</span>        private static final String METADATAPORT = "metadata";<a name="line.139"></a>
+<span class="sourceLineNo">140</span>        private static final String METADATADOCIDPORT = "metadataDocid";<a name="line.140"></a>
+<span class="sourceLineNo">141</span>        private static final String DATADOCIDPORT = "dataDocid";<a name="line.141"></a>
+<span class="sourceLineNo">142</span>        private static final String METADATADESTINATION = "metadataDestination";<a name="line.142"></a>
+<span class="sourceLineNo">143</span>        private static final String DISTRIBUTIONPATH = "physical/distribution/online/url";<a name="line.143"></a>
+<span class="sourceLineNo">144</span>        private static final String SEPERATOR = ".";<a name="line.144"></a>
+<span class="sourceLineNo">145</span>        private static final String ECOGRIDPROTOCOL = "ecogrid://knb/";<a name="line.145"></a>
+<span class="sourceLineNo">146</span>        private static final String DEFAULTECOGRIDPUTSERVER = "http://ecogrid.ecoinformatics.org/knb/services/PutService";<a name="line.146"></a>
+<span class="sourceLineNo">147</span>        private static final String DEFAULTECOGRIDAUTHENSERVER = "http://ecogrid.ecoinformatics.org/knb/services/AuthenticationService";<a name="line.147"></a>
+<span class="sourceLineNo">148</span>        private static final String AUTHENURL = "authenticationURL";<a name="line.148"></a>
+<span class="sourceLineNo">149</span>        private static final String USERNAME = "userName";<a name="line.149"></a>
+<span class="sourceLineNo">150</span>        private static final String PASSWORD = "passWord";<a name="line.150"></a>
+<span class="sourceLineNo">151</span><a name="line.151"></a>
+<span class="sourceLineNo">152</span>        /** Ecogrid service URL for receiving metadata and data */<a name="line.152"></a>
+<span class="sourceLineNo">153</span>        public StringParameter metadataDesParam = null;<a name="line.153"></a>
+<span class="sourceLineNo">154</span>        <a name="line.154"></a>
+<span class="sourceLineNo">155</span>        /** Ecogrid service URL for authenticating user */<a name="line.155"></a>
+<span class="sourceLineNo">156</span>        public StringParameter authenURLParam = null;<a name="line.156"></a>
+<span class="sourceLineNo">157</span>        <a name="line.157"></a>
+<span class="sourceLineNo">158</span>        /**<a name="line.158"></a>
+<span class="sourceLineNo">159</span>         * User name for authenticatication. For example, it is a DN for knb ldap<a name="line.159"></a>
+<span class="sourceLineNo">160</span>         * server. uid=smith,o=NCEAS,dc=eocinformatics,dc=org<a name="line.160"></a>
+<span class="sourceLineNo">161</span>         */<a name="line.161"></a>
+<span class="sourceLineNo">162</span>        public StringParameter usernameParam = null;<a name="line.162"></a>
+<span class="sourceLineNo">163</span>        <a name="line.163"></a>
+<span class="sourceLineNo">164</span>        /** Password for this user */<a name="line.164"></a>
+<span class="sourceLineNo">165</span>        public StringParameter passwordParam = null;<a name="line.165"></a>
+<span class="sourceLineNo">166</span><a name="line.166"></a>
+<span class="sourceLineNo">167</span>        // public FileParameter localDataFileNameParameter = null;<a name="line.167"></a>
+<span class="sourceLineNo">168</span><a name="line.168"></a>
+<span class="sourceLineNo">169</span>        public EcogridWriter(CompositeEntity container, String name)<a name="line.169"></a>
+<span class="sourceLineNo">170</span>                        throws IllegalActionException, NameDuplicationException {<a name="line.170"></a>
+<span class="sourceLineNo">171</span>                super(container, name);<a name="line.171"></a>
+<span class="sourceLineNo">172</span>                <a name="line.172"></a>
+<span class="sourceLineNo">173</span>                // input ports<a name="line.173"></a>
+<span class="sourceLineNo">174</span>                metadataPort = new TypedIOPort(this, METADATAPORT, true, false);<a name="line.174"></a>
+<span class="sourceLineNo">175</span>                metadataPort.setMultiport(false);<a name="line.175"></a>
+<span class="sourceLineNo">176</span>                metadataPort.setTypeEquals(BaseType.STRING);<a name="line.176"></a>
+<span class="sourceLineNo">177</span>                <a name="line.177"></a>
+<span class="sourceLineNo">178</span>                sourceFileNamePort = new TypedIOPort(this, DATAFILENAMEPORT, true,<a name="line.178"></a>
+<span class="sourceLineNo">179</span>                                false);<a name="line.179"></a>
+<span class="sourceLineNo">180</span>                sourceFileNamePort.setMultiport(false);<a name="line.180"></a>
+<span class="sourceLineNo">181</span>                sourceFileNamePort.setTypeEquals(BaseType.STRING);<a name="line.181"></a>
+<span class="sourceLineNo">182</span>                <a name="line.182"></a>
+<span class="sourceLineNo">183</span>                sourceDataPort = new TypedIOPort(this, DATAPORT, true, false);<a name="line.183"></a>
+<span class="sourceLineNo">184</span>            sourceDataPort.setTypeEquals(BaseType.OBJECT);<a name="line.184"></a>
+<span class="sourceLineNo">185</span><a name="line.185"></a>
+<span class="sourceLineNo">186</span>                // output ports<a name="line.186"></a>
+<span class="sourceLineNo">187</span>                metadataDocidPort = new TypedIOPort(this, METADATADOCIDPORT, false,<a name="line.187"></a>
+<span class="sourceLineNo">188</span>                                true);<a name="line.188"></a>
+<span class="sourceLineNo">189</span>                metadataDocidPort.setMultiport(false);<a name="line.189"></a>
+<span class="sourceLineNo">190</span>                metadataDocidPort.setTypeEquals(BaseType.STRING);<a name="line.190"></a>
+<span class="sourceLineNo">191</span>                dataDocidPort = new TypedIOPort(this, DATADOCIDPORT, false, true);<a name="line.191"></a>
+<span class="sourceLineNo">192</span>                dataDocidPort.setMultiport(false);<a name="line.192"></a>
+<span class="sourceLineNo">193</span>                dataDocidPort.setTypeEquals(BaseType.STRING);<a name="line.193"></a>
+<span class="sourceLineNo">194</span><a name="line.194"></a>
+<span class="sourceLineNo">195</span>                // parameters<a name="line.195"></a>
+<span class="sourceLineNo">196</span>                metadataDesParam = new StringParameter(this, METADATADESTINATION);<a name="line.196"></a>
+<span class="sourceLineNo">197</span>                metadataDesParam.setExpression(DEFAULTECOGRIDPUTSERVER);<a name="line.197"></a>
+<span class="sourceLineNo">198</span>                authenURLParam = new StringParameter(this, AUTHENURL);<a name="line.198"></a>
+<span class="sourceLineNo">199</span>                authenURLParam.setExpression(DEFAULTECOGRIDAUTHENSERVER);<a name="line.199"></a>
+<span class="sourceLineNo">200</span>                usernameParam = new StringParameter(this, USERNAME);<a name="line.200"></a>
+<span class="sourceLineNo">201</span>                passwordParam = new StringParameter(this, PASSWORD);<a name="line.201"></a>
+<span class="sourceLineNo">202</span><a name="line.202"></a>
+<span class="sourceLineNo">203</span>                // localDataFileNameParameter = new FileParameter(this,<a name="line.203"></a>
+<span class="sourceLineNo">204</span>                // LOCATDATFILENAME);<a name="line.204"></a>
+<span class="sourceLineNo">205</span>                _attachText("_iconDescription", "&lt;svg&gt;\n"<a name="line.205"></a>
+<span class="sourceLineNo">206</span>                                + "&lt;rect x=\"-25\" y=\"-20\" " + "width=\"50\" height=\"40\" "<a name="line.206"></a>
+<span class="sourceLineNo">207</span>                                + "style=\"fill:white\"/&gt;\n"<a name="line.207"></a>
+<span class="sourceLineNo">208</span>                                + "&lt;polygon points=\"-15,-10 -12,-10 -8,-14 -1,-14 3,-10"<a name="line.208"></a>
+<span class="sourceLineNo">209</span>                                + " 15,-10 15,10, -15,10\" " + "style=\"fill:red\"/&gt;\n"<a name="line.209"></a>
+<span class="sourceLineNo">210</span>                                + "&lt;/svg&gt;\n");<a name="line.210"></a>
+<span class="sourceLineNo">211</span>        }<a name="line.211"></a>
+<span class="sourceLineNo">212</span><a name="line.212"></a>
+<span class="sourceLineNo">213</span>        // /////////////////////////////////////////////////////////////////<a name="line.213"></a>
+<span class="sourceLineNo">214</span>        // // public methods ////<a name="line.214"></a>
+<span class="sourceLineNo">215</span><a name="line.215"></a>
+<span class="sourceLineNo">216</span>        /**<a name="line.216"></a>
+<span class="sourceLineNo">217</span>         * If the specified attribute is &lt;i&gt;fileOrURL &lt;/i&gt; and there is an open file<a name="line.217"></a>
+<span class="sourceLineNo">218</span>         * being read, then close that file and open the new one; if the attribute<a name="line.218"></a>
+<span class="sourceLineNo">219</span>         * is &lt;i&gt;numberOfLinesToSkip &lt;/i&gt; and its value is negative, then throw an<a name="line.219"></a>
+<span class="sourceLineNo">220</span>         * exception. In the case of &lt;i&gt;fileOrURL &lt;/i&gt;, do nothing if the file name<a name="line.220"></a>
+<span class="sourceLineNo">221</span>         * is the same as the previous value of this attribute.<a name="line.221"></a>
+<span class="sourceLineNo">222</span>         * <a name="line.222"></a>
+<span class="sourceLineNo">223</span>         * @param attribute<a name="line.223"></a>
+<span class="sourceLineNo">224</span>         *            The attribute that has changed.<a name="line.224"></a>
+<span class="sourceLineNo">225</span>         * @exception IllegalActionException<a name="line.225"></a>
+<span class="sourceLineNo">226</span>         *                If the specified attribute is &lt;i&gt;fileOrURL &lt;/i&gt; and the<a name="line.226"></a>
+<span class="sourceLineNo">227</span>         *                file cannot be opened, or the previously opened file<a name="line.227"></a>
+<span class="sourceLineNo">228</span>         *                cannot be closed; or if the attribute is<a name="line.228"></a>
+<span class="sourceLineNo">229</span>         *                &lt;i&gt;numberOfLinesToSkip &lt;/i&gt; and its value is negative.<a name="line.229"></a>
+<span class="sourceLineNo">230</span>         */<a name="line.230"></a>
+<span class="sourceLineNo">231</span><a name="line.231"></a>
+<span class="sourceLineNo">232</span>        /**<a name="line.232"></a>
+<span class="sourceLineNo">233</span>         * Determine the attribute changed value<a name="line.233"></a>
+<span class="sourceLineNo">234</span>         * <a name="line.234"></a>
+<span class="sourceLineNo">235</span>         * @param attribute<a name="line.235"></a>
+<span class="sourceLineNo">236</span>         *            The attribute that changed.<a name="line.236"></a>
+<span class="sourceLineNo">237</span>         * @exception IllegalActionException<a name="line.237"></a>
+<span class="sourceLineNo">238</span>         *                If the output type is not recognized.<a name="line.238"></a>
+<span class="sourceLineNo">239</span>         */<a name="line.239"></a>
+<span class="sourceLineNo">240</span>        public void attributeChanged(Attribute attribute)<a name="line.240"></a>
+<span class="sourceLineNo">241</span>                        throws IllegalActionException {<a name="line.241"></a>
+<span class="sourceLineNo">242</span>                if (attribute == metadataDesParam) {<a name="line.242"></a>
+<span class="sourceLineNo">243</span>                        metadataDestination = getValueForAttributeChange(metadataDesParam);<a name="line.243"></a>
+<span class="sourceLineNo">244</span>                } else if (attribute == authenURLParam) {<a name="line.244"></a>
+<span class="sourceLineNo">245</span>                        authenURL = getValueForAttributeChange(authenURLParam);<a name="line.245"></a>
+<span class="sourceLineNo">246</span>                } else if (attribute == usernameParam) {<a name="line.246"></a>
+<span class="sourceLineNo">247</span>                        metadataUserName = getValueForAttributeChange(usernameParam);<a name="line.247"></a>
+<span class="sourceLineNo">248</span>                } else if (attribute == passwordParam) {<a name="line.248"></a>
+<span class="sourceLineNo">249</span>                        metadataPasswd = getValueForAttributeChange(passwordParam);<a name="line.249"></a>
+<span class="sourceLineNo">250</span>                }<a name="line.250"></a>
+<span class="sourceLineNo">251</span>        }<a name="line.251"></a>
+<span class="sourceLineNo">252</span><a name="line.252"></a>
+<span class="sourceLineNo">253</span>        /**<a name="line.253"></a>
+<span class="sourceLineNo">254</span>         * Get new value for attribute changes.<a name="line.254"></a>
+<span class="sourceLineNo">255</span>         * <a name="line.255"></a>
+<span class="sourceLineNo">256</span>         * @param attribute<a name="line.256"></a>
+<span class="sourceLineNo">257</span>         * @return<a name="line.257"></a>
+<span class="sourceLineNo">258</span>         * @throws IllegalActionException<a name="line.258"></a>
+<span class="sourceLineNo">259</span>         */<a name="line.259"></a>
+<span class="sourceLineNo">260</span>        private String getValueForAttributeChange(Parameter attribute)<a name="line.260"></a>
+<span class="sourceLineNo">261</span>                        throws IllegalActionException {<a name="line.261"></a>
+<span class="sourceLineNo">262</span><a name="line.262"></a>
+<span class="sourceLineNo">263</span>                String newValue = null;<a name="line.263"></a>
+<span class="sourceLineNo">264</span>                if (attribute != null) {<a name="line.264"></a>
+<span class="sourceLineNo">265</span>                        StringToken token = (StringToken) attribute.getToken();<a name="line.265"></a>
+<span class="sourceLineNo">266</span>                        if (token != null) {<a name="line.266"></a>
+<span class="sourceLineNo">267</span>                                newValue = token.stringValue();<a name="line.267"></a>
+<span class="sourceLineNo">268</span>                        }<a name="line.268"></a>
+<span class="sourceLineNo">269</span>                }<a name="line.269"></a>
+<span class="sourceLineNo">270</span>                if (isDebugging) {<a name="line.270"></a>
+<span class="sourceLineNo">271</span>                        log.debug("The value of attribute is " + newValue);<a name="line.271"></a>
+<span class="sourceLineNo">272</span>                }<a name="line.272"></a>
+<span class="sourceLineNo">273</span>                // System.out.println("======the value of attribute is "+newValue);<a name="line.273"></a>
+<span class="sourceLineNo">274</span>                return newValue;<a name="line.274"></a>
+<span class="sourceLineNo">275</span>        }<a name="line.275"></a>
+<span class="sourceLineNo">276</span><a name="line.276"></a>
+<span class="sourceLineNo">277</span>        /**<a name="line.277"></a>
+<span class="sourceLineNo">278</span>         * @return Description of the Returned Value<a name="line.278"></a>
+<span class="sourceLineNo">279</span>         * @exception IllegalActionException<a name="line.279"></a>
+<span class="sourceLineNo">280</span>         *                Description of Exception<a name="line.280"></a>
+<span class="sourceLineNo">281</span>         * @since<a name="line.281"></a>
+<span class="sourceLineNo">282</span>         */<a name="line.282"></a>
+<span class="sourceLineNo">283</span>        public boolean prefire() throws IllegalActionException {<a name="line.283"></a>
+<span class="sourceLineNo">284</span>                int revision = 1;<a name="line.284"></a>
+<span class="sourceLineNo">285</span>                <a name="line.285"></a>
+<span class="sourceLineNo">286</span>                if(sourceDataPort.numberOfSources() &gt; 0) {<a name="line.286"></a>
+<span class="sourceLineNo">287</span>                    ObjectToken object = (ObjectToken) sourceDataPort.get(0);<a name="line.287"></a>
+<span class="sourceLineNo">288</span>                    localData = (byte[]) object.getValue();<a name="line.288"></a>
+<span class="sourceLineNo">289</span>                }       <a name="line.289"></a>
+<span class="sourceLineNo">290</span>                else if (sourceFileNamePort.numberOfSources() &gt; 0) {<a name="line.290"></a>
+<span class="sourceLineNo">291</span>                // get data file name<a name="line.291"></a>
+<span class="sourceLineNo">292</span>                        if (!sourceFileNamePort.hasToken(0)){<a name="line.292"></a>
+<span class="sourceLineNo">293</span>                                return false;<a name="line.293"></a>
+<span class="sourceLineNo">294</span>                        }<a name="line.294"></a>
+<span class="sourceLineNo">295</span>                        StringToken sourcefnToken = (StringToken) sourceFileNamePort.get(0);<a name="line.295"></a>
+<span class="sourceLineNo">296</span>                        localDataFileName = sourcefnToken.stringValue();<a name="line.296"></a>
+<span class="sourceLineNo">297</span>                        // localDataFileNameParameter.setExpression(localDataFileName);<a name="line.297"></a>
+<span class="sourceLineNo">298</span>                        if (isDebugging) {<a name="line.298"></a>
+<span class="sourceLineNo">299</span>                                log.debug("The localDataFileName is " + localDataFileName);<a name="line.299"></a>
+<span class="sourceLineNo">300</span>                        }<a name="line.300"></a>
+<span class="sourceLineNo">301</span>                }<a name="line.301"></a>
+<span class="sourceLineNo">302</span>                /*<a name="line.302"></a>
+<span class="sourceLineNo">303</span>                 * else { localDataFileName =<a name="line.303"></a>
+<span class="sourceLineNo">304</span>                 * localDataFileNameParameter.asFile().getPath(); }<a name="line.304"></a>
+<span class="sourceLineNo">305</span>                 */<a name="line.305"></a>
+<span class="sourceLineNo">306</span><a name="line.306"></a>
+<span class="sourceLineNo">307</span>                dataDocid = generateDocId(docIdSuffix, revision);<a name="line.307"></a>
+<span class="sourceLineNo">308</span>                // get metadata<a name="line.308"></a>
+<span class="sourceLineNo">309</span>                if (metadataPort.getWidth() &gt; 0) {<a name="line.309"></a>
+<span class="sourceLineNo">310</span><a name="line.310"></a>
+<span class="sourceLineNo">311</span>                        if (!metadataPort.hasToken(0)){<a name="line.311"></a>
+<span class="sourceLineNo">312</span>                                return false;<a name="line.312"></a>
+<span class="sourceLineNo">313</span>                        }<a name="line.313"></a>
+<span class="sourceLineNo">314</span>                        StringToken metadataToken = (StringToken) metadataPort.get(0);<a name="line.314"></a>
+<span class="sourceLineNo">315</span>                        metadataContent = metadataToken.stringValue();<a name="line.315"></a>
+<span class="sourceLineNo">316</span>                        if (isDebugging) {<a name="line.316"></a>
+<span class="sourceLineNo">317</span>                                log.debug("The original metadata is " + metadataContent);<a name="line.317"></a>
+<span class="sourceLineNo">318</span>                        }<a name="line.318"></a>
+<span class="sourceLineNo">319</span>                        // replace the url part<a name="line.319"></a>
+<span class="sourceLineNo">320</span>                        String newURL = ECOGRIDPROTOCOL + dataDocid;<a name="line.320"></a>
+<span class="sourceLineNo">321</span>                        metadataDocid = generateDocId(docIdSuffix, revision);<a name="line.321"></a>
+<span class="sourceLineNo">322</span>                        try {<a name="line.322"></a>
+<span class="sourceLineNo">323</span>                                metadataContent = replaceDistributionURLAndPackageID(metadataContent,<a name="line.323"></a>
+<span class="sourceLineNo">324</span>                                                newURL, metadataDocid);<a name="line.324"></a>
+<span class="sourceLineNo">325</span>                        } catch (Exception e) {<a name="line.325"></a>
+<span class="sourceLineNo">326</span>                                throw new IllegalActionException(e.getMessage());<a name="line.326"></a>
+<span class="sourceLineNo">327</span>                        }<a name="line.327"></a>
+<span class="sourceLineNo">328</span><a name="line.328"></a>
+<span class="sourceLineNo">329</span>                }<a name="line.329"></a>
+<span class="sourceLineNo">330</span>                <a name="line.330"></a>
+<span class="sourceLineNo">331</span>                return super.prefire();<a name="line.331"></a>
+<span class="sourceLineNo">332</span>        }<a name="line.332"></a>
+<span class="sourceLineNo">333</span><a name="line.333"></a>
+<span class="sourceLineNo">334</span>        /**<a name="line.334"></a>
+<span class="sourceLineNo">335</span>         * Output the data lines into an array.<a name="line.335"></a>
+<span class="sourceLineNo">336</span>         * <a name="line.336"></a>
+<span class="sourceLineNo">337</span>         * @exception IllegalActionException<a name="line.337"></a>
+<span class="sourceLineNo">338</span>         *                If there's no director.<a name="line.338"></a>
+<span class="sourceLineNo">339</span>         */<a name="line.339"></a>
+<span class="sourceLineNo">340</span>        public void fire() throws IllegalActionException {<a name="line.340"></a>
+<span class="sourceLineNo">341</span>                super.fire();<a name="line.341"></a>
+<span class="sourceLineNo">342</span>                try {<a name="line.342"></a>
+<span class="sourceLineNo">343</span>                        long start = System.currentTimeMillis();<a name="line.343"></a>
+<span class="sourceLineNo">344</span>                        // load metadata and data to ecogrid<a name="line.344"></a>
+<span class="sourceLineNo">345</span>                        String sessionId = loginEcoGrid(authenURL, metadataUserName,<a name="line.345"></a>
+<span class="sourceLineNo">346</span>                                        metadataPasswd);<a name="line.346"></a>
+<span class="sourceLineNo">347</span>                        uploadDataFile(metadataDestination, localDataFileName, dataDocid, sessionId);<a name="line.347"></a>
+<span class="sourceLineNo">348</span>                        uploadMetadata(metadataDestination, metadataContent, metadataDocid,<a name="line.348"></a>
+<span class="sourceLineNo">349</span>                                        sessionId);<a name="line.349"></a>
+<span class="sourceLineNo">350</span>                        long end = System.currentTimeMillis();<a name="line.350"></a>
+<span class="sourceLineNo">351</span>                        System.out.println("**********EcogridWriter uploading data and metadata took "+(end-start)+" ms.");<a name="line.351"></a>
+<span class="sourceLineNo">352</span>                        // output metadata docid and data docid<a name="line.352"></a>
+<span class="sourceLineNo">353</span>                        TypedIOPort pp = (TypedIOPort) this.getPort(METADATADOCIDPORT);<a name="line.353"></a>
+<span class="sourceLineNo">354</span>                        pp.send(0, new StringToken(metadataDocid));<a name="line.354"></a>
+<span class="sourceLineNo">355</span>                        TypedIOPort pp1 = (TypedIOPort) this.getPort(DATADOCIDPORT);<a name="line.355"></a>
+<span class="sourceLineNo">356</span>                        pp1.send(0, new StringToken(dataDocid));<a name="line.356"></a>
+<span class="sourceLineNo">357</span>                        metadataDocid = null;<a name="line.357"></a>
+<span class="sourceLineNo">358</span>                        dataDocid = null;<a name="line.358"></a>
+<span class="sourceLineNo">359</span>                } catch (Exception e) {<a name="line.359"></a>
+<span class="sourceLineNo">360</span>                        throw new IllegalActionException(e.getMessage());<a name="line.360"></a>
+<span class="sourceLineNo">361</span>                }<a name="line.361"></a>
+<span class="sourceLineNo">362</span><a name="line.362"></a>
+<span class="sourceLineNo">363</span>        }<a name="line.363"></a>
+<span class="sourceLineNo">364</span><a name="line.364"></a>
+<span class="sourceLineNo">365</span>        /**<a name="line.365"></a>
+<span class="sourceLineNo">366</span>         * This method will do login action and return a session id.<a name="line.366"></a>
+<span class="sourceLineNo">367</span>         * <a name="line.367"></a>
+<span class="sourceLineNo">368</span>         * @param authernURL<a name="line.368"></a>
+<span class="sourceLineNo">369</span>         * @param userName<a name="line.369"></a>
+<span class="sourceLineNo">370</span>         * @param password<a name="line.370"></a>
+<span class="sourceLineNo">371</span>         * @return<a name="line.371"></a>
+<span class="sourceLineNo">372</span>         * @throws Exception<a name="line.372"></a>
+<span class="sourceLineNo">373</span>         */<a name="line.373"></a>
+<span class="sourceLineNo">374</span>        private String loginEcoGrid(String authernURL, String userName,<a name="line.374"></a>
+<span class="sourceLineNo">375</span>                        String password) throws Exception {<a name="line.375"></a>
+<span class="sourceLineNo">376</span>                String sessionId = null;<a name="line.376"></a>
+<span class="sourceLineNo">377</span>                AuthenticationServiceClient client = new AuthenticationServiceClient(<a name="line.377"></a>
+<span class="sourceLineNo">378</span>                                authernURL);<a name="line.378"></a>
+<span class="sourceLineNo">379</span>                sessionId = client.login_action(userName, password);<a name="line.379"></a>
+<span class="sourceLineNo">380</span>                if (isDebugging) {<a name="line.380"></a>
+<span class="sourceLineNo">381</span>                        log.debug("The session id is " + sessionId);<a name="line.381"></a>
+<span class="sourceLineNo">382</span>                }<a name="line.382"></a>
+<span class="sourceLineNo">383</span>                // client.destory();<a name="line.383"></a>
+<span class="sourceLineNo">384</span>                return sessionId;<a name="line.384"></a>
+<span class="sourceLineNo">385</span>        }<a name="line.385"></a>
+<span class="sourceLineNo">386</span><a name="line.386"></a>
+<span class="sourceLineNo">387</span>        /**<a name="line.387"></a>
+<span class="sourceLineNo">388</span>         * Upload Data. <a name="line.388"></a>
+<span class="sourceLineNo">389</span>         * <a name="line.389"></a>
+<span class="sourceLineNo">390</span>         * If localData is not null, localFileName<a name="line.390"></a>
+<span class="sourceLineNo">391</span>         * is ignored, you can set it null.<a name="line.391"></a>
+<span class="sourceLineNo">392</span>         * <a name="line.392"></a>
+<span class="sourceLineNo">393</span>         * @param destURL<a name="line.393"></a>
+<span class="sourceLineNo">394</span>         * @param localFileName<a name="line.394"></a>
+<span class="sourceLineNo">395</span>         * @param docid<a name="line.395"></a>
+<span class="sourceLineNo">396</span>         * @param sessionId<a name="line.396"></a>
+<span class="sourceLineNo">397</span>         * @throws Exception<a name="line.397"></a>
+<span class="sourceLineNo">398</span>         */<a name="line.398"></a>
+<span class="sourceLineNo">399</span>        private void uploadDataFile(String destURL, String localFileName,<a name="line.399"></a>
+<span class="sourceLineNo">400</span>                        String docid, String sessionId) throws Exception {<a name="line.400"></a>
+<span class="sourceLineNo">401</span>                int type = EcogridObjType.DATA;<a name="line.401"></a>
+<span class="sourceLineNo">402</span>                // client.createEcoGridPutLevelOnePortType();<a name="line.402"></a>
+<span class="sourceLineNo">403</span>                byte[] data;<a name="line.403"></a>
+<span class="sourceLineNo">404</span>                <a name="line.404"></a>
+<span class="sourceLineNo">405</span>                if(localData != null) {<a name="line.405"></a>
+<span class="sourceLineNo">406</span>                    data = localData;<a name="line.406"></a>
+<span class="sourceLineNo">407</span>                }<a name="line.407"></a>
+<span class="sourceLineNo">408</span>                else {<a name="line.408"></a>
+<span class="sourceLineNo">409</span>                    data = StaticUtil.getBytesArrayFromFile(localFileName);<a name="line.409"></a>
+<span class="sourceLineNo">410</span>                }<a name="line.410"></a>
+<span class="sourceLineNo">411</span>        if(data.length &lt; 10) {<a name="line.411"></a>
+<span class="sourceLineNo">412</span>            System.out.println("WARNING: read " + data.length + " bytes in data file");<a name="line.412"></a>
+<span class="sourceLineNo">413</span>        }<a name="line.413"></a>
+<span class="sourceLineNo">414</span><a name="line.414"></a>
+<span class="sourceLineNo">415</span>        boolean error = true;<a name="line.415"></a>
+<span class="sourceLineNo">416</span>        int tries = 5;<a name="line.416"></a>
+<span class="sourceLineNo">417</span>        while(tries &gt; 0 &amp;&amp; error) {<a name="line.417"></a>
+<span class="sourceLineNo">418</span>            tries--;<a name="line.418"></a>
+<span class="sourceLineNo">419</span>            error = false;<a name="line.419"></a>
+<span class="sourceLineNo">420</span>            PutServiceClient client = new PutServiceClient(destURL);<a name="line.420"></a>
+<span class="sourceLineNo">421</span>                    try { <a name="line.421"></a>
+<span class="sourceLineNo">422</span>                client.put(data, docid, type, sessionId); <a name="line.422"></a>
+<span class="sourceLineNo">423</span>            }<a name="line.423"></a>
+<span class="sourceLineNo">424</span>            catch(Exception e) { <a name="line.424"></a>
+<span class="sourceLineNo">425</span>                System.out.println("data exception: " + e.getMessage());<a name="line.425"></a>
+<span class="sourceLineNo">426</span>                if(tries &gt; 0) {<a name="line.426"></a>
+<span class="sourceLineNo">427</span>                    error = true;<a name="line.427"></a>
+<span class="sourceLineNo">428</span>                }<a name="line.428"></a>
+<span class="sourceLineNo">429</span>                else {<a name="line.429"></a>
+<span class="sourceLineNo">430</span>                    throw e;<a name="line.430"></a>
+<span class="sourceLineNo">431</span>                }<a name="line.431"></a>
+<span class="sourceLineNo">432</span>            }<a name="line.432"></a>
+<span class="sourceLineNo">433</span>        }<a name="line.433"></a>
+<span class="sourceLineNo">434</span>                // client.destroy();<a name="line.434"></a>
+<span class="sourceLineNo">435</span>        }<a name="line.435"></a>
+<span class="sourceLineNo">436</span><a name="line.436"></a>
+<span class="sourceLineNo">437</span>        /**<a name="line.437"></a>
+<span class="sourceLineNo">438</span>         * Upload Metadata.<a name="line.438"></a>
+<span class="sourceLineNo">439</span>         * <a name="line.439"></a>
+<span class="sourceLineNo">440</span>         * @param destURL<a name="line.440"></a>
+<span class="sourceLineNo">441</span>         * @param metadataContent<a name="line.441"></a>
+<span class="sourceLineNo">442</span>         * @param docid<a name="line.442"></a>
+<span class="sourceLineNo">443</span>         * @param sessionId<a name="line.443"></a>
+<span class="sourceLineNo">444</span>         * @throws Exception<a name="line.444"></a>
+<span class="sourceLineNo">445</span>         */<a name="line.445"></a>
+<span class="sourceLineNo">446</span>        private void uploadMetadata(String destURL, String metadataContent,<a name="line.446"></a>
+<span class="sourceLineNo">447</span>                        String docid, String sessionId) throws Exception {<a name="line.447"></a>
+<span class="sourceLineNo">448</span>                int type = EcogridObjType.METADATA;<a name="line.448"></a>
+<span class="sourceLineNo">449</span>                byte[] content = metadataContent.getBytes();<a name="line.449"></a>
+<span class="sourceLineNo">450</span>        if(content.length &lt; 10) {<a name="line.450"></a>
+<span class="sourceLineNo">451</span>            System.out.println("WARNING: read " + content.length + " bytes in metadata file");<a name="line.451"></a>
+<span class="sourceLineNo">452</span>        }<a name="line.452"></a>
+<span class="sourceLineNo">453</span>                PutServiceClient client = new PutServiceClient(destURL);<a name="line.453"></a>
+<span class="sourceLineNo">454</span>                // client.createEcoGridPutLevelOnePortType();<a name="line.454"></a>
+<span class="sourceLineNo">455</span>                try { <a name="line.455"></a>
+<span class="sourceLineNo">456</span>                        client.put(content, docid, type, sessionId);<a name="line.456"></a>
+<span class="sourceLineNo">457</span>                }<a name="line.457"></a>
+<span class="sourceLineNo">458</span>        catch(Exception e) { <a name="line.458"></a>
+<span class="sourceLineNo">459</span>            System.out.println("metadata exception: " + e.getMessage());<a name="line.459"></a>
+<span class="sourceLineNo">460</span>            throw e;<a name="line.460"></a>
+<span class="sourceLineNo">461</span>        }<a name="line.461"></a>
+<span class="sourceLineNo">462</span>                // client.destroy();<a name="line.462"></a>
+<span class="sourceLineNo">463</span>        }<a name="line.463"></a>
+<span class="sourceLineNo">464</span><a name="line.464"></a>
+<span class="sourceLineNo">465</span>        /**<a name="line.465"></a>
+<span class="sourceLineNo">466</span>         * After generate docid for data file, the original metadata need to replace<a name="line.466"></a>
+<span class="sourceLineNo">467</span>         * the distribution url by new value. Currently we just consider eml as<a name="line.467"></a>
+<span class="sourceLineNo">468</span>         * metadata.<a name="line.468"></a>
+<span class="sourceLineNo">469</span>         * <a name="line.469"></a>
+<span class="sourceLineNo">470</span>         * @param originalMetadata<a name="line.470"></a>
+<span class="sourceLineNo">471</span>         * @param newURL<a name="line.471"></a>
+<span class="sourceLineNo">472</span>         * @param newMetadataID<a name="line.472"></a>
+<span class="sourceLineNo">473</span>         * @return<a name="line.473"></a>
+<span class="sourceLineNo">474</span>         * @throws Exception<a name="line.474"></a>
+<span class="sourceLineNo">475</span>         */<a name="line.475"></a>
+<span class="sourceLineNo">476</span>        private String replaceDistributionURLAndPackageID(String originalMetadata, String newURL, String newMetadataID)<a name="line.476"></a>
+<span class="sourceLineNo">477</span>                        throws Exception {<a name="line.477"></a>
+<span class="sourceLineNo">478</span>                String newMetadata = null;<a name="line.478"></a>
+<span class="sourceLineNo">479</span>                if (originalMetadata != null) {<a name="line.479"></a>
+<span class="sourceLineNo">480</span>                        DocumentBuilder parser = null;<a name="line.480"></a>
+<span class="sourceLineNo">481</span>                        try {<a name="line.481"></a>
+<span class="sourceLineNo">482</span>                                DocumentBuilderFactory factory = DocumentBuilderFactory<a name="line.482"></a>
+<span class="sourceLineNo">483</span>                                                .newInstance();<a name="line.483"></a>
+<span class="sourceLineNo">484</span>                                // factory.setNamespaceAware(true);<a name="line.484"></a>
+<span class="sourceLineNo">485</span>                                parser = factory.newDocumentBuilder();<a name="line.485"></a>
+<span class="sourceLineNo">486</span>                                if (parser == null) {<a name="line.486"></a>
+<span class="sourceLineNo">487</span>                                        throw new Exception("Could not create Document parser in "<a name="line.487"></a>
+<span class="sourceLineNo">488</span>                                                        + "EcogridWriter");<a name="line.488"></a>
+<span class="sourceLineNo">489</span>                                }<a name="line.489"></a>
+<span class="sourceLineNo">490</span>                        } catch (ParserConfigurationException pce) {<a name="line.490"></a>
+<span class="sourceLineNo">491</span>                                throw new Exception("Could not create Document parser in "<a name="line.491"></a>
+<span class="sourceLineNo">492</span>                                                + "EcogridWriter: " + pce.getMessage());<a name="line.492"></a>
+<span class="sourceLineNo">493</span>                        }<a name="line.493"></a>
+<span class="sourceLineNo">494</span>                        log.debug("after generate dom parser");<a name="line.494"></a>
+<span class="sourceLineNo">495</span>                        Document doc = null;<a name="line.495"></a>
+<span class="sourceLineNo">496</span>                        StringReader reader = new StringReader(originalMetadata);<a name="line.496"></a>
+<span class="sourceLineNo">497</span>                        InputSource in = new InputSource(reader);<a name="line.497"></a>
+<span class="sourceLineNo">498</span>                        log.debug("after generate inputsource");<a name="line.498"></a>
+<span class="sourceLineNo">499</span>                        doc = parser.parse(in);<a name="line.499"></a>
+<span class="sourceLineNo">500</span>                        log.debug("after parsing inputsource");<a name="line.500"></a>
+<span class="sourceLineNo">501</span>                        // we assuming the metadata only have one entity<a name="line.501"></a>
+<span class="sourceLineNo">502</span>                        String tablePath = Eml200Parser.TABLEENTITY + "/"<a name="line.502"></a>
+<span class="sourceLineNo">503</span>                                        + DISTRIBUTIONPATH;<a name="line.503"></a>
+<span class="sourceLineNo">504</span>                        NodeList tableNodeList = XPathAPI.selectNodeList(doc, tablePath);<a name="line.504"></a>
+<span class="sourceLineNo">505</span>                        String rasterPath = Eml200Parser.SPATIALRASTERENTITY + "/"<a name="line.505"></a>
+<span class="sourceLineNo">506</span>                                        + DISTRIBUTIONPATH;<a name="line.506"></a>
+<span class="sourceLineNo">507</span>                        NodeList rasterNodeList = XPathAPI.selectNodeList(doc, rasterPath);<a name="line.507"></a>
+<span class="sourceLineNo">508</span>                        String vectorPath = Eml200Parser.SPATIALVECTORENTITY + "/"<a name="line.508"></a>
+<span class="sourceLineNo">509</span>                                        + DISTRIBUTIONPATH;<a name="line.509"></a>
+<span class="sourceLineNo">510</span>                        NodeList vectorNodeList = XPathAPI.selectNodeList(doc, vectorPath);<a name="line.510"></a>
+<span class="sourceLineNo">511</span>                        String procedurePath = Eml200Parser.STOREDPROCEDUREENTITY + "/"<a name="line.511"></a>
+<span class="sourceLineNo">512</span>                                        + DISTRIBUTIONPATH;<a name="line.512"></a>
+<span class="sourceLineNo">513</span>                        NodeList procedureNodeList = XPathAPI.selectNodeList(doc,<a name="line.513"></a>
+<span class="sourceLineNo">514</span>                                        procedurePath);<a name="line.514"></a>
+<span class="sourceLineNo">515</span>                        String viewPath = Eml200Parser.VIEWENTITY + "/" + DISTRIBUTIONPATH;<a name="line.515"></a>
+<span class="sourceLineNo">516</span>                        NodeList viewNodeList = XPathAPI.selectNodeList(doc, viewPath);<a name="line.516"></a>
+<span class="sourceLineNo">517</span>                        String otherEntityPath = Eml200Parser.OTHERENTITY + "/"<a name="line.517"></a>
+<span class="sourceLineNo">518</span>                                        + DISTRIBUTIONPATH;<a name="line.518"></a>
+<span class="sourceLineNo">519</span>                        NodeList otherEntityNodeList = XPathAPI.selectNodeList(doc,<a name="line.519"></a>
+<span class="sourceLineNo">520</span>                                        otherEntityPath);<a name="line.520"></a>
+<span class="sourceLineNo">521</span>                        if (tableNodeList != null &amp;&amp; tableNodeList.getLength() != 0) {<a name="line.521"></a>
+<span class="sourceLineNo">522</span>                                // have tableEntity<a name="line.522"></a>
+<span class="sourceLineNo">523</span>                                log.debug("in data table path for replacement");<a name="line.523"></a>
+<span class="sourceLineNo">524</span>                                setNewValueForNode(tableNodeList, newURL);<a name="line.524"></a>
+<span class="sourceLineNo">525</span>                        } else if (rasterNodeList != null<a name="line.525"></a>
+<span class="sourceLineNo">526</span>                                        &amp;&amp; rasterNodeList.getLength() != 0) {<a name="line.526"></a>
+<span class="sourceLineNo">527</span>                                setNewValueForNode(rasterNodeList, newURL);<a name="line.527"></a>
+<span class="sourceLineNo">528</span>                        } else if (vectorNodeList != null<a name="line.528"></a>
+<span class="sourceLineNo">529</span>                                        &amp;&amp; vectorNodeList.getLength() != 0) {<a name="line.529"></a>
+<span class="sourceLineNo">530</span>                                setNewValueForNode(vectorNodeList, newURL);<a name="line.530"></a>
+<span class="sourceLineNo">531</span>                        } else if (procedureNodeList != null<a name="line.531"></a>
+<span class="sourceLineNo">532</span>                                        &amp;&amp; procedureNodeList.getLength() != 0) {<a name="line.532"></a>
+<span class="sourceLineNo">533</span>                                setNewValueForNode(procedureNodeList, newURL);<a name="line.533"></a>
+<span class="sourceLineNo">534</span>                        } else if (viewNodeList != null &amp;&amp; viewNodeList.getLength() != 0) {<a name="line.534"></a>
+<span class="sourceLineNo">535</span>                                setNewValueForNode(viewNodeList, newURL);<a name="line.535"></a>
+<span class="sourceLineNo">536</span>                        } else if (otherEntityNodeList != null<a name="line.536"></a>
+<span class="sourceLineNo">537</span>                                        &amp;&amp; otherEntityNodeList.getLength() != 0) {<a name="line.537"></a>
+<span class="sourceLineNo">538</span>                                setNewValueForNode(otherEntityNodeList, newURL);<a name="line.538"></a>
+<span class="sourceLineNo">539</span>                        }<a name="line.539"></a>
+<span class="sourceLineNo">540</span>                        <a name="line.540"></a>
+<span class="sourceLineNo">541</span>                        //replace package id<a name="line.541"></a>
+<span class="sourceLineNo">542</span>                        String packagePath= "/*[local-name() = '"+Eml200Parser.EML+"']/@"+Eml200Parser.PACKAGEID;<a name="line.542"></a>
+<span class="sourceLineNo">543</span>                        NodeList packageIDNodeList = XPathAPI.selectNodeList(doc, packagePath);<a name="line.543"></a>
+<span class="sourceLineNo">544</span>                        setNewValueForAttribute(packageIDNodeList, newMetadataID);<a name="line.544"></a>
+<span class="sourceLineNo">545</span>                        // serialize the DOM tree<a name="line.545"></a>
+<span class="sourceLineNo">546</span>                        StringWriter writer = new StringWriter();<a name="line.546"></a>
+<span class="sourceLineNo">547</span>                        XMLSerializer serializer = new XMLSerializer();<a name="line.547"></a>
+<span class="sourceLineNo">548</span>                        serializer.setOutputCharStream(writer);<a name="line.548"></a>
+<span class="sourceLineNo">549</span>                        // serializer.setOutputByteStream(System.out);<a name="line.549"></a>
+<span class="sourceLineNo">550</span>                        serializer.serialize(doc);<a name="line.550"></a>
+<span class="sourceLineNo">551</span>                        newMetadata = writer.toString();<a name="line.551"></a>
+<span class="sourceLineNo">552</span>                        // writer.write(newMetadata);<a name="line.552"></a>
+<span class="sourceLineNo">553</span>                        log.debug("The new metadata with new data reference is \n"<a name="line.553"></a>
+<span class="sourceLineNo">554</span>                                        + newMetadata);<a name="line.554"></a>
+<span class="sourceLineNo">555</span><a name="line.555"></a>
+<span class="sourceLineNo">556</span>                }<a name="line.556"></a>
+<span class="sourceLineNo">557</span>                return newMetadata;<a name="line.557"></a>
+<span class="sourceLineNo">558</span>        }<a name="line.558"></a>
+<span class="sourceLineNo">559</span><a name="line.559"></a>
+<span class="sourceLineNo">560</span>        /**<a name="line.560"></a>
+<span class="sourceLineNo">561</span>         * Docid will look like suffix.id.rev. <a name="line.561"></a>
+<span class="sourceLineNo">562</span>         * Where id is a concat of currenttTimeMillis + random UUID<a name="line.562"></a>
+<span class="sourceLineNo">563</span>         * <a name="line.563"></a>
+<span class="sourceLineNo">564</span>         * @param suffix<a name="line.564"></a>
+<span class="sourceLineNo">565</span>         * @param rev<a name="line.565"></a>
+<span class="sourceLineNo">566</span>         * @return<a name="line.566"></a>
+<span class="sourceLineNo">567</span>         */<a name="line.567"></a>
+<span class="sourceLineNo">568</span>        private String generateDocId(String suffix, int rev) {<a name="line.568"></a>
+<span class="sourceLineNo">569</span>                //double random = Math.random();<a name="line.569"></a>
+<span class="sourceLineNo">570</span>                //int randomInt = (new Double(random*1000000)).intValue();<a name="line.570"></a>
+<span class="sourceLineNo">571</span>                String docid = null;<a name="line.571"></a>
+<span class="sourceLineNo">572</span>                //Date currentTime = new Date();<a name="line.572"></a>
+<span class="sourceLineNo">573</span>                //String id = Long.toString(currentTime.getTime());<a name="line.573"></a>
+<span class="sourceLineNo">574</span>                //String id = Long.toString(System.currentTimeMillis());<a name="line.574"></a>
+<span class="sourceLineNo">575</span>                //id= id+randomInt;<a name="line.575"></a>
+<span class="sourceLineNo">576</span>                String id = Long.toString(System.currentTimeMillis());<a name="line.576"></a>
+<span class="sourceLineNo">577</span>            id = id.concat(UUID.randomUUID().toString());<a name="line.577"></a>
+<span class="sourceLineNo">578</span>                docid = suffix + SEPERATOR + id + SEPERATOR + rev;<a name="line.578"></a>
+<span class="sourceLineNo">579</span>                log.debug("The generated docid is " + docid);<a name="line.579"></a>
+<span class="sourceLineNo">580</span>                return docid;<a name="line.580"></a>
+<span class="sourceLineNo">581</span>        }<a name="line.581"></a>
+<span class="sourceLineNo">582</span><a name="line.582"></a>
+<span class="sourceLineNo">583</span>        /**<a name="line.583"></a>
+<span class="sourceLineNo">584</span>         * This method will set up new value for the list. We only replace the first<a name="line.584"></a>
+<span class="sourceLineNo">585</span>         * one.<a name="line.585"></a>
+<span class="sourceLineNo">586</span>         * <a name="line.586"></a>
+<span class="sourceLineNo">587</span>         * @param list<a name="line.587"></a>
+<span class="sourceLineNo">588</span>         * @param newValue<a name="line.588"></a>
+<span class="sourceLineNo">589</span>         */<a name="line.589"></a>
+<span class="sourceLineNo">590</span>        private void setNewValueForNode(NodeList list, String newValue) {<a name="line.590"></a>
+<span class="sourceLineNo">591</span>                Node cn = list.item(0).getFirstChild();<a name="line.591"></a>
+<span class="sourceLineNo">592</span>                if ((cn != null) &amp;&amp; (cn.getNodeType() == Node.TEXT_NODE)) {<a name="line.592"></a>
+<span class="sourceLineNo">593</span>                        log.debug("set new value " + newValue + " for distribution url");<a name="line.593"></a>
+<span class="sourceLineNo">594</span>                        cn.setNodeValue(newValue);<a name="line.594"></a>
+<span class="sourceLineNo">595</span>                }       <a name="line.595"></a>
+<span class="sourceLineNo">596</span>        }<a name="line.596"></a>
+<span class="sourceLineNo">597</span>        <a name="line.597"></a>
+<span class="sourceLineNo">598</span>        /**<a name="line.598"></a>
+<span class="sourceLineNo">599</span>         * Set a new value for an attribute node.<a name="line.599"></a>
+<span class="sourceLineNo">600</span>         * <a name="line.600"></a>
+<span class="sourceLineNo">601</span>         * @param list<a name="line.601"></a>
+<span class="sourceLineNo">602</span>         * @param newValue<a name="line.602"></a>
+<span class="sourceLineNo">603</span>         */<a name="line.603"></a>
+<span class="sourceLineNo">604</span>        private void setNewValueForAttribute(NodeList list, String newValue){<a name="line.604"></a>
+<span class="sourceLineNo">605</span>          if(list != null &amp;&amp; list.getLength() &gt;0){<a name="line.605"></a>
+<span class="sourceLineNo">606</span>            Node cn = list.item(0);<a name="line.606"></a>
+<span class="sourceLineNo">607</span>            if(cn != null &amp;&amp; cn.getNodeType() == Node.ATTRIBUTE_NODE){<a name="line.607"></a>
+<span class="sourceLineNo">608</span>              //System.out.println("Set new value "+newValue +" for attribute"+cn.getNodeName());<a name="line.608"></a>
+<span class="sourceLineNo">609</span>              cn.setNodeValue(newValue);<a name="line.609"></a>
+<span class="sourceLineNo">610</span>            }<a name="line.610"></a>
+<span class="sourceLineNo">611</span>          }<a name="line.611"></a>
+<span class="sourceLineNo">612</span>        }<a name="line.612"></a>
+<span class="sourceLineNo">613</span>        <a name="line.613"></a>
+<span class="sourceLineNo">614</span>        <a name="line.614"></a>
+<span class="sourceLineNo">615</span><a name="line.615"></a>
+<span class="sourceLineNo">616</span>}<a name="line.616"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

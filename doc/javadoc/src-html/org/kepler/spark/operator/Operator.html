@@ -1,0 +1,226 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../../../stylesheet.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>/* A base class for operators in Spark jobs.<a name="line.1"></a>
+<span class="sourceLineNo">002</span> * <a name="line.2"></a>
+<span class="sourceLineNo">003</span> * Copyright (c) 2014 The Regents of the University of California.<a name="line.3"></a>
+<span class="sourceLineNo">004</span> * All rights reserved.<a name="line.4"></a>
+<span class="sourceLineNo">005</span> *<a name="line.5"></a>
+<span class="sourceLineNo">006</span> * '$Author: crawl $'<a name="line.6"></a>
+<span class="sourceLineNo">007</span> * '$Date: 2014-07-03 10:22:34 -0700 (Thu, 03 Jul 2014) $' <a name="line.7"></a>
+<span class="sourceLineNo">008</span> * '$Revision: 32815 $'<a name="line.8"></a>
+<span class="sourceLineNo">009</span> * <a name="line.9"></a>
+<span class="sourceLineNo">010</span> * Permission is hereby granted, without written agreement and without<a name="line.10"></a>
+<span class="sourceLineNo">011</span> * license or royalty fees, to use, copy, modify, and distribute this<a name="line.11"></a>
+<span class="sourceLineNo">012</span> * software and its documentation for any purpose, provided that the above<a name="line.12"></a>
+<span class="sourceLineNo">013</span> * copyright notice and the following two paragraphs appear in all copies<a name="line.13"></a>
+<span class="sourceLineNo">014</span> * of this software.<a name="line.14"></a>
+<span class="sourceLineNo">015</span> *<a name="line.15"></a>
+<span class="sourceLineNo">016</span> * IN NO EVENT SHALL THE UNIVERSITY OF CALIFORNIA BE LIABLE TO ANY PARTY<a name="line.16"></a>
+<span class="sourceLineNo">017</span> * FOR DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES<a name="line.17"></a>
+<span class="sourceLineNo">018</span> * ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION, EVEN IF<a name="line.18"></a>
+<span class="sourceLineNo">019</span> * THE UNIVERSITY OF CALIFORNIA HAS BEEN ADVISED OF THE POSSIBILITY OF<a name="line.19"></a>
+<span class="sourceLineNo">020</span> * SUCH DAMAGE.<a name="line.20"></a>
+<span class="sourceLineNo">021</span> *<a name="line.21"></a>
+<span class="sourceLineNo">022</span> * THE UNIVERSITY OF CALIFORNIA SPECIFICALLY DISCLAIMS ANY WARRANTIES,<a name="line.22"></a>
+<span class="sourceLineNo">023</span> * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF<a name="line.23"></a>
+<span class="sourceLineNo">024</span> * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE<a name="line.24"></a>
+<span class="sourceLineNo">025</span> * PROVIDED HEREUNDER IS ON AN "AS IS" BASIS, AND THE UNIVERSITY OF<a name="line.25"></a>
+<span class="sourceLineNo">026</span> * CALIFORNIA HAS NO OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT, UPDATES,<a name="line.26"></a>
+<span class="sourceLineNo">027</span> * ENHANCEMENTS, OR MODIFICATIONS.<a name="line.27"></a>
+<span class="sourceLineNo">028</span> *<a name="line.28"></a>
+<span class="sourceLineNo">029</span> */<a name="line.29"></a>
+<span class="sourceLineNo">030</span>package org.kepler.spark.operator;<a name="line.30"></a>
+<span class="sourceLineNo">031</span><a name="line.31"></a>
+<span class="sourceLineNo">032</span>import org.apache.hadoop.conf.Configuration;<a name="line.32"></a>
+<span class="sourceLineNo">033</span>import org.apache.spark.api.java.JavaPairRDD;<a name="line.33"></a>
+<span class="sourceLineNo">034</span>import org.kepler.ddp.Utilities;<a name="line.34"></a>
+<span class="sourceLineNo">035</span>import org.kepler.spark.stub.PairFlatMapFunctionBase;<a name="line.35"></a>
+<span class="sourceLineNo">036</span><a name="line.36"></a>
+<span class="sourceLineNo">037</span>import ptolemy.kernel.util.IllegalActionException;<a name="line.37"></a>
+<span class="sourceLineNo">038</span><a name="line.38"></a>
+<span class="sourceLineNo">039</span>/** A base class for operators in a Spark job. Derived classes<a name="line.39"></a>
+<span class="sourceLineNo">040</span> *  need to provide implementations of execute().<a name="line.40"></a>
+<span class="sourceLineNo">041</span> * <a name="line.41"></a>
+<span class="sourceLineNo">042</span> *  @author Daniel Crawl<a name="line.42"></a>
+<span class="sourceLineNo">043</span> *  @version $Id: Operator.java 32815 2014-07-03 17:22:34Z crawl $<a name="line.43"></a>
+<span class="sourceLineNo">044</span> */<a name="line.44"></a>
+<span class="sourceLineNo">045</span>public abstract class Operator {<a name="line.45"></a>
+<span class="sourceLineNo">046</span><a name="line.46"></a>
+<span class="sourceLineNo">047</span>    /** Create a new Operator.<a name="line.47"></a>
+<span class="sourceLineNo">048</span>     *  @param numInputs the number of input operators<a name="line.48"></a>
+<span class="sourceLineNo">049</span>     *  @param stub the function to execute<a name="line.49"></a>
+<span class="sourceLineNo">050</span>     *  @param name the name of the operator<a name="line.50"></a>
+<span class="sourceLineNo">051</span>     */<a name="line.51"></a>
+<span class="sourceLineNo">052</span>    public Operator(int numInputs, Object stub, String name) {<a name="line.52"></a>
+<span class="sourceLineNo">053</span>        _inputs = new Operator[numInputs];<a name="line.53"></a>
+<span class="sourceLineNo">054</span>        _stub = stub;<a name="line.54"></a>
+<span class="sourceLineNo">055</span>        _name = name;<a name="line.55"></a>
+<span class="sourceLineNo">056</span>        _configuration = new Configuration();<a name="line.56"></a>
+<span class="sourceLineNo">057</span>    }<a name="line.57"></a>
+<span class="sourceLineNo">058</span>    <a name="line.58"></a>
+<span class="sourceLineNo">059</span>    /** Get the number of input operators. */<a name="line.59"></a>
+<span class="sourceLineNo">060</span>    public int numInputs() {<a name="line.60"></a>
+<span class="sourceLineNo">061</span>        return _inputs.length;<a name="line.61"></a>
+<span class="sourceLineNo">062</span>    }<a name="line.62"></a>
+<span class="sourceLineNo">063</span><a name="line.63"></a>
+<span class="sourceLineNo">064</span>    /** Get the configuration parameters. */<a name="line.64"></a>
+<span class="sourceLineNo">065</span>    public Configuration getParameters() {<a name="line.65"></a>
+<span class="sourceLineNo">066</span>        return _configuration;<a name="line.66"></a>
+<span class="sourceLineNo">067</span>    }<a name="line.67"></a>
+<span class="sourceLineNo">068</span><a name="line.68"></a>
+<span class="sourceLineNo">069</span>    /** Set the (first) input operator. */<a name="line.69"></a>
+<span class="sourceLineNo">070</span>    public void setInput(Operator output) {<a name="line.70"></a>
+<span class="sourceLineNo">071</span>        setInput(0, output);<a name="line.71"></a>
+<span class="sourceLineNo">072</span>    }<a name="line.72"></a>
+<span class="sourceLineNo">073</span><a name="line.73"></a>
+<span class="sourceLineNo">074</span>    /** Set the input operator at an index. */<a name="line.74"></a>
+<span class="sourceLineNo">075</span>    public void setInput(int index, Operator output) {<a name="line.75"></a>
+<span class="sourceLineNo">076</span>        if(index &lt; 0) {<a name="line.76"></a>
+<span class="sourceLineNo">077</span>            throw new IllegalArgumentException("Index must be greater than or equal to 0.");<a name="line.77"></a>
+<span class="sourceLineNo">078</span>        }<a name="line.78"></a>
+<span class="sourceLineNo">079</span>        <a name="line.79"></a>
+<span class="sourceLineNo">080</span>        if(index &gt; numInputs()) {<a name="line.80"></a>
+<span class="sourceLineNo">081</span>            throw new IllegalArgumentException("Index must be less than " + numInputs());<a name="line.81"></a>
+<span class="sourceLineNo">082</span>        }<a name="line.82"></a>
+<span class="sourceLineNo">083</span>        <a name="line.83"></a>
+<span class="sourceLineNo">084</span>        _inputs[index] = output;<a name="line.84"></a>
+<span class="sourceLineNo">085</span>    }<a name="line.85"></a>
+<span class="sourceLineNo">086</span><a name="line.86"></a>
+<span class="sourceLineNo">087</span>    /** Set the number of parallel instances to execute. */<a name="line.87"></a>
+<span class="sourceLineNo">088</span>    public void setDegreeOfParallelism(int numInstances) {<a name="line.88"></a>
+<span class="sourceLineNo">089</span>        _numInstances = numInstances;<a name="line.89"></a>
+<span class="sourceLineNo">090</span>        _configuration.setInt(Utilities.CONFIGURATION_KEPLER_PARA_PARALLEL, numInstances);<a name="line.90"></a>
+<span class="sourceLineNo">091</span>    }<a name="line.91"></a>
+<span class="sourceLineNo">092</span><a name="line.92"></a>
+<span class="sourceLineNo">093</span>    /** Execute the operator. */<a name="line.93"></a>
+<span class="sourceLineNo">094</span>    public abstract JavaPairRDD&lt;Object, ?&gt; execute() throws IllegalActionException;<a name="line.94"></a>
+<span class="sourceLineNo">095</span>    <a name="line.95"></a>
+<span class="sourceLineNo">096</span>    /** Read the inputs and execute the operator to generate the output. */<a name="line.96"></a>
+<span class="sourceLineNo">097</span>    protected JavaPairRDD&lt;Object, ?&gt; _getOutput() throws Exception {<a name="line.97"></a>
+<span class="sourceLineNo">098</span>           <a name="line.98"></a>
+<span class="sourceLineNo">099</span>        // see if we already have output data<a name="line.99"></a>
+<span class="sourceLineNo">100</span>        if(_outputData == null) {<a name="line.100"></a>
+<span class="sourceLineNo">101</span><a name="line.101"></a>
+<span class="sourceLineNo">102</span>            // read all the inputs<a name="line.102"></a>
+<span class="sourceLineNo">103</span>            _inputData = new JavaPairRDD[numInputs()];<a name="line.103"></a>
+<span class="sourceLineNo">104</span>            for(int i = 0; i &lt; numInputs(); i++) {<a name="line.104"></a>
+<span class="sourceLineNo">105</span>                <a name="line.105"></a>
+<span class="sourceLineNo">106</span>                Operator input = _inputs[i];<a name="line.106"></a>
+<span class="sourceLineNo">107</span>                if(input == null) {<a name="line.107"></a>
+<span class="sourceLineNo">108</span>                    throw new Exception("Input " + i + " was not set for " + _name);<a name="line.108"></a>
+<span class="sourceLineNo">109</span>                }<a name="line.109"></a>
+<span class="sourceLineNo">110</span>                <a name="line.110"></a>
+<span class="sourceLineNo">111</span>                // get the output from upstream operators<a name="line.111"></a>
+<span class="sourceLineNo">112</span>                _inputData[i] = input._getOutput();<a name="line.112"></a>
+<span class="sourceLineNo">113</span>            }<a name="line.113"></a>
+<span class="sourceLineNo">114</span>            <a name="line.114"></a>
+<span class="sourceLineNo">115</span>            // see if the stub needs the configuration to be serialized<a name="line.115"></a>
+<span class="sourceLineNo">116</span>            if(_stub instanceof PairFlatMapFunctionBase) {<a name="line.116"></a>
+<span class="sourceLineNo">117</span>                ((PairFlatMapFunctionBase&lt;?,?,?&gt;)_stub).setConfiguration(_configuration);<a name="line.117"></a>
+<span class="sourceLineNo">118</span>            }<a name="line.118"></a>
+<span class="sourceLineNo">119</span><a name="line.119"></a>
+<span class="sourceLineNo">120</span>            // call the operator to get our output<a name="line.120"></a>
+<span class="sourceLineNo">121</span>            _outputData = execute();<a name="line.121"></a>
+<span class="sourceLineNo">122</span><a name="line.122"></a>
+<span class="sourceLineNo">123</span>        }<a name="line.123"></a>
+<span class="sourceLineNo">124</span>        <a name="line.124"></a>
+<span class="sourceLineNo">125</span>        return _outputData;        <a name="line.125"></a>
+<span class="sourceLineNo">126</span>    }<a name="line.126"></a>
+<span class="sourceLineNo">127</span>        <a name="line.127"></a>
+<span class="sourceLineNo">128</span>    ///////////////////////////////////////////////////////////////////<a name="line.128"></a>
+<span class="sourceLineNo">129</span>    ////                      protected fields                   //////<a name="line.129"></a>
+<span class="sourceLineNo">130</span><a name="line.130"></a>
+<span class="sourceLineNo">131</span>    /** The number of parallel instances for this operator. */<a name="line.131"></a>
+<span class="sourceLineNo">132</span>    protected int _numInstances = 1;<a name="line.132"></a>
+<span class="sourceLineNo">133</span>    <a name="line.133"></a>
+<span class="sourceLineNo">134</span>    /** Configuration parameters. */<a name="line.134"></a>
+<span class="sourceLineNo">135</span>    protected Configuration _configuration;<a name="line.135"></a>
+<span class="sourceLineNo">136</span>    <a name="line.136"></a>
+<span class="sourceLineNo">137</span>    /** The input data to this operator. */<a name="line.137"></a>
+<span class="sourceLineNo">138</span>    protected JavaPairRDD&lt;Object, ?&gt;[] _inputData;<a name="line.138"></a>
+<span class="sourceLineNo">139</span>    <a name="line.139"></a>
+<span class="sourceLineNo">140</span>    /** The function to execute. */<a name="line.140"></a>
+<span class="sourceLineNo">141</span>    protected Object _stub;<a name="line.141"></a>
+<span class="sourceLineNo">142</span>    <a name="line.142"></a>
+<span class="sourceLineNo">143</span>    ///////////////////////////////////////////////////////////////////<a name="line.143"></a>
+<span class="sourceLineNo">144</span>    ////                      private fields                     //////<a name="line.144"></a>
+<span class="sourceLineNo">145</span><a name="line.145"></a>
+<span class="sourceLineNo">146</span>    /** Input operator(s) to this operator. */<a name="line.146"></a>
+<span class="sourceLineNo">147</span>    private Operator[] _inputs;<a name="line.147"></a>
+<span class="sourceLineNo">148</span><a name="line.148"></a>
+<span class="sourceLineNo">149</span>    /** The output of this operator. */<a name="line.149"></a>
+<span class="sourceLineNo">150</span>    private JavaPairRDD&lt;Object, ?&gt; _outputData;<a name="line.150"></a>
+<span class="sourceLineNo">151</span><a name="line.151"></a>
+<span class="sourceLineNo">152</span>    /** The name of the operator. */<a name="line.152"></a>
+<span class="sourceLineNo">153</span>    private String _name;<a name="line.153"></a>
+<span class="sourceLineNo">154</span>}<a name="line.154"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

@@ -1,0 +1,589 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../../../stylesheet.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>/* An atomic actor that executes a model specified by a file or URL.<a name="line.1"></a>
+<span class="sourceLineNo">002</span><a name="line.2"></a>
+<span class="sourceLineNo">003</span> Copyright (c) 2003-2014 The Regents of the University of California.<a name="line.3"></a>
+<span class="sourceLineNo">004</span> All rights reserved.<a name="line.4"></a>
+<span class="sourceLineNo">005</span> Permission is hereby granted, without written agreement and without<a name="line.5"></a>
+<span class="sourceLineNo">006</span> license or royalty fees, to use, copy, modify, and distribute this<a name="line.6"></a>
+<span class="sourceLineNo">007</span> software and its documentation for any purpose, provided that the above<a name="line.7"></a>
+<span class="sourceLineNo">008</span> copyright notice and the following two paragraphs appear in all copies<a name="line.8"></a>
+<span class="sourceLineNo">009</span> of this software.<a name="line.9"></a>
+<span class="sourceLineNo">010</span><a name="line.10"></a>
+<span class="sourceLineNo">011</span> IN NO EVENT SHALL THE UNIVERSITY OF CALIFORNIA BE LIABLE TO ANY PARTY<a name="line.11"></a>
+<span class="sourceLineNo">012</span> FOR DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES<a name="line.12"></a>
+<span class="sourceLineNo">013</span> ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION, EVEN IF<a name="line.13"></a>
+<span class="sourceLineNo">014</span> THE UNIVERSITY OF CALIFORNIA HAS BEEN ADVISED OF THE POSSIBILITY OF<a name="line.14"></a>
+<span class="sourceLineNo">015</span> SUCH DAMAGE.<a name="line.15"></a>
+<span class="sourceLineNo">016</span><a name="line.16"></a>
+<span class="sourceLineNo">017</span> THE UNIVERSITY OF CALIFORNIA SPECIFICALLY DISCLAIMS ANY WARRANTIES,<a name="line.17"></a>
+<span class="sourceLineNo">018</span> INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF<a name="line.18"></a>
+<span class="sourceLineNo">019</span> MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE<a name="line.19"></a>
+<span class="sourceLineNo">020</span> PROVIDED HEREUNDER IS ON AN "AS IS" BASIS, AND THE UNIVERSITY OF<a name="line.20"></a>
+<span class="sourceLineNo">021</span> CALIFORNIA HAS NO OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT, UPDATES,<a name="line.21"></a>
+<span class="sourceLineNo">022</span> ENHANCEMENTS, OR MODIFICATIONS.<a name="line.22"></a>
+<span class="sourceLineNo">023</span><a name="line.23"></a>
+<span class="sourceLineNo">024</span> PT_COPYRIGHT_VERSION_2<a name="line.24"></a>
+<span class="sourceLineNo">025</span> COPYRIGHTENDKEY<a name="line.25"></a>
+<span class="sourceLineNo">026</span><a name="line.26"></a>
+<span class="sourceLineNo">027</span><a name="line.27"></a>
+<span class="sourceLineNo">028</span> */<a name="line.28"></a>
+<span class="sourceLineNo">029</span>package ptolemy.vergil.actor.lib;<a name="line.29"></a>
+<span class="sourceLineNo">030</span><a name="line.30"></a>
+<span class="sourceLineNo">031</span>import javax.swing.JFrame;<a name="line.31"></a>
+<span class="sourceLineNo">032</span>import javax.swing.SwingUtilities;<a name="line.32"></a>
+<span class="sourceLineNo">033</span><a name="line.33"></a>
+<span class="sourceLineNo">034</span>import ptolemy.actor.CompositeActor;<a name="line.34"></a>
+<span class="sourceLineNo">035</span>import ptolemy.actor.gui.Configuration;<a name="line.35"></a>
+<span class="sourceLineNo">036</span>import ptolemy.actor.gui.Effigy;<a name="line.36"></a>
+<span class="sourceLineNo">037</span>import ptolemy.actor.gui.PtolemyEffigy;<a name="line.37"></a>
+<span class="sourceLineNo">038</span>import ptolemy.actor.gui.Tableau;<a name="line.38"></a>
+<span class="sourceLineNo">039</span>import ptolemy.actor.gui.TableauFactory;<a name="line.39"></a>
+<span class="sourceLineNo">040</span>import ptolemy.actor.gui.TableauFrame;<a name="line.40"></a>
+<span class="sourceLineNo">041</span>import ptolemy.actor.lib.hoc.ModelReference;<a name="line.41"></a>
+<span class="sourceLineNo">042</span>import ptolemy.data.expr.StringParameter;<a name="line.42"></a>
+<span class="sourceLineNo">043</span>import ptolemy.gui.Top;<a name="line.43"></a>
+<span class="sourceLineNo">044</span>import ptolemy.kernel.CompositeEntity;<a name="line.44"></a>
+<span class="sourceLineNo">045</span>import ptolemy.kernel.util.Attribute;<a name="line.45"></a>
+<span class="sourceLineNo">046</span>import ptolemy.kernel.util.IllegalActionException;<a name="line.46"></a>
+<span class="sourceLineNo">047</span>import ptolemy.kernel.util.InternalErrorException;<a name="line.47"></a>
+<span class="sourceLineNo">048</span>import ptolemy.kernel.util.KernelException;<a name="line.48"></a>
+<span class="sourceLineNo">049</span>import ptolemy.kernel.util.NameDuplicationException;<a name="line.49"></a>
+<span class="sourceLineNo">050</span>import ptolemy.kernel.util.NamedObj;<a name="line.50"></a>
+<span class="sourceLineNo">051</span>import ptolemy.kernel.util.Workspace;<a name="line.51"></a>
+<span class="sourceLineNo">052</span>import ptolemy.vergil.basic.ExtendedGraphFrame;<a name="line.52"></a>
+<span class="sourceLineNo">053</span><a name="line.53"></a>
+<span class="sourceLineNo">054</span>///////////////////////////////////////////////////////////////////<a name="line.54"></a>
+<span class="sourceLineNo">055</span>//// VisualModelReference<a name="line.55"></a>
+<span class="sourceLineNo">056</span><a name="line.56"></a>
+<span class="sourceLineNo">057</span>/**<a name="line.57"></a>
+<span class="sourceLineNo">058</span> This is an atomic actor that can execute and/or open a model specified by<a name="line.58"></a>
+<span class="sourceLineNo">059</span> a file or URL. This can be used to define an actor whose firing behavior<a name="line.59"></a>
+<span class="sourceLineNo">060</span> is given by a complete execution of another model. It extends the base<a name="line.60"></a>
+<span class="sourceLineNo">061</span> class with the following attributes and associated capabilities.<a name="line.61"></a>
+<span class="sourceLineNo">062</span> &lt;ul&gt;<a name="line.62"></a>
+<span class="sourceLineNo">063</span> &lt;li&gt; &lt;i&gt;openOnFiring&lt;/i&gt;:<a name="line.63"></a>
+<span class="sourceLineNo">064</span> The value of this string attribute determines what open<a name="line.64"></a>
+<span class="sourceLineNo">065</span> happens when the fire() method is invoked.  The recognized<a name="line.65"></a>
+<span class="sourceLineNo">066</span> values are:<a name="line.66"></a>
+<span class="sourceLineNo">067</span> &lt;ul&gt;<a name="line.67"></a>
+<span class="sourceLineNo">068</span> &lt;li&gt; "do not open" (the default) &lt;/li&gt;<a name="line.68"></a>
+<span class="sourceLineNo">069</span> &lt;li&gt; "open in Vergil" &lt;/li&gt;<a name="line.69"></a>
+<span class="sourceLineNo">070</span> &lt;li&gt; "open in Vergil (full screen)" &lt;/li&gt;<a name="line.70"></a>
+<span class="sourceLineNo">071</span> &lt;/ul&gt;<a name="line.71"></a>
+<span class="sourceLineNo">072</span> Note that it is dangerous to use the full-screen mode because it<a name="line.72"></a>
+<span class="sourceLineNo">073</span> becomes difficult to stop execution of the model that contains this<a name="line.73"></a>
+<span class="sourceLineNo">074</span> actor.  In full-screen mode, the referenced model will consume<a name="line.74"></a>
+<span class="sourceLineNo">075</span> the entire screen.  Stopping that execution will only serve to<a name="line.75"></a>
+<span class="sourceLineNo">076</span> stop the current iteration, and very likely, another iteration will<a name="line.76"></a>
+<span class="sourceLineNo">077</span> begin immediately and again occupy the entire screen.<a name="line.77"></a>
+<span class="sourceLineNo">078</span> Use this option with care.<a name="line.78"></a>
+<span class="sourceLineNo">079</span> &lt;/li&gt;<a name="line.79"></a>
+<span class="sourceLineNo">080</span> &lt;li&gt; &lt;i&gt;closeOnPostfire&lt;/i&gt;:<a name="line.80"></a>
+<span class="sourceLineNo">081</span> The value of this string attribute determines what happens<a name="line.81"></a>
+<span class="sourceLineNo">082</span> in the postfire() method.  The recognized values are:<a name="line.82"></a>
+<span class="sourceLineNo">083</span> &lt;ul&gt;<a name="line.83"></a>
+<span class="sourceLineNo">084</span> &lt;li&gt; "do nothing" (the default) &lt;/li&gt;<a name="line.84"></a>
+<span class="sourceLineNo">085</span> &lt;li&gt; "close Vergil graph" &lt;/li&gt;<a name="line.85"></a>
+<span class="sourceLineNo">086</span> &lt;/ul&gt;<a name="line.86"></a>
+<span class="sourceLineNo">087</span> &lt;/li&gt;<a name="line.87"></a>
+<span class="sourceLineNo">088</span> &lt;/ul&gt;<a name="line.88"></a>
+<span class="sourceLineNo">089</span><a name="line.89"></a>
+<span class="sourceLineNo">090</span><a name="line.90"></a>
+<span class="sourceLineNo">091</span> @author Edward A. Lee, Elaine Cheong<a name="line.91"></a>
+<span class="sourceLineNo">092</span> @version $Id$<a name="line.92"></a>
+<span class="sourceLineNo">093</span> @since Ptolemy II 4.0<a name="line.93"></a>
+<span class="sourceLineNo">094</span> @Pt.ProposedRating Yellow (eal)<a name="line.94"></a>
+<span class="sourceLineNo">095</span> @Pt.AcceptedRating Red (eal)<a name="line.95"></a>
+<span class="sourceLineNo">096</span> @see ptolemy.data.expr.Variable<a name="line.96"></a>
+<span class="sourceLineNo">097</span> @see ptolemy.data.expr.Parameter<a name="line.97"></a>
+<span class="sourceLineNo">098</span> @see ptolemy.kernel.util.Settable<a name="line.98"></a>
+<span class="sourceLineNo">099</span> */<a name="line.99"></a>
+<span class="sourceLineNo">100</span>public class VisualModelReference extends ModelReference {<a name="line.100"></a>
+<span class="sourceLineNo">101</span>    /** Construct a VisualModelReference with a name and a container.<a name="line.101"></a>
+<span class="sourceLineNo">102</span>     *  The container argument must not be null, or a<a name="line.102"></a>
+<span class="sourceLineNo">103</span>     *  NullPointerException will be thrown.  This actor will use the<a name="line.103"></a>
+<span class="sourceLineNo">104</span>     *  workspace of the container for synchronization and version counts.<a name="line.104"></a>
+<span class="sourceLineNo">105</span>     *  If the name argument is null, then the name is set to the empty string.<a name="line.105"></a>
+<span class="sourceLineNo">106</span>     *  Increment the version of the workspace.  This actor will have no<a name="line.106"></a>
+<span class="sourceLineNo">107</span>     *  local director initially, and its executive director will be simply<a name="line.107"></a>
+<span class="sourceLineNo">108</span>     *  the director of the container.<a name="line.108"></a>
+<span class="sourceLineNo">109</span>     *<a name="line.109"></a>
+<span class="sourceLineNo">110</span>     *  @param container The container.<a name="line.110"></a>
+<span class="sourceLineNo">111</span>     *  @param name The name of this actor.<a name="line.111"></a>
+<span class="sourceLineNo">112</span>     *  @exception IllegalActionException If the container is incompatible<a name="line.112"></a>
+<span class="sourceLineNo">113</span>     *   with this actor.<a name="line.113"></a>
+<span class="sourceLineNo">114</span>     *  @exception NameDuplicationException If the name coincides with<a name="line.114"></a>
+<span class="sourceLineNo">115</span>     *   an actor already in the container.<a name="line.115"></a>
+<span class="sourceLineNo">116</span>     */<a name="line.116"></a>
+<span class="sourceLineNo">117</span>    public VisualModelReference(CompositeEntity container, String name)<a name="line.117"></a>
+<span class="sourceLineNo">118</span>            throws IllegalActionException, NameDuplicationException {<a name="line.118"></a>
+<span class="sourceLineNo">119</span>        super(container, name);<a name="line.119"></a>
+<span class="sourceLineNo">120</span><a name="line.120"></a>
+<span class="sourceLineNo">121</span>        // Create the openOnFiring parameter.<a name="line.121"></a>
+<span class="sourceLineNo">122</span>        openOnFiring = new StringParameter(this, "openOnFiring");<a name="line.122"></a>
+<span class="sourceLineNo">123</span><a name="line.123"></a>
+<span class="sourceLineNo">124</span>        // Set the options for the parameters.<a name="line.124"></a>
+<span class="sourceLineNo">125</span>        openOnFiring.setExpression("do not open");<a name="line.125"></a>
+<span class="sourceLineNo">126</span>        openOnFiring.addChoice("doNotOpen");<a name="line.126"></a>
+<span class="sourceLineNo">127</span>        openOnFiring.addChoice("open in Vergil");<a name="line.127"></a>
+<span class="sourceLineNo">128</span>        openOnFiring.addChoice("open in Vergil (full screen)");<a name="line.128"></a>
+<span class="sourceLineNo">129</span><a name="line.129"></a>
+<span class="sourceLineNo">130</span>        // Create the closeOnPostfire parameter.<a name="line.130"></a>
+<span class="sourceLineNo">131</span>        closeOnPostfire = new StringParameter(this, "closeOnPostfire");<a name="line.131"></a>
+<span class="sourceLineNo">132</span>        closeOnPostfire.setExpression("do nothing");<a name="line.132"></a>
+<span class="sourceLineNo">133</span>        closeOnPostfire.addChoice("do nothing");<a name="line.133"></a>
+<span class="sourceLineNo">134</span>        closeOnPostfire.addChoice("close Vergil graph");<a name="line.134"></a>
+<span class="sourceLineNo">135</span><a name="line.135"></a>
+<span class="sourceLineNo">136</span>        // Create a tableau factory to override look inside behavior.<a name="line.136"></a>
+<span class="sourceLineNo">137</span>        new LookInside(this, "_lookInsideOverride");<a name="line.137"></a>
+<span class="sourceLineNo">138</span>    }<a name="line.138"></a>
+<span class="sourceLineNo">139</span><a name="line.139"></a>
+<span class="sourceLineNo">140</span>    ///////////////////////////////////////////////////////////////////<a name="line.140"></a>
+<span class="sourceLineNo">141</span>    ////                       parameters                          ////<a name="line.141"></a>
+<span class="sourceLineNo">142</span><a name="line.142"></a>
+<span class="sourceLineNo">143</span>    /** The value of this string parameter determines what open<a name="line.143"></a>
+<span class="sourceLineNo">144</span>     *  happens when the fire() method is invoked.  The recognized<a name="line.144"></a>
+<span class="sourceLineNo">145</span>     *  values are:<a name="line.145"></a>
+<span class="sourceLineNo">146</span>     *  &lt;ul&gt;<a name="line.146"></a>
+<span class="sourceLineNo">147</span>     *  &lt;li&gt; "do not open" (the default) &lt;/li&gt;<a name="line.147"></a>
+<span class="sourceLineNo">148</span>     *  &lt;li&gt; "open in Vergil" &lt;/li&gt;<a name="line.148"></a>
+<span class="sourceLineNo">149</span>     *  &lt;li&gt; "open in Vergil (full screen)" &lt;/li&gt;<a name="line.149"></a>
+<span class="sourceLineNo">150</span>     *  &lt;/ul&gt;<a name="line.150"></a>
+<span class="sourceLineNo">151</span>     */<a name="line.151"></a>
+<span class="sourceLineNo">152</span>    public StringParameter openOnFiring;<a name="line.152"></a>
+<span class="sourceLineNo">153</span><a name="line.153"></a>
+<span class="sourceLineNo">154</span>    /** The value of this string parameter determines what close action<a name="line.154"></a>
+<span class="sourceLineNo">155</span>     *  happens in the postfire() method.  The recognized values are:<a name="line.155"></a>
+<span class="sourceLineNo">156</span>     *  &lt;ul&gt;<a name="line.156"></a>
+<span class="sourceLineNo">157</span>     *  &lt;li&gt; "do nothing" (the default) &lt;/li&gt;<a name="line.157"></a>
+<span class="sourceLineNo">158</span>     *  &lt;li&gt; "close Vergil graph" &lt;/li&gt;<a name="line.158"></a>
+<span class="sourceLineNo">159</span>     *  &lt;/ul&gt;<a name="line.159"></a>
+<span class="sourceLineNo">160</span>     */<a name="line.160"></a>
+<span class="sourceLineNo">161</span>    public StringParameter closeOnPostfire;<a name="line.161"></a>
+<span class="sourceLineNo">162</span><a name="line.162"></a>
+<span class="sourceLineNo">163</span>    ///////////////////////////////////////////////////////////////////<a name="line.163"></a>
+<span class="sourceLineNo">164</span>    ////                         public methods                    ////<a name="line.164"></a>
+<span class="sourceLineNo">165</span><a name="line.165"></a>
+<span class="sourceLineNo">166</span>    /** Override the base class to open the model specified if the<a name="line.166"></a>
+<span class="sourceLineNo">167</span>     *  attribute is modelFileOrURL, or for other parameters, to cache<a name="line.167"></a>
+<span class="sourceLineNo">168</span>     *  their values.<a name="line.168"></a>
+<span class="sourceLineNo">169</span>     *  @param attribute The attribute that changed.<a name="line.169"></a>
+<span class="sourceLineNo">170</span>     *  @exception IllegalActionException If the change is not acceptable<a name="line.170"></a>
+<span class="sourceLineNo">171</span>     *   to this container (not thrown in this base class).<a name="line.171"></a>
+<span class="sourceLineNo">172</span>     */<a name="line.172"></a>
+<span class="sourceLineNo">173</span>    @Override<a name="line.173"></a>
+<span class="sourceLineNo">174</span>    public void attributeChanged(Attribute attribute)<a name="line.174"></a>
+<span class="sourceLineNo">175</span>            throws IllegalActionException {<a name="line.175"></a>
+<span class="sourceLineNo">176</span>        if (attribute == openOnFiring) {<a name="line.176"></a>
+<span class="sourceLineNo">177</span>            String openOnFiringValue = openOnFiring.stringValue();<a name="line.177"></a>
+<span class="sourceLineNo">178</span><a name="line.178"></a>
+<span class="sourceLineNo">179</span>            if (openOnFiringValue.equals("do not open")) {<a name="line.179"></a>
+<span class="sourceLineNo">180</span>                _openOnFiringValue = _DO_NOT_OPEN;<a name="line.180"></a>
+<span class="sourceLineNo">181</span>            } else if (openOnFiringValue.equals("open in Vergil")) {<a name="line.181"></a>
+<span class="sourceLineNo">182</span>                _openOnFiringValue = _OPEN_IN_VERGIL;<a name="line.182"></a>
+<span class="sourceLineNo">183</span>            } else if (openOnFiringValue<a name="line.183"></a>
+<span class="sourceLineNo">184</span>                    .equals("open in Vergil (full screen)")) {<a name="line.184"></a>
+<span class="sourceLineNo">185</span>                _openOnFiringValue = _OPEN_IN_VERGIL_FULL_SCREEN;<a name="line.185"></a>
+<span class="sourceLineNo">186</span>            } else {<a name="line.186"></a>
+<span class="sourceLineNo">187</span>                throw new IllegalActionException(this,<a name="line.187"></a>
+<span class="sourceLineNo">188</span>                        "Unrecognized option for openOnFiring: "<a name="line.188"></a>
+<span class="sourceLineNo">189</span>                                + openOnFiringValue);<a name="line.189"></a>
+<span class="sourceLineNo">190</span>            }<a name="line.190"></a>
+<span class="sourceLineNo">191</span>        } else if (attribute == closeOnPostfire) {<a name="line.191"></a>
+<span class="sourceLineNo">192</span>            String closeOnPostfireValue = closeOnPostfire.stringValue();<a name="line.192"></a>
+<span class="sourceLineNo">193</span><a name="line.193"></a>
+<span class="sourceLineNo">194</span>            if (closeOnPostfireValue.equals("do nothing")) {<a name="line.194"></a>
+<span class="sourceLineNo">195</span>                _closeOnPostfireValue = _DO_NOTHING;<a name="line.195"></a>
+<span class="sourceLineNo">196</span>            } else if (closeOnPostfireValue.equals("close Vergil graph")) {<a name="line.196"></a>
+<span class="sourceLineNo">197</span>                _closeOnPostfireValue = _CLOSE_VERGIL_GRAPH;<a name="line.197"></a>
+<span class="sourceLineNo">198</span>            } else {<a name="line.198"></a>
+<span class="sourceLineNo">199</span>                throw new IllegalActionException(this,<a name="line.199"></a>
+<span class="sourceLineNo">200</span>                        "Unrecognized option for closeOnPostfire: "<a name="line.200"></a>
+<span class="sourceLineNo">201</span>                                + closeOnPostfireValue);<a name="line.201"></a>
+<span class="sourceLineNo">202</span>            }<a name="line.202"></a>
+<span class="sourceLineNo">203</span>        }<a name="line.203"></a>
+<span class="sourceLineNo">204</span>        if (attribute == modelFileOrURL) {<a name="line.204"></a>
+<span class="sourceLineNo">205</span>            super.attributeChanged(attribute);<a name="line.205"></a>
+<span class="sourceLineNo">206</span>            // If there was previously an effigy or tableau<a name="line.206"></a>
+<span class="sourceLineNo">207</span>            // associated with this model, then delete it.<a name="line.207"></a>
+<span class="sourceLineNo">208</span>            if (_effigy != null) {<a name="line.208"></a>
+<span class="sourceLineNo">209</span>                try {<a name="line.209"></a>
+<span class="sourceLineNo">210</span>                    _effigy.setContainer(null);<a name="line.210"></a>
+<span class="sourceLineNo">211</span>                } catch (NameDuplicationException e) {<a name="line.211"></a>
+<span class="sourceLineNo">212</span>                    throw new InternalErrorException(e);<a name="line.212"></a>
+<span class="sourceLineNo">213</span>                }<a name="line.213"></a>
+<span class="sourceLineNo">214</span>                _effigy = null;<a name="line.214"></a>
+<span class="sourceLineNo">215</span>            }<a name="line.215"></a>
+<span class="sourceLineNo">216</span>            if (_tableau != null) {<a name="line.216"></a>
+<span class="sourceLineNo">217</span>                _tableau.close();<a name="line.217"></a>
+<span class="sourceLineNo">218</span>                try {<a name="line.218"></a>
+<span class="sourceLineNo">219</span>                    _tableau.setContainer(null);<a name="line.219"></a>
+<span class="sourceLineNo">220</span>                } catch (NameDuplicationException e) {<a name="line.220"></a>
+<span class="sourceLineNo">221</span>                    throw new InternalErrorException(e);<a name="line.221"></a>
+<span class="sourceLineNo">222</span>                }<a name="line.222"></a>
+<span class="sourceLineNo">223</span>                _tableau = null;<a name="line.223"></a>
+<span class="sourceLineNo">224</span>            }<a name="line.224"></a>
+<span class="sourceLineNo">225</span>        } else {<a name="line.225"></a>
+<span class="sourceLineNo">226</span>            super.attributeChanged(attribute);<a name="line.226"></a>
+<span class="sourceLineNo">227</span>        }<a name="line.227"></a>
+<span class="sourceLineNo">228</span>    }<a name="line.228"></a>
+<span class="sourceLineNo">229</span><a name="line.229"></a>
+<span class="sourceLineNo">230</span>    /** Clone this actor into the specified workspace.<a name="line.230"></a>
+<span class="sourceLineNo">231</span>     *  Override the base class to ensure that private variables are<a name="line.231"></a>
+<span class="sourceLineNo">232</span>     *  reset to null.<a name="line.232"></a>
+<span class="sourceLineNo">233</span>     *  @param workspace The workspace for the cloned object.<a name="line.233"></a>
+<span class="sourceLineNo">234</span>     *  @return A new instance of VisualModelReference.<a name="line.234"></a>
+<span class="sourceLineNo">235</span>     *  @exception CloneNotSupportedException If a derived class contains<a name="line.235"></a>
+<span class="sourceLineNo">236</span>     *   an attribute that cannot be cloned.<a name="line.236"></a>
+<span class="sourceLineNo">237</span>     */<a name="line.237"></a>
+<span class="sourceLineNo">238</span>    @Override<a name="line.238"></a>
+<span class="sourceLineNo">239</span>    public Object clone(Workspace workspace) throws CloneNotSupportedException {<a name="line.239"></a>
+<span class="sourceLineNo">240</span>        VisualModelReference newActor = (VisualModelReference) super.clone(<a name="line.240"></a>
+<span class="sourceLineNo">241</span>                workspace);<a name="line.241"></a>
+<span class="sourceLineNo">242</span>        newActor._tableau = null;<a name="line.242"></a>
+<span class="sourceLineNo">243</span>        newActor._effigy = null;<a name="line.243"></a>
+<span class="sourceLineNo">244</span>        return newActor;<a name="line.244"></a>
+<span class="sourceLineNo">245</span>    }<a name="line.245"></a>
+<span class="sourceLineNo">246</span><a name="line.246"></a>
+<span class="sourceLineNo">247</span>    /** Run a complete execution of the referenced model.  A complete<a name="line.247"></a>
+<span class="sourceLineNo">248</span>     *  execution consists of invocation of super.initialize(), repeated<a name="line.248"></a>
+<span class="sourceLineNo">249</span>     *  invocations of super.prefire(), super.fire(), and super.postfire(),<a name="line.249"></a>
+<span class="sourceLineNo">250</span>     *  followed by super.wrapup().  The invocations of prefire(), fire(),<a name="line.250"></a>
+<span class="sourceLineNo">251</span>     *  and postfire() are repeated until either the model indicates it<a name="line.251"></a>
+<span class="sourceLineNo">252</span>     *  is not ready to execute (prefire() returns false), or it requests<a name="line.252"></a>
+<span class="sourceLineNo">253</span>     *  a stop (postfire() returns false or stop() is called).<a name="line.253"></a>
+<span class="sourceLineNo">254</span>     *  Before running the complete execution, this method examines input<a name="line.254"></a>
+<span class="sourceLineNo">255</span>     *  ports, and if they are connected, have data, and if the referenced<a name="line.255"></a>
+<span class="sourceLineNo">256</span>     *  model has a top-level parameter with the same name, then one token<a name="line.256"></a>
+<span class="sourceLineNo">257</span>     *  is read from the input port and used to set the value of the<a name="line.257"></a>
+<span class="sourceLineNo">258</span>     *  parameter in the referenced model.<a name="line.258"></a>
+<span class="sourceLineNo">259</span>     *  After running the complete execution, if there are any output ports,<a name="line.259"></a>
+<span class="sourceLineNo">260</span>     *  then this method looks for top-level parameters in the referenced<a name="line.260"></a>
+<span class="sourceLineNo">261</span>     *  model with the same name as the output ports, and if there are any,<a name="line.261"></a>
+<span class="sourceLineNo">262</span>     *  reads their values and produces them on the output.<a name="line.262"></a>
+<span class="sourceLineNo">263</span>     *  If no model has been specified, then this method does nothing.<a name="line.263"></a>
+<span class="sourceLineNo">264</span>     *  @exception IllegalActionException If there is no director, or if<a name="line.264"></a>
+<span class="sourceLineNo">265</span>     *   the director's action methods throw it.<a name="line.265"></a>
+<span class="sourceLineNo">266</span>     */<a name="line.266"></a>
+<span class="sourceLineNo">267</span>    @Override<a name="line.267"></a>
+<span class="sourceLineNo">268</span>    public void fire() throws IllegalActionException {<a name="line.268"></a>
+<span class="sourceLineNo">269</span>        // NOTE: Even though the superclass calls this, we have to<a name="line.269"></a>
+<span class="sourceLineNo">270</span>        // call it here before the actions below. Regrettably,<a name="line.270"></a>
+<span class="sourceLineNo">271</span>        // this requires disabling the call in the superclass<a name="line.271"></a>
+<span class="sourceLineNo">272</span>        // because otherwise, if there are two pending input<a name="line.272"></a>
+<span class="sourceLineNo">273</span>        // tokens, they will both be consumed in this firing.<a name="line.273"></a>
+<span class="sourceLineNo">274</span>        _readInputsAndValidateSettables();<a name="line.274"></a>
+<span class="sourceLineNo">275</span>        _alreadyReadInputs = true;<a name="line.275"></a>
+<span class="sourceLineNo">276</span><a name="line.276"></a>
+<span class="sourceLineNo">277</span>        if (_model instanceof CompositeActor) {<a name="line.277"></a>
+<span class="sourceLineNo">278</span>            // Will need the effigy for the model this actor is in.<a name="line.278"></a>
+<span class="sourceLineNo">279</span>            NamedObj toplevel = toplevel();<a name="line.279"></a>
+<span class="sourceLineNo">280</span>            final Effigy myEffigy = Configuration.findEffigy(toplevel);<a name="line.280"></a>
+<span class="sourceLineNo">281</span><a name="line.281"></a>
+<span class="sourceLineNo">282</span>            // If there is no such effigy, then skip trying to open a tableau.<a name="line.282"></a>
+<span class="sourceLineNo">283</span>            // The model may have no graphical elements.<a name="line.283"></a>
+<span class="sourceLineNo">284</span>            if (myEffigy != null) {<a name="line.284"></a>
+<span class="sourceLineNo">285</span>                try {<a name="line.285"></a>
+<span class="sourceLineNo">286</span>                    // Conditionally show the model in Vergil. The openModel()<a name="line.286"></a>
+<span class="sourceLineNo">287</span>                    // method also creates the right effigy.<a name="line.287"></a>
+<span class="sourceLineNo">288</span>                    if (_openOnFiringValue == _OPEN_IN_VERGIL<a name="line.288"></a>
+<span class="sourceLineNo">289</span>                            || _openOnFiringValue == _OPEN_IN_VERGIL_FULL_SCREEN) {<a name="line.289"></a>
+<span class="sourceLineNo">290</span>                        // NOTE: The opening must occur in the event thread.<a name="line.290"></a>
+<span class="sourceLineNo">291</span>                        // Regrettably, we cannot continue with the firing until<a name="line.291"></a>
+<span class="sourceLineNo">292</span>                        // the open is complete, so we use the very dangerous<a name="line.292"></a>
+<span class="sourceLineNo">293</span>                        // invokeAndWait() method.<a name="line.293"></a>
+<span class="sourceLineNo">294</span>                        Runnable doOpen = new Runnable() {<a name="line.294"></a>
+<span class="sourceLineNo">295</span>                            @Override<a name="line.295"></a>
+<span class="sourceLineNo">296</span>                            public void run() {<a name="line.296"></a>
+<span class="sourceLineNo">297</span>                                Configuration configuration = (Configuration) myEffigy<a name="line.297"></a>
+<span class="sourceLineNo">298</span>                                        .toplevel();<a name="line.298"></a>
+<span class="sourceLineNo">299</span><a name="line.299"></a>
+<span class="sourceLineNo">300</span>                                if (_debugging) {<a name="line.300"></a>
+<span class="sourceLineNo">301</span>                                    _debug("** Using the configuration to open a tableau.");<a name="line.301"></a>
+<span class="sourceLineNo">302</span>                                }<a name="line.302"></a>
+<span class="sourceLineNo">303</span><a name="line.303"></a>
+<span class="sourceLineNo">304</span>                                try {<a name="line.304"></a>
+<span class="sourceLineNo">305</span>                                    // NOTE: Executing this in the event thread averts<a name="line.305"></a>
+<span class="sourceLineNo">306</span>                                    // a race condition... Previous close(), which was<a name="line.306"></a>
+<span class="sourceLineNo">307</span>                                    // deferred to the UI thread, will have completed.<a name="line.307"></a>
+<span class="sourceLineNo">308</span>                                    _exception = null;<a name="line.308"></a>
+<span class="sourceLineNo">309</span>                                    _tableau = configuration.openModel(_model,<a name="line.309"></a>
+<span class="sourceLineNo">310</span>                                            myEffigy);<a name="line.310"></a>
+<span class="sourceLineNo">311</span><a name="line.311"></a>
+<span class="sourceLineNo">312</span>                                    // Set this tableau to be a master so that when it<a name="line.312"></a>
+<span class="sourceLineNo">313</span>                                    // gets closed, all its subwindows get closed.<a name="line.313"></a>
+<span class="sourceLineNo">314</span>                                    _tableau.setMaster(true);<a name="line.314"></a>
+<span class="sourceLineNo">315</span>                                } catch (KernelException e) {<a name="line.315"></a>
+<span class="sourceLineNo">316</span>                                    // Record the exception for later reporting.<a name="line.316"></a>
+<span class="sourceLineNo">317</span>                                    _exception = e;<a name="line.317"></a>
+<span class="sourceLineNo">318</span>                                }<a name="line.318"></a>
+<span class="sourceLineNo">319</span><a name="line.319"></a>
+<span class="sourceLineNo">320</span>                                if (_tableau != null) {<a name="line.320"></a>
+<span class="sourceLineNo">321</span>                                    _tableau.show();<a name="line.321"></a>
+<span class="sourceLineNo">322</span><a name="line.322"></a>
+<span class="sourceLineNo">323</span>                                    JFrame frame = _tableau.getFrame();<a name="line.323"></a>
+<span class="sourceLineNo">324</span><a name="line.324"></a>
+<span class="sourceLineNo">325</span>                                    if (frame != null) {<a name="line.325"></a>
+<span class="sourceLineNo">326</span>                                        if (_openOnFiringValue == _OPEN_IN_VERGIL_FULL_SCREEN) {<a name="line.326"></a>
+<span class="sourceLineNo">327</span>                                            if (frame instanceof ExtendedGraphFrame) {<a name="line.327"></a>
+<span class="sourceLineNo">328</span>                                                ((ExtendedGraphFrame) frame)<a name="line.328"></a>
+<span class="sourceLineNo">329</span>                                                        .fullScreen();<a name="line.329"></a>
+<span class="sourceLineNo">330</span>                                            }<a name="line.330"></a>
+<span class="sourceLineNo">331</span>                                        }<a name="line.331"></a>
+<span class="sourceLineNo">332</span><a name="line.332"></a>
+<span class="sourceLineNo">333</span>                                        frame.toFront();<a name="line.333"></a>
+<span class="sourceLineNo">334</span>                                    }<a name="line.334"></a>
+<span class="sourceLineNo">335</span>                                }<a name="line.335"></a>
+<span class="sourceLineNo">336</span>                            }<a name="line.336"></a>
+<span class="sourceLineNo">337</span>                        };<a name="line.337"></a>
+<span class="sourceLineNo">338</span><a name="line.338"></a>
+<span class="sourceLineNo">339</span>                        try {<a name="line.339"></a>
+<span class="sourceLineNo">340</span>                            if (!SwingUtilities.isEventDispatchThread()) {<a name="line.340"></a>
+<span class="sourceLineNo">341</span>                                SwingUtilities.invokeAndWait(doOpen);<a name="line.341"></a>
+<span class="sourceLineNo">342</span>                            } else {<a name="line.342"></a>
+<span class="sourceLineNo">343</span>                                // Exporting HTML for ptolemy/actor/lib/hoc/demo/ModelReference/ModelReference.xml<a name="line.343"></a>
+<span class="sourceLineNo">344</span>                                // ends up running this in the Swing event dispatch thread.<a name="line.344"></a>
+<span class="sourceLineNo">345</span>                                doOpen.run();<a name="line.345"></a>
+<span class="sourceLineNo">346</span>                            }<a name="line.346"></a>
+<span class="sourceLineNo">347</span><a name="line.347"></a>
+<span class="sourceLineNo">348</span>                        } catch (Exception ex) {<a name="line.348"></a>
+<span class="sourceLineNo">349</span>                            throw new IllegalActionException(this, null, ex,<a name="line.349"></a>
+<span class="sourceLineNo">350</span>                                    "Open failed.");<a name="line.350"></a>
+<span class="sourceLineNo">351</span>                        }<a name="line.351"></a>
+<span class="sourceLineNo">352</span><a name="line.352"></a>
+<span class="sourceLineNo">353</span>                        if (_exception != null) {<a name="line.353"></a>
+<span class="sourceLineNo">354</span>                            // An exception occurred while trying to open.<a name="line.354"></a>
+<span class="sourceLineNo">355</span>                            throw new IllegalActionException(this, null,<a name="line.355"></a>
+<span class="sourceLineNo">356</span>                                    _exception, "Failed to open.");<a name="line.356"></a>
+<span class="sourceLineNo">357</span>                        }<a name="line.357"></a>
+<span class="sourceLineNo">358</span>                    } else {<a name="line.358"></a>
+<span class="sourceLineNo">359</span><a name="line.359"></a>
+<span class="sourceLineNo">360</span>                        // Need an effigy for the model, or else<a name="line.360"></a>
+<span class="sourceLineNo">361</span>                        // graphical elements of the model will not<a name="line.361"></a>
+<span class="sourceLineNo">362</span>                        // work properly.  That effigy needs to be<a name="line.362"></a>
+<span class="sourceLineNo">363</span>                        // contained by the effigy responsible for<a name="line.363"></a>
+<span class="sourceLineNo">364</span>                        // this actor.<a name="line.364"></a>
+<span class="sourceLineNo">365</span><a name="line.365"></a>
+<span class="sourceLineNo">366</span>                        if (_effigy == null) {<a name="line.366"></a>
+<span class="sourceLineNo">367</span>                            _effigy = new PtolemyEffigy(myEffigy,<a name="line.367"></a>
+<span class="sourceLineNo">368</span>                                    myEffigy.uniqueName(_model.getName()));<a name="line.368"></a>
+<span class="sourceLineNo">369</span>                            _effigy.setModel(_model);<a name="line.369"></a>
+<span class="sourceLineNo">370</span><a name="line.370"></a>
+<span class="sourceLineNo">371</span>                            // Since there is no tableau, this is probably not<a name="line.371"></a>
+<span class="sourceLineNo">372</span>                            // necessary, but as a safety precaution, we prevent<a name="line.372"></a>
+<span class="sourceLineNo">373</span>                            // writing of the model.<a name="line.373"></a>
+<span class="sourceLineNo">374</span>                            _effigy.setModifiable(false);<a name="line.374"></a>
+<span class="sourceLineNo">375</span><a name="line.375"></a>
+<span class="sourceLineNo">376</span>                            if (_debugging) {<a name="line.376"></a>
+<span class="sourceLineNo">377</span>                                _debug("** Created new effigy for referenced model.");<a name="line.377"></a>
+<span class="sourceLineNo">378</span>                            }<a name="line.378"></a>
+<span class="sourceLineNo">379</span>                        }<a name="line.379"></a>
+<span class="sourceLineNo">380</span>                    }<a name="line.380"></a>
+<span class="sourceLineNo">381</span>                } catch (NameDuplicationException ex) {<a name="line.381"></a>
+<span class="sourceLineNo">382</span>                    // This should not be thrown.<a name="line.382"></a>
+<span class="sourceLineNo">383</span>                    throw new InternalErrorException(ex);<a name="line.383"></a>
+<span class="sourceLineNo">384</span>                }<a name="line.384"></a>
+<span class="sourceLineNo">385</span>            }<a name="line.385"></a>
+<span class="sourceLineNo">386</span>        }<a name="line.386"></a>
+<span class="sourceLineNo">387</span><a name="line.387"></a>
+<span class="sourceLineNo">388</span>        // Call this last so that we open before executing.<a name="line.388"></a>
+<span class="sourceLineNo">389</span>        super.fire();<a name="line.389"></a>
+<span class="sourceLineNo">390</span>    }<a name="line.390"></a>
+<span class="sourceLineNo">391</span><a name="line.391"></a>
+<span class="sourceLineNo">392</span>    /** Override the base class to perform requested close on postfire actions.<a name="line.392"></a>
+<span class="sourceLineNo">393</span>     *  Note that if a close is requested, then this method waits until the<a name="line.393"></a>
+<span class="sourceLineNo">394</span>     *  AWT event thread completes the close.  This creates the possibility<a name="line.394"></a>
+<span class="sourceLineNo">395</span>     *  of a deadlock.<a name="line.395"></a>
+<span class="sourceLineNo">396</span>     *  @return Whatever the superclass returns (probably true).<a name="line.396"></a>
+<span class="sourceLineNo">397</span>     *  @exception IllegalActionException Thrown if a parent class throws it.<a name="line.397"></a>
+<span class="sourceLineNo">398</span>     */<a name="line.398"></a>
+<span class="sourceLineNo">399</span>    @Override<a name="line.399"></a>
+<span class="sourceLineNo">400</span>    public boolean postfire() throws IllegalActionException {<a name="line.400"></a>
+<span class="sourceLineNo">401</span>        // Call this first so execution stops before closing.<a name="line.401"></a>
+<span class="sourceLineNo">402</span>        boolean result = super.postfire();<a name="line.402"></a>
+<span class="sourceLineNo">403</span><a name="line.403"></a>
+<span class="sourceLineNo">404</span>        if (_tableau != null) {<a name="line.404"></a>
+<span class="sourceLineNo">405</span>            final JFrame frame = _tableau.getFrame();<a name="line.405"></a>
+<span class="sourceLineNo">406</span><a name="line.406"></a>
+<span class="sourceLineNo">407</span>            if (_closeOnPostfireValue == _CLOSE_VERGIL_GRAPH) {<a name="line.407"></a>
+<span class="sourceLineNo">408</span>                if (_debugging) {<a name="line.408"></a>
+<span class="sourceLineNo">409</span>                    _debug("** Closing Vergil graph.");<a name="line.409"></a>
+<span class="sourceLineNo">410</span>                }<a name="line.410"></a>
+<span class="sourceLineNo">411</span><a name="line.411"></a>
+<span class="sourceLineNo">412</span>                if (frame instanceof TableauFrame) {<a name="line.412"></a>
+<span class="sourceLineNo">413</span>                    // NOTE: The closing will happen in the swing event<a name="line.413"></a>
+<span class="sourceLineNo">414</span>                    // thread.  We can proceed on the assumption<a name="line.414"></a>
+<span class="sourceLineNo">415</span>                    // that the next firing, if it opens vergil, will<a name="line.415"></a>
+<span class="sourceLineNo">416</span>                    // do so in the event thread.<a name="line.416"></a>
+<span class="sourceLineNo">417</span>                    Runnable doClose = new Runnable() {<a name="line.417"></a>
+<span class="sourceLineNo">418</span>                        @Override<a name="line.418"></a>
+<span class="sourceLineNo">419</span>                        public void run() {<a name="line.419"></a>
+<span class="sourceLineNo">420</span>                            if (frame instanceof ExtendedGraphFrame) {<a name="line.420"></a>
+<span class="sourceLineNo">421</span>                                ((ExtendedGraphFrame) frame).cancelFullScreen();<a name="line.421"></a>
+<span class="sourceLineNo">422</span>                            }<a name="line.422"></a>
+<span class="sourceLineNo">423</span><a name="line.423"></a>
+<span class="sourceLineNo">424</span>                            ((TableauFrame) frame).close();<a name="line.424"></a>
+<span class="sourceLineNo">425</span>                        }<a name="line.425"></a>
+<span class="sourceLineNo">426</span>                    };<a name="line.426"></a>
+<span class="sourceLineNo">427</span><a name="line.427"></a>
+<span class="sourceLineNo">428</span>                    Top.deferIfNecessary(doClose);<a name="line.428"></a>
+<span class="sourceLineNo">429</span>                } else if (frame != null) {<a name="line.429"></a>
+<span class="sourceLineNo">430</span>                    // This should be done in the event thread.<a name="line.430"></a>
+<span class="sourceLineNo">431</span>                    Runnable doClose = new Runnable() {<a name="line.431"></a>
+<span class="sourceLineNo">432</span>                        @Override<a name="line.432"></a>
+<span class="sourceLineNo">433</span>                        public void run() {<a name="line.433"></a>
+<span class="sourceLineNo">434</span>                            if (frame instanceof ExtendedGraphFrame) {<a name="line.434"></a>
+<span class="sourceLineNo">435</span>                                ((ExtendedGraphFrame) frame).cancelFullScreen();<a name="line.435"></a>
+<span class="sourceLineNo">436</span>                            }<a name="line.436"></a>
+<span class="sourceLineNo">437</span><a name="line.437"></a>
+<span class="sourceLineNo">438</span>                            frame.setVisible(true);<a name="line.438"></a>
+<span class="sourceLineNo">439</span>                        }<a name="line.439"></a>
+<span class="sourceLineNo">440</span>                    };<a name="line.440"></a>
+<span class="sourceLineNo">441</span><a name="line.441"></a>
+<span class="sourceLineNo">442</span>                    Top.deferIfNecessary(doClose);<a name="line.442"></a>
+<span class="sourceLineNo">443</span>                }<a name="line.443"></a>
+<span class="sourceLineNo">444</span>            }<a name="line.444"></a>
+<span class="sourceLineNo">445</span>        }<a name="line.445"></a>
+<span class="sourceLineNo">446</span><a name="line.446"></a>
+<span class="sourceLineNo">447</span>        return result;<a name="line.447"></a>
+<span class="sourceLineNo">448</span>    }<a name="line.448"></a>
+<span class="sourceLineNo">449</span><a name="line.449"></a>
+<span class="sourceLineNo">450</span>    ///////////////////////////////////////////////////////////////////<a name="line.450"></a>
+<span class="sourceLineNo">451</span>    ////                         protected variables               ////<a name="line.451"></a>
+<span class="sourceLineNo">452</span><a name="line.452"></a>
+<span class="sourceLineNo">453</span>    /** Tableau that has been created (if any). */<a name="line.453"></a>
+<span class="sourceLineNo">454</span>    protected Tableau _tableau;<a name="line.454"></a>
+<span class="sourceLineNo">455</span><a name="line.455"></a>
+<span class="sourceLineNo">456</span>    ///////////////////////////////////////////////////////////////////<a name="line.456"></a>
+<span class="sourceLineNo">457</span>    ////                         private variables                 ////<a name="line.457"></a>
+<span class="sourceLineNo">458</span><a name="line.458"></a>
+<span class="sourceLineNo">459</span>    // Possible values for openOnFiring.<a name="line.459"></a>
+<span class="sourceLineNo">460</span>    private static int _DO_NOT_OPEN = 0;<a name="line.460"></a>
+<span class="sourceLineNo">461</span>    private static int _OPEN_IN_VERGIL = 1;<a name="line.461"></a>
+<span class="sourceLineNo">462</span>    private static int _OPEN_IN_VERGIL_FULL_SCREEN = 2;<a name="line.462"></a>
+<span class="sourceLineNo">463</span><a name="line.463"></a>
+<span class="sourceLineNo">464</span>    /** The value of the openOnFiring parameter. */<a name="line.464"></a>
+<span class="sourceLineNo">465</span>    private transient int _openOnFiringValue = _DO_NOT_OPEN;<a name="line.465"></a>
+<span class="sourceLineNo">466</span><a name="line.466"></a>
+<span class="sourceLineNo">467</span>    // Possible values for closeOnPostfire.<a name="line.467"></a>
+<span class="sourceLineNo">468</span>    private static int _DO_NOTHING = 0;<a name="line.468"></a>
+<span class="sourceLineNo">469</span><a name="line.469"></a>
+<span class="sourceLineNo">470</span>    private static int _CLOSE_VERGIL_GRAPH = 1;<a name="line.470"></a>
+<span class="sourceLineNo">471</span><a name="line.471"></a>
+<span class="sourceLineNo">472</span>    /** The value of the closeOnPostfire parameter. */<a name="line.472"></a>
+<span class="sourceLineNo">473</span>    private transient int _closeOnPostfireValue = _DO_NOTHING;<a name="line.473"></a>
+<span class="sourceLineNo">474</span><a name="line.474"></a>
+<span class="sourceLineNo">475</span>    /** Store exception thrown in event thread. */<a name="line.475"></a>
+<span class="sourceLineNo">476</span>    private Exception _exception = null;<a name="line.476"></a>
+<span class="sourceLineNo">477</span><a name="line.477"></a>
+<span class="sourceLineNo">478</span>    /** Effigy that has been created (if any). */<a name="line.478"></a>
+<span class="sourceLineNo">479</span>    private PtolemyEffigy _effigy;<a name="line.479"></a>
+<span class="sourceLineNo">480</span><a name="line.480"></a>
+<span class="sourceLineNo">481</span>    ///////////////////////////////////////////////////////////////////<a name="line.481"></a>
+<span class="sourceLineNo">482</span>    ////                         inner classes                     ////<a name="line.482"></a>
+<span class="sourceLineNo">483</span><a name="line.483"></a>
+<span class="sourceLineNo">484</span>    /** A tableau factory to override the look inside behavior to open<a name="line.484"></a>
+<span class="sourceLineNo">485</span>     *  the referenced model, if there is one.<a name="line.485"></a>
+<span class="sourceLineNo">486</span>     */<a name="line.486"></a>
+<span class="sourceLineNo">487</span>    public class LookInside extends TableauFactory {<a name="line.487"></a>
+<span class="sourceLineNo">488</span>        /**<a name="line.488"></a>
+<span class="sourceLineNo">489</span>         * Construct a VisualModelReference$LookInside object.<a name="line.489"></a>
+<span class="sourceLineNo">490</span>         *<a name="line.490"></a>
+<span class="sourceLineNo">491</span>         * @param container The container of the LookInside to be constructed.<a name="line.491"></a>
+<span class="sourceLineNo">492</span>         * @param name The name of the LookInside to be constructed.<a name="line.492"></a>
+<span class="sourceLineNo">493</span>         * @exception IllegalActionException If thrown by the superclass.<a name="line.493"></a>
+<span class="sourceLineNo">494</span>         * @exception NameDuplicationException If thrown by the superclass.<a name="line.494"></a>
+<span class="sourceLineNo">495</span>         */<a name="line.495"></a>
+<span class="sourceLineNo">496</span>        public LookInside(NamedObj container, String name)<a name="line.496"></a>
+<span class="sourceLineNo">497</span>                throws IllegalActionException, NameDuplicationException {<a name="line.497"></a>
+<span class="sourceLineNo">498</span>            super(container, name);<a name="line.498"></a>
+<span class="sourceLineNo">499</span>        }<a name="line.499"></a>
+<span class="sourceLineNo">500</span><a name="line.500"></a>
+<span class="sourceLineNo">501</span>        /** Open an instance of the model.<a name="line.501"></a>
+<span class="sourceLineNo">502</span>         *  @param effigy The effigy with which we open the model.<a name="line.502"></a>
+<span class="sourceLineNo">503</span>         *  @return The instance of the model.<a name="line.503"></a>
+<span class="sourceLineNo">504</span>         *  @exception Exception If there is a problem opening the<a name="line.504"></a>
+<span class="sourceLineNo">505</span>         *  model.<a name="line.505"></a>
+<span class="sourceLineNo">506</span>         */<a name="line.506"></a>
+<span class="sourceLineNo">507</span>        @Override<a name="line.507"></a>
+<span class="sourceLineNo">508</span>        public Tableau createTableau(Effigy effigy) throws Exception {<a name="line.508"></a>
+<span class="sourceLineNo">509</span>            if (_model == null) {<a name="line.509"></a>
+<span class="sourceLineNo">510</span>                throw new IllegalActionException(VisualModelReference.this,<a name="line.510"></a>
+<span class="sourceLineNo">511</span>                        "No model referenced.");<a name="line.511"></a>
+<span class="sourceLineNo">512</span>            }<a name="line.512"></a>
+<span class="sourceLineNo">513</span>            Configuration configuration = (Configuration) effigy.toplevel();<a name="line.513"></a>
+<span class="sourceLineNo">514</span>            return configuration.openInstance(_model, effigy);<a name="line.514"></a>
+<span class="sourceLineNo">515</span>        }<a name="line.515"></a>
+<span class="sourceLineNo">516</span>    }<a name="line.516"></a>
+<span class="sourceLineNo">517</span>}<a name="line.517"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

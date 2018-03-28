@@ -1,0 +1,820 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../stylesheet.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>/* A utility class to infer the width of relations that don't specify the width<a name="line.1"></a>
+<span class="sourceLineNo">002</span><a name="line.2"></a>
+<span class="sourceLineNo">003</span>Copyright (c) 2008-2015 The Regents of the University of California.<a name="line.3"></a>
+<span class="sourceLineNo">004</span>All rights reserved.<a name="line.4"></a>
+<span class="sourceLineNo">005</span>Permission is hereby granted, without written agreement and without<a name="line.5"></a>
+<span class="sourceLineNo">006</span>license or royalty fees, to use, copy, modify, and distribute this<a name="line.6"></a>
+<span class="sourceLineNo">007</span>software and its documentation for any purpose, provided that the above<a name="line.7"></a>
+<span class="sourceLineNo">008</span>copyright notice and the following two paragraphs appear in all copies<a name="line.8"></a>
+<span class="sourceLineNo">009</span>of this software.<a name="line.9"></a>
+<span class="sourceLineNo">010</span><a name="line.10"></a>
+<span class="sourceLineNo">011</span>IN NO EVENT SHALL THE UNIVERSITY OF CALIFORNIA BE LIABLE TO ANY PARTY<a name="line.11"></a>
+<span class="sourceLineNo">012</span>FOR DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES<a name="line.12"></a>
+<span class="sourceLineNo">013</span>ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION, EVEN IF<a name="line.13"></a>
+<span class="sourceLineNo">014</span>THE UNIVERSITY OF CALIFORNIA HAS BEEN ADVISED OF THE POSSIBILITY OF<a name="line.14"></a>
+<span class="sourceLineNo">015</span>SUCH DAMAGE.<a name="line.15"></a>
+<span class="sourceLineNo">016</span><a name="line.16"></a>
+<span class="sourceLineNo">017</span>THE UNIVERSITY OF CALIFORNIA SPECIFICALLY DISCLAIMS ANY WARRANTIES,<a name="line.17"></a>
+<span class="sourceLineNo">018</span>INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF<a name="line.18"></a>
+<span class="sourceLineNo">019</span>MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE<a name="line.19"></a>
+<span class="sourceLineNo">020</span>PROVIDED HEREUNDER IS ON AN "AS IS" BASIS, AND THE UNIVERSITY OF<a name="line.20"></a>
+<span class="sourceLineNo">021</span>CALIFORNIA HAS NO OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT, UPDATES,<a name="line.21"></a>
+<span class="sourceLineNo">022</span>ENHANCEMENTS, OR MODIFICATIONS.<a name="line.22"></a>
+<span class="sourceLineNo">023</span><a name="line.23"></a>
+<span class="sourceLineNo">024</span>PT_COPYRIGHT_VERSION_2<a name="line.24"></a>
+<span class="sourceLineNo">025</span>COPYRIGHTENDKEY<a name="line.25"></a>
+<span class="sourceLineNo">026</span><a name="line.26"></a>
+<span class="sourceLineNo">027</span> */<a name="line.27"></a>
+<span class="sourceLineNo">028</span><a name="line.28"></a>
+<span class="sourceLineNo">029</span>package ptolemy.actor;<a name="line.29"></a>
+<span class="sourceLineNo">030</span><a name="line.30"></a>
+<span class="sourceLineNo">031</span>import java.util.Date;<a name="line.31"></a>
+<span class="sourceLineNo">032</span>import java.util.HashSet;<a name="line.32"></a>
+<span class="sourceLineNo">033</span>import java.util.Iterator;<a name="line.33"></a>
+<span class="sourceLineNo">034</span>import java.util.LinkedList;<a name="line.34"></a>
+<span class="sourceLineNo">035</span>import java.util.List;<a name="line.35"></a>
+<span class="sourceLineNo">036</span>import java.util.Set;<a name="line.36"></a>
+<span class="sourceLineNo">037</span><a name="line.37"></a>
+<span class="sourceLineNo">038</span>import ptolemy.data.BooleanToken;<a name="line.38"></a>
+<span class="sourceLineNo">039</span>import ptolemy.data.Token;<a name="line.39"></a>
+<span class="sourceLineNo">040</span>import ptolemy.data.expr.ModelScope;<a name="line.40"></a>
+<span class="sourceLineNo">041</span>import ptolemy.kernel.ComponentRelation;<a name="line.41"></a>
+<span class="sourceLineNo">042</span>import ptolemy.kernel.util.IllegalActionException;<a name="line.42"></a>
+<span class="sourceLineNo">043</span>import ptolemy.kernel.util.NamedObj;<a name="line.43"></a>
+<span class="sourceLineNo">044</span><a name="line.44"></a>
+<span class="sourceLineNo">045</span>///////////////////////////////////////////////////////////////////<a name="line.45"></a>
+<span class="sourceLineNo">046</span>////RelationWidthInference<a name="line.46"></a>
+<span class="sourceLineNo">047</span><a name="line.47"></a>
+<span class="sourceLineNo">048</span>/**<a name="line.48"></a>
+<span class="sourceLineNo">049</span>A class that offers convenience utility methods to infer the widths of<a name="line.49"></a>
+<span class="sourceLineNo">050</span>relations in a composite actor.<a name="line.50"></a>
+<span class="sourceLineNo">051</span><a name="line.51"></a>
+<span class="sourceLineNo">052</span><a name="line.52"></a>
+<span class="sourceLineNo">053</span>@author Bert Rodiers<a name="line.53"></a>
+<span class="sourceLineNo">054</span>@version $Id$<a name="line.54"></a>
+<span class="sourceLineNo">055</span>@since Ptolemy II 8.0<a name="line.55"></a>
+<span class="sourceLineNo">056</span>@Pt.ProposedRating Red (rodiers)<a name="line.56"></a>
+<span class="sourceLineNo">057</span> */<a name="line.57"></a>
+<span class="sourceLineNo">058</span><a name="line.58"></a>
+<span class="sourceLineNo">059</span>public class RelationWidthInference {<a name="line.59"></a>
+<span class="sourceLineNo">060</span><a name="line.60"></a>
+<span class="sourceLineNo">061</span>    ///////////////////////////////////////////////////////////////////<a name="line.61"></a>
+<span class="sourceLineNo">062</span>    ////                         public methods                    ////<a name="line.62"></a>
+<span class="sourceLineNo">063</span><a name="line.63"></a>
+<span class="sourceLineNo">064</span>    /**<a name="line.64"></a>
+<span class="sourceLineNo">065</span>     * Create RelationWidthInference, the algorithm for width inference.<a name="line.65"></a>
+<span class="sourceLineNo">066</span>     * Also set the top level to the value given as argument.<a name="line.66"></a>
+<span class="sourceLineNo">067</span>     * @param topLevel The top level CompositeActor.<a name="line.67"></a>
+<span class="sourceLineNo">068</span>     * @exception IllegalArgumentException If the specified actor is not the<a name="line.68"></a>
+<span class="sourceLineNo">069</span>     *   top level container. That is, its container is not null.<a name="line.69"></a>
+<span class="sourceLineNo">070</span>     */<a name="line.70"></a>
+<span class="sourceLineNo">071</span>    public RelationWidthInference(CompositeActor topLevel) {<a name="line.71"></a>
+<span class="sourceLineNo">072</span><a name="line.72"></a>
+<span class="sourceLineNo">073</span>        if (topLevel == null) {<a name="line.73"></a>
+<span class="sourceLineNo">074</span>            throw new IllegalArgumentException(<a name="line.74"></a>
+<span class="sourceLineNo">075</span>                    "The toplevel should not be a null pointer.");<a name="line.75"></a>
+<span class="sourceLineNo">076</span>        }<a name="line.76"></a>
+<span class="sourceLineNo">077</span><a name="line.77"></a>
+<span class="sourceLineNo">078</span>        _topLevel = topLevel;<a name="line.78"></a>
+<span class="sourceLineNo">079</span>    }<a name="line.79"></a>
+<span class="sourceLineNo">080</span><a name="line.80"></a>
+<span class="sourceLineNo">081</span>    /** Determine whether widths are currently being inferred or not.<a name="line.81"></a>
+<span class="sourceLineNo">082</span>     *  @return True When widths are currently being inferred.<a name="line.82"></a>
+<span class="sourceLineNo">083</span>     */<a name="line.83"></a>
+<span class="sourceLineNo">084</span>    public boolean inferringWidths() {<a name="line.84"></a>
+<span class="sourceLineNo">085</span>        return _inferringWidths;<a name="line.85"></a>
+<span class="sourceLineNo">086</span>    }<a name="line.86"></a>
+<span class="sourceLineNo">087</span><a name="line.87"></a>
+<span class="sourceLineNo">088</span>    /**<a name="line.88"></a>
+<span class="sourceLineNo">089</span>     *  Infer the width of the relations for which no width has been<a name="line.89"></a>
+<span class="sourceLineNo">090</span>     *  specified yet.<a name="line.90"></a>
+<span class="sourceLineNo">091</span>     *  The specified actor must be the top level container of the model.<a name="line.91"></a>
+<span class="sourceLineNo">092</span>     *  @exception IllegalActionException If the widths of the relations at port are not consistent<a name="line.92"></a>
+<span class="sourceLineNo">093</span>     *                  or if the width cannot be inferred for a relation.<a name="line.93"></a>
+<span class="sourceLineNo">094</span>     */<a name="line.94"></a>
+<span class="sourceLineNo">095</span>    public void inferWidths() throws IllegalActionException {<a name="line.95"></a>
+<span class="sourceLineNo">096</span>        if (_needsWidthInference) {<a name="line.96"></a>
+<span class="sourceLineNo">097</span>            // Extra test for compositeActor != null since when the manager is changed<a name="line.97"></a>
+<span class="sourceLineNo">098</span>            // the old manager gets a null pointer as compositeActor.<a name="line.98"></a>
+<span class="sourceLineNo">099</span>            // Afterwards width inference should not be done anymore on this manager<a name="line.99"></a>
+<span class="sourceLineNo">100</span>            // (this will throw a null pointer exception since _topLevel will be set to null).<a name="line.100"></a>
+<span class="sourceLineNo">101</span>            if (_topLevel.getContainer() instanceof CompositeActor) {<a name="line.101"></a>
+<span class="sourceLineNo">102</span>                throw new IllegalArgumentException(<a name="line.102"></a>
+<span class="sourceLineNo">103</span>                        "Width inference failed: The specified actor is "<a name="line.103"></a>
+<span class="sourceLineNo">104</span>                                + "not the top level container.");<a name="line.104"></a>
+<span class="sourceLineNo">105</span>            }<a name="line.105"></a>
+<span class="sourceLineNo">106</span>            final boolean logTimings = false;<a name="line.106"></a>
+<span class="sourceLineNo">107</span>            boolean checkConsistencyAtMultiport = true;<a name="line.107"></a>
+<span class="sourceLineNo">108</span><a name="line.108"></a>
+<span class="sourceLineNo">109</span>            {<a name="line.109"></a>
+<span class="sourceLineNo">110</span>                Token checkConsistency = ModelScope.preferenceValue(_topLevel,<a name="line.110"></a>
+<span class="sourceLineNo">111</span>                        "_checkWidthConsistencyAtMultiports");<a name="line.111"></a>
+<span class="sourceLineNo">112</span>                if (checkConsistency instanceof BooleanToken) {<a name="line.112"></a>
+<span class="sourceLineNo">113</span>                    checkConsistencyAtMultiport = ((BooleanToken) checkConsistency)<a name="line.113"></a>
+<span class="sourceLineNo">114</span>                            .booleanValue();<a name="line.114"></a>
+<span class="sourceLineNo">115</span>                }<a name="line.115"></a>
+<span class="sourceLineNo">116</span>            }<a name="line.116"></a>
+<span class="sourceLineNo">117</span>            boolean checkWidthConstraints = true;<a name="line.117"></a>
+<span class="sourceLineNo">118</span><a name="line.118"></a>
+<span class="sourceLineNo">119</span>            {<a name="line.119"></a>
+<span class="sourceLineNo">120</span>                Token checkConstraints = ModelScope.preferenceValue(_topLevel,<a name="line.120"></a>
+<span class="sourceLineNo">121</span>                        "_checkWidthConstraints");<a name="line.121"></a>
+<span class="sourceLineNo">122</span>                if (checkConstraints instanceof BooleanToken) {<a name="line.122"></a>
+<span class="sourceLineNo">123</span>                    checkWidthConstraints = ((BooleanToken) checkConstraints)<a name="line.123"></a>
+<span class="sourceLineNo">124</span>                            .booleanValue();<a name="line.124"></a>
+<span class="sourceLineNo">125</span>                }<a name="line.125"></a>
+<span class="sourceLineNo">126</span>            }<a name="line.126"></a>
+<span class="sourceLineNo">127</span><a name="line.127"></a>
+<span class="sourceLineNo">128</span>            long startTime = 0L;<a name="line.128"></a>
+<span class="sourceLineNo">129</span>            // FindBugs: avoid dead local store.<a name="line.129"></a>
+<span class="sourceLineNo">130</span>            if (logTimings) {<a name="line.130"></a>
+<span class="sourceLineNo">131</span>                startTime = new Date().getTime();<a name="line.131"></a>
+<span class="sourceLineNo">132</span>            }<a name="line.132"></a>
+<span class="sourceLineNo">133</span><a name="line.133"></a>
+<span class="sourceLineNo">134</span>            try {<a name="line.134"></a>
+<span class="sourceLineNo">135</span>                _topLevel.workspace().getWriteAccess();<a name="line.135"></a>
+<span class="sourceLineNo">136</span>                _inferringWidths = true;<a name="line.136"></a>
+<span class="sourceLineNo">137</span><a name="line.137"></a>
+<span class="sourceLineNo">138</span>                Set&lt;ComponentRelation&gt; relationList = _topLevel<a name="line.138"></a>
+<span class="sourceLineNo">139</span>                        .deepRelationSet();<a name="line.139"></a>
+<span class="sourceLineNo">140</span>                Set&lt;IORelation&gt; workingRelationSet = new HashSet&lt;IORelation&gt;();<a name="line.140"></a>
+<span class="sourceLineNo">141</span>                Set&lt;IOPort&gt; workingPortSet = new HashSet&lt;IOPort&gt;();<a name="line.141"></a>
+<span class="sourceLineNo">142</span>                Set&lt;IOPort&gt; workingDefaultPortSet = new HashSet&lt;IOPort&gt;();<a name="line.142"></a>
+<span class="sourceLineNo">143</span>                HashSet&lt;IORelation&gt; unspecifiedSet = new HashSet&lt;IORelation&gt;();<a name="line.143"></a>
+<span class="sourceLineNo">144</span>                HashSet&lt;IOPort&gt; portsToCheckConsistency = new HashSet&lt;IOPort&gt;();<a name="line.144"></a>
+<span class="sourceLineNo">145</span>                HashSet&lt;IOPort&gt; portsThatCanBeIngnoredForConsistencyCheck = new HashSet&lt;IOPort&gt;();<a name="line.145"></a>
+<span class="sourceLineNo">146</span><a name="line.146"></a>
+<span class="sourceLineNo">147</span>                for (ComponentRelation componentRelation : relationList) {<a name="line.147"></a>
+<span class="sourceLineNo">148</span>                    if (componentRelation instanceof IORelation) {<a name="line.148"></a>
+<span class="sourceLineNo">149</span>                        IORelation relation = (IORelation) componentRelation;<a name="line.149"></a>
+<span class="sourceLineNo">150</span>                        if (!relation._skipWidthInference()) {<a name="line.150"></a>
+<span class="sourceLineNo">151</span>                            if (relation.needsWidthInference()) {<a name="line.151"></a>
+<span class="sourceLineNo">152</span>                                unspecifiedSet.add(relation);<a name="line.152"></a>
+<span class="sourceLineNo">153</span>                            }<a name="line.153"></a>
+<span class="sourceLineNo">154</span>                            if (!relation.isWidthFixed()<a name="line.154"></a>
+<span class="sourceLineNo">155</span>                                    &amp;&amp; relation.needsWidthInference()) {<a name="line.155"></a>
+<span class="sourceLineNo">156</span>                                // If connected to non-multiports =&gt; the relation should be 1<a name="line.156"></a>
+<span class="sourceLineNo">157</span>                                List&lt;?&gt; linkedObjects = relation<a name="line.157"></a>
+<span class="sourceLineNo">158</span>                                        .linkedObjectsList();<a name="line.158"></a>
+<span class="sourceLineNo">159</span>                                // If there is no port linked to the relation, we<a name="line.159"></a>
+<span class="sourceLineNo">160</span>                                // declare the width of the relation to be zero.<a name="line.160"></a>
+<span class="sourceLineNo">161</span>                                // FIXME: If there is only one port, the width should<a name="line.161"></a>
+<span class="sourceLineNo">162</span>                                // also be zero. But there seem to be many tests that<a name="line.162"></a>
+<span class="sourceLineNo">163</span>                                // depend on it being non-zero.<a name="line.163"></a>
+<span class="sourceLineNo">164</span>                                if (linkedObjects.isEmpty()) {<a name="line.164"></a>
+<span class="sourceLineNo">165</span>                                    relation._setInferredWidth(0);<a name="line.165"></a>
+<span class="sourceLineNo">166</span>                                    workingRelationSet.add(relation);<a name="line.166"></a>
+<span class="sourceLineNo">167</span>                                } else {<a name="line.167"></a>
+<span class="sourceLineNo">168</span>                                    for (Object object : linkedObjects) {<a name="line.168"></a>
+<span class="sourceLineNo">169</span>                                        if (object instanceof IOPort) {<a name="line.169"></a>
+<span class="sourceLineNo">170</span>                                            IOPort port = (IOPort) object;<a name="line.170"></a>
+<span class="sourceLineNo">171</span><a name="line.171"></a>
+<span class="sourceLineNo">172</span>                                            if (!port.isMultiport()) {<a name="line.172"></a>
+<span class="sourceLineNo">173</span>                                                relation._setInferredWidth(1);<a name="line.173"></a>
+<span class="sourceLineNo">174</span>                                                workingRelationSet<a name="line.174"></a>
+<span class="sourceLineNo">175</span>                                                        .add(relation);<a name="line.175"></a>
+<span class="sourceLineNo">176</span>                                                break; //Break the for loop.<a name="line.176"></a>
+<span class="sourceLineNo">177</span>                                            } else {<a name="line.177"></a>
+<span class="sourceLineNo">178</span>                                                //Add known outside relations<a name="line.178"></a>
+<span class="sourceLineNo">179</span>                                                for (Object connectedRelationObject : port<a name="line.179"></a>
+<span class="sourceLineNo">180</span>                                                        .linkedRelationList()) {<a name="line.180"></a>
+<span class="sourceLineNo">181</span>                                                    IORelation connectedRelation = (IORelation) connectedRelationObject;<a name="line.181"></a>
+<span class="sourceLineNo">182</span>                                                    if (connectedRelation != null<a name="line.182"></a>
+<span class="sourceLineNo">183</span>                                                            &amp;&amp; connectedRelation<a name="line.183"></a>
+<span class="sourceLineNo">184</span>                                                                    .isWidthFixed()) {<a name="line.184"></a>
+<span class="sourceLineNo">185</span>                                                        workingRelationSet.add(<a name="line.185"></a>
+<span class="sourceLineNo">186</span>                                                                connectedRelation);<a name="line.186"></a>
+<span class="sourceLineNo">187</span>                                                    }<a name="line.187"></a>
+<span class="sourceLineNo">188</span>                                                }<a name="line.188"></a>
+<span class="sourceLineNo">189</span>                                                //Add known inside relations<a name="line.189"></a>
+<span class="sourceLineNo">190</span>                                                for (Object connectedRelationObject : port<a name="line.190"></a>
+<span class="sourceLineNo">191</span>                                                        .insideRelationList()) {<a name="line.191"></a>
+<span class="sourceLineNo">192</span>                                                    IORelation connectedRelation = (IORelation) connectedRelationObject;<a name="line.192"></a>
+<span class="sourceLineNo">193</span>                                                    if (connectedRelation != null<a name="line.193"></a>
+<span class="sourceLineNo">194</span>                                                            &amp;&amp; connectedRelation<a name="line.194"></a>
+<span class="sourceLineNo">195</span>                                                                    .isWidthFixed()) {<a name="line.195"></a>
+<span class="sourceLineNo">196</span>                                                        workingRelationSet.add(<a name="line.196"></a>
+<span class="sourceLineNo">197</span>                                                                connectedRelation);<a name="line.197"></a>
+<span class="sourceLineNo">198</span>                                                    }<a name="line.198"></a>
+<span class="sourceLineNo">199</span>                                                }<a name="line.199"></a>
+<span class="sourceLineNo">200</span>                                                if (port.hasWidthConstraints()) {<a name="line.200"></a>
+<span class="sourceLineNo">201</span>                                                    workingPortSet.add(port);<a name="line.201"></a>
+<span class="sourceLineNo">202</span>                                                }<a name="line.202"></a>
+<span class="sourceLineNo">203</span>                                                if (port.getDefaultWidth() &gt;= 0) {<a name="line.203"></a>
+<span class="sourceLineNo">204</span>                                                    workingDefaultPortSet<a name="line.204"></a>
+<span class="sourceLineNo">205</span>                                                            .add(port);<a name="line.205"></a>
+<span class="sourceLineNo">206</span>                                                }<a name="line.206"></a>
+<span class="sourceLineNo">207</span>                                            }<a name="line.207"></a>
+<span class="sourceLineNo">208</span>                                        }<a name="line.208"></a>
+<span class="sourceLineNo">209</span>                                    }<a name="line.209"></a>
+<span class="sourceLineNo">210</span>                                }<a name="line.210"></a>
+<span class="sourceLineNo">211</span>                            }<a name="line.211"></a>
+<span class="sourceLineNo">212</span>                        }<a name="line.212"></a>
+<span class="sourceLineNo">213</span>                    }<a name="line.213"></a>
+<span class="sourceLineNo">214</span>                }<a name="line.214"></a>
+<span class="sourceLineNo">215</span><a name="line.215"></a>
+<span class="sourceLineNo">216</span>                LinkedList&lt;IORelation&gt; workingRelationList = new LinkedList&lt;IORelation&gt;(<a name="line.216"></a>
+<span class="sourceLineNo">217</span>                        workingRelationSet);<a name="line.217"></a>
+<span class="sourceLineNo">218</span>                workingRelationSet = null;<a name="line.218"></a>
+<span class="sourceLineNo">219</span><a name="line.219"></a>
+<span class="sourceLineNo">220</span>                if (logTimings) {<a name="line.220"></a>
+<span class="sourceLineNo">221</span>                    System.out.println("Width inference - initialization: "<a name="line.221"></a>
+<span class="sourceLineNo">222</span>                            + (System.currentTimeMillis() - startTime)<a name="line.222"></a>
+<span class="sourceLineNo">223</span>                            + " ms.");<a name="line.223"></a>
+<span class="sourceLineNo">224</span>                }<a name="line.224"></a>
+<span class="sourceLineNo">225</span><a name="line.225"></a>
+<span class="sourceLineNo">226</span>                long afterinit = 0L;<a name="line.226"></a>
+<span class="sourceLineNo">227</span>                // FindBugs: avoid dead local store.<a name="line.227"></a>
+<span class="sourceLineNo">228</span>                if (logTimings) {<a name="line.228"></a>
+<span class="sourceLineNo">229</span>                    afterinit = new Date().getTime();<a name="line.229"></a>
+<span class="sourceLineNo">230</span>                }<a name="line.230"></a>
+<span class="sourceLineNo">231</span><a name="line.231"></a>
+<span class="sourceLineNo">232</span>                boolean continueInference = true;<a name="line.232"></a>
+<span class="sourceLineNo">233</span><a name="line.233"></a>
+<span class="sourceLineNo">234</span>                while (continueInference &amp;&amp; !unspecifiedSet.isEmpty()<a name="line.234"></a>
+<span class="sourceLineNo">235</span>                        &amp;&amp; (!workingPortSet.isEmpty()<a name="line.235"></a>
+<span class="sourceLineNo">236</span>                                || !workingRelationList.isEmpty()<a name="line.236"></a>
+<span class="sourceLineNo">237</span>                                || !workingDefaultPortSet.isEmpty())) {<a name="line.237"></a>
+<span class="sourceLineNo">238</span><a name="line.238"></a>
+<span class="sourceLineNo">239</span>                    while (!workingRelationList.isEmpty()<a name="line.239"></a>
+<span class="sourceLineNo">240</span>                            &amp;&amp; !unspecifiedSet.isEmpty()) {<a name="line.240"></a>
+<span class="sourceLineNo">241</span><a name="line.241"></a>
+<span class="sourceLineNo">242</span>                        //IORelation relation = workingSet2.pop();<a name="line.242"></a>
+<span class="sourceLineNo">243</span>                        // pop has been added to LinkedList in Java 1.6<a name="line.243"></a>
+<span class="sourceLineNo">244</span>                        // (cfr. http://download.oracle.com/javase/6/docs/api/java/util/LinkedList.html#pop() ).<a name="line.244"></a>
+<span class="sourceLineNo">245</span>                        // Hence we use get an remove for the time being...<a name="line.245"></a>
+<span class="sourceLineNo">246</span>                        IORelation relation = workingRelationList.get(0);<a name="line.246"></a>
+<span class="sourceLineNo">247</span>                        workingRelationList.remove(0);<a name="line.247"></a>
+<span class="sourceLineNo">248</span><a name="line.248"></a>
+<span class="sourceLineNo">249</span>                        unspecifiedSet.remove(relation);<a name="line.249"></a>
+<span class="sourceLineNo">250</span>                        assert !relation.needsWidthInference();<a name="line.250"></a>
+<span class="sourceLineNo">251</span>                        int width = relation.getWidth();<a name="line.251"></a>
+<span class="sourceLineNo">252</span>                        assert width &gt;= 0;<a name="line.252"></a>
+<span class="sourceLineNo">253</span><a name="line.253"></a>
+<span class="sourceLineNo">254</span>                        // All relations in the same relation group need to have the same width<a name="line.254"></a>
+<span class="sourceLineNo">255</span>                        for (Object otherRelationObject : relation<a name="line.255"></a>
+<span class="sourceLineNo">256</span>                                .relationGroupList()) {<a name="line.256"></a>
+<span class="sourceLineNo">257</span>                            IORelation otherRelation = (IORelation) otherRelationObject;<a name="line.257"></a>
+<span class="sourceLineNo">258</span>                            if (relation != otherRelation<a name="line.258"></a>
+<span class="sourceLineNo">259</span>                                    &amp;&amp; otherRelation.needsWidthInference()) {<a name="line.259"></a>
+<span class="sourceLineNo">260</span>                                otherRelation._setInferredWidth(width);<a name="line.260"></a>
+<span class="sourceLineNo">261</span>                                unspecifiedSet.remove(otherRelation);<a name="line.261"></a>
+<span class="sourceLineNo">262</span>                                // We don't need to add otherRelation to unspecifiedSet since<a name="line.262"></a>
+<span class="sourceLineNo">263</span>                                // we will process all ports linked to the complete relationGroup<a name="line.263"></a>
+<span class="sourceLineNo">264</span>                                // all at once.<a name="line.264"></a>
+<span class="sourceLineNo">265</span>                            }<a name="line.265"></a>
+<span class="sourceLineNo">266</span>                        }<a name="line.266"></a>
+<span class="sourceLineNo">267</span><a name="line.267"></a>
+<span class="sourceLineNo">268</span>                        // Now we see whether we can determine the widths of relations directly connected<a name="line.268"></a>
+<span class="sourceLineNo">269</span>                        // at the multiports linked to this relation.<a name="line.269"></a>
+<span class="sourceLineNo">270</span><a name="line.270"></a>
+<span class="sourceLineNo">271</span>                        // linkedPortList() can contain a port more than once. We only want<a name="line.271"></a>
+<span class="sourceLineNo">272</span>                        // them once. We will also only add multiports<a name="line.272"></a>
+<span class="sourceLineNo">273</span>                        HashSet&lt;IOPort&gt; multiports = new HashSet&lt;IOPort&gt;();<a name="line.273"></a>
+<span class="sourceLineNo">274</span>                        for (Object port : relation.linkedPortList()) {<a name="line.274"></a>
+<span class="sourceLineNo">275</span>                            if (((IOPort) port).isMultiport()) {<a name="line.275"></a>
+<span class="sourceLineNo">276</span>                                multiports.add((IOPort) port);<a name="line.276"></a>
+<span class="sourceLineNo">277</span>                            }<a name="line.277"></a>
+<span class="sourceLineNo">278</span>                        }<a name="line.278"></a>
+<span class="sourceLineNo">279</span>                        for (IOPort port : multiports) {<a name="line.279"></a>
+<span class="sourceLineNo">280</span>                            List&lt;IORelation&gt; updatedRelations = new LinkedList&lt;IORelation&gt;();<a name="line.280"></a>
+<span class="sourceLineNo">281</span>                            _updateRelationsFromMultiport(port,<a name="line.281"></a>
+<span class="sourceLineNo">282</span>                                    updatedRelations);<a name="line.282"></a>
+<span class="sourceLineNo">283</span>                            if (checkConsistencyAtMultiport<a name="line.283"></a>
+<span class="sourceLineNo">284</span>                                    &amp;&amp; !updatedRelations.isEmpty()) {<a name="line.284"></a>
+<span class="sourceLineNo">285</span>                                // If we have updated relations for this port, it means that it is consistent<a name="line.285"></a>
+<span class="sourceLineNo">286</span>                                // and hence we don't need to check consistency anymore.<a name="line.286"></a>
+<span class="sourceLineNo">287</span>                                portsThatCanBeIngnoredForConsistencyCheck<a name="line.287"></a>
+<span class="sourceLineNo">288</span>                                        .add(port);<a name="line.288"></a>
+<span class="sourceLineNo">289</span>                                for (IORelation updatedRelation : updatedRelations) {<a name="line.289"></a>
+<span class="sourceLineNo">290</span>                                    portsToCheckConsistency<a name="line.290"></a>
+<span class="sourceLineNo">291</span>                                            .addAll(updatedRelation<a name="line.291"></a>
+<span class="sourceLineNo">292</span>                                                    .linkedPortList(port));<a name="line.292"></a>
+<span class="sourceLineNo">293</span>                                }<a name="line.293"></a>
+<span class="sourceLineNo">294</span>                            }<a name="line.294"></a>
+<span class="sourceLineNo">295</span>                            workingRelationList.addAll(updatedRelations);<a name="line.295"></a>
+<span class="sourceLineNo">296</span>                        }<a name="line.296"></a>
+<span class="sourceLineNo">297</span>                    }<a name="line.297"></a>
+<span class="sourceLineNo">298</span><a name="line.298"></a>
+<span class="sourceLineNo">299</span>                    // Use the width constraints on ports to infer the widths.<a name="line.299"></a>
+<span class="sourceLineNo">300</span>                    if (!workingPortSet.isEmpty()<a name="line.300"></a>
+<span class="sourceLineNo">301</span>                            &amp;&amp; !unspecifiedSet.isEmpty()) {<a name="line.301"></a>
+<span class="sourceLineNo">302</span>                        continueInference = false;<a name="line.302"></a>
+<span class="sourceLineNo">303</span>                        LinkedList&lt;IOPort&gt; workingPortList = new LinkedList&lt;IOPort&gt;(<a name="line.303"></a>
+<span class="sourceLineNo">304</span>                                workingPortSet);<a name="line.304"></a>
+<span class="sourceLineNo">305</span>                        for (IOPort port : workingPortList) {<a name="line.305"></a>
+<span class="sourceLineNo">306</span>                            List&lt;IORelation&gt; updatedRelations = new LinkedList&lt;IORelation&gt;();<a name="line.306"></a>
+<span class="sourceLineNo">307</span>                            boolean constraintStillUseful = _updateRelationsFromMultiport(<a name="line.307"></a>
+<span class="sourceLineNo">308</span>                                    port, updatedRelations);<a name="line.308"></a>
+<span class="sourceLineNo">309</span>                            if (!updatedRelations.isEmpty()) {<a name="line.309"></a>
+<span class="sourceLineNo">310</span>                                workingPortSet.remove(port);<a name="line.310"></a>
+<span class="sourceLineNo">311</span>                                continueInference = true;<a name="line.311"></a>
+<span class="sourceLineNo">312</span>                                // We found new information, so we can try to infer<a name="line.312"></a>
+<span class="sourceLineNo">313</span>                                // new relations.<a name="line.313"></a>
+<span class="sourceLineNo">314</span>                            } else if (!constraintStillUseful) {<a name="line.314"></a>
+<span class="sourceLineNo">315</span>                                workingDefaultPortSet.remove(port);<a name="line.315"></a>
+<span class="sourceLineNo">316</span>                            }<a name="line.316"></a>
+<span class="sourceLineNo">317</span>                            if (checkConsistencyAtMultiport<a name="line.317"></a>
+<span class="sourceLineNo">318</span>                                    &amp;&amp; !updatedRelations.isEmpty()) {<a name="line.318"></a>
+<span class="sourceLineNo">319</span>                                // If we have updated relations for this port, it means that it is consistent<a name="line.319"></a>
+<span class="sourceLineNo">320</span>                                // and hence we don't need to check consistency anymore.<a name="line.320"></a>
+<span class="sourceLineNo">321</span>                                portsThatCanBeIngnoredForConsistencyCheck<a name="line.321"></a>
+<span class="sourceLineNo">322</span>                                        .add(port);<a name="line.322"></a>
+<span class="sourceLineNo">323</span>                                for (IORelation updatedRelation : updatedRelations) {<a name="line.323"></a>
+<span class="sourceLineNo">324</span>                                    portsToCheckConsistency<a name="line.324"></a>
+<span class="sourceLineNo">325</span>                                            .addAll(updatedRelation<a name="line.325"></a>
+<span class="sourceLineNo">326</span>                                                    .linkedPortList(port));<a name="line.326"></a>
+<span class="sourceLineNo">327</span>                                }<a name="line.327"></a>
+<span class="sourceLineNo">328</span>                            }<a name="line.328"></a>
+<span class="sourceLineNo">329</span>                            workingRelationList.addAll(updatedRelations);<a name="line.329"></a>
+<span class="sourceLineNo">330</span>                        }<a name="line.330"></a>
+<span class="sourceLineNo">331</span>                    }<a name="line.331"></a>
+<span class="sourceLineNo">332</span><a name="line.332"></a>
+<span class="sourceLineNo">333</span>                    // If we can't infer any widths anymore (workingRelationList.isEmpty())<a name="line.333"></a>
+<span class="sourceLineNo">334</span>                    // we will look whether there are ports that have a default width.<a name="line.334"></a>
+<span class="sourceLineNo">335</span>                    if (!workingDefaultPortSet.isEmpty()<a name="line.335"></a>
+<span class="sourceLineNo">336</span>                            &amp;&amp; workingRelationList.isEmpty()) {<a name="line.336"></a>
+<span class="sourceLineNo">337</span>                        LinkedList&lt;IOPort&gt; workingDefaultPortList = new LinkedList&lt;IOPort&gt;(<a name="line.337"></a>
+<span class="sourceLineNo">338</span>                                workingDefaultPortSet);<a name="line.338"></a>
+<span class="sourceLineNo">339</span>                        for (IOPort port : workingDefaultPortList) {<a name="line.339"></a>
+<span class="sourceLineNo">340</span>                            List&lt;IORelation&gt; updatedRelations = new LinkedList&lt;IORelation&gt;();<a name="line.340"></a>
+<span class="sourceLineNo">341</span>                            boolean constraintStillUseful = _updateRelationsFromDefaultWidth(<a name="line.341"></a>
+<span class="sourceLineNo">342</span>                                    port, updatedRelations);<a name="line.342"></a>
+<span class="sourceLineNo">343</span>                            if (!updatedRelations.isEmpty()) {<a name="line.343"></a>
+<span class="sourceLineNo">344</span>                                workingDefaultPortSet.remove(port);<a name="line.344"></a>
+<span class="sourceLineNo">345</span>                                continueInference = true;<a name="line.345"></a>
+<span class="sourceLineNo">346</span>                                // We found new information, so we can try to infer<a name="line.346"></a>
+<span class="sourceLineNo">347</span>                                // new relations.<a name="line.347"></a>
+<span class="sourceLineNo">348</span>                            } else if (!constraintStillUseful) {<a name="line.348"></a>
+<span class="sourceLineNo">349</span>                                workingDefaultPortSet.remove(port);<a name="line.349"></a>
+<span class="sourceLineNo">350</span>                            }<a name="line.350"></a>
+<span class="sourceLineNo">351</span>                            workingRelationList.addAll(updatedRelations);<a name="line.351"></a>
+<span class="sourceLineNo">352</span>                        }<a name="line.352"></a>
+<span class="sourceLineNo">353</span>                    }<a name="line.353"></a>
+<span class="sourceLineNo">354</span>                }<a name="line.354"></a>
+<span class="sourceLineNo">355</span><a name="line.355"></a>
+<span class="sourceLineNo">356</span>                if (logTimings) {<a name="line.356"></a>
+<span class="sourceLineNo">357</span>                    System.out.println("Actual algorithm: "<a name="line.357"></a>
+<span class="sourceLineNo">358</span>                            + (System.currentTimeMillis() - afterinit)<a name="line.358"></a>
+<span class="sourceLineNo">359</span>                            + " ms.");<a name="line.359"></a>
+<span class="sourceLineNo">360</span>                }<a name="line.360"></a>
+<span class="sourceLineNo">361</span><a name="line.361"></a>
+<span class="sourceLineNo">362</span>                //Consistency check<a name="line.362"></a>
+<span class="sourceLineNo">363</span>                if (checkConsistencyAtMultiport) {<a name="line.363"></a>
+<span class="sourceLineNo">364</span><a name="line.364"></a>
+<span class="sourceLineNo">365</span>                    portsToCheckConsistency.removeAll(<a name="line.365"></a>
+<span class="sourceLineNo">366</span>                            portsThatCanBeIngnoredForConsistencyCheck);<a name="line.366"></a>
+<span class="sourceLineNo">367</span>                    for (IOPort port : portsToCheckConsistency) {<a name="line.367"></a>
+<span class="sourceLineNo">368</span>                        _checkConsistency(port);<a name="line.368"></a>
+<span class="sourceLineNo">369</span>                    }<a name="line.369"></a>
+<span class="sourceLineNo">370</span>                }<a name="line.370"></a>
+<span class="sourceLineNo">371</span>                if (checkWidthConstraints) {<a name="line.371"></a>
+<span class="sourceLineNo">372</span>                    for (IOPort port : workingPortSet) {<a name="line.372"></a>
+<span class="sourceLineNo">373</span>                        _checkConsistency(port);<a name="line.373"></a>
+<span class="sourceLineNo">374</span>                        port.checkWidthConstraints();<a name="line.374"></a>
+<span class="sourceLineNo">375</span>                    }<a name="line.375"></a>
+<span class="sourceLineNo">376</span>                }<a name="line.376"></a>
+<span class="sourceLineNo">377</span><a name="line.377"></a>
+<span class="sourceLineNo">378</span>                while (!unspecifiedSet.isEmpty()) {<a name="line.378"></a>
+<span class="sourceLineNo">379</span><a name="line.379"></a>
+<span class="sourceLineNo">380</span>                    boolean defaultInferredWidthTo1 = false;<a name="line.380"></a>
+<span class="sourceLineNo">381</span><a name="line.381"></a>
+<span class="sourceLineNo">382</span>                    Token defaultTo1 = ModelScope.preferenceValue(_topLevel,<a name="line.382"></a>
+<span class="sourceLineNo">383</span>                            "_defaultInferredWidthTo1");<a name="line.383"></a>
+<span class="sourceLineNo">384</span>                    if (defaultTo1 instanceof BooleanToken) {<a name="line.384"></a>
+<span class="sourceLineNo">385</span>                        defaultInferredWidthTo1 = ((BooleanToken) defaultTo1)<a name="line.385"></a>
+<span class="sourceLineNo">386</span>                                .booleanValue();<a name="line.386"></a>
+<span class="sourceLineNo">387</span>                    }<a name="line.387"></a>
+<span class="sourceLineNo">388</span><a name="line.388"></a>
+<span class="sourceLineNo">389</span>                    if (defaultInferredWidthTo1) {<a name="line.389"></a>
+<span class="sourceLineNo">390</span>                        for (IORelation relation : unspecifiedSet) {<a name="line.390"></a>
+<span class="sourceLineNo">391</span>                            relation._setInferredWidth(1);<a name="line.391"></a>
+<span class="sourceLineNo">392</span>                        }<a name="line.392"></a>
+<span class="sourceLineNo">393</span>                        unspecifiedSet.clear();<a name="line.393"></a>
+<span class="sourceLineNo">394</span>                    } else {<a name="line.394"></a>
+<span class="sourceLineNo">395</span>                        StringBuffer portDetails = new StringBuffer();<a name="line.395"></a>
+<span class="sourceLineNo">396</span>                        IORelation relation = unspecifiedSet.iterator().next();<a name="line.396"></a>
+<span class="sourceLineNo">397</span>                        List&lt;IOPort&gt; linkedPorts = relation<a name="line.397"></a>
+<span class="sourceLineNo">398</span>                                .deepLinkedPortList();<a name="line.398"></a>
+<span class="sourceLineNo">399</span><a name="line.399"></a>
+<span class="sourceLineNo">400</span>                        // Look for a special case where a relation is linking a multiport<a name="line.400"></a>
+<span class="sourceLineNo">401</span>                        // inside a composite to the inside of one or more multiports that are<a name="line.401"></a>
+<span class="sourceLineNo">402</span>                        // not connected to anything on the outside. In this case, the width<a name="line.402"></a>
+<span class="sourceLineNo">403</span>                        // will be zero. The pattern we look for that no more than one port<a name="line.403"></a>
+<span class="sourceLineNo">404</span>                        // is linked on the outside.<a name="line.404"></a>
+<span class="sourceLineNo">405</span>                        boolean foundOutside = false;<a name="line.405"></a>
+<span class="sourceLineNo">406</span>                        boolean giveUp = false;<a name="line.406"></a>
+<span class="sourceLineNo">407</span>                        for (IOPort port : linkedPorts) {<a name="line.407"></a>
+<span class="sourceLineNo">408</span>                            if (port.isInsideGroupLinked(relation)) {<a name="line.408"></a>
+<span class="sourceLineNo">409</span>                                continue;<a name="line.409"></a>
+<span class="sourceLineNo">410</span>                            } else {<a name="line.410"></a>
+<span class="sourceLineNo">411</span>                                if (foundOutside) {<a name="line.411"></a>
+<span class="sourceLineNo">412</span>                                    // relation links more than one port on the outside,<a name="line.412"></a>
+<span class="sourceLineNo">413</span>                                    // so there is nothing more we can do.<a name="line.413"></a>
+<span class="sourceLineNo">414</span>                                    giveUp = true;<a name="line.414"></a>
+<span class="sourceLineNo">415</span>                                    break;<a name="line.415"></a>
+<span class="sourceLineNo">416</span>                                }<a name="line.416"></a>
+<span class="sourceLineNo">417</span>                                foundOutside = true;<a name="line.417"></a>
+<span class="sourceLineNo">418</span>                            }<a name="line.418"></a>
+<span class="sourceLineNo">419</span>                        }<a name="line.419"></a>
+<span class="sourceLineNo">420</span>                        if (giveUp) {<a name="line.420"></a>
+<span class="sourceLineNo">421</span>                            Iterator deepPorts = linkedPorts.iterator();<a name="line.421"></a>
+<span class="sourceLineNo">422</span>                            while (deepPorts.hasNext()) {<a name="line.422"></a>
+<span class="sourceLineNo">423</span>                                if (portDetails.length() &gt; 0) {<a name="line.423"></a>
+<span class="sourceLineNo">424</span>                                    portDetails.append("\n");<a name="line.424"></a>
+<span class="sourceLineNo">425</span>                                }<a name="line.425"></a>
+<span class="sourceLineNo">426</span>                                portDetails.append(((IOPort) deepPorts.next())<a name="line.426"></a>
+<span class="sourceLineNo">427</span>                                        .getFullName());<a name="line.427"></a>
+<span class="sourceLineNo">428</span>                            }<a name="line.428"></a>
+<span class="sourceLineNo">429</span><a name="line.429"></a>
+<span class="sourceLineNo">430</span>                            String message1 = "The width of relation "<a name="line.430"></a>
+<span class="sourceLineNo">431</span>                                    + relation.getFullName()<a name="line.431"></a>
+<span class="sourceLineNo">432</span>                                    + " can not be uniquely inferred.\n";<a name="line.432"></a>
+<span class="sourceLineNo">433</span>                            String message2 = "One possible solution is to create a toplevel parameter "<a name="line.433"></a>
+<span class="sourceLineNo">434</span>                                    + "named \"_defaultInferredWidthTo1\" with the boolean "<a name="line.434"></a>
+<span class="sourceLineNo">435</span>                                    + "value true.\n"<a name="line.435"></a>
+<span class="sourceLineNo">436</span>                                    + "Please make the width inference deterministic by"<a name="line.436"></a>
+<span class="sourceLineNo">437</span>                                    + " explicitly specifying the width of this relation."<a name="line.437"></a>
+<span class="sourceLineNo">438</span>                                    + " In the user interface, right click on the "<a name="line.438"></a>
+<span class="sourceLineNo">439</span>                                    + "relation, select Configure and change the width. "<a name="line.439"></a>
+<span class="sourceLineNo">440</span>                                    + " Note that some actors may need to have their "<a name="line.440"></a>
+<span class="sourceLineNo">441</span>                                    + " Java code updated to call setDefaultWidth(1) "<a name="line.441"></a>
+<span class="sourceLineNo">442</span>                                    + "on the output port. "<a name="line.442"></a>
+<span class="sourceLineNo">443</span>                                    + "The relation is deeply connected to these ports:\n"<a name="line.443"></a>
+<span class="sourceLineNo">444</span>                                    + portDetails.toString();<a name="line.444"></a>
+<span class="sourceLineNo">445</span>                            Manager manager = ((CompositeActor) relation<a name="line.445"></a>
+<span class="sourceLineNo">446</span>                                    .toplevel()).getManager();<a name="line.446"></a>
+<span class="sourceLineNo">447</span>                            if (manager != null<a name="line.447"></a>
+<span class="sourceLineNo">448</span>                                    &amp;&amp; manager.getState() != Manager.IDLE) {<a name="line.448"></a>
+<span class="sourceLineNo">449</span>                                throw new IllegalActionException(<a name="line.449"></a>
+<span class="sourceLineNo">450</span>                                        relation, message1<a name="line.450"></a>
+<span class="sourceLineNo">451</span>                                                + "The model is not idle, so stopping the model "<a name="line.451"></a>
+<span class="sourceLineNo">452</span>                                                + "might help.\n" + message2);<a name="line.452"></a>
+<span class="sourceLineNo">453</span>                            }<a name="line.453"></a>
+<span class="sourceLineNo">454</span>                            throw new IllegalActionException(relation,<a name="line.454"></a>
+<span class="sourceLineNo">455</span>                                    message1 + message2);<a name="line.455"></a>
+<span class="sourceLineNo">456</span>                        } else {<a name="line.456"></a>
+<span class="sourceLineNo">457</span>                            relation._setInferredWidth(0);<a name="line.457"></a>
+<span class="sourceLineNo">458</span>                            unspecifiedSet.remove(relation);<a name="line.458"></a>
+<span class="sourceLineNo">459</span>                        }<a name="line.459"></a>
+<span class="sourceLineNo">460</span>                    }<a name="line.460"></a>
+<span class="sourceLineNo">461</span>                }<a name="line.461"></a>
+<span class="sourceLineNo">462</span>            } finally {<a name="line.462"></a>
+<span class="sourceLineNo">463</span>                _inferringWidths = false;<a name="line.463"></a>
+<span class="sourceLineNo">464</span>                _topLevel.workspace().doneTemporaryWriting();<a name="line.464"></a>
+<span class="sourceLineNo">465</span>                if (logTimings) {<a name="line.465"></a>
+<span class="sourceLineNo">466</span>                    System.out.println("Time to do width inference: "<a name="line.466"></a>
+<span class="sourceLineNo">467</span>                            + (System.currentTimeMillis() - startTime)<a name="line.467"></a>
+<span class="sourceLineNo">468</span>                            + " ms.");<a name="line.468"></a>
+<span class="sourceLineNo">469</span>                }<a name="line.469"></a>
+<span class="sourceLineNo">470</span>            }<a name="line.470"></a>
+<span class="sourceLineNo">471</span>            _needsWidthInference = false;<a name="line.471"></a>
+<span class="sourceLineNo">472</span>        }<a name="line.472"></a>
+<span class="sourceLineNo">473</span>    }<a name="line.473"></a>
+<span class="sourceLineNo">474</span><a name="line.474"></a>
+<span class="sourceLineNo">475</span>    /**<a name="line.475"></a>
+<span class="sourceLineNo">476</span>     *  Return whether the current widths of the relation in the model<a name="line.476"></a>
+<span class="sourceLineNo">477</span>     *  are no longer valid anymore and the widths need to be inferred again.<a name="line.477"></a>
+<span class="sourceLineNo">478</span>     *  @return True when width inference needs to be executed again.<a name="line.478"></a>
+<span class="sourceLineNo">479</span>     */<a name="line.479"></a>
+<span class="sourceLineNo">480</span>    public boolean needsWidthInference() {<a name="line.480"></a>
+<span class="sourceLineNo">481</span>        return _needsWidthInference;<a name="line.481"></a>
+<span class="sourceLineNo">482</span>    }<a name="line.482"></a>
+<span class="sourceLineNo">483</span><a name="line.483"></a>
+<span class="sourceLineNo">484</span>    /**<a name="line.484"></a>
+<span class="sourceLineNo">485</span>     *  Notify the width inference algorithm that the connectivity in the model changed<a name="line.485"></a>
+<span class="sourceLineNo">486</span>     *  (width of relation changed, relations added, linked to different ports, ...).<a name="line.486"></a>
+<span class="sourceLineNo">487</span>     *  This will invalidate the current width inference.<a name="line.487"></a>
+<span class="sourceLineNo">488</span>     */<a name="line.488"></a>
+<span class="sourceLineNo">489</span>    public void notifyConnectivityChange() {<a name="line.489"></a>
+<span class="sourceLineNo">490</span>        if (!_inferringWidths) {<a name="line.490"></a>
+<span class="sourceLineNo">491</span>            _needsWidthInference = true;<a name="line.491"></a>
+<span class="sourceLineNo">492</span>        }<a name="line.492"></a>
+<span class="sourceLineNo">493</span>        // If we are currently inferring widths we ignore connectivity changes,<a name="line.493"></a>
+<span class="sourceLineNo">494</span>        // since evaluating expressions can cause a call of attributesChanged,<a name="line.494"></a>
+<span class="sourceLineNo">495</span>        // which results in notifyConnectivityChange. In this case we aren't<a name="line.495"></a>
+<span class="sourceLineNo">496</span>        // changing the model, but just getting all parameters.<a name="line.496"></a>
+<span class="sourceLineNo">497</span>        // Notice that we use the boolean _inferringWidths without any locking<a name="line.497"></a>
+<span class="sourceLineNo">498</span>        // This is to avoid deadlocks... In case we are inferring widths notifyConnectivityChange<a name="line.498"></a>
+<span class="sourceLineNo">499</span>        // should only be called from the same thread as the one that is inferring<a name="line.499"></a>
+<span class="sourceLineNo">500</span>        // widths and hence there is no issue. When the user is actually changing he model<a name="line.500"></a>
+<span class="sourceLineNo">501</span>        // we shouldn't be doing width inference and hence the parameter should not be<a name="line.501"></a>
+<span class="sourceLineNo">502</span>        // changing.<a name="line.502"></a>
+<span class="sourceLineNo">503</span>    }<a name="line.503"></a>
+<span class="sourceLineNo">504</span><a name="line.504"></a>
+<span class="sourceLineNo">505</span>    ///////////////////////////////////////////////////////////////////<a name="line.505"></a>
+<span class="sourceLineNo">506</span>    ////                         protected methods                 ////<a name="line.506"></a>
+<span class="sourceLineNo">507</span><a name="line.507"></a>
+<span class="sourceLineNo">508</span>    /** Filter the relations for which the width still has to be inferred.<a name="line.508"></a>
+<span class="sourceLineNo">509</span>     *  @param  relationList The relations that need to be filtered.<a name="line.509"></a>
+<span class="sourceLineNo">510</span>     *  @return The relations for which the width still has to return.<a name="line.510"></a>
+<span class="sourceLineNo">511</span>     *  @exception IllegalActionException If the expression for the width cannot<a name="line.511"></a>
+<span class="sourceLineNo">512</span>     *   be parsed or cannot be evaluated, or if the result of evaluation<a name="line.512"></a>
+<span class="sourceLineNo">513</span>     *   violates type constraints, or if the result of evaluation is null<a name="line.513"></a>
+<span class="sourceLineNo">514</span>     *   and there are variables that depend on this one.<a name="line.514"></a>
+<span class="sourceLineNo">515</span>     */<a name="line.515"></a>
+<span class="sourceLineNo">516</span>    static protected Set&lt;IORelation&gt; _relationsWithUnspecifiedWidths(<a name="line.516"></a>
+<span class="sourceLineNo">517</span>            List&lt;?&gt; relationList) throws IllegalActionException {<a name="line.517"></a>
+<span class="sourceLineNo">518</span>        Set&lt;IORelation&gt; result = new HashSet&lt;IORelation&gt;();<a name="line.518"></a>
+<span class="sourceLineNo">519</span>        for (Object relation : relationList) {<a name="line.519"></a>
+<span class="sourceLineNo">520</span>            if (relation != null<a name="line.520"></a>
+<span class="sourceLineNo">521</span>                    &amp;&amp; ((IORelation) relation).needsWidthInference()) {<a name="line.521"></a>
+<span class="sourceLineNo">522</span>                result.add((IORelation) relation);<a name="line.522"></a>
+<span class="sourceLineNo">523</span>            }<a name="line.523"></a>
+<span class="sourceLineNo">524</span>        }<a name="line.524"></a>
+<span class="sourceLineNo">525</span>        return result;<a name="line.525"></a>
+<span class="sourceLineNo">526</span>    }<a name="line.526"></a>
+<span class="sourceLineNo">527</span><a name="line.527"></a>
+<span class="sourceLineNo">528</span>    ///////////////////////////////////////////////////////////////////<a name="line.528"></a>
+<span class="sourceLineNo">529</span>    ////                         private methods                   ////<a name="line.529"></a>
+<span class="sourceLineNo">530</span><a name="line.530"></a>
+<span class="sourceLineNo">531</span>    /**<a name="line.531"></a>
+<span class="sourceLineNo">532</span>     * Check whether the widths at a port are consistent. Consistent means that<a name="line.532"></a>
+<span class="sourceLineNo">533</span>     * the input and output width is either zero or that the input width is equal<a name="line.533"></a>
+<span class="sourceLineNo">534</span>     * to the output width.<a name="line.534"></a>
+<span class="sourceLineNo">535</span>     * @param  port The port which will be checked.<a name="line.535"></a>
+<span class="sourceLineNo">536</span>     * @exception IllegalActionException If the widths of the relations at port<a name="line.536"></a>
+<span class="sourceLineNo">537</span>     *                 are not consistent.<a name="line.537"></a>
+<span class="sourceLineNo">538</span>     */<a name="line.538"></a>
+<span class="sourceLineNo">539</span>    static private void _checkConsistency(IOPort port)<a name="line.539"></a>
+<span class="sourceLineNo">540</span>            throws IllegalActionException {<a name="line.540"></a>
+<span class="sourceLineNo">541</span>        // We check whether the inside and outside widths are consistent. In case<a name="line.541"></a>
+<span class="sourceLineNo">542</span>        // widths are inferred they should be inferred uniquely. We don't want to have<a name="line.542"></a>
+<span class="sourceLineNo">543</span>        // different results depending on where we start in the graph.<a name="line.543"></a>
+<span class="sourceLineNo">544</span>        int insideWidth = port._getInsideWidth(null);<a name="line.544"></a>
+<span class="sourceLineNo">545</span>        int outsideWidth = port._getOutsideWidth(null);<a name="line.545"></a>
+<span class="sourceLineNo">546</span><a name="line.546"></a>
+<span class="sourceLineNo">547</span>        // Special case.<a name="line.547"></a>
+<span class="sourceLineNo">548</span>        if (port instanceof SubscriptionAggregatorPort) {<a name="line.548"></a>
+<span class="sourceLineNo">549</span>            if (insideWidth != 1) {<a name="line.549"></a>
+<span class="sourceLineNo">550</span>                throw new IllegalActionException(port,<a name="line.550"></a>
+<span class="sourceLineNo">551</span>                        "The inside width is required to be 1. Got "<a name="line.551"></a>
+<span class="sourceLineNo">552</span>                                + insideWidth);<a name="line.552"></a>
+<span class="sourceLineNo">553</span>            }<a name="line.553"></a>
+<span class="sourceLineNo">554</span>            return;<a name="line.554"></a>
+<span class="sourceLineNo">555</span>        }<a name="line.555"></a>
+<span class="sourceLineNo">556</span><a name="line.556"></a>
+<span class="sourceLineNo">557</span>        if (insideWidth != 0 &amp;&amp; outsideWidth != 0<a name="line.557"></a>
+<span class="sourceLineNo">558</span>                &amp;&amp; insideWidth != outsideWidth) {<a name="line.558"></a>
+<span class="sourceLineNo">559</span>            throw new IllegalActionException(port, "The inside width ("<a name="line.559"></a>
+<span class="sourceLineNo">560</span>                    + insideWidth + ") and the outside width (" + outsideWidth<a name="line.560"></a>
+<span class="sourceLineNo">561</span>                    + ") of port " + port.getFullName()<a name="line.561"></a>
+<span class="sourceLineNo">562</span>                    + " are not either equal to 0 or not equal to each other and are therefore"<a name="line.562"></a>
+<span class="sourceLineNo">563</span>                    + " inconsistent.\nCan't determine a uniquely defined width for"<a name="line.563"></a>
+<span class="sourceLineNo">564</span>                    + " the connected relations. A possible fix is to right clicking on either the"<a name="line.564"></a>
+<span class="sourceLineNo">565</span>                    + " inside or outside relation and set the width -1.");<a name="line.565"></a>
+<span class="sourceLineNo">566</span>        }<a name="line.566"></a>
+<span class="sourceLineNo">567</span>    }<a name="line.567"></a>
+<span class="sourceLineNo">568</span><a name="line.568"></a>
+<span class="sourceLineNo">569</span>    /**<a name="line.569"></a>
+<span class="sourceLineNo">570</span>     * Infer the width for the relations connected to the port. If the width can be<a name="line.570"></a>
+<span class="sourceLineNo">571</span>     * inferred, update the width and add the relations for which the width has been<a name="line.571"></a>
+<span class="sourceLineNo">572</span>     * updated.<a name="line.572"></a>
+<span class="sourceLineNo">573</span>     * @param port The port for whose connected relations the width should be inferred.<a name="line.573"></a>
+<span class="sourceLineNo">574</span>     * @param updatedRelations The relations for which the width has been updated.<a name="line.574"></a>
+<span class="sourceLineNo">575</span>     * @return true When this constraint is still useful (can be used to extra more information).<a name="line.575"></a>
+<span class="sourceLineNo">576</span>     * @exception IllegalActionException If the widths of the relations at port are not consistent.<a name="line.576"></a>
+<span class="sourceLineNo">577</span>     */<a name="line.577"></a>
+<span class="sourceLineNo">578</span>    static private boolean _updateRelationsFromMultiport(IOPort port,<a name="line.578"></a>
+<span class="sourceLineNo">579</span>            List&lt;IORelation&gt; updatedRelations) throws IllegalActionException {<a name="line.579"></a>
+<span class="sourceLineNo">580</span>        boolean constraintStillUseful = true;<a name="line.580"></a>
+<span class="sourceLineNo">581</span>        Set&lt;IORelation&gt; outsideUnspecifiedWidths = _relationsWithUnspecifiedWidths(<a name="line.581"></a>
+<span class="sourceLineNo">582</span>                port.linkedRelationList());<a name="line.582"></a>
+<span class="sourceLineNo">583</span>        //port.linkedRelationList() returns the outside relations<a name="line.583"></a>
+<span class="sourceLineNo">584</span><a name="line.584"></a>
+<span class="sourceLineNo">585</span>        int outsideUnspecifiedWidthsSize = outsideUnspecifiedWidths.size();<a name="line.585"></a>
+<span class="sourceLineNo">586</span><a name="line.586"></a>
+<span class="sourceLineNo">587</span>        NamedObj namedObject = port.getContainer();<a name="line.587"></a>
+<span class="sourceLineNo">588</span>        if (namedObject == null) {<a name="line.588"></a>
+<span class="sourceLineNo">589</span>            assert false; // not expected<a name="line.589"></a>
+<span class="sourceLineNo">590</span>            return false;<a name="line.590"></a>
+<span class="sourceLineNo">591</span>        }<a name="line.591"></a>
+<span class="sourceLineNo">592</span>        int difference = -1;<a name="line.592"></a>
+<span class="sourceLineNo">593</span>        Set&lt;IORelation&gt; unspecifiedWidths = null;<a name="line.593"></a>
+<span class="sourceLineNo">594</span>        if (namedObject instanceof AtomicActor) {<a name="line.594"></a>
+<span class="sourceLineNo">595</span><a name="line.595"></a>
+<span class="sourceLineNo">596</span>            assert outsideUnspecifiedWidthsSize &gt;= 0;<a name="line.596"></a>
+<span class="sourceLineNo">597</span>            if (outsideUnspecifiedWidthsSize &gt; 0<a name="line.597"></a>
+<span class="sourceLineNo">598</span>                    &amp;&amp; port.hasWidthConstraints()) {<a name="line.598"></a>
+<span class="sourceLineNo">599</span>                difference = port.getWidthFromConstraints();<a name="line.599"></a>
+<span class="sourceLineNo">600</span>                unspecifiedWidths = outsideUnspecifiedWidths;<a name="line.600"></a>
+<span class="sourceLineNo">601</span>                if (difference &lt; 0) {<a name="line.601"></a>
+<span class="sourceLineNo">602</span>                    return true; // Constraints still unknown<a name="line.602"></a>
+<span class="sourceLineNo">603</span>                }<a name="line.603"></a>
+<span class="sourceLineNo">604</span>            } else {<a name="line.604"></a>
+<span class="sourceLineNo">605</span>                return false;<a name="line.605"></a>
+<span class="sourceLineNo">606</span>            }<a name="line.606"></a>
+<span class="sourceLineNo">607</span>        } else {<a name="line.607"></a>
+<span class="sourceLineNo">608</span><a name="line.608"></a>
+<span class="sourceLineNo">609</span>            Set&lt;IORelation&gt; insideUnspecifiedWidths = _relationsWithUnspecifiedWidths(<a name="line.609"></a>
+<span class="sourceLineNo">610</span>                    port.insideRelationList());<a name="line.610"></a>
+<span class="sourceLineNo">611</span>            int insideUnspecifiedWidthsSize = insideUnspecifiedWidths.size();<a name="line.611"></a>
+<span class="sourceLineNo">612</span><a name="line.612"></a>
+<span class="sourceLineNo">613</span>            if (insideUnspecifiedWidthsSize &gt; 0<a name="line.613"></a>
+<span class="sourceLineNo">614</span>                    &amp;&amp; outsideUnspecifiedWidthsSize &gt; 0) {<a name="line.614"></a>
+<span class="sourceLineNo">615</span>                return true;<a name="line.615"></a>
+<span class="sourceLineNo">616</span>            }<a name="line.616"></a>
+<span class="sourceLineNo">617</span>            if (insideUnspecifiedWidthsSize == 0<a name="line.617"></a>
+<span class="sourceLineNo">618</span>                    &amp;&amp; outsideUnspecifiedWidthsSize == 0) {<a name="line.618"></a>
+<span class="sourceLineNo">619</span>                return false;<a name="line.619"></a>
+<span class="sourceLineNo">620</span>            }<a name="line.620"></a>
+<span class="sourceLineNo">621</span><a name="line.621"></a>
+<span class="sourceLineNo">622</span>            int insideWidth = port._getInsideWidth(null);<a name="line.622"></a>
+<span class="sourceLineNo">623</span>            int outsideWidth = port._getOutsideWidth(null);<a name="line.623"></a>
+<span class="sourceLineNo">624</span><a name="line.624"></a>
+<span class="sourceLineNo">625</span>            if (insideUnspecifiedWidthsSize &gt; 0) {<a name="line.625"></a>
+<span class="sourceLineNo">626</span>                unspecifiedWidths = insideUnspecifiedWidths;<a name="line.626"></a>
+<span class="sourceLineNo">627</span>                difference = outsideWidth - insideWidth;<a name="line.627"></a>
+<span class="sourceLineNo">628</span>            } else {<a name="line.628"></a>
+<span class="sourceLineNo">629</span>                assert outsideUnspecifiedWidthsSize &gt; 0;<a name="line.629"></a>
+<span class="sourceLineNo">630</span>                unspecifiedWidths = outsideUnspecifiedWidths;<a name="line.630"></a>
+<span class="sourceLineNo">631</span>                difference = insideWidth - outsideWidth;<a name="line.631"></a>
+<span class="sourceLineNo">632</span>            }<a name="line.632"></a>
+<span class="sourceLineNo">633</span><a name="line.633"></a>
+<span class="sourceLineNo">634</span>            // We expect that the following case does not exist anymore since atomic<a name="line.634"></a>
+<span class="sourceLineNo">635</span>            // actors are handled separately. Hence the assert...<a name="line.635"></a>
+<span class="sourceLineNo">636</span>            // For opaque ports we not always want the same behavior.<a name="line.636"></a>
+<span class="sourceLineNo">637</span>            // For example at an add-subtract actor we only have information<a name="line.637"></a>
+<span class="sourceLineNo">638</span>            // about the outside, and hence we can't infer any widths at this port.<a name="line.638"></a>
+<span class="sourceLineNo">639</span>            // In this case difference &lt; 0.<a name="line.639"></a>
+<span class="sourceLineNo">640</span>            // However in the case of a multimodel, you often have relations on the<a name="line.640"></a>
+<span class="sourceLineNo">641</span>            // inside and width inference needs to happen. In this case difference &gt;=0<a name="line.641"></a>
+<span class="sourceLineNo">642</span>            if (port.isOpaque() &amp;&amp; difference &lt; 0) {<a name="line.642"></a>
+<span class="sourceLineNo">643</span>                assert false; // We don't expect to come in this case<a name="line.643"></a>
+<span class="sourceLineNo">644</span>                assert insideWidth == 0;<a name="line.644"></a>
+<span class="sourceLineNo">645</span>                return false; // No width inference possible and necessary at this port.<a name="line.645"></a>
+<span class="sourceLineNo">646</span>            }<a name="line.646"></a>
+<span class="sourceLineNo">647</span>            if (difference &lt; 0) {<a name="line.647"></a>
+<span class="sourceLineNo">648</span>                throw new IllegalActionException(port,<a name="line.648"></a>
+<span class="sourceLineNo">649</span>                        "The inside and outside widths of port "<a name="line.649"></a>
+<span class="sourceLineNo">650</span>                                + port.getFullName()<a name="line.650"></a>
+<span class="sourceLineNo">651</span>                                + " are not consistent.\nThe inferred width of relation "<a name="line.651"></a>
+<span class="sourceLineNo">652</span>                                + unspecifiedWidths.iterator().next()<a name="line.652"></a>
+<span class="sourceLineNo">653</span>                                        .getFullName()<a name="line.653"></a>
+<span class="sourceLineNo">654</span>                                + " would be negative.");<a name="line.654"></a>
+<span class="sourceLineNo">655</span>            }<a name="line.655"></a>
+<span class="sourceLineNo">656</span>        }<a name="line.656"></a>
+<span class="sourceLineNo">657</span><a name="line.657"></a>
+<span class="sourceLineNo">658</span>        assert unspecifiedWidths != null;<a name="line.658"></a>
+<span class="sourceLineNo">659</span>        int unspecifiedWidthsSize = unspecifiedWidths.size();<a name="line.659"></a>
+<span class="sourceLineNo">660</span><a name="line.660"></a>
+<span class="sourceLineNo">661</span>        // Put the next test in comments since the condition<a name="line.661"></a>
+<span class="sourceLineNo">662</span>        // difference &gt;= unspecifiedWidthsSize only needs to be fulfilled<a name="line.662"></a>
+<span class="sourceLineNo">663</span>        // in case we don't allow inferred widths to be zero.<a name="line.663"></a>
+<span class="sourceLineNo">664</span>        //<a name="line.664"></a>
+<span class="sourceLineNo">665</span>        // if (difference &gt; 0 &amp;&amp; difference &lt; unspecifiedWidthsSize) {<a name="line.665"></a>
+<span class="sourceLineNo">666</span>        //     throw new IllegalActionException(port,<a name="line.666"></a>
+<span class="sourceLineNo">667</span>        //             "The inside and outside widths of port " + port.getFullName()<a name="line.667"></a>
+<span class="sourceLineNo">668</span>        //             + " are not consistent.\n Can't determine a uniquely defined width for relation"<a name="line.668"></a>
+<span class="sourceLineNo">669</span>        //             + unspecifiedWidths.iterator().next().getFullName());<a name="line.669"></a>
+<span class="sourceLineNo">670</span>        // }<a name="line.670"></a>
+<span class="sourceLineNo">671</span><a name="line.671"></a>
+<span class="sourceLineNo">672</span>        if (unspecifiedWidthsSize == 1 || unspecifiedWidthsSize == difference<a name="line.672"></a>
+<span class="sourceLineNo">673</span>                || difference == 0) {<a name="line.673"></a>
+<span class="sourceLineNo">674</span>            int width = difference / unspecifiedWidthsSize;<a name="line.674"></a>
+<span class="sourceLineNo">675</span>            assert width &gt;= 0;<a name="line.675"></a>
+<span class="sourceLineNo">676</span>            for (IORelation relation : unspecifiedWidths) {<a name="line.676"></a>
+<span class="sourceLineNo">677</span>                relation._setInferredWidth(width);<a name="line.677"></a>
+<span class="sourceLineNo">678</span>                updatedRelations.add(relation);<a name="line.678"></a>
+<span class="sourceLineNo">679</span>            }<a name="line.679"></a>
+<span class="sourceLineNo">680</span>            constraintStillUseful = false;<a name="line.680"></a>
+<span class="sourceLineNo">681</span>        }<a name="line.681"></a>
+<span class="sourceLineNo">682</span>        return constraintStillUseful;<a name="line.682"></a>
+<span class="sourceLineNo">683</span>    }<a name="line.683"></a>
+<span class="sourceLineNo">684</span><a name="line.684"></a>
+<span class="sourceLineNo">685</span>    /** Infer the width for the relations connected to the port (which should have a default width).<a name="line.685"></a>
+<span class="sourceLineNo">686</span>     *  If the width can be inferred, update the width and add the relations for which the width<a name="line.686"></a>
+<span class="sourceLineNo">687</span>     *  has been updated.<a name="line.687"></a>
+<span class="sourceLineNo">688</span>     *  @param port The port for whose connected relations the width should be inferred.<a name="line.688"></a>
+<span class="sourceLineNo">689</span>     *  @param updatedRelations The relations for which the width has been updated.<a name="line.689"></a>
+<span class="sourceLineNo">690</span>     *  @return true When this constraint is still useful (can be used to extra more information).<a name="line.690"></a>
+<span class="sourceLineNo">691</span>     *  @exception IllegalActionException If the expression for the width cannot<a name="line.691"></a>
+<span class="sourceLineNo">692</span>     *   be parsed or cannot be evaluated, or if the result of evaluation<a name="line.692"></a>
+<span class="sourceLineNo">693</span>     *   violates type constraints, or if the result of evaluation is null<a name="line.693"></a>
+<span class="sourceLineNo">694</span>     *   and there are variables that depend on this one.<a name="line.694"></a>
+<span class="sourceLineNo">695</span>     */<a name="line.695"></a>
+<span class="sourceLineNo">696</span>    static private boolean _updateRelationsFromDefaultWidth(IOPort port,<a name="line.696"></a>
+<span class="sourceLineNo">697</span>            List&lt;IORelation&gt; updatedRelations) throws IllegalActionException {<a name="line.697"></a>
+<span class="sourceLineNo">698</span>        boolean constraintStillUseful = true;<a name="line.698"></a>
+<span class="sourceLineNo">699</span><a name="line.699"></a>
+<span class="sourceLineNo">700</span>        Set&lt;IORelation&gt; outsideUnspecifiedWidths = _relationsWithUnspecifiedWidths(<a name="line.700"></a>
+<span class="sourceLineNo">701</span>                port.linkedRelationList());<a name="line.701"></a>
+<span class="sourceLineNo">702</span>        //port.linkedRelationList() returns the outside relations<a name="line.702"></a>
+<span class="sourceLineNo">703</span><a name="line.703"></a>
+<span class="sourceLineNo">704</span>        int outsideUnspecifiedWidthsSize = outsideUnspecifiedWidths.size();<a name="line.704"></a>
+<span class="sourceLineNo">705</span><a name="line.705"></a>
+<span class="sourceLineNo">706</span>        NamedObj namedObject = port.getContainer();<a name="line.706"></a>
+<span class="sourceLineNo">707</span>        if (namedObject == null) {<a name="line.707"></a>
+<span class="sourceLineNo">708</span>            assert false; // not expected<a name="line.708"></a>
+<span class="sourceLineNo">709</span>            return false;<a name="line.709"></a>
+<span class="sourceLineNo">710</span>        }<a name="line.710"></a>
+<span class="sourceLineNo">711</span>        assert outsideUnspecifiedWidthsSize &gt;= 0;<a name="line.711"></a>
+<span class="sourceLineNo">712</span>        if (outsideUnspecifiedWidthsSize &gt; 0) {<a name="line.712"></a>
+<span class="sourceLineNo">713</span>            int defaultWidth = port.getDefaultWidth();<a name="line.713"></a>
+<span class="sourceLineNo">714</span>            assert defaultWidth &gt;= 0;<a name="line.714"></a>
+<span class="sourceLineNo">715</span>            int unspecifiedWidthsSize = outsideUnspecifiedWidths.size();<a name="line.715"></a>
+<span class="sourceLineNo">716</span>            if (unspecifiedWidthsSize == 1<a name="line.716"></a>
+<span class="sourceLineNo">717</span>                    || unspecifiedWidthsSize % defaultWidth == 0<a name="line.717"></a>
+<span class="sourceLineNo">718</span>                    || defaultWidth == 0) {<a name="line.718"></a>
+<span class="sourceLineNo">719</span>                int width = 0;<a name="line.719"></a>
+<span class="sourceLineNo">720</span>                // Coverity: Avoid a divide by zero error.<a name="line.720"></a>
+<span class="sourceLineNo">721</span>                if (defaultWidth != 0) {<a name="line.721"></a>
+<span class="sourceLineNo">722</span>                    width = unspecifiedWidthsSize / defaultWidth;<a name="line.722"></a>
+<span class="sourceLineNo">723</span>                }<a name="line.723"></a>
+<span class="sourceLineNo">724</span>                assert width &gt;= 0;<a name="line.724"></a>
+<span class="sourceLineNo">725</span>                for (IORelation relation : outsideUnspecifiedWidths) {<a name="line.725"></a>
+<span class="sourceLineNo">726</span>                    relation._setInferredWidth(width);<a name="line.726"></a>
+<span class="sourceLineNo">727</span>                    updatedRelations.add(relation);<a name="line.727"></a>
+<span class="sourceLineNo">728</span>                }<a name="line.728"></a>
+<span class="sourceLineNo">729</span>                constraintStillUseful = false;<a name="line.729"></a>
+<span class="sourceLineNo">730</span>            }<a name="line.730"></a>
+<span class="sourceLineNo">731</span>        } else {<a name="line.731"></a>
+<span class="sourceLineNo">732</span>            constraintStillUseful = false;<a name="line.732"></a>
+<span class="sourceLineNo">733</span>        }<a name="line.733"></a>
+<span class="sourceLineNo">734</span>        return constraintStillUseful;<a name="line.734"></a>
+<span class="sourceLineNo">735</span>    }<a name="line.735"></a>
+<span class="sourceLineNo">736</span><a name="line.736"></a>
+<span class="sourceLineNo">737</span>    ///////////////////////////////////////////////////////////////////<a name="line.737"></a>
+<span class="sourceLineNo">738</span>    ////                         private variables                 ////<a name="line.738"></a>
+<span class="sourceLineNo">739</span><a name="line.739"></a>
+<span class="sourceLineNo">740</span>    //True when we are inferring widths<a name="line.740"></a>
+<span class="sourceLineNo">741</span>    private boolean _inferringWidths = false;<a name="line.741"></a>
+<span class="sourceLineNo">742</span><a name="line.742"></a>
+<span class="sourceLineNo">743</span>    //True when width inference needs to happen again<a name="line.743"></a>
+<span class="sourceLineNo">744</span>    private boolean _needsWidthInference = true;<a name="line.744"></a>
+<span class="sourceLineNo">745</span><a name="line.745"></a>
+<span class="sourceLineNo">746</span>    //The top level of the model.<a name="line.746"></a>
+<span class="sourceLineNo">747</span>    private CompositeActor _topLevel = null;<a name="line.747"></a>
+<span class="sourceLineNo">748</span>}<a name="line.748"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

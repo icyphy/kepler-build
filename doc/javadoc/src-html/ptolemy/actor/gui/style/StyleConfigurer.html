@@ -1,0 +1,400 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../../../stylesheet.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>/* An Object for changing the style of parameters.<a name="line.1"></a>
+<span class="sourceLineNo">002</span><a name="line.2"></a>
+<span class="sourceLineNo">003</span> Copyright (c) 1998-2014 The Regents of the University of California.<a name="line.3"></a>
+<span class="sourceLineNo">004</span> All rights reserved.<a name="line.4"></a>
+<span class="sourceLineNo">005</span> Permission is hereby granted, without written agreement and without<a name="line.5"></a>
+<span class="sourceLineNo">006</span> license or royalty fees, to use, copy, modify, and distribute this<a name="line.6"></a>
+<span class="sourceLineNo">007</span> software and its documentation for any purpose, provided that the above<a name="line.7"></a>
+<span class="sourceLineNo">008</span> copyright notice and the following two paragraphs appear in all copies<a name="line.8"></a>
+<span class="sourceLineNo">009</span> of this software.<a name="line.9"></a>
+<span class="sourceLineNo">010</span><a name="line.10"></a>
+<span class="sourceLineNo">011</span> IN NO EVENT SHALL THE UNIVERSITY OF CALIFORNIA BE LIABLE TO ANY PARTY<a name="line.11"></a>
+<span class="sourceLineNo">012</span> FOR DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES<a name="line.12"></a>
+<span class="sourceLineNo">013</span> ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION, EVEN IF<a name="line.13"></a>
+<span class="sourceLineNo">014</span> THE UNIVERSITY OF CALIFORNIA HAS BEEN ADVISED OF THE POSSIBILITY OF<a name="line.14"></a>
+<span class="sourceLineNo">015</span> SUCH DAMAGE.<a name="line.15"></a>
+<span class="sourceLineNo">016</span><a name="line.16"></a>
+<span class="sourceLineNo">017</span> THE UNIVERSITY OF CALIFORNIA SPECIFICALLY DISCLAIMS ANY WARRANTIES,<a name="line.17"></a>
+<span class="sourceLineNo">018</span> INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF<a name="line.18"></a>
+<span class="sourceLineNo">019</span> MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE<a name="line.19"></a>
+<span class="sourceLineNo">020</span> PROVIDED HEREUNDER IS ON AN "AS IS" BASIS, AND THE UNIVERSITY OF<a name="line.20"></a>
+<span class="sourceLineNo">021</span> CALIFORNIA HAS NO OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT, UPDATES,<a name="line.21"></a>
+<span class="sourceLineNo">022</span> ENHANCEMENTS, OR MODIFICATIONS.<a name="line.22"></a>
+<span class="sourceLineNo">023</span><a name="line.23"></a>
+<span class="sourceLineNo">024</span> PT_COPYRIGHT_VERSION_2<a name="line.24"></a>
+<span class="sourceLineNo">025</span> COPYRIGHTENDKEY<a name="line.25"></a>
+<span class="sourceLineNo">026</span><a name="line.26"></a>
+<span class="sourceLineNo">027</span> */<a name="line.27"></a>
+<span class="sourceLineNo">028</span>package ptolemy.actor.gui.style;<a name="line.28"></a>
+<span class="sourceLineNo">029</span><a name="line.29"></a>
+<span class="sourceLineNo">030</span>import java.util.ArrayList;<a name="line.30"></a>
+<span class="sourceLineNo">031</span>import java.util.HashMap;<a name="line.31"></a>
+<span class="sourceLineNo">032</span>import java.util.Iterator;<a name="line.32"></a>
+<span class="sourceLineNo">033</span>import java.util.List;<a name="line.33"></a>
+<span class="sourceLineNo">034</span>import java.util.Map;<a name="line.34"></a>
+<span class="sourceLineNo">035</span><a name="line.35"></a>
+<span class="sourceLineNo">036</span>import javax.swing.BoxLayout;<a name="line.36"></a>
+<span class="sourceLineNo">037</span><a name="line.37"></a>
+<span class="sourceLineNo">038</span>import ptolemy.actor.gui.Configurer;<a name="line.38"></a>
+<span class="sourceLineNo">039</span>import ptolemy.data.expr.Parameter;<a name="line.39"></a>
+<span class="sourceLineNo">040</span>import ptolemy.gui.Query;<a name="line.40"></a>
+<span class="sourceLineNo">041</span>import ptolemy.gui.QueryListener;<a name="line.41"></a>
+<span class="sourceLineNo">042</span>import ptolemy.gui.Top;<a name="line.42"></a>
+<span class="sourceLineNo">043</span>import ptolemy.kernel.util.Attribute;<a name="line.43"></a>
+<span class="sourceLineNo">044</span>import ptolemy.kernel.util.IllegalActionException;<a name="line.44"></a>
+<span class="sourceLineNo">045</span>import ptolemy.kernel.util.InternalErrorException;<a name="line.45"></a>
+<span class="sourceLineNo">046</span>import ptolemy.kernel.util.KernelException;<a name="line.46"></a>
+<span class="sourceLineNo">047</span>import ptolemy.kernel.util.NameDuplicationException;<a name="line.47"></a>
+<span class="sourceLineNo">048</span>import ptolemy.kernel.util.NamedObj;<a name="line.48"></a>
+<span class="sourceLineNo">049</span>import ptolemy.kernel.util.Settable;<a name="line.49"></a>
+<span class="sourceLineNo">050</span>import ptolemy.moml.MoMLChangeRequest;<a name="line.50"></a>
+<span class="sourceLineNo">051</span><a name="line.51"></a>
+<span class="sourceLineNo">052</span>///////////////////////////////////////////////////////////////////<a name="line.52"></a>
+<span class="sourceLineNo">053</span>//// StyleConfigurer<a name="line.53"></a>
+<span class="sourceLineNo">054</span><a name="line.54"></a>
+<span class="sourceLineNo">055</span>/**<a name="line.55"></a>
+<span class="sourceLineNo">056</span> This class is an editor for the styles of the parameters of an object.<a name="line.56"></a>
+<span class="sourceLineNo">057</span> It allows a user to graphically change the ParameterEditorStyles contained<a name="line.57"></a>
+<span class="sourceLineNo">058</span> within the user settable attributes of a named object.<a name="line.58"></a>
+<span class="sourceLineNo">059</span> It is very similar in spirit and style to Configurer, which edits the actual<a name="line.59"></a>
+<span class="sourceLineNo">060</span> values of the attributes.<a name="line.60"></a>
+<span class="sourceLineNo">061</span> &lt;p&gt;<a name="line.61"></a>
+<span class="sourceLineNo">062</span> The restore() method restores the values of the parameters of the<a name="line.62"></a>
+<span class="sourceLineNo">063</span> object to their values when this object was created.  This can be used<a name="line.63"></a>
+<span class="sourceLineNo">064</span> in a modal dialog to implement a cancel button, which restores<a name="line.64"></a>
+<span class="sourceLineNo">065</span> the styles to those before the dialog was opened.<a name="line.65"></a>
+<span class="sourceLineNo">066</span><a name="line.66"></a>
+<span class="sourceLineNo">067</span> @see ptolemy.actor.gui.Configurer<a name="line.67"></a>
+<span class="sourceLineNo">068</span> @see ParameterEditorStyle<a name="line.68"></a>
+<span class="sourceLineNo">069</span> @author Steve Neuendorffer and Edward A. Lee<a name="line.69"></a>
+<span class="sourceLineNo">070</span> @version $Id$<a name="line.70"></a>
+<span class="sourceLineNo">071</span> @since Ptolemy II 1.0<a name="line.71"></a>
+<span class="sourceLineNo">072</span> @Pt.ProposedRating Yellow (neuendor)<a name="line.72"></a>
+<span class="sourceLineNo">073</span> @Pt.AcceptedRating Yellow (neuendor)<a name="line.73"></a>
+<span class="sourceLineNo">074</span> */<a name="line.74"></a>
+<span class="sourceLineNo">075</span>@SuppressWarnings("serial")<a name="line.75"></a>
+<span class="sourceLineNo">076</span>public class StyleConfigurer extends Query implements QueryListener {<a name="line.76"></a>
+<span class="sourceLineNo">077</span>    /** Construct a configurer for the specified object.<a name="line.77"></a>
+<span class="sourceLineNo">078</span>     *  @param object The object to configure.<a name="line.78"></a>
+<span class="sourceLineNo">079</span>     *  @exception IllegalActionException If the specified object has<a name="line.79"></a>
+<span class="sourceLineNo">080</span>     *   no editor factories, and refuses to acceptable as an attribute<a name="line.80"></a>
+<span class="sourceLineNo">081</span>     *   an instance of EditorPaneFactory.<a name="line.81"></a>
+<span class="sourceLineNo">082</span>     */<a name="line.82"></a>
+<span class="sourceLineNo">083</span>    public StyleConfigurer(NamedObj object) throws IllegalActionException {<a name="line.83"></a>
+<span class="sourceLineNo">084</span>        super();<a name="line.84"></a>
+<span class="sourceLineNo">085</span>        this.addQueryListener(this);<a name="line.85"></a>
+<span class="sourceLineNo">086</span>        setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));<a name="line.86"></a>
+<span class="sourceLineNo">087</span><a name="line.87"></a>
+<span class="sourceLineNo">088</span>        _object = object;<a name="line.88"></a>
+<span class="sourceLineNo">089</span><a name="line.89"></a>
+<span class="sourceLineNo">090</span>        setTextWidth(25);<a name="line.90"></a>
+<span class="sourceLineNo">091</span><a name="line.91"></a>
+<span class="sourceLineNo">092</span>        try {<a name="line.92"></a>
+<span class="sourceLineNo">093</span>            // FIXME this list should not be statically specified.<a name="line.93"></a>
+<span class="sourceLineNo">094</span>            // Note that fixing this will probably move the accept method<a name="line.94"></a>
+<span class="sourceLineNo">095</span>            // into some sort of factory object (instead of cloning<a name="line.95"></a>
+<span class="sourceLineNo">096</span>            // existing styles).<a name="line.96"></a>
+<span class="sourceLineNo">097</span>            // NOTE: These styles need to have a container so<a name="line.97"></a>
+<span class="sourceLineNo">098</span>            // that exportMoML() doesn't generate XML header information.<a name="line.98"></a>
+<span class="sourceLineNo">099</span>            Parameter container = new Parameter();<a name="line.99"></a>
+<span class="sourceLineNo">100</span>            _parameterStyles = new ParameterEditorStyle[8];<a name="line.100"></a>
+<span class="sourceLineNo">101</span>            _parameterStyles[0] = new LineStyle(container, "Line");<a name="line.101"></a>
+<span class="sourceLineNo">102</span>            _parameterStyles[1] = new CheckBoxStyle(container, "Check Box");<a name="line.102"></a>
+<span class="sourceLineNo">103</span>            _parameterStyles[2] = new ChoiceStyle(container, "Choice");<a name="line.103"></a>
+<span class="sourceLineNo">104</span>            _parameterStyles[3] = new EditableChoiceStyle(container,<a name="line.104"></a>
+<span class="sourceLineNo">105</span>                    "EditableChoice");<a name="line.105"></a>
+<span class="sourceLineNo">106</span>            _parameterStyles[4] = new TextStyle(container, "Text");<a name="line.106"></a>
+<span class="sourceLineNo">107</span>            _parameterStyles[5] = new FileChooserStyle(container,<a name="line.107"></a>
+<span class="sourceLineNo">108</span>                    "FileChooser");<a name="line.108"></a>
+<span class="sourceLineNo">109</span>            _parameterStyles[6] = new NotEditableLineStyle(container, "Fixed");<a name="line.109"></a>
+<span class="sourceLineNo">110</span>            _parameterStyles[7] = new HiddenStyle(container, "Hidden");<a name="line.110"></a>
+<span class="sourceLineNo">111</span>        } catch (NameDuplicationException ex) {<a name="line.111"></a>
+<span class="sourceLineNo">112</span>            throw new InternalErrorException(ex.getMessage());<a name="line.112"></a>
+<span class="sourceLineNo">113</span>        }<a name="line.113"></a>
+<span class="sourceLineNo">114</span><a name="line.114"></a>
+<span class="sourceLineNo">115</span>        Iterator parameters = object.attributeList(Settable.class).iterator();<a name="line.115"></a>
+<span class="sourceLineNo">116</span><a name="line.116"></a>
+<span class="sourceLineNo">117</span>        while (parameters.hasNext()) {<a name="line.117"></a>
+<span class="sourceLineNo">118</span>            Settable param = (Settable) parameters.next();<a name="line.118"></a>
+<span class="sourceLineNo">119</span><a name="line.119"></a>
+<span class="sourceLineNo">120</span>            // Skip if the parameter is not visible.<a name="line.120"></a>
+<span class="sourceLineNo">121</span>            if (!Configurer.isVisible(_object, param)) {<a name="line.121"></a>
+<span class="sourceLineNo">122</span>                continue;<a name="line.122"></a>
+<span class="sourceLineNo">123</span>            }<a name="line.123"></a>
+<span class="sourceLineNo">124</span><a name="line.124"></a>
+<span class="sourceLineNo">125</span>            // Get the current style.<a name="line.125"></a>
+<span class="sourceLineNo">126</span>            boolean foundOne = false;<a name="line.126"></a>
+<span class="sourceLineNo">127</span>            Iterator styles = ((NamedObj) param)<a name="line.127"></a>
+<span class="sourceLineNo">128</span>                    .attributeList(ParameterEditorStyle.class).iterator();<a name="line.128"></a>
+<span class="sourceLineNo">129</span>            ParameterEditorStyle foundStyle = null;<a name="line.129"></a>
+<span class="sourceLineNo">130</span><a name="line.130"></a>
+<span class="sourceLineNo">131</span>            while (styles.hasNext()) {<a name="line.131"></a>
+<span class="sourceLineNo">132</span>                foundOne = true;<a name="line.132"></a>
+<span class="sourceLineNo">133</span>                foundStyle = (ParameterEditorStyle) styles.next();<a name="line.133"></a>
+<span class="sourceLineNo">134</span>            }<a name="line.134"></a>
+<span class="sourceLineNo">135</span><a name="line.135"></a>
+<span class="sourceLineNo">136</span>            List styleList = new ArrayList();<a name="line.136"></a>
+<span class="sourceLineNo">137</span><a name="line.137"></a>
+<span class="sourceLineNo">138</span>            // The index of the default;<a name="line.138"></a>
+<span class="sourceLineNo">139</span>            int defaultIndex = 0;<a name="line.139"></a>
+<span class="sourceLineNo">140</span><a name="line.140"></a>
+<span class="sourceLineNo">141</span>            _originalExpertMode = _object.getAttribute("_expertMode") != null;<a name="line.141"></a>
+<span class="sourceLineNo">142</span>            if (param.getVisibility() == Settable.NOT_EDITABLE<a name="line.142"></a>
+<span class="sourceLineNo">143</span>                    &amp;&amp; !_originalExpertMode &amp;&amp; !foundOne) {<a name="line.143"></a>
+<span class="sourceLineNo">144</span>                // If the parameter is set to NOT_EDITABLE visibility and not expert mode<a name="line.144"></a>
+<span class="sourceLineNo">145</span>                // then only a fixed style is possible.<a name="line.145"></a>
+<span class="sourceLineNo">146</span>                styleList.add("Fixed");<a name="line.146"></a>
+<span class="sourceLineNo">147</span>                defaultIndex = 0;<a name="line.147"></a>
+<span class="sourceLineNo">148</span>            } else {<a name="line.148"></a>
+<span class="sourceLineNo">149</span>                int count = 0;<a name="line.149"></a>
+<span class="sourceLineNo">150</span><a name="line.150"></a>
+<span class="sourceLineNo">151</span>                // Reduce the list of parameters<a name="line.151"></a>
+<span class="sourceLineNo">152</span>                for (int i = 0; i &lt; _parameterStyles.length<a name="line.152"></a>
+<span class="sourceLineNo">153</span>                        &amp;&amp; _parameterStyles[i] != null; i++) {<a name="line.153"></a>
+<span class="sourceLineNo">154</span>                    if (foundOne &amp;&amp; _parameterStyles[i].getClass() == foundStyle<a name="line.154"></a>
+<span class="sourceLineNo">155</span>                            .getClass()) {<a name="line.155"></a>
+<span class="sourceLineNo">156</span>                        defaultIndex = count;<a name="line.156"></a>
+<span class="sourceLineNo">157</span><a name="line.157"></a>
+<span class="sourceLineNo">158</span>                        if (foundStyle.acceptable(param)) {<a name="line.158"></a>
+<span class="sourceLineNo">159</span>                            styleList.add(_parameterStyles[i].getName());<a name="line.159"></a>
+<span class="sourceLineNo">160</span>                            count++;<a name="line.160"></a>
+<span class="sourceLineNo">161</span>                        }<a name="line.161"></a>
+<span class="sourceLineNo">162</span>                    } else if (_parameterStyles[i].acceptable(param)) {<a name="line.162"></a>
+<span class="sourceLineNo">163</span>                        styleList.add(_parameterStyles[i].getName());<a name="line.163"></a>
+<span class="sourceLineNo">164</span>                        count++;<a name="line.164"></a>
+<span class="sourceLineNo">165</span>                    }<a name="line.165"></a>
+<span class="sourceLineNo">166</span>                }<a name="line.166"></a>
+<span class="sourceLineNo">167</span>            }<a name="line.167"></a>
+<span class="sourceLineNo">168</span><a name="line.168"></a>
+<span class="sourceLineNo">169</span>            String[] styleArray = (String[]) styleList<a name="line.169"></a>
+<span class="sourceLineNo">170</span>                    .toArray(new String[styleList.size()]);<a name="line.170"></a>
+<span class="sourceLineNo">171</span><a name="line.171"></a>
+<span class="sourceLineNo">172</span>            addChoice(param.getName(), param.getName(), styleArray,<a name="line.172"></a>
+<span class="sourceLineNo">173</span>                    styleArray[defaultIndex]);<a name="line.173"></a>
+<span class="sourceLineNo">174</span>        }<a name="line.174"></a>
+<span class="sourceLineNo">175</span><a name="line.175"></a>
+<span class="sourceLineNo">176</span>        // Add the expert mode box.<a name="line.176"></a>
+<span class="sourceLineNo">177</span>        addCheckBox("expertMode", "expert mode", _originalExpertMode);<a name="line.177"></a>
+<span class="sourceLineNo">178</span>    }<a name="line.178"></a>
+<span class="sourceLineNo">179</span><a name="line.179"></a>
+<span class="sourceLineNo">180</span>    ///////////////////////////////////////////////////////////////////<a name="line.180"></a>
+<span class="sourceLineNo">181</span>    ////                         public methods                    ////<a name="line.181"></a>
+<span class="sourceLineNo">182</span><a name="line.182"></a>
+<span class="sourceLineNo">183</span>    /** Generate a change request to apply the changes.<a name="line.183"></a>
+<span class="sourceLineNo">184</span>     *  This is called to notify that one of the entries has changed.<a name="line.184"></a>
+<span class="sourceLineNo">185</span>     *  The name of the entry is passed as an argument.<a name="line.185"></a>
+<span class="sourceLineNo">186</span>     *  @param name The name of the entry.<a name="line.186"></a>
+<span class="sourceLineNo">187</span>     */<a name="line.187"></a>
+<span class="sourceLineNo">188</span>    @Override<a name="line.188"></a>
+<span class="sourceLineNo">189</span>    public void changed(String name) {<a name="line.189"></a>
+<span class="sourceLineNo">190</span>        StringBuffer moml = new StringBuffer();<a name="line.190"></a>
+<span class="sourceLineNo">191</span><a name="line.191"></a>
+<span class="sourceLineNo">192</span>        // Treat the expertMode entry specially.<a name="line.192"></a>
+<span class="sourceLineNo">193</span>        if (name.equals("expertMode")) {<a name="line.193"></a>
+<span class="sourceLineNo">194</span>            Attribute previousExpert = _object.getAttribute("_expertMode");<a name="line.194"></a>
+<span class="sourceLineNo">195</span>            boolean isExpert = previousExpert != null;<a name="line.195"></a>
+<span class="sourceLineNo">196</span>            boolean toExpert = getBooleanValue("expertMode");<a name="line.196"></a>
+<span class="sourceLineNo">197</span><a name="line.197"></a>
+<span class="sourceLineNo">198</span>            if (isExpert != toExpert) {<a name="line.198"></a>
+<span class="sourceLineNo">199</span>                if (isExpert) {<a name="line.199"></a>
+<span class="sourceLineNo">200</span>                    moml.append("&lt;deleteProperty name=\"_expertMode\"/&gt;");<a name="line.200"></a>
+<span class="sourceLineNo">201</span>                } else {<a name="line.201"></a>
+<span class="sourceLineNo">202</span>                    moml.append("&lt;property name=\"_expertMode\" "<a name="line.202"></a>
+<span class="sourceLineNo">203</span>                            + "class=\"ptolemy.kernel.util.SingletonAttribute\"/&gt;");<a name="line.203"></a>
+<span class="sourceLineNo">204</span>                }<a name="line.204"></a>
+<span class="sourceLineNo">205</span>            }<a name="line.205"></a>
+<span class="sourceLineNo">206</span>        } else {<a name="line.206"></a>
+<span class="sourceLineNo">207</span>            // Entry is not expertMode.<a name="line.207"></a>
+<span class="sourceLineNo">208</span>            // Figure out which style is being requested.<a name="line.208"></a>
+<span class="sourceLineNo">209</span>            ParameterEditorStyle found = null;<a name="line.209"></a>
+<span class="sourceLineNo">210</span><a name="line.210"></a>
+<span class="sourceLineNo">211</span>            for (int i = 0; i &lt; _parameterStyles.length &amp;&amp; found == null; i++) {<a name="line.211"></a>
+<span class="sourceLineNo">212</span>                if (getStringValue(name)<a name="line.212"></a>
+<span class="sourceLineNo">213</span>                        .equals(_parameterStyles[i].getName())) {<a name="line.213"></a>
+<span class="sourceLineNo">214</span>                    found = _parameterStyles[i];<a name="line.214"></a>
+<span class="sourceLineNo">215</span>                }<a name="line.215"></a>
+<span class="sourceLineNo">216</span>            }<a name="line.216"></a>
+<span class="sourceLineNo">217</span><a name="line.217"></a>
+<span class="sourceLineNo">218</span>            // First remove all pre-existing styles.<a name="line.218"></a>
+<span class="sourceLineNo">219</span>            moml.append("&lt;group&gt;");<a name="line.219"></a>
+<span class="sourceLineNo">220</span><a name="line.220"></a>
+<span class="sourceLineNo">221</span>            Attribute param = _object.getAttribute(name);<a name="line.221"></a>
+<span class="sourceLineNo">222</span>            moml.append("&lt;property name=\"" + param.getName() + "\"&gt;");<a name="line.222"></a>
+<span class="sourceLineNo">223</span><a name="line.223"></a>
+<span class="sourceLineNo">224</span>            Iterator styles = param.attributeList(ParameterEditorStyle.class)<a name="line.224"></a>
+<span class="sourceLineNo">225</span>                    .iterator();<a name="line.225"></a>
+<span class="sourceLineNo">226</span>            boolean foundOne = false;<a name="line.226"></a>
+<span class="sourceLineNo">227</span><a name="line.227"></a>
+<span class="sourceLineNo">228</span>            while (styles.hasNext()) {<a name="line.228"></a>
+<span class="sourceLineNo">229</span>                foundOne = true;<a name="line.229"></a>
+<span class="sourceLineNo">230</span><a name="line.230"></a>
+<span class="sourceLineNo">231</span>                ParameterEditorStyle style = (ParameterEditorStyle) styles<a name="line.231"></a>
+<span class="sourceLineNo">232</span>                        .next();<a name="line.232"></a>
+<span class="sourceLineNo">233</span>                moml.append(<a name="line.233"></a>
+<span class="sourceLineNo">234</span>                        "&lt;deleteProperty name=\"" + style.getName() + "\"/&gt;\n");<a name="line.234"></a>
+<span class="sourceLineNo">235</span>            }<a name="line.235"></a>
+<span class="sourceLineNo">236</span><a name="line.236"></a>
+<span class="sourceLineNo">237</span>            if (foundOne) {<a name="line.237"></a>
+<span class="sourceLineNo">238</span>                // Have to close and re-open the context to ensure<a name="line.238"></a>
+<span class="sourceLineNo">239</span>                // that deletions occur before additions.<a name="line.239"></a>
+<span class="sourceLineNo">240</span>                moml.append("&lt;/property&gt;");<a name="line.240"></a>
+<span class="sourceLineNo">241</span>                moml.append("&lt;property name=\"" + param.getName() + "\"&gt;");<a name="line.241"></a>
+<span class="sourceLineNo">242</span>            }<a name="line.242"></a>
+<span class="sourceLineNo">243</span><a name="line.243"></a>
+<span class="sourceLineNo">244</span>            moml.append("&lt;group name=\"auto\"&gt;");<a name="line.244"></a>
+<span class="sourceLineNo">245</span>            if (found != null) {<a name="line.245"></a>
+<span class="sourceLineNo">246</span>                // Coverity: found could be null if there was an internal error<a name="line.246"></a>
+<span class="sourceLineNo">247</span>                // and the parameter style was not found/<a name="line.247"></a>
+<span class="sourceLineNo">248</span>                moml.append(found.exportMoML("style"));<a name="line.248"></a>
+<span class="sourceLineNo">249</span>            }<a name="line.249"></a>
+<span class="sourceLineNo">250</span>            moml.append("&lt;/group&gt;&lt;/property&gt;&lt;/group&gt;");<a name="line.250"></a>
+<span class="sourceLineNo">251</span>        }<a name="line.251"></a>
+<span class="sourceLineNo">252</span><a name="line.252"></a>
+<span class="sourceLineNo">253</span>        MoMLChangeRequest change = new MoMLChangeRequest(this, _object,<a name="line.253"></a>
+<span class="sourceLineNo">254</span>                moml.toString());<a name="line.254"></a>
+<span class="sourceLineNo">255</span>        _object.requestChange(change);<a name="line.255"></a>
+<span class="sourceLineNo">256</span>    }<a name="line.256"></a>
+<span class="sourceLineNo">257</span><a name="line.257"></a>
+<span class="sourceLineNo">258</span>    /** Request restoration of the parameter values to what they<a name="line.258"></a>
+<span class="sourceLineNo">259</span>     *  were when this object was created.  The actual restoration<a name="line.259"></a>
+<span class="sourceLineNo">260</span>     *  occurs later, in the UI thread, in order to allow all pending<a name="line.260"></a>
+<span class="sourceLineNo">261</span>     *  changes to the parameter values to be processed first.<a name="line.261"></a>
+<span class="sourceLineNo">262</span>     */<a name="line.262"></a>
+<span class="sourceLineNo">263</span>    public void restore() {<a name="line.263"></a>
+<span class="sourceLineNo">264</span>        // This is done in the UI thread in order to<a name="line.264"></a>
+<span class="sourceLineNo">265</span>        // ensure that all pending UI events have been<a name="line.265"></a>
+<span class="sourceLineNo">266</span>        // processed.  In particular, some of these events<a name="line.266"></a>
+<span class="sourceLineNo">267</span>        // may trigger notification of new parameter values,<a name="line.267"></a>
+<span class="sourceLineNo">268</span>        // which must not be allowed to occur after this<a name="line.268"></a>
+<span class="sourceLineNo">269</span>        // restore is done.  In particular, the default<a name="line.269"></a>
+<span class="sourceLineNo">270</span>        // parameter editor has lines where notification<a name="line.270"></a>
+<span class="sourceLineNo">271</span>        // of updates occurs when the line loses focus.<a name="line.271"></a>
+<span class="sourceLineNo">272</span>        // That notification occurs some time after the<a name="line.272"></a>
+<span class="sourceLineNo">273</span>        // window is destroyed.<a name="line.273"></a>
+<span class="sourceLineNo">274</span>        Top.deferIfNecessary(new Runnable() {<a name="line.274"></a>
+<span class="sourceLineNo">275</span>            @Override<a name="line.275"></a>
+<span class="sourceLineNo">276</span>            public void run() {<a name="line.276"></a>
+<span class="sourceLineNo">277</span>                // Treat the expertMode entry specially.<a name="line.277"></a>
+<span class="sourceLineNo">278</span>                Attribute currentExpert = _object.getAttribute("_expertMode");<a name="line.278"></a>
+<span class="sourceLineNo">279</span>                boolean isExpert = currentExpert != null;<a name="line.279"></a>
+<span class="sourceLineNo">280</span><a name="line.280"></a>
+<span class="sourceLineNo">281</span>                if (isExpert != _originalExpertMode) {<a name="line.281"></a>
+<span class="sourceLineNo">282</span>                    try {<a name="line.282"></a>
+<span class="sourceLineNo">283</span>                        if (isExpert) {<a name="line.283"></a>
+<span class="sourceLineNo">284</span>                            currentExpert.setContainer(null);<a name="line.284"></a>
+<span class="sourceLineNo">285</span>                        } else {<a name="line.285"></a>
+<span class="sourceLineNo">286</span>                            // FIXME: This won't propagate.<a name="line.286"></a>
+<span class="sourceLineNo">287</span>                            new Attribute(_object, "_expertMode");<a name="line.287"></a>
+<span class="sourceLineNo">288</span>                        }<a name="line.288"></a>
+<span class="sourceLineNo">289</span>                    } catch (KernelException e) {<a name="line.289"></a>
+<span class="sourceLineNo">290</span>                        // This should not occur.<a name="line.290"></a>
+<span class="sourceLineNo">291</span>                        throw new InternalErrorException(e);<a name="line.291"></a>
+<span class="sourceLineNo">292</span>                    }<a name="line.292"></a>
+<span class="sourceLineNo">293</span>                }<a name="line.293"></a>
+<span class="sourceLineNo">294</span><a name="line.294"></a>
+<span class="sourceLineNo">295</span>                // FIXME: This code is nonsensical... _originalValues never<a name="line.295"></a>
+<span class="sourceLineNo">296</span>                // gets anything added to it!<a name="line.296"></a>
+<span class="sourceLineNo">297</span>                Iterator entries = _originalValues.entrySet().iterator();<a name="line.297"></a>
+<span class="sourceLineNo">298</span><a name="line.298"></a>
+<span class="sourceLineNo">299</span>                while (entries.hasNext()) {<a name="line.299"></a>
+<span class="sourceLineNo">300</span>                    Map.Entry entry = (Map.Entry) entries.next();<a name="line.300"></a>
+<span class="sourceLineNo">301</span>                    Settable param = (Settable) _object<a name="line.301"></a>
+<span class="sourceLineNo">302</span>                            .getAttribute((String) entry.getKey());<a name="line.302"></a>
+<span class="sourceLineNo">303</span><a name="line.303"></a>
+<span class="sourceLineNo">304</span>                    try {<a name="line.304"></a>
+<span class="sourceLineNo">305</span>                        param.setExpression((String) entry.getValue());<a name="line.305"></a>
+<span class="sourceLineNo">306</span>                    } catch (IllegalActionException ex) {<a name="line.306"></a>
+<span class="sourceLineNo">307</span>                        throw new InternalErrorException(<a name="line.307"></a>
+<span class="sourceLineNo">308</span>                                "Cannot restore style value!");<a name="line.308"></a>
+<span class="sourceLineNo">309</span>                    }<a name="line.309"></a>
+<span class="sourceLineNo">310</span>                }<a name="line.310"></a>
+<span class="sourceLineNo">311</span>            }<a name="line.311"></a>
+<span class="sourceLineNo">312</span>        });<a name="line.312"></a>
+<span class="sourceLineNo">313</span>    }<a name="line.313"></a>
+<span class="sourceLineNo">314</span><a name="line.314"></a>
+<span class="sourceLineNo">315</span>    ///////////////////////////////////////////////////////////////////<a name="line.315"></a>
+<span class="sourceLineNo">316</span>    ////                         private variables                 ////<a name="line.316"></a>
+<span class="sourceLineNo">317</span>    // The object that this configurer configures.<a name="line.317"></a>
+<span class="sourceLineNo">318</span>    private NamedObj _object;<a name="line.318"></a>
+<span class="sourceLineNo">319</span><a name="line.319"></a>
+<span class="sourceLineNo">320</span>    // Indicator of what the expert mode was upon entry.<a name="line.320"></a>
+<span class="sourceLineNo">321</span>    private boolean _originalExpertMode = false;<a name="line.321"></a>
+<span class="sourceLineNo">322</span><a name="line.322"></a>
+<span class="sourceLineNo">323</span>    // The original values of the parameters.<a name="line.323"></a>
+<span class="sourceLineNo">324</span>    private Map _originalValues = new HashMap();<a name="line.324"></a>
+<span class="sourceLineNo">325</span><a name="line.325"></a>
+<span class="sourceLineNo">326</span>    // The list of the possible styles.<a name="line.326"></a>
+<span class="sourceLineNo">327</span>    private ParameterEditorStyle[] _parameterStyles;<a name="line.327"></a>
+<span class="sourceLineNo">328</span>}<a name="line.328"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

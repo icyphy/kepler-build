@@ -1,0 +1,276 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../../stylesheet.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>/**<a name="line.1"></a>
+<span class="sourceLineNo">002</span> *  '$Author: barseghian $'<a name="line.2"></a>
+<span class="sourceLineNo">003</span> *  '$Date: 2013-01-15 13:33:01 -0800 (Tue, 15 Jan 2013) $'<a name="line.3"></a>
+<span class="sourceLineNo">004</span> *  '$Revision: 31328 $'<a name="line.4"></a>
+<span class="sourceLineNo">005</span> *<a name="line.5"></a>
+<span class="sourceLineNo">006</span> *  For Details:<a name="line.6"></a>
+<span class="sourceLineNo">007</span> *  http://www.kepler-project.org<a name="line.7"></a>
+<span class="sourceLineNo">008</span> *<a name="line.8"></a>
+<span class="sourceLineNo">009</span> *  Copyright (c) 2009-2010 The Regents of the<a name="line.9"></a>
+<span class="sourceLineNo">010</span> *  University of California. All rights reserved. Permission is hereby granted,<a name="line.10"></a>
+<span class="sourceLineNo">011</span> *  without written agreement and without license or royalty fees, to use, copy,<a name="line.11"></a>
+<span class="sourceLineNo">012</span> *  modify, and distribute this software and its documentation for any purpose,<a name="line.12"></a>
+<span class="sourceLineNo">013</span> *  provided that the above copyright notice and the following two paragraphs<a name="line.13"></a>
+<span class="sourceLineNo">014</span> *  appear in all copies of this software. IN NO EVENT SHALL THE UNIVERSITY OF<a name="line.14"></a>
+<span class="sourceLineNo">015</span> *  CALIFORNIA BE LIABLE TO ANY PARTY FOR DIRECT, INDIRECT, SPECIAL, INCIDENTAL,<a name="line.15"></a>
+<span class="sourceLineNo">016</span> *  OR CONSEQUENTIAL DAMAGES ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS<a name="line.16"></a>
+<span class="sourceLineNo">017</span> *  DOCUMENTATION, EVEN IF THE UNIVERSITY OF CALIFORNIA HAS BEEN ADVISED OF THE<a name="line.17"></a>
+<span class="sourceLineNo">018</span> *  POSSIBILITY OF SUCH DAMAGE. THE UNIVERSITY OF CALIFORNIA SPECIFICALLY<a name="line.18"></a>
+<span class="sourceLineNo">019</span> *  DISCLAIMS ANY WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED<a name="line.19"></a>
+<span class="sourceLineNo">020</span> *  WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. THE<a name="line.20"></a>
+<span class="sourceLineNo">021</span> *  SOFTWARE PROVIDED HEREUNDER IS ON AN "AS IS" BASIS, AND THE UNIVERSITY OF<a name="line.21"></a>
+<span class="sourceLineNo">022</span> *  CALIFORNIA HAS NO OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT, UPDATES,<a name="line.22"></a>
+<span class="sourceLineNo">023</span> *  ENHANCEMENTS, OR MODIFICATIONS.<a name="line.23"></a>
+<span class="sourceLineNo">024</span> */<a name="line.24"></a>
+<span class="sourceLineNo">025</span><a name="line.25"></a>
+<span class="sourceLineNo">026</span>package org.kepler.workflowrunmanager;<a name="line.26"></a>
+<span class="sourceLineNo">027</span><a name="line.27"></a>
+<span class="sourceLineNo">028</span>import java.awt.Color;<a name="line.28"></a>
+<span class="sourceLineNo">029</span>import java.awt.Font;<a name="line.29"></a>
+<span class="sourceLineNo">030</span>import java.io.IOException;<a name="line.30"></a>
+<span class="sourceLineNo">031</span>import java.util.ArrayList;<a name="line.31"></a>
+<span class="sourceLineNo">032</span>import java.util.Arrays;<a name="line.32"></a>
+<span class="sourceLineNo">033</span>import java.util.HashMap;<a name="line.33"></a>
+<span class="sourceLineNo">034</span>import java.util.List;<a name="line.34"></a>
+<span class="sourceLineNo">035</span>import java.util.Map;<a name="line.35"></a>
+<span class="sourceLineNo">036</span>import java.util.Vector;<a name="line.36"></a>
+<span class="sourceLineNo">037</span><a name="line.37"></a>
+<span class="sourceLineNo">038</span>import org.kepler.configuration.ConfigurationManager;<a name="line.38"></a>
+<span class="sourceLineNo">039</span>import org.kepler.configuration.ConfigurationNamespace;<a name="line.39"></a>
+<span class="sourceLineNo">040</span>import org.kepler.configuration.ConfigurationProperty;<a name="line.40"></a>
+<span class="sourceLineNo">041</span>import org.kepler.objectmanager.repository.EcogridRepository;<a name="line.41"></a>
+<span class="sourceLineNo">042</span>import org.kepler.objectmanager.repository.Repository;<a name="line.42"></a>
+<span class="sourceLineNo">043</span>import org.kepler.objectmanager.repository.RepositoryManager;<a name="line.43"></a>
+<span class="sourceLineNo">044</span>import org.kepler.util.ProvenanceStore;<a name="line.44"></a>
+<span class="sourceLineNo">045</span><a name="line.45"></a>
+<span class="sourceLineNo">046</span>// singleton.<a name="line.46"></a>
+<span class="sourceLineNo">047</span>public final class WRMDefaults {<a name="line.47"></a>
+<span class="sourceLineNo">048</span><a name="line.48"></a>
+<span class="sourceLineNo">049</span>        static private WRMDefaults _instance = null;<a name="line.49"></a>
+<span class="sourceLineNo">050</span><a name="line.50"></a>
+<span class="sourceLineNo">051</span>        static final public String moduleName = "workflow-run-manager";<a name="line.51"></a>
+<span class="sourceLineNo">052</span>        <a name="line.52"></a>
+<span class="sourceLineNo">053</span>    static final public ConfigurationProperty provenanceDefaultsProperty =<a name="line.53"></a>
+<span class="sourceLineNo">054</span>        ConfigurationManager.getInstance().getProperty(<a name="line.54"></a>
+<span class="sourceLineNo">055</span>        ConfigurationManager.getModule("provenance"), "provenance.defaultSettings");<a name="line.55"></a>
+<span class="sourceLineNo">056</span><a name="line.56"></a>
+<span class="sourceLineNo">057</span>        static final public String TAGS = "Tags";<a name="line.57"></a>
+<span class="sourceLineNo">058</span>        static final public String WORKFLOW_NAME = "Workflow Name";<a name="line.58"></a>
+<span class="sourceLineNo">059</span>        static final public String START_TIME = "Run Date";<a name="line.59"></a>
+<span class="sourceLineNo">060</span>        static final public String DURATION = "Duration";<a name="line.60"></a>
+<span class="sourceLineNo">061</span>        static final public String USER = "User";<a name="line.61"></a>
+<span class="sourceLineNo">062</span>        static final public String EXEC_ID = "Id";<a name="line.62"></a>
+<span class="sourceLineNo">063</span>        static final public String DEFAULT = "default";<a name="line.63"></a>
+<span class="sourceLineNo">064</span>        <a name="line.64"></a>
+<span class="sourceLineNo">065</span>        static final public String RANGE_SEPARATOR = " - ";<a name="line.65"></a>
+<span class="sourceLineNo">066</span><a name="line.66"></a>
+<span class="sourceLineNo">067</span>        // TODO these sizes should be derived from some official Kepler UI settings:<a name="line.67"></a>
+<span class="sourceLineNo">068</span>        static final public int WRM_PANE_WIDTH = 800;<a name="line.68"></a>
+<span class="sourceLineNo">069</span>        static final public int WRM_PANE_HEIGHT = 180;<a name="line.69"></a>
+<span class="sourceLineNo">070</span><a name="line.70"></a>
+<span class="sourceLineNo">071</span>        static final public int WRM_FONT_SIZE = 11;<a name="line.71"></a>
+<span class="sourceLineNo">072</span>        static final public Font WRM_FONT = new Font("LucidaGrande", Font.PLAIN,<a name="line.72"></a>
+<span class="sourceLineNo">073</span>                        WRM_FONT_SIZE);<a name="line.73"></a>
+<span class="sourceLineNo">074</span>        static final public int WRM_ROW_HEIGHT = 14;<a name="line.74"></a>
+<span class="sourceLineNo">075</span><a name="line.75"></a>
+<span class="sourceLineNo">076</span>        // preferred column widths<a name="line.76"></a>
+<span class="sourceLineNo">077</span>        static final public int TAGS_COLUMN_WIDTH = 270;<a name="line.77"></a>
+<span class="sourceLineNo">078</span>        ///static final public int WORKFLOW_NAME_COLUMN_WIDTH = 120;<a name="line.78"></a>
+<span class="sourceLineNo">079</span>        static final public int WORKFLOW_NAME_COLUMN_WIDTH = 140;<a name="line.79"></a>
+<span class="sourceLineNo">080</span>        static final public int START_TIME_COLUMN_WIDTH = 150;<a name="line.80"></a>
+<span class="sourceLineNo">081</span>        static final public int DURATION_COLUMN_WIDTH = 45;<a name="line.81"></a>
+<span class="sourceLineNo">082</span>        static final public int USER_NAME_COLUMN_WIDTH = 40;<a name="line.82"></a>
+<span class="sourceLineNo">083</span>        static final public int EXEC_ID_COLUMN_WIDTH = 20;<a name="line.83"></a>
+<span class="sourceLineNo">084</span><a name="line.84"></a>
+<span class="sourceLineNo">085</span>        static final public int COLUMN_MARGIN = 2;<a name="line.85"></a>
+<span class="sourceLineNo">086</span>        static final public Color TABLE_GRID_COLOR = Color.LIGHT_GRAY;<a name="line.86"></a>
+<span class="sourceLineNo">087</span>        static final public boolean SHOW_VERTICAL_LINES = true;<a name="line.87"></a>
+<span class="sourceLineNo">088</span>        static final public boolean SHOW_HORIZONTAL_LINES = false;<a name="line.88"></a>
+<span class="sourceLineNo">089</span>        static final public Color ERROR_ROW_COLOR = new Color(255, 191, 207);<a name="line.89"></a>
+<span class="sourceLineNo">090</span>        static final public Color ERROR_ROW_SELECTED_COLOR = new Color(150, 119, 211);<a name="line.90"></a>
+<span class="sourceLineNo">091</span>        static final public Color IMPORTED_ROW_COLOR = new Color(255, 206, 255);<a name="line.91"></a>
+<span class="sourceLineNo">092</span>        static final public Color IMPORTED_ROW_SELECTED_COLOR = new Color(51, 204, 255);<a name="line.92"></a>
+<span class="sourceLineNo">093</span>        static final public Color PREVIEW_TEXT_COLOR = new Color(144, 144, 144);<a name="line.93"></a>
+<span class="sourceLineNo">094</span><a name="line.94"></a>
+<span class="sourceLineNo">095</span>        //set to whatever is selected by provenanceStoresComboBox<a name="line.95"></a>
+<span class="sourceLineNo">096</span>        private ProvenanceStore defaultProvenanceStore = <a name="line.96"></a>
+<span class="sourceLineNo">097</span>                new ProvenanceStore(provenanceDefaultsProperty);<a name="line.97"></a>
+<span class="sourceLineNo">098</span>        <a name="line.98"></a>
+<span class="sourceLineNo">099</span>        private Vector&lt;ProvenanceStore&gt; provenanceStores = null;<a name="line.99"></a>
+<span class="sourceLineNo">100</span>        <a name="line.100"></a>
+<span class="sourceLineNo">101</span>        // default column order:<a name="line.101"></a>
+<span class="sourceLineNo">102</span>        //private static List&lt;String&gt; defaultColumnOrderList = new ArrayList&lt;String&gt;(<a name="line.102"></a>
+<span class="sourceLineNo">103</span>        //      Arrays.asList(TAGS, WORKFLOW_NAME, START_TIME, DURATION, USER, EXEC_ID));<a name="line.103"></a>
+<span class="sourceLineNo">104</span>        static private List&lt;String&gt; defaultColumnOrderList = new ArrayList&lt;String&gt;(<a name="line.104"></a>
+<span class="sourceLineNo">105</span>                Arrays.asList(TAGS, WORKFLOW_NAME, START_TIME, DURATION, USER));<a name="line.105"></a>
+<span class="sourceLineNo">106</span>        <a name="line.106"></a>
+<span class="sourceLineNo">107</span>        public Map&lt;String, String&gt; DEFAULTSEARCHSTRING = new HashMap&lt;String, String&gt;();<a name="line.107"></a>
+<span class="sourceLineNo">108</span><a name="line.108"></a>
+<span class="sourceLineNo">109</span>        private WRMDefaults() {<a name="line.109"></a>
+<span class="sourceLineNo">110</span>                <a name="line.110"></a>
+<span class="sourceLineNo">111</span>                DEFAULTSEARCHSTRING.put(TAGS, "click to enter search term");<a name="line.111"></a>
+<span class="sourceLineNo">112</span>                DEFAULTSEARCHSTRING.put(WORKFLOW_NAME, "workflow search");<a name="line.112"></a>
+<span class="sourceLineNo">113</span>                DEFAULTSEARCHSTRING.put(START_TIME, "&gt; Jan 01, 2004 12:00:00 AM");<a name="line.113"></a>
+<span class="sourceLineNo">114</span>                DEFAULTSEARCHSTRING.put(DURATION, "&gt; 00:00:00");<a name="line.114"></a>
+<span class="sourceLineNo">115</span>                DEFAULTSEARCHSTRING.put(USER, "username");<a name="line.115"></a>
+<span class="sourceLineNo">116</span>                DEFAULTSEARCHSTRING.put(EXEC_ID, "&gt; 0");<a name="line.116"></a>
+<span class="sourceLineNo">117</span>                DEFAULTSEARCHSTRING.put(DEFAULT, "blank");<a name="line.117"></a>
+<span class="sourceLineNo">118</span>                <a name="line.118"></a>
+<span class="sourceLineNo">119</span>                // initialize the provenance stores (used by combobox)<a name="line.119"></a>
+<span class="sourceLineNo">120</span>                try {<a name="line.120"></a>
+<span class="sourceLineNo">121</span>                        provenanceStores = new Vector&lt;ProvenanceStore&gt;();<a name="line.121"></a>
+<span class="sourceLineNo">122</span>                        RepositoryManager repositoryManager = RepositoryManager.getInstance();<a name="line.122"></a>
+<span class="sourceLineNo">123</span><a name="line.123"></a>
+<span class="sourceLineNo">124</span>                        // first add the default local provenance store<a name="line.124"></a>
+<span class="sourceLineNo">125</span>                        provenanceStores.add(defaultProvenanceStore);<a name="line.125"></a>
+<span class="sourceLineNo">126</span><a name="line.126"></a>
+<span class="sourceLineNo">127</span>                        // now add all the ecogrid repositories<a name="line.127"></a>
+<span class="sourceLineNo">128</span>                        ConfigurationNamespace remoteStoresNameSpace = new ConfigurationNamespace(<a name="line.128"></a>
+<span class="sourceLineNo">129</span>                                        "remoteStores");<a name="line.129"></a>
+<span class="sourceLineNo">130</span>                        for (Repository repo : repositoryManager.getRepositories()) {<a name="line.130"></a>
+<span class="sourceLineNo">131</span>                                ConfigurationProperty provenanceProperty = ConfigurationManager<a name="line.131"></a>
+<span class="sourceLineNo">132</span>                                                .getInstance().getProperty(<a name="line.132"></a>
+<span class="sourceLineNo">133</span>                                                ConfigurationManager.getModule(moduleName),<a name="line.133"></a>
+<span class="sourceLineNo">134</span>                                                remoteStoresNameSpace,<a name="line.134"></a>
+<span class="sourceLineNo">135</span>                                                "repositories." + repo.getName());<a name="line.135"></a>
+<span class="sourceLineNo">136</span>                                if (provenanceProperty != null<a name="line.136"></a>
+<span class="sourceLineNo">137</span>                                                &amp;&amp; repo instanceof EcogridRepository) {<a name="line.137"></a>
+<span class="sourceLineNo">138</span>                                        ProvenanceStore provStore = new ProvenanceStore(<a name="line.138"></a>
+<span class="sourceLineNo">139</span>                                                        provenanceProperty, (EcogridRepository) repo);<a name="line.139"></a>
+<span class="sourceLineNo">140</span>                                        provenanceStores.add(provStore);<a name="line.140"></a>
+<span class="sourceLineNo">141</span>                                }<a name="line.141"></a>
+<span class="sourceLineNo">142</span>                        }<a name="line.142"></a>
+<span class="sourceLineNo">143</span>                } catch (IOException e) {<a name="line.143"></a>
+<span class="sourceLineNo">144</span>                        // TODO Auto-generated catch block<a name="line.144"></a>
+<span class="sourceLineNo">145</span>                        e.printStackTrace();<a name="line.145"></a>
+<span class="sourceLineNo">146</span>                } catch (Exception e) {<a name="line.146"></a>
+<span class="sourceLineNo">147</span>                        // TODO Auto-generated catch block<a name="line.147"></a>
+<span class="sourceLineNo">148</span>                        e.printStackTrace();<a name="line.148"></a>
+<span class="sourceLineNo">149</span>                }<a name="line.149"></a>
+<span class="sourceLineNo">150</span><a name="line.150"></a>
+<span class="sourceLineNo">151</span>        }<a name="line.151"></a>
+<span class="sourceLineNo">152</span><a name="line.152"></a>
+<span class="sourceLineNo">153</span>        public synchronized static WRMDefaults getInstance() {<a name="line.153"></a>
+<span class="sourceLineNo">154</span>                if (_instance == null) {<a name="line.154"></a>
+<span class="sourceLineNo">155</span>                        _instance = new WRMDefaults();<a name="line.155"></a>
+<span class="sourceLineNo">156</span>                }<a name="line.156"></a>
+<span class="sourceLineNo">157</span>                return _instance;<a name="line.157"></a>
+<span class="sourceLineNo">158</span>        }<a name="line.158"></a>
+<span class="sourceLineNo">159</span><a name="line.159"></a>
+<span class="sourceLineNo">160</span>        public String getDefault(String key) {<a name="line.160"></a>
+<span class="sourceLineNo">161</span>                if (DEFAULTSEARCHSTRING.containsKey(key)) {<a name="line.161"></a>
+<span class="sourceLineNo">162</span>                        return DEFAULTSEARCHSTRING.get(key);<a name="line.162"></a>
+<span class="sourceLineNo">163</span>                } else {<a name="line.163"></a>
+<span class="sourceLineNo">164</span>                        System.out.println("ERROR no default for key:" + key);<a name="line.164"></a>
+<span class="sourceLineNo">165</span>                        return DEFAULTSEARCHSTRING.get(DEFAULT);<a name="line.165"></a>
+<span class="sourceLineNo">166</span>                }<a name="line.166"></a>
+<span class="sourceLineNo">167</span>        }<a name="line.167"></a>
+<span class="sourceLineNo">168</span><a name="line.168"></a>
+<span class="sourceLineNo">169</span>        public int getDefaultColIndex(String col) throws Exception {<a name="line.169"></a>
+<span class="sourceLineNo">170</span>                if (defaultColumnOrderList.contains(col)) {<a name="line.170"></a>
+<span class="sourceLineNo">171</span>                        return defaultColumnOrderList.indexOf(col);<a name="line.171"></a>
+<span class="sourceLineNo">172</span>                }<a name="line.172"></a>
+<span class="sourceLineNo">173</span>                throw new Exception("ERROR trying to get a default column that doesn't exist");<a name="line.173"></a>
+<span class="sourceLineNo">174</span>        }<a name="line.174"></a>
+<span class="sourceLineNo">175</span><a name="line.175"></a>
+<span class="sourceLineNo">176</span>        public String getDefaultSearchStringForColIndex(int col) {<a name="line.176"></a>
+<span class="sourceLineNo">177</span>                try {<a name="line.177"></a>
+<span class="sourceLineNo">178</span>                        return getDefault(defaultColumnOrderList.get(col));<a name="line.178"></a>
+<span class="sourceLineNo">179</span>                } catch (IndexOutOfBoundsException ioobe) {<a name="line.179"></a>
+<span class="sourceLineNo">180</span>                        ioobe.printStackTrace();<a name="line.180"></a>
+<span class="sourceLineNo">181</span>                        return "%";<a name="line.181"></a>
+<span class="sourceLineNo">182</span>                }<a name="line.182"></a>
+<span class="sourceLineNo">183</span>        }<a name="line.183"></a>
+<span class="sourceLineNo">184</span><a name="line.184"></a>
+<span class="sourceLineNo">185</span>        public boolean containsName(String name) {<a name="line.185"></a>
+<span class="sourceLineNo">186</span>                if (DEFAULTSEARCHSTRING.containsValue(name)) {<a name="line.186"></a>
+<span class="sourceLineNo">187</span>                        return true;<a name="line.187"></a>
+<span class="sourceLineNo">188</span>                }<a name="line.188"></a>
+<span class="sourceLineNo">189</span>                return false;<a name="line.189"></a>
+<span class="sourceLineNo">190</span>        }<a name="line.190"></a>
+<span class="sourceLineNo">191</span><a name="line.191"></a>
+<span class="sourceLineNo">192</span>        public int getColumnCount() {<a name="line.192"></a>
+<span class="sourceLineNo">193</span>                return defaultColumnOrderList.size();<a name="line.193"></a>
+<span class="sourceLineNo">194</span>        }<a name="line.194"></a>
+<span class="sourceLineNo">195</span><a name="line.195"></a>
+<span class="sourceLineNo">196</span>        public Vector&lt;ProvenanceStore&gt; getProvenanceStores(){<a name="line.196"></a>
+<span class="sourceLineNo">197</span>                return provenanceStores;<a name="line.197"></a>
+<span class="sourceLineNo">198</span>        }<a name="line.198"></a>
+<span class="sourceLineNo">199</span>        <a name="line.199"></a>
+<span class="sourceLineNo">200</span>        public ProvenanceStore getDefaultProvenanceStore(){<a name="line.200"></a>
+<span class="sourceLineNo">201</span>                return defaultProvenanceStore;<a name="line.201"></a>
+<span class="sourceLineNo">202</span>        }<a name="line.202"></a>
+<span class="sourceLineNo">203</span>        <a name="line.203"></a>
+<span class="sourceLineNo">204</span>}<a name="line.204"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

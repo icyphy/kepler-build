@@ -1,0 +1,978 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../../../stylesheet.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>/*<a name="line.1"></a>
+<span class="sourceLineNo">002</span> * Copyright (c) 2004-2010 The Regents of the University of California.<a name="line.2"></a>
+<span class="sourceLineNo">003</span> * All rights reserved.<a name="line.3"></a>
+<span class="sourceLineNo">004</span> *<a name="line.4"></a>
+<span class="sourceLineNo">005</span> * '$Author: crawl $'<a name="line.5"></a>
+<span class="sourceLineNo">006</span> * '$Date: 2015-10-23 12:16:46 -0700 (Fri, 23 Oct 2015) $' <a name="line.6"></a>
+<span class="sourceLineNo">007</span> * '$Revision: 34054 $'<a name="line.7"></a>
+<span class="sourceLineNo">008</span> * <a name="line.8"></a>
+<span class="sourceLineNo">009</span> * Permission is hereby granted, without written agreement and without<a name="line.9"></a>
+<span class="sourceLineNo">010</span> * license or royalty fees, to use, copy, modify, and distribute this<a name="line.10"></a>
+<span class="sourceLineNo">011</span> * software and its documentation for any purpose, provided that the above<a name="line.11"></a>
+<span class="sourceLineNo">012</span> * copyright notice and the following two paragraphs appear in all copies<a name="line.12"></a>
+<span class="sourceLineNo">013</span> * of this software.<a name="line.13"></a>
+<span class="sourceLineNo">014</span> *<a name="line.14"></a>
+<span class="sourceLineNo">015</span> * IN NO EVENT SHALL THE UNIVERSITY OF CALIFORNIA BE LIABLE TO ANY PARTY<a name="line.15"></a>
+<span class="sourceLineNo">016</span> * FOR DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES<a name="line.16"></a>
+<span class="sourceLineNo">017</span> * ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION, EVEN IF<a name="line.17"></a>
+<span class="sourceLineNo">018</span> * THE UNIVERSITY OF CALIFORNIA HAS BEEN ADVISED OF THE POSSIBILITY OF<a name="line.18"></a>
+<span class="sourceLineNo">019</span> * SUCH DAMAGE.<a name="line.19"></a>
+<span class="sourceLineNo">020</span> *<a name="line.20"></a>
+<span class="sourceLineNo">021</span> * THE UNIVERSITY OF CALIFORNIA SPECIFICALLY DISCLAIMS ANY WARRANTIES,<a name="line.21"></a>
+<span class="sourceLineNo">022</span> * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF<a name="line.22"></a>
+<span class="sourceLineNo">023</span> * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE<a name="line.23"></a>
+<span class="sourceLineNo">024</span> * PROVIDED HEREUNDER IS ON AN "AS IS" BASIS, AND THE UNIVERSITY OF<a name="line.24"></a>
+<span class="sourceLineNo">025</span> * CALIFORNIA HAS NO OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT, UPDATES,<a name="line.25"></a>
+<span class="sourceLineNo">026</span> * ENHANCEMENTS, OR MODIFICATIONS.<a name="line.26"></a>
+<span class="sourceLineNo">027</span> *<a name="line.27"></a>
+<span class="sourceLineNo">028</span> */<a name="line.28"></a>
+<span class="sourceLineNo">029</span><a name="line.29"></a>
+<span class="sourceLineNo">030</span>package org.kepler.actor.job;<a name="line.30"></a>
+<span class="sourceLineNo">031</span><a name="line.31"></a>
+<span class="sourceLineNo">032</span>import java.io.File;<a name="line.32"></a>
+<span class="sourceLineNo">033</span>import java.io.FileWriter;<a name="line.33"></a>
+<span class="sourceLineNo">034</span>import java.io.IOException;<a name="line.34"></a>
+<span class="sourceLineNo">035</span>import java.io.Writer;<a name="line.35"></a>
+<span class="sourceLineNo">036</span>import java.util.ArrayList;<a name="line.36"></a>
+<span class="sourceLineNo">037</span>import java.util.Arrays;<a name="line.37"></a>
+<span class="sourceLineNo">038</span>import java.util.List;<a name="line.38"></a>
+<span class="sourceLineNo">039</span>import java.util.regex.Matcher;<a name="line.39"></a>
+<span class="sourceLineNo">040</span>import java.util.regex.Pattern;<a name="line.40"></a>
+<span class="sourceLineNo">041</span><a name="line.41"></a>
+<span class="sourceLineNo">042</span>import org.apache.commons.logging.Log;<a name="line.42"></a>
+<span class="sourceLineNo">043</span>import org.apache.commons.logging.LogFactory;<a name="line.43"></a>
+<span class="sourceLineNo">044</span>import org.kepler.configuration.ConfigurationManager;<a name="line.44"></a>
+<span class="sourceLineNo">045</span>import org.kepler.configuration.ConfigurationNamespace;<a name="line.45"></a>
+<span class="sourceLineNo">046</span>import org.kepler.configuration.ConfigurationProperty;<a name="line.46"></a>
+<span class="sourceLineNo">047</span>import org.kepler.job.Job;<a name="line.47"></a>
+<span class="sourceLineNo">048</span>import org.kepler.job.JobException;<a name="line.48"></a>
+<span class="sourceLineNo">049</span>import org.kepler.job.JobFactory;<a name="line.49"></a>
+<span class="sourceLineNo">050</span>import org.kepler.job.JobManagerFactory;<a name="line.50"></a>
+<span class="sourceLineNo">051</span>import org.kepler.job.JobStatusCode;<a name="line.51"></a>
+<span class="sourceLineNo">052</span>import org.kepler.job.TaskParallelJobStatusInfo;<a name="line.52"></a>
+<span class="sourceLineNo">053</span><a name="line.53"></a>
+<span class="sourceLineNo">054</span>import ptolemy.actor.TypedAtomicActor;<a name="line.54"></a>
+<span class="sourceLineNo">055</span>import ptolemy.actor.TypedIOPort;<a name="line.55"></a>
+<span class="sourceLineNo">056</span>import ptolemy.actor.gui.style.TextStyle;<a name="line.56"></a>
+<span class="sourceLineNo">057</span>import ptolemy.actor.parameters.PortParameter;<a name="line.57"></a>
+<span class="sourceLineNo">058</span>import ptolemy.data.ArrayToken;<a name="line.58"></a>
+<span class="sourceLineNo">059</span>import ptolemy.data.BooleanToken;<a name="line.59"></a>
+<span class="sourceLineNo">060</span>import ptolemy.data.IntToken;<a name="line.60"></a>
+<span class="sourceLineNo">061</span>import ptolemy.data.ObjectToken;<a name="line.61"></a>
+<span class="sourceLineNo">062</span>import ptolemy.data.StringToken;<a name="line.62"></a>
+<span class="sourceLineNo">063</span>import ptolemy.data.Token;<a name="line.63"></a>
+<span class="sourceLineNo">064</span>import ptolemy.data.expr.Parameter;<a name="line.64"></a>
+<span class="sourceLineNo">065</span>import ptolemy.data.expr.StringParameter;<a name="line.65"></a>
+<span class="sourceLineNo">066</span>import ptolemy.data.type.BaseType;<a name="line.66"></a>
+<span class="sourceLineNo">067</span>import ptolemy.kernel.CompositeEntity;<a name="line.67"></a>
+<span class="sourceLineNo">068</span>import ptolemy.kernel.util.Attribute;<a name="line.68"></a>
+<span class="sourceLineNo">069</span>import ptolemy.kernel.util.IllegalActionException;<a name="line.69"></a>
+<span class="sourceLineNo">070</span>import ptolemy.kernel.util.NameDuplicationException;<a name="line.70"></a>
+<span class="sourceLineNo">071</span>import ptolemy.kernel.util.Settable;<a name="line.71"></a>
+<span class="sourceLineNo">072</span><a name="line.72"></a>
+<span class="sourceLineNo">073</span>/**<a name="line.73"></a>
+<span class="sourceLineNo">074</span> * A generic job launcher actor that can launch a job using PBS, NCCS, Condor,<a name="line.74"></a>
+<span class="sourceLineNo">075</span> * Loadleveler, SGE, Moab or LSF, and wait till a user specified status.<a name="line.75"></a>
+<span class="sourceLineNo">076</span> * &lt;p&gt;<a name="line.76"></a>
+<span class="sourceLineNo">077</span> * JobLauncher actor is based on code from Norbert Podhorszki's JobCreator, JobManager,<a name="line.77"></a>
+<span class="sourceLineNo">078</span> * JobStatus, and JobSubmitter actors. It uses JobLauncher.properties to find<a name="line.78"></a>
+<span class="sourceLineNo">079</span> * the list of supported job schedulers and the corresponding support class.<a name="line.79"></a>
+<span class="sourceLineNo">080</span> * <a name="line.80"></a>
+<span class="sourceLineNo">081</span> * Additionally it can support multi task jobs<a name="line.81"></a>
+<span class="sourceLineNo">082</span> * @author Frankie Kwok, Chandrika Sivaramakrishnan, Jared Chase<a name="line.82"></a>
+<span class="sourceLineNo">083</span> * @version $Id: GenericJobLauncher.java 34054 2015-10-23 19:16:46Z crawl $<a name="line.83"></a>
+<span class="sourceLineNo">084</span> */<a name="line.84"></a>
+<span class="sourceLineNo">085</span>@SuppressWarnings("serial")<a name="line.85"></a>
+<span class="sourceLineNo">086</span>public class GenericJobLauncher extends TypedAtomicActor {<a name="line.86"></a>
+<span class="sourceLineNo">087</span>        public GenericJobLauncher(CompositeEntity container, String name)<a name="line.87"></a>
+<span class="sourceLineNo">088</span>                        throws NameDuplicationException, IllegalActionException {<a name="line.88"></a>
+<span class="sourceLineNo">089</span>                super(container, name);<a name="line.89"></a>
+<span class="sourceLineNo">090</span><a name="line.90"></a>
+<span class="sourceLineNo">091</span>                /** Job creator parameter and port */<a name="line.91"></a>
+<span class="sourceLineNo">092</span>                // target selects the machine where the jobmanager is running<a name="line.92"></a>
+<span class="sourceLineNo">093</span>                target = new PortParameter(this, "target", new StringToken(<a name="line.93"></a>
+<span class="sourceLineNo">094</span>                                "[local | [user]@host]"));<a name="line.94"></a>
+<span class="sourceLineNo">095</span>                new Parameter(target.getPort(), "_showName", BooleanToken.TRUE);<a name="line.95"></a>
+<span class="sourceLineNo">096</span>                target.setStringMode(true);<a name="line.96"></a>
+<span class="sourceLineNo">097</span><a name="line.97"></a>
+<span class="sourceLineNo">098</span>                // submission file parameter &amp; port<a name="line.98"></a>
+<span class="sourceLineNo">099</span>                cmdFile = new PortParameter(this, "cmdFile", new StringToken(<a name="line.99"></a>
+<span class="sourceLineNo">100</span>                                "/path/to/job.submit"));<a name="line.100"></a>
+<span class="sourceLineNo">101</span>                cmdFile.setTypeEquals(BaseType.STRING);<a name="line.101"></a>
+<span class="sourceLineNo">102</span>                cmdFile.getPort().setTypeEquals(BaseType.STRING);<a name="line.102"></a>
+<span class="sourceLineNo">103</span>                new Parameter(cmdFile.getPort(), "_showName", BooleanToken.TRUE);<a name="line.103"></a>
+<span class="sourceLineNo">104</span>                cmdFile.setStringMode(true);<a name="line.104"></a>
+<span class="sourceLineNo">105</span><a name="line.105"></a>
+<span class="sourceLineNo">106</span>                // local/remote submission file flag parameter<a name="line.106"></a>
+<span class="sourceLineNo">107</span>                cmdFileLocal = new Parameter(this, "cmdFileLocal", BooleanToken.TRUE);<a name="line.107"></a>
+<span class="sourceLineNo">108</span>                cmdFileLocal.setTypeEquals(BaseType.BOOLEAN);<a name="line.108"></a>
+<span class="sourceLineNo">109</span><a name="line.109"></a>
+<span class="sourceLineNo">110</span>                // executable file's name parameter &amp; port<a name="line.110"></a>
+<span class="sourceLineNo">111</span>                executable = new StringParameter(this, "executable file");<a name="line.111"></a>
+<span class="sourceLineNo">112</span>                executable.setVisibility(Settable.EXPERT);<a name="line.112"></a>
+<span class="sourceLineNo">113</span><a name="line.113"></a>
+<span class="sourceLineNo">114</span>                // working dir name parameter &amp; port<a name="line.114"></a>
+<span class="sourceLineNo">115</span>                workdir = new PortParameter(this, "workdir", new StringToken(<a name="line.115"></a>
+<span class="sourceLineNo">116</span>                                ".kepler-hpcc"));<a name="line.116"></a>
+<span class="sourceLineNo">117</span>                new Parameter(workdir.getPort(), "_showName", BooleanToken.TRUE);<a name="line.117"></a>
+<span class="sourceLineNo">118</span>                workdir.setStringMode(true);<a name="line.118"></a>
+<span class="sourceLineNo">119</span>                <a name="line.119"></a>
+<span class="sourceLineNo">120</span>                //if true - actor doesn't create a unique sub directory, assumes that the<a name="line.120"></a>
+<span class="sourceLineNo">121</span>                //user given workdir is unique and to be used as such.<a name="line.121"></a>
+<span class="sourceLineNo">122</span>                usegivendir = new Parameter(this, "use given workdir",<a name="line.122"></a>
+<span class="sourceLineNo">123</span>                                new BooleanToken(false));<a name="line.123"></a>
+<span class="sourceLineNo">124</span>                usegivendir.setTypeEquals(BaseType.BOOLEAN);<a name="line.124"></a>
+<span class="sourceLineNo">125</span>                usegivendir.setVisibility(Settable.EXPERT);<a name="line.125"></a>
+<span class="sourceLineNo">126</span><a name="line.126"></a>
+<span class="sourceLineNo">127</span>                // list of input files' names parameter &amp; port<a name="line.127"></a>
+<span class="sourceLineNo">128</span>                inputfiles = new PortParameter(this, "inputfiles", new ArrayToken(<a name="line.128"></a>
+<span class="sourceLineNo">129</span>                                BaseType.STRING));<a name="line.129"></a>
+<span class="sourceLineNo">130</span>                new Parameter(inputfiles.getPort(), "_showName", BooleanToken.TRUE);<a name="line.130"></a>
+<span class="sourceLineNo">131</span><a name="line.131"></a>
+<span class="sourceLineNo">132</span>                // list of remote input files' names parameter &amp; port<a name="line.132"></a>
+<span class="sourceLineNo">133</span>                remotefiles = new PortParameter(this, "remotefiles", new ArrayToken(<a name="line.133"></a>
+<span class="sourceLineNo">134</span>                                BaseType.STRING));<a name="line.134"></a>
+<span class="sourceLineNo">135</span>                new Parameter(remotefiles.getPort(), "_showName", BooleanToken.TRUE);<a name="line.135"></a>
+<span class="sourceLineNo">136</span><a name="line.136"></a>
+<span class="sourceLineNo">137</span>                /** Job Manager parameter and port */<a name="line.137"></a>
+<span class="sourceLineNo">138</span>                // jobManager denotes the name of the actual job manager<a name="line.138"></a>
+<span class="sourceLineNo">139</span>                scheduler = new PortParameter(this, "scheduler", new StringToken(<a name="line.139"></a>
+<span class="sourceLineNo">140</span>                                "SGE"));<a name="line.140"></a>
+<span class="sourceLineNo">141</span>                scheduler.setStringMode(true);<a name="line.141"></a>
+<span class="sourceLineNo">142</span>                cp = ConfigurationManager.getInstance()<a name="line.142"></a>
+<span class="sourceLineNo">143</span>                                .getProperty(ConfigurationManager.getModule("actors"),<a name="line.143"></a>
+<span class="sourceLineNo">144</span>                                                new ConfigurationNamespace("JobLauncher"));<a name="line.144"></a>
+<span class="sourceLineNo">145</span>                properties = cp.getProperties("value", true);<a name="line.145"></a>
+<span class="sourceLineNo">146</span>                for (ConfigurationProperty property : properties) {<a name="line.146"></a>
+<span class="sourceLineNo">147</span>                        scheduler.addChoice(property.getValue());<a name="line.147"></a>
+<span class="sourceLineNo">148</span>                }<a name="line.148"></a>
+<span class="sourceLineNo">149</span>                <a name="line.149"></a>
+<span class="sourceLineNo">150</span>                <a name="line.150"></a>
+<span class="sourceLineNo">151</span>                // jobManager.setStringMode(true); // string mode (no "s, but no<a name="line.151"></a>
+<span class="sourceLineNo">152</span>                // variables as well!<a name="line.152"></a>
+<span class="sourceLineNo">153</span>                new Parameter(scheduler.getPort(), "_showName", BooleanToken.TRUE);<a name="line.153"></a>
+<span class="sourceLineNo">154</span><a name="line.154"></a>
+<span class="sourceLineNo">155</span>                // flag to set if you want the actor to stage the default fork script<a name="line.155"></a>
+<span class="sourceLineNo">156</span>                defaultForkScript = new Parameter(this, "Use default fork script",<a name="line.156"></a>
+<span class="sourceLineNo">157</span>                                new BooleanToken(false));<a name="line.157"></a>
+<span class="sourceLineNo">158</span>                defaultForkScript.setTypeEquals(BaseType.BOOLEAN);<a name="line.158"></a>
+<span class="sourceLineNo">159</span>                defaultForkScript.setVisibility(Settable.EXPERT);<a name="line.159"></a>
+<span class="sourceLineNo">160</span><a name="line.160"></a>
+<span class="sourceLineNo">161</span>                // binPath is the full path to the jobmanager commands on the target<a name="line.161"></a>
+<span class="sourceLineNo">162</span>                // machine<a name="line.162"></a>
+<span class="sourceLineNo">163</span>                binPath = new StringParameter(this, "binary path");<a name="line.163"></a>
+<span class="sourceLineNo">164</span>                binPath.setVisibility(Settable.EXPERT);<a name="line.164"></a>
+<span class="sourceLineNo">165</span><a name="line.165"></a>
+<span class="sourceLineNo">166</span>                // jobSubmitOptions are optional parameters to pass to<a name="line.166"></a>
+<span class="sourceLineNo">167</span>                // submitting a job<a name="line.167"></a>
+<span class="sourceLineNo">168</span>                jobSubmitOptions = new StringParameter(this, "job submit options");<a name="line.168"></a>
+<span class="sourceLineNo">169</span>                jobSubmitOptions.setVisibility(Settable.EXPERT);<a name="line.169"></a>
+<span class="sourceLineNo">170</span><a name="line.170"></a>
+<span class="sourceLineNo">171</span>                // numTasks is the number of tasks for this job<a name="line.171"></a>
+<span class="sourceLineNo">172</span>                numTasks = new Parameter(this, "numTasks");<a name="line.172"></a>
+<span class="sourceLineNo">173</span>                numTasks.setExpression("0");<a name="line.173"></a>
+<span class="sourceLineNo">174</span><a name="line.174"></a>
+<span class="sourceLineNo">175</span>                /** Job Status parameter and port */<a name="line.175"></a>
+<span class="sourceLineNo">176</span>                <a name="line.176"></a>
+<span class="sourceLineNo">177</span>                waitUntil = new Parameter(this, "Wait Until Status", new StringToken(<a name="line.177"></a>
+<span class="sourceLineNo">178</span>                "ANY"));<a name="line.178"></a>
+<span class="sourceLineNo">179</span>                waitUntil.setStringMode(true);<a name="line.179"></a>
+<span class="sourceLineNo">180</span>                waitUntil.addChoice("ANY");<a name="line.180"></a>
+<span class="sourceLineNo">181</span>                for (JobStatusCode code : JobStatusCode.values()) {<a name="line.181"></a>
+<span class="sourceLineNo">182</span>                        waitUntil.addChoice(code.toString());<a name="line.182"></a>
+<span class="sourceLineNo">183</span>                }<a name="line.183"></a>
+<span class="sourceLineNo">184</span><a name="line.184"></a>
+<span class="sourceLineNo">185</span>                sleepWhileWaiting = new Parameter(this, "Wait Until Sleep (seconds)",<a name="line.185"></a>
+<span class="sourceLineNo">186</span>                new IntToken(_sleepWhileWaitingVal));<a name="line.186"></a>
+<span class="sourceLineNo">187</span>                sleepWhileWaiting.setTypeEquals(BaseType.INT);<a name="line.187"></a>
+<span class="sourceLineNo">188</span>                <a name="line.188"></a>
+<span class="sourceLineNo">189</span>                // Output: jobID of the submitted job<a name="line.189"></a>
+<span class="sourceLineNo">190</span>                jobOut = new TypedIOPort(this, "jobOut", false, true);<a name="line.190"></a>
+<span class="sourceLineNo">191</span>                jobOut.setTypeEquals(BaseType.OBJECT);<a name="line.191"></a>
+<span class="sourceLineNo">192</span>                new Parameter(jobOut, "_showName", BooleanToken.TRUE);<a name="line.192"></a>
+<span class="sourceLineNo">193</span><a name="line.193"></a>
+<span class="sourceLineNo">194</span>                // Output: log<a name="line.194"></a>
+<span class="sourceLineNo">195</span>                logPort = new TypedIOPort(this, "logPort", false, true);<a name="line.195"></a>
+<span class="sourceLineNo">196</span>                logPort.setTypeEquals(BaseType.STRING);<a name="line.196"></a>
+<span class="sourceLineNo">197</span>                new Parameter(logPort, "_showName", BooleanToken.TRUE);<a name="line.197"></a>
+<span class="sourceLineNo">198</span><a name="line.198"></a>
+<span class="sourceLineNo">199</span>                //Output: success<a name="line.199"></a>
+<span class="sourceLineNo">200</span>                success = new TypedIOPort(this, "success", false, true);<a name="line.200"></a>
+<span class="sourceLineNo">201</span>                success.setTypeEquals(BaseType.BOOLEAN);<a name="line.201"></a>
+<span class="sourceLineNo">202</span>                new Parameter(success, "_showName", BooleanToken.TRUE);<a name="line.202"></a>
+<span class="sourceLineNo">203</span>                <a name="line.203"></a>
+<span class="sourceLineNo">204</span>                cmdText = new PortParameter(this, "cmdText");<a name="line.204"></a>
+<span class="sourceLineNo">205</span>                cmdText.setTypeEquals(BaseType.STRING);<a name="line.205"></a>
+<span class="sourceLineNo">206</span>                cmdText.setStringMode(true);<a name="line.206"></a>
+<span class="sourceLineNo">207</span>                new TextStyle(cmdText, "_style");<a name="line.207"></a>
+<span class="sourceLineNo">208</span>                cmdText.getPort().setTypeEquals(BaseType.STRING);<a name="line.208"></a>
+<span class="sourceLineNo">209</span>                new Parameter(cmdText.getPort(), "_showName");<a name="line.209"></a>
+<span class="sourceLineNo">210</span>                <a name="line.210"></a>
+<span class="sourceLineNo">211</span>                dependentJob = new TypedIOPort(this, "dependentJob", true, false);<a name="line.211"></a>
+<span class="sourceLineNo">212</span>                dependentJob.setTypeEquals(BaseType.OBJECT);<a name="line.212"></a>
+<span class="sourceLineNo">213</span>                dependentJob.setMultiport(true);<a name="line.213"></a>
+<span class="sourceLineNo">214</span>                new Parameter(dependentJob, "_showName");<a name="line.214"></a>
+<span class="sourceLineNo">215</span>                <a name="line.215"></a>
+<span class="sourceLineNo">216</span>                jobID = new TypedIOPort(this, "jobID", false, true);<a name="line.216"></a>
+<span class="sourceLineNo">217</span>                jobID.setTypeEquals(BaseType.STRING);<a name="line.217"></a>
+<span class="sourceLineNo">218</span>                new Parameter(jobID, "_showName", BooleanToken.TRUE);<a name="line.218"></a>
+<span class="sourceLineNo">219</span>                <a name="line.219"></a>
+<span class="sourceLineNo">220</span>        }<a name="line.220"></a>
+<span class="sourceLineNo">221</span><a name="line.221"></a>
+<span class="sourceLineNo">222</span>        /***************************************************************************<a name="line.222"></a>
+<span class="sourceLineNo">223</span>         * ports and parameters<a name="line.223"></a>
+<span class="sourceLineNo">224</span>         */<a name="line.224"></a>
+<span class="sourceLineNo">225</span><a name="line.225"></a>
+<span class="sourceLineNo">226</span>        /**<a name="line.226"></a>
+<span class="sourceLineNo">227</span>         * The submit file to be used at job submission. Absolute (or relative to<a name="line.227"></a>
+<span class="sourceLineNo">228</span>         * current dir of Java) file path should be provided. The job file must<a name="line.228"></a>
+<span class="sourceLineNo">229</span>         * be provided here, or the contents can be specified in cmdText.<a name="line.229"></a>
+<span class="sourceLineNo">230</span>         * <a name="line.230"></a>
+<span class="sourceLineNo">231</span>         * &lt;p&gt;<a name="line.231"></a>
+<span class="sourceLineNo">232</span>         * This parameter is read each time in fire().<a name="line.232"></a>
+<span class="sourceLineNo">233</span>         * &lt;/p&gt;<a name="line.233"></a>
+<span class="sourceLineNo">234</span>         */<a name="line.234"></a>
+<span class="sourceLineNo">235</span>        public PortParameter cmdFile;<a name="line.235"></a>
+<span class="sourceLineNo">236</span><a name="line.236"></a>
+<span class="sourceLineNo">237</span>        /**<a name="line.237"></a>
+<span class="sourceLineNo">238</span>         * Specifying whether the cmdFile is locally stored or on the remote target.<a name="line.238"></a>
+<span class="sourceLineNo">239</span>         * <a name="line.239"></a>
+<span class="sourceLineNo">240</span>         * &lt;p&gt;<a name="line.240"></a>
+<span class="sourceLineNo">241</span>         * This parameter is read each time in fire().<a name="line.241"></a>
+<span class="sourceLineNo">242</span>         * &lt;/p&gt;<a name="line.242"></a>
+<span class="sourceLineNo">243</span>         */<a name="line.243"></a>
+<span class="sourceLineNo">244</span>        public Parameter cmdFileLocal;<a name="line.244"></a>
+<span class="sourceLineNo">245</span><a name="line.245"></a>
+<span class="sourceLineNo">246</span>        /**<a name="line.246"></a>
+<span class="sourceLineNo">247</span>         * The executable file to be used at job submission. Absolute path names, or<a name="line.247"></a>
+<span class="sourceLineNo">248</span>         * relative to current dir of the running java virtual machine, should be<a name="line.248"></a>
+<span class="sourceLineNo">249</span>         * provided. If it is "" then it is considered to be already at the remote<a name="line.249"></a>
+<span class="sourceLineNo">250</span>         * site, otherwise the actor will look for it locally and stage it to the<a name="line.250"></a>
+<span class="sourceLineNo">251</span>         * &lt;i&gt;workdir&lt;/i&gt; before job submission.<a name="line.251"></a>
+<span class="sourceLineNo">252</span>         * <a name="line.252"></a>
+<span class="sourceLineNo">253</span>         * &lt;p&gt;<a name="line.253"></a>
+<span class="sourceLineNo">254</span>         * This parameter is read each time in fire().<a name="line.254"></a>
+<span class="sourceLineNo">255</span>         * &lt;/p&gt;<a name="line.255"></a>
+<span class="sourceLineNo">256</span>         */<a name="line.256"></a>
+<span class="sourceLineNo">257</span>        public Parameter executable;<a name="line.257"></a>
+<span class="sourceLineNo">258</span><a name="line.258"></a>
+<span class="sourceLineNo">259</span>        /**<a name="line.259"></a>
+<span class="sourceLineNo">260</span>         * The working directory in which the actual job submission command will be<a name="line.260"></a>
+<span class="sourceLineNo">261</span>         * executed (on the remote machine if the job manager is a remote<a name="line.261"></a>
+<span class="sourceLineNo">262</span>         * jobmanager).<a name="line.262"></a>
+<span class="sourceLineNo">263</span>         * <a name="line.263"></a>
+<span class="sourceLineNo">264</span>         * &lt;p&gt;<a name="line.264"></a>
+<span class="sourceLineNo">265</span>         * It should be an absolute path, or a relative one. In the latter case on<a name="line.265"></a>
+<span class="sourceLineNo">266</span>         * remote machine, the directory path will be relative to the user's home<a name="line.266"></a>
+<span class="sourceLineNo">267</span>         * directory (coming from the use of ssh).<a name="line.267"></a>
+<span class="sourceLineNo">268</span>         * &lt;/p&gt;<a name="line.268"></a>
+<span class="sourceLineNo">269</span>         * By default, a new unique sub directory is created within this workdir<a name="line.269"></a>
+<span class="sourceLineNo">270</span>         * based on the job id created by kepler. Job is run from this sub<a name="line.270"></a>
+<span class="sourceLineNo">271</span>         * directory. This can be overwritten by setting the parameter "use given<a name="line.271"></a>
+<span class="sourceLineNo">272</span>         * workdir"<a name="line.272"></a>
+<span class="sourceLineNo">273</span>         * &lt;p&gt;<a name="line.273"></a>
+<span class="sourceLineNo">274</span>         * This parameter is read each time in fire().<a name="line.274"></a>
+<span class="sourceLineNo">275</span>         * &lt;/p&gt;<a name="line.275"></a>
+<span class="sourceLineNo">276</span>         */<a name="line.276"></a>
+<span class="sourceLineNo">277</span>        public PortParameter workdir;<a name="line.277"></a>
+<span class="sourceLineNo">278</span><a name="line.278"></a>
+<span class="sourceLineNo">279</span>        /**<a name="line.279"></a>
+<span class="sourceLineNo">280</span>         * By default, Kepler creates a unique sub directory within workdir based on<a name="line.280"></a>
+<span class="sourceLineNo">281</span>         * the the job id it creates for the job. Job is run from this sub<a name="line.281"></a>
+<span class="sourceLineNo">282</span>         * directory. Set this flag to true if you want job to be run directly from<a name="line.282"></a>
+<span class="sourceLineNo">283</span>         * workdir instead of a subdir<a name="line.283"></a>
+<span class="sourceLineNo">284</span>         * <a name="line.284"></a>
+<span class="sourceLineNo">285</span>         * &lt;p&gt;<a name="line.285"></a>
+<span class="sourceLineNo">286</span>         * This parameter is read each time in fire().<a name="line.286"></a>
+<span class="sourceLineNo">287</span>         * &lt;/p&gt;<a name="line.287"></a>
+<span class="sourceLineNo">288</span>         */<a name="line.288"></a>
+<span class="sourceLineNo">289</span>        public Parameter usegivendir;<a name="line.289"></a>
+<span class="sourceLineNo">290</span><a name="line.290"></a>
+<span class="sourceLineNo">291</span>        /**<a name="line.291"></a>
+<span class="sourceLineNo">292</span>         * The string array of inputfiles. Absolute path names, or relative to<a name="line.292"></a>
+<span class="sourceLineNo">293</span>         * current dir of the running java virtual machine, should be provided.<a name="line.293"></a>
+<span class="sourceLineNo">294</span>         * <a name="line.294"></a>
+<span class="sourceLineNo">295</span>         * &lt;p&gt;<a name="line.295"></a>
+<span class="sourceLineNo">296</span>         * This parameter is read each time in fire().<a name="line.296"></a>
+<span class="sourceLineNo">297</span>         * &lt;/p&gt;<a name="line.297"></a>
+<span class="sourceLineNo">298</span>         */<a name="line.298"></a>
+<span class="sourceLineNo">299</span>        public PortParameter inputfiles;<a name="line.299"></a>
+<span class="sourceLineNo">300</span><a name="line.300"></a>
+<span class="sourceLineNo">301</span>        /**<a name="line.301"></a>
+<span class="sourceLineNo">302</span>         * The string array of remote input files. Absolute path names, or relative<a name="line.302"></a>
+<span class="sourceLineNo">303</span>         * to the user home dir on the remote host should be provided.<a name="line.303"></a>
+<span class="sourceLineNo">304</span>         * <a name="line.304"></a>
+<span class="sourceLineNo">305</span>         * &lt;p&gt;<a name="line.305"></a>
+<span class="sourceLineNo">306</span>         * This parameter is read each time in fire().<a name="line.306"></a>
+<span class="sourceLineNo">307</span>         * &lt;/p&gt;<a name="line.307"></a>
+<span class="sourceLineNo">308</span>         */<a name="line.308"></a>
+<span class="sourceLineNo">309</span>        public PortParameter remotefiles;<a name="line.309"></a>
+<span class="sourceLineNo">310</span><a name="line.310"></a>
+<span class="sourceLineNo">311</span>        /**<a name="line.311"></a>
+<span class="sourceLineNo">312</span>         * The name of the jobmanager to be used It should be a name, for which a<a name="line.312"></a>
+<span class="sourceLineNo">313</span>         * supporter class exist as &lt;i&gt;org.kepler.job.JobSupport&lt;jobManager&gt;.class<a name="line.313"></a>
+<span class="sourceLineNo">314</span>         * <a name="line.314"></a>
+<span class="sourceLineNo">315</span>         * This parameter is read each time in fire().<a name="line.315"></a>
+<span class="sourceLineNo">316</span>         */<a name="line.316"></a>
+<span class="sourceLineNo">317</span>        public PortParameter scheduler;<a name="line.317"></a>
+<span class="sourceLineNo">318</span><a name="line.318"></a>
+<span class="sourceLineNo">319</span>        /**<a name="line.319"></a>
+<span class="sourceLineNo">320</span>         * Boolean flag to indicate if the default fork script should be staged. If<a name="line.320"></a>
+<span class="sourceLineNo">321</span>         * bin path is provided the default script is uploaded to bin path, else it<a name="line.321"></a>
+<span class="sourceLineNo">322</span>         * is uploaded to the working directory<a name="line.322"></a>
+<span class="sourceLineNo">323</span>         */<a name="line.323"></a>
+<span class="sourceLineNo">324</span>        public Parameter defaultForkScript;<a name="line.324"></a>
+<span class="sourceLineNo">325</span><a name="line.325"></a>
+<span class="sourceLineNo">326</span>        /**<a name="line.326"></a>
+<span class="sourceLineNo">327</span>         * The machine to be used at job submission. It should be null, "" or<a name="line.327"></a>
+<span class="sourceLineNo">328</span>         * "local" for the local machine or [user@]host to denote a remote machine<a name="line.328"></a>
+<span class="sourceLineNo">329</span>         * accessible with ssh.<a name="line.329"></a>
+<span class="sourceLineNo">330</span>         * <a name="line.330"></a>
+<span class="sourceLineNo">331</span>         * This parameter is read each time in fire().<a name="line.331"></a>
+<span class="sourceLineNo">332</span>         */<a name="line.332"></a>
+<span class="sourceLineNo">333</span>        public PortParameter target;<a name="line.333"></a>
+<span class="sourceLineNo">334</span><a name="line.334"></a>
+<span class="sourceLineNo">335</span>        /**<a name="line.335"></a>
+<span class="sourceLineNo">336</span>         * The path to the job manager commands on the target machines. Commands are<a name="line.336"></a>
+<span class="sourceLineNo">337</span>         * constructed as &lt;i&gt;binPath/command&lt;/i&gt; and they should be executable this<a name="line.337"></a>
+<span class="sourceLineNo">338</span>         * way. This parameter is read each time in fire().<a name="line.338"></a>
+<span class="sourceLineNo">339</span>         */<a name="line.339"></a>
+<span class="sourceLineNo">340</span>        public Parameter binPath;<a name="line.340"></a>
+<span class="sourceLineNo">341</span><a name="line.341"></a>
+<span class="sourceLineNo">342</span>        /**<a name="line.342"></a>
+<span class="sourceLineNo">343</span>         * The number of tasks for the job - used in a task parallel job<a name="line.343"></a>
+<span class="sourceLineNo">344</span>         */<a name="line.344"></a>
+<span class="sourceLineNo">345</span>        public Parameter numTasks;<a name="line.345"></a>
+<span class="sourceLineNo">346</span><a name="line.346"></a>
+<span class="sourceLineNo">347</span>         /** <a name="line.347"></a>
+<span class="sourceLineNo">348</span>         * The Options of the job submission. Such as "-o /u/joboutput/ -j y -l<a name="line.348"></a>
+<span class="sourceLineNo">349</span>         * h_rt=24:00:00" for SGE job scheduler. Its default value is empty.<a name="line.349"></a>
+<span class="sourceLineNo">350</span>         */<a name="line.350"></a>
+<span class="sourceLineNo">351</span>        public Parameter jobSubmitOptions;<a name="line.351"></a>
+<span class="sourceLineNo">352</span><a name="line.352"></a>
+<span class="sourceLineNo">353</span>        /**<a name="line.353"></a>
+<span class="sourceLineNo">354</span>         * The job is passed on in this actor. This token can be used (delaying it<a name="line.354"></a>
+<span class="sourceLineNo">355</span>         * with a Sleep actor) to ask its Status again and again until the job is<a name="line.355"></a>
+<span class="sourceLineNo">356</span>         * finished or aborted. This port is an output port of type Object.<a name="line.356"></a>
+<span class="sourceLineNo">357</span>         */<a name="line.357"></a>
+<span class="sourceLineNo">358</span>        public TypedIOPort jobOut;<a name="line.358"></a>
+<span class="sourceLineNo">359</span>        <a name="line.359"></a>
+<span class="sourceLineNo">360</span>        /**<a name="line.360"></a>
+<span class="sourceLineNo">361</span>         * The real job ID generated from the job scheduler.<a name="line.361"></a>
+<span class="sourceLineNo">362</span>         */<a name="line.362"></a>
+<span class="sourceLineNo">363</span>        public TypedIOPort jobID;<a name="line.363"></a>
+<span class="sourceLineNo">364</span><a name="line.364"></a>
+<span class="sourceLineNo">365</span>        /**<a name="line.365"></a>
+<span class="sourceLineNo">366</span>         * Logging information of job status query. Useful to inform user about<a name="line.366"></a>
+<span class="sourceLineNo">367</span>         * problems at unsuccessful status query but it also prints out job status<a name="line.367"></a>
+<span class="sourceLineNo">368</span>         * and job id on successful query. This port is an output port of type<a name="line.368"></a>
+<span class="sourceLineNo">369</span>         * String. The name of port on canvas is 'log'<a name="line.369"></a>
+<span class="sourceLineNo">370</span>         */<a name="line.370"></a>
+<span class="sourceLineNo">371</span>        public TypedIOPort logPort;<a name="line.371"></a>
+<span class="sourceLineNo">372</span><a name="line.372"></a>
+<span class="sourceLineNo">373</span>        /**<a name="line.373"></a>
+<span class="sourceLineNo">374</span>         * Wait until the job has a reached specific status. The available status'<a name="line.374"></a>
+<span class="sourceLineNo">375</span>         * that can be reached are: any, wait, running, not in queue, and error.<a name="line.375"></a>
+<span class="sourceLineNo">376</span>         */<a name="line.376"></a>
+<span class="sourceLineNo">377</span>        public Parameter waitUntil;<a name="line.377"></a>
+<span class="sourceLineNo">378</span><a name="line.378"></a>
+<span class="sourceLineNo">379</span>        /**<a name="line.379"></a>
+<span class="sourceLineNo">380</span>         * Amount of time (in seconds) to sleep between checking job status.<a name="line.380"></a>
+<span class="sourceLineNo">381</span>         */<a name="line.381"></a>
+<span class="sourceLineNo">382</span>        public Parameter sleepWhileWaiting;<a name="line.382"></a>
+<span class="sourceLineNo">383</span><a name="line.383"></a>
+<span class="sourceLineNo">384</span>        /**<a name="line.384"></a>
+<span class="sourceLineNo">385</span>         * The exit code of the command. If the exit code is 0, the command was<a name="line.385"></a>
+<span class="sourceLineNo">386</span>         * performed successfully. If the exit code is anything other than a 0, an<a name="line.386"></a>
+<span class="sourceLineNo">387</span>         * error occured.<a name="line.387"></a>
+<span class="sourceLineNo">388</span>         */<a name="line.388"></a>
+<span class="sourceLineNo">389</span>        // public TypedIOPort exitcode;<a name="line.389"></a>
+<span class="sourceLineNo">390</span>        <a name="line.390"></a>
+<span class="sourceLineNo">391</span>        /**<a name="line.391"></a>
+<span class="sourceLineNo">392</span>         * boolean flag to indicate if job launch was successful<a name="line.392"></a>
+<span class="sourceLineNo">393</span>         */<a name="line.393"></a>
+<span class="sourceLineNo">394</span>        public TypedIOPort success;<a name="line.394"></a>
+<span class="sourceLineNo">395</span>        <a name="line.395"></a>
+<span class="sourceLineNo">396</span>        <a name="line.396"></a>
+<span class="sourceLineNo">397</span>        /** The text of the job specification. The job specification must either<a name="line.397"></a>
+<span class="sourceLineNo">398</span>         *  be provided in this parameter or the file name in cmdFile. <a name="line.398"></a>
+<span class="sourceLineNo">399</span>         */<a name="line.399"></a>
+<span class="sourceLineNo">400</span>        public PortParameter cmdText;<a name="line.400"></a>
+<span class="sourceLineNo">401</span>        <a name="line.401"></a>
+<span class="sourceLineNo">402</span>        /** One or more jobs that must successfully complete before this job can run. */<a name="line.402"></a>
+<span class="sourceLineNo">403</span>        public TypedIOPort dependentJob;<a name="line.403"></a>
+<span class="sourceLineNo">404</span><a name="line.404"></a>
+<span class="sourceLineNo">405</span>        /**<a name="line.405"></a>
+<span class="sourceLineNo">406</span>         * fire<a name="line.406"></a>
+<span class="sourceLineNo">407</span>         * <a name="line.407"></a>
+<span class="sourceLineNo">408</span>         * @exception IllegalActionException<a name="line.408"></a>
+<span class="sourceLineNo">409</span>         *                Not thrown.<a name="line.409"></a>
+<span class="sourceLineNo">410</span>         */<a name="line.410"></a>
+<span class="sourceLineNo">411</span>        public void fire() throws IllegalActionException {<a name="line.411"></a>
+<span class="sourceLineNo">412</span>                super.fire();<a name="line.412"></a>
+<span class="sourceLineNo">413</span><a name="line.413"></a>
+<span class="sourceLineNo">414</span>                /* Job creation by processing port parameters */<a name="line.414"></a>
+<span class="sourceLineNo">415</span>                System.out.println("KEPLER HOME IS " + System.getProperty("KEPLER"));<a name="line.415"></a>
+<span class="sourceLineNo">416</span>                System.out.println("USER DIR IS "+ System.getProperty("user.dir"));<a name="line.416"></a>
+<span class="sourceLineNo">417</span>                cmdFile.update();<a name="line.417"></a>
+<span class="sourceLineNo">418</span>                cmdText.update();<a name="line.418"></a>
+<span class="sourceLineNo">419</span>                workdir.update();<a name="line.419"></a>
+<span class="sourceLineNo">420</span>                inputfiles.update();<a name="line.420"></a>
+<span class="sourceLineNo">421</span>                remotefiles.update();<a name="line.421"></a>
+<span class="sourceLineNo">422</span>                <a name="line.422"></a>
+<span class="sourceLineNo">423</span>                String strLog = null;<a name="line.423"></a>
+<span class="sourceLineNo">424</span>                String strExecutable = null;<a name="line.424"></a>
+<span class="sourceLineNo">425</span>                String strJobOptions = null;<a name="line.425"></a>
+<span class="sourceLineNo">426</span>                String strBinPath = null;<a name="line.426"></a>
+<span class="sourceLineNo">427</span>                boolean bUseGivenDir = false;<a name="line.427"></a>
+<span class="sourceLineNo">428</span>                boolean bDefaultFork = false;<a name="line.428"></a>
+<span class="sourceLineNo">429</span>                <a name="line.429"></a>
+<span class="sourceLineNo">430</span>                // read any dependent jobs<a name="line.430"></a>
+<span class="sourceLineNo">431</span>                Job[] dependentJobArray = null;<a name="line.431"></a>
+<span class="sourceLineNo">432</span>                if(dependentJob.numberOfSources() &gt; 0) {<a name="line.432"></a>
+<span class="sourceLineNo">433</span>                    dependentJobArray = new Job[dependentJob.getWidth()];<a name="line.433"></a>
+<span class="sourceLineNo">434</span>                    for(int i = 0; i &lt; dependentJob.getWidth(); i++) {<a name="line.434"></a>
+<span class="sourceLineNo">435</span>                        dependentJobArray[i] = (Job) ((ObjectToken)dependentJob.get(i)).getValue();<a name="line.435"></a>
+<span class="sourceLineNo">436</span>                    }<a name="line.436"></a>
+<span class="sourceLineNo">437</span>                }<a name="line.437"></a>
+<span class="sourceLineNo">438</span><a name="line.438"></a>
+<span class="sourceLineNo">439</span>                if (this.getAttribute("_expertMode") != null) {<a name="line.439"></a>
+<span class="sourceLineNo">440</span>                        Token temp = null;<a name="line.440"></a>
+<span class="sourceLineNo">441</span>                        temp = (executable != null) ? executable.getToken() : null;<a name="line.441"></a>
+<span class="sourceLineNo">442</span>                        strExecutable = (temp != null) ? ((StringToken) temp).stringValue()<a name="line.442"></a>
+<span class="sourceLineNo">443</span>                                        .trim() : null;<a name="line.443"></a>
+<span class="sourceLineNo">444</span>                        //back compatibility, remove the double quotes at the very beginning and at the very last.<a name="line.444"></a>
+<span class="sourceLineNo">445</span>                        strExecutable = strExecutable.replaceAll("^\"|\"$", "");<a name="line.445"></a>
+<span class="sourceLineNo">446</span><a name="line.446"></a>
+<span class="sourceLineNo">447</span>                        temp = (binPath != null) ? binPath.getToken() : null;<a name="line.447"></a>
+<span class="sourceLineNo">448</span>                        strBinPath = (temp != null) ? ((StringToken) temp).stringValue()<a name="line.448"></a>
+<span class="sourceLineNo">449</span>                                        .trim() : null;<a name="line.449"></a>
+<span class="sourceLineNo">450</span>                        //back compatibility, remove the double quotes at the very beginning and at the very last.<a name="line.450"></a>
+<span class="sourceLineNo">451</span>                        strBinPath = strBinPath.replaceAll("^\"|\"$", "");<a name="line.451"></a>
+<span class="sourceLineNo">452</span><a name="line.452"></a>
+<span class="sourceLineNo">453</span>                        temp = (jobSubmitOptions != null) ? jobSubmitOptions.getToken()<a name="line.453"></a>
+<span class="sourceLineNo">454</span>                                        : null;<a name="line.454"></a>
+<span class="sourceLineNo">455</span>                        strJobOptions = (temp != null) ? ((StringToken) temp).stringValue()<a name="line.455"></a>
+<span class="sourceLineNo">456</span>                                        .trim() : null;<a name="line.456"></a>
+<span class="sourceLineNo">457</span>                        //back compatibility, remove the double quotes at the very beginning and at the very last.<a name="line.457"></a>
+<span class="sourceLineNo">458</span>                        strJobOptions = strJobOptions.replaceAll("^\"|\"$", "");                        <a name="line.458"></a>
+<span class="sourceLineNo">459</span><a name="line.459"></a>
+<span class="sourceLineNo">460</span>                        bUseGivenDir = ((BooleanToken) usegivendir.getToken())<a name="line.460"></a>
+<span class="sourceLineNo">461</span>                                        .booleanValue();<a name="line.461"></a>
+<span class="sourceLineNo">462</span>                        bDefaultFork = ((BooleanToken) defaultForkScript.getToken())<a name="line.462"></a>
+<span class="sourceLineNo">463</span>                                        .booleanValue();<a name="line.463"></a>
+<span class="sourceLineNo">464</span>                }<a name="line.464"></a>
+<span class="sourceLineNo">465</span><a name="line.465"></a>
+<span class="sourceLineNo">466</span>                scheduler.update();<a name="line.466"></a>
+<span class="sourceLineNo">467</span>                target.update();<a name="line.467"></a>
+<span class="sourceLineNo">468</span><a name="line.468"></a>
+<span class="sourceLineNo">469</span>            String strCmdFile = null;<a name="line.469"></a>
+<span class="sourceLineNo">470</span>            String strCmdText = null;<a name="line.470"></a>
+<span class="sourceLineNo">471</span>                StringToken token = (StringToken) cmdFile.getToken();<a name="line.471"></a>
+<span class="sourceLineNo">472</span>                if(token != null) {<a name="line.472"></a>
+<span class="sourceLineNo">473</span>                    strCmdFile = token.stringValue().trim();<a name="line.473"></a>
+<span class="sourceLineNo">474</span>                        //back compatibility, remove the double quotes at the very beginning and at the very last.<a name="line.474"></a>
+<span class="sourceLineNo">475</span>                    strCmdFile = strCmdFile.replaceAll("^\"|\"$", "");<a name="line.475"></a>
+<span class="sourceLineNo">476</span>                    if(strCmdFile.isEmpty()) {<a name="line.476"></a>
+<span class="sourceLineNo">477</span>                        strCmdFile = null;<a name="line.477"></a>
+<span class="sourceLineNo">478</span>                    }<a name="line.478"></a>
+<span class="sourceLineNo">479</span>                }<a name="line.479"></a>
+<span class="sourceLineNo">480</span><a name="line.480"></a>
+<span class="sourceLineNo">481</span>                token = (StringToken) cmdText.getToken();<a name="line.481"></a>
+<span class="sourceLineNo">482</span>                if(token != null) {<a name="line.482"></a>
+<span class="sourceLineNo">483</span>                    strCmdText = token.stringValue().trim();<a name="line.483"></a>
+<span class="sourceLineNo">484</span>                    if(strCmdText.isEmpty()) {<a name="line.484"></a>
+<span class="sourceLineNo">485</span>                        strCmdText = null;<a name="line.485"></a>
+<span class="sourceLineNo">486</span>                    }<a name="line.486"></a>
+<span class="sourceLineNo">487</span>                }<a name="line.487"></a>
+<span class="sourceLineNo">488</span>                <a name="line.488"></a>
+<span class="sourceLineNo">489</span>                boolean bCmdFileLocal = ((BooleanToken) cmdFileLocal.getToken())<a name="line.489"></a>
+<span class="sourceLineNo">490</span>                                .booleanValue();<a name="line.490"></a>
+<span class="sourceLineNo">491</span><a name="line.491"></a>
+<span class="sourceLineNo">492</span>                StringToken temp = ((StringToken) workdir.getToken());<a name="line.492"></a>
+<span class="sourceLineNo">493</span>                String strWorkdir = temp==null? null :temp.stringValue().trim();<a name="line.493"></a>
+<span class="sourceLineNo">494</span>                //back compatibility, remove the double quotes at the very beginning and at the very last.<a name="line.494"></a>
+<span class="sourceLineNo">495</span>                strWorkdir = strWorkdir.replaceAll("^\"|\"$", "");<a name="line.495"></a>
+<span class="sourceLineNo">496</span><a name="line.496"></a>
+<span class="sourceLineNo">497</span>                temp = ((StringToken) scheduler.getToken());<a name="line.497"></a>
+<span class="sourceLineNo">498</span>                strScheduler =  temp==null? null :temp.stringValue().trim();<a name="line.498"></a>
+<span class="sourceLineNo">499</span>                //back compatibility, remove the double quotes at the very beginning and at the very last.<a name="line.499"></a>
+<span class="sourceLineNo">500</span>                strScheduler = strScheduler.replaceAll("^\"|\"$", "");<a name="line.500"></a>
+<span class="sourceLineNo">501</span>                <a name="line.501"></a>
+<span class="sourceLineNo">502</span>                temp = ((StringToken) target.getToken());<a name="line.502"></a>
+<span class="sourceLineNo">503</span>                strTarget = temp==null? null :temp.stringValue().trim();<a name="line.503"></a>
+<span class="sourceLineNo">504</span>                //back compatibility, remove the double quotes at the very beginning and at the very last.<a name="line.504"></a>
+<span class="sourceLineNo">505</span>                strTarget = strTarget.replaceAll("^\"|\"$", "");<a name="line.505"></a>
+<span class="sourceLineNo">506</span>                <a name="line.506"></a>
+<span class="sourceLineNo">507</span>                // Process the inputfiles parameter.<a name="line.507"></a>
+<span class="sourceLineNo">508</span>                ArrayToken inputTokens = (ArrayToken) inputfiles.getToken();<a name="line.508"></a>
+<span class="sourceLineNo">509</span>                String[] inputArray = null;<a name="line.509"></a>
+<span class="sourceLineNo">510</span><a name="line.510"></a>
+<span class="sourceLineNo">511</span>                try {<a name="line.511"></a>
+<span class="sourceLineNo">512</span>                        if (inputTokens.length() &gt;= 1) {<a name="line.512"></a>
+<span class="sourceLineNo">513</span>                                int i;<a name="line.513"></a>
+<span class="sourceLineNo">514</span><a name="line.514"></a>
+<span class="sourceLineNo">515</span>                                ArrayList&lt;String&gt; iFiles = new ArrayList&lt;String&gt;();<a name="line.515"></a>
+<span class="sourceLineNo">516</span><a name="line.516"></a>
+<span class="sourceLineNo">517</span>                                for (i = 0; i &lt; inputTokens.length(); i++) {<a name="line.517"></a>
+<span class="sourceLineNo">518</span>                                        boolean fileFound = false;<a name="line.518"></a>
+<span class="sourceLineNo">519</span>                                        File pattern = new File(((StringToken) inputTokens<a name="line.519"></a>
+<span class="sourceLineNo">520</span>                                                        .getElement(i)).stringValue().trim());<a name="line.520"></a>
+<span class="sourceLineNo">521</span>                                        String[] contents = (pattern.getParent() != null) ? new File(<a name="line.521"></a>
+<span class="sourceLineNo">522</span>                                                        pattern.getParent()).list()<a name="line.522"></a>
+<span class="sourceLineNo">523</span>                                                        : null;<a name="line.523"></a>
+<span class="sourceLineNo">524</span>                                        String fileName = pattern.getName();<a name="line.524"></a>
+<span class="sourceLineNo">525</span><a name="line.525"></a>
+<span class="sourceLineNo">526</span>                                        if (!fileName.equals("")) {<a name="line.526"></a>
+<span class="sourceLineNo">527</span>                                                fileName = fileName.replaceAll("[*]", ".*").replaceAll(<a name="line.527"></a>
+<span class="sourceLineNo">528</span>                                                                "[?]", ".?").replaceAll("[+]", ".+");<a name="line.528"></a>
+<span class="sourceLineNo">529</span><a name="line.529"></a>
+<span class="sourceLineNo">530</span>                                                Pattern p = Pattern.compile(fileName);<a name="line.530"></a>
+<span class="sourceLineNo">531</span>                                                if (contents != null) {<a name="line.531"></a>
+<span class="sourceLineNo">532</span>                                                        for (int index = 0; index &lt; contents.length; index++) {<a name="line.532"></a>
+<span class="sourceLineNo">533</span>                                                                Matcher m = p.matcher(contents[index].trim());<a name="line.533"></a>
+<span class="sourceLineNo">534</span>                                                                if (m.matches()) {<a name="line.534"></a>
+<span class="sourceLineNo">535</span>                                                                        iFiles<a name="line.535"></a>
+<span class="sourceLineNo">536</span>                                                                                        .add(pattern.getParent()<a name="line.536"></a>
+<span class="sourceLineNo">537</span>                                                                                                        + System<a name="line.537"></a>
+<span class="sourceLineNo">538</span>                                                                                                                        .getProperty("file.separator")<a name="line.538"></a>
+<span class="sourceLineNo">539</span>                                                                                                        + contents[index]);<a name="line.539"></a>
+<span class="sourceLineNo">540</span>                                                                        fileFound = true;<a name="line.540"></a>
+<span class="sourceLineNo">541</span>                                                                }<a name="line.541"></a>
+<span class="sourceLineNo">542</span>                                                        }<a name="line.542"></a>
+<span class="sourceLineNo">543</span>                                                }<a name="line.543"></a>
+<span class="sourceLineNo">544</span>                                                if (!fileFound) {<a name="line.544"></a>
+<span class="sourceLineNo">545</span>                                                        throw new JobException(<a name="line.545"></a>
+<span class="sourceLineNo">546</span>                                                                        "No matching file found for "<a name="line.546"></a>
+<span class="sourceLineNo">547</span>                                                                                        + pattern.toString());<a name="line.547"></a>
+<span class="sourceLineNo">548</span>                                                }<a name="line.548"></a>
+<span class="sourceLineNo">549</span>                                        }<a name="line.549"></a>
+<span class="sourceLineNo">550</span>                                }<a name="line.550"></a>
+<span class="sourceLineNo">551</span><a name="line.551"></a>
+<span class="sourceLineNo">552</span>                                if (iFiles.size() != 0) {<a name="line.552"></a>
+<span class="sourceLineNo">553</span>                                        inputArray = new String[iFiles.size()];<a name="line.553"></a>
+<span class="sourceLineNo">554</span>                                        iFiles.toArray(inputArray);<a name="line.554"></a>
+<span class="sourceLineNo">555</span>                                }<a name="line.555"></a>
+<span class="sourceLineNo">556</span>                        }<a name="line.556"></a>
+<span class="sourceLineNo">557</span>                } catch (JobException ex) {<a name="line.557"></a>
+<span class="sourceLineNo">558</span>                        log.error(ex);<a name="line.558"></a>
+<span class="sourceLineNo">559</span>                        // ex.printStackTrace();<a name="line.559"></a>
+<span class="sourceLineNo">560</span>                        throw new IllegalActionException(ex.toString());<a name="line.560"></a>
+<span class="sourceLineNo">561</span>                }<a name="line.561"></a>
+<span class="sourceLineNo">562</span><a name="line.562"></a>
+<span class="sourceLineNo">563</span>                // Process the remotefiles parameter.<a name="line.563"></a>
+<span class="sourceLineNo">564</span>                ArrayToken remoteTokens = (ArrayToken) remotefiles.getToken();<a name="line.564"></a>
+<span class="sourceLineNo">565</span>                String[] remoteArray = null;<a name="line.565"></a>
+<span class="sourceLineNo">566</span>                if (remoteTokens.length() &gt;= 1) {<a name="line.566"></a>
+<span class="sourceLineNo">567</span>                        remoteArray = new String[remoteTokens.length()];<a name="line.567"></a>
+<span class="sourceLineNo">568</span>                        int i;<a name="line.568"></a>
+<span class="sourceLineNo">569</span>                        for (i = 0; i &lt; remoteTokens.length(); i++) {<a name="line.569"></a>
+<span class="sourceLineNo">570</span>                                remoteArray[i] = (((StringToken) remoteTokens.getElement(i))<a name="line.570"></a>
+<span class="sourceLineNo">571</span>                                                .stringValue().trim());<a name="line.571"></a>
+<span class="sourceLineNo">572</span>                        }<a name="line.572"></a>
+<span class="sourceLineNo">573</span>                        // process empty array<a name="line.573"></a>
+<span class="sourceLineNo">574</span>                        if (i == 0 || remoteArray[0] == "") {<a name="line.574"></a>
+<span class="sourceLineNo">575</span>                                remoteArray = null;<a name="line.575"></a>
+<span class="sourceLineNo">576</span>                        }<a name="line.576"></a>
+<span class="sourceLineNo">577</span>                }<a name="line.577"></a>
+<span class="sourceLineNo">578</span><a name="line.578"></a>
+<span class="sourceLineNo">579</span>                // create job<a name="line.579"></a>
+<span class="sourceLineNo">580</span>                String strJobID = JobFactory.create();<a name="line.580"></a>
+<span class="sourceLineNo">581</span>                Job _job = JobFactory.get(strJobID);<a name="line.581"></a>
+<span class="sourceLineNo">582</span><a name="line.582"></a>
+<span class="sourceLineNo">583</span>                // set the dependencies, if any<a name="line.583"></a>
+<span class="sourceLineNo">584</span>                if(dependentJobArray != null) {<a name="line.584"></a>
+<span class="sourceLineNo">585</span>                    _job.setDependentJobs(dependentJobArray);<a name="line.585"></a>
+<span class="sourceLineNo">586</span>                }<a name="line.586"></a>
+<span class="sourceLineNo">587</span>                <a name="line.587"></a>
+<span class="sourceLineNo">588</span>                try {<a name="line.588"></a>
+<span class="sourceLineNo">589</span>                        // set _job's executable, working dir and input files<a name="line.589"></a>
+<span class="sourceLineNo">590</span>                        if (strExecutable != null &amp;&amp; strExecutable.trim().length() &gt; 0) {<a name="line.590"></a>
+<span class="sourceLineNo">591</span>                                _job.setExecutable(strExecutable, true, strJobOptions);<a name="line.591"></a>
+<span class="sourceLineNo">592</span>                        }<a name="line.592"></a>
+<span class="sourceLineNo">593</span><a name="line.593"></a>
+<span class="sourceLineNo">594</span>                        if (strWorkdir != null &amp;&amp; strWorkdir.trim().length() &gt; 0) {<a name="line.594"></a>
+<span class="sourceLineNo">595</span>                                _job.setWorkdir(strWorkdir, !bUseGivenDir);<a name="line.595"></a>
+<span class="sourceLineNo">596</span>                        } else {<a name="line.596"></a>
+<span class="sourceLineNo">597</span>                                if (bUseGivenDir) {<a name="line.597"></a>
+<span class="sourceLineNo">598</span>                                        throw new JobException(<a name="line.598"></a>
+<span class="sourceLineNo">599</span>                                                        "The flag 'use given workdir' is set to true. " +<a name="line.599"></a>
+<span class="sourceLineNo">600</span>                                                        "Please provide a valid working directory. \n " + <a name="line.600"></a>
+<span class="sourceLineNo">601</span>                                                        "Or you could uncheck the flag and let the actor create a " +<a name="line.601"></a>
+<span class="sourceLineNo">602</span>                                                        "unique working directory for your job");<a name="line.602"></a>
+<span class="sourceLineNo">603</span>                                }<a name="line.603"></a>
+<span class="sourceLineNo">604</span>                                if (strTarget == null || strTarget.trim().equals("")<a name="line.604"></a>
+<span class="sourceLineNo">605</span>                                                || strTarget.equals("local")|| strTarget.equals("localhost")) {<a name="line.605"></a>
+<span class="sourceLineNo">606</span>                                        //If submitting to localhost, find home dir using java<a name="line.606"></a>
+<span class="sourceLineNo">607</span>                                        strWorkdir = System.getProperty("user.home");<a name="line.607"></a>
+<span class="sourceLineNo">608</span>                                        if ( System.getProperty("os.name").toLowerCase().indexOf("win") &gt;= 0 ) {<a name="line.608"></a>
+<span class="sourceLineNo">609</span>                                                strWorkdir = System.getenv().get("HOMEPATH");<a name="line.609"></a>
+<span class="sourceLineNo">610</span>                                        }<a name="line.610"></a>
+<span class="sourceLineNo">611</span>                                }else{<a name="line.611"></a>
+<span class="sourceLineNo">612</span>                                        strWorkdir = "$HOME";<a name="line.612"></a>
+<span class="sourceLineNo">613</span>                                }<a name="line.613"></a>
+<span class="sourceLineNo">614</span>                                _job.setWorkdir(strWorkdir);<a name="line.614"></a>
+<span class="sourceLineNo">615</span>                        }<a name="line.615"></a>
+<span class="sourceLineNo">616</span><a name="line.616"></a>
+<span class="sourceLineNo">617</span>                        // make sure both cmdFile and cmdText were not used<a name="line.617"></a>
+<span class="sourceLineNo">618</span>                        if(strCmdText != null &amp;&amp; strCmdFile != null) {<a name="line.618"></a>
+<span class="sourceLineNo">619</span>                            throw new IllegalActionException(this, "Do not specify both cmdText and cmdFile.");<a name="line.619"></a>
+<span class="sourceLineNo">620</span>                        }<a name="line.620"></a>
+<span class="sourceLineNo">621</span>                        <a name="line.621"></a>
+<span class="sourceLineNo">622</span>                        // make sure at least one of cmdFile and cmdText were used<a name="line.622"></a>
+<span class="sourceLineNo">623</span>                        if(strCmdText == null &amp;&amp; strCmdFile == null) {<a name="line.623"></a>
+<span class="sourceLineNo">624</span>                            throw new IllegalActionException(this, "Must specify either cmdText or cmdFile.");<a name="line.624"></a>
+<span class="sourceLineNo">625</span>                        }<a name="line.625"></a>
+<span class="sourceLineNo">626</span>                        <a name="line.626"></a>
+<span class="sourceLineNo">627</span>                        // if the commands were specified as text, write to a temporary file<a name="line.627"></a>
+<span class="sourceLineNo">628</span>                        if (strCmdText != null) {<a name="line.628"></a>
+<span class="sourceLineNo">629</span>                            File file;<a name="line.629"></a>
+<span class="sourceLineNo">630</span>                try {<a name="line.630"></a>
+<span class="sourceLineNo">631</span>                    file = File.createTempFile("job", null);<a name="line.631"></a>
+<span class="sourceLineNo">632</span>                } catch (IOException e) {<a name="line.632"></a>
+<span class="sourceLineNo">633</span>                    throw new IllegalActionException(this, e,<a name="line.633"></a>
+<span class="sourceLineNo">634</span>                            "Error creating temporary file for cmd text.");<a name="line.634"></a>
+<span class="sourceLineNo">635</span>                }<a name="line.635"></a>
+<span class="sourceLineNo">636</span>                            Writer writer = null;<a name="line.636"></a>
+<span class="sourceLineNo">637</span>                            try {<a name="line.637"></a>
+<span class="sourceLineNo">638</span>                                writer = new FileWriter(file);<a name="line.638"></a>
+<span class="sourceLineNo">639</span>                                writer.write(strCmdText);<a name="line.639"></a>
+<span class="sourceLineNo">640</span>                            } catch(IOException e) {<a name="line.640"></a>
+<span class="sourceLineNo">641</span>                                throw new IllegalActionException(this, e, "Error write cmd text to file.");<a name="line.641"></a>
+<span class="sourceLineNo">642</span>                            } finally {<a name="line.642"></a>
+<span class="sourceLineNo">643</span>                                if(writer != null) {<a name="line.643"></a>
+<span class="sourceLineNo">644</span>                                    try {<a name="line.644"></a>
+<span class="sourceLineNo">645</span>                            writer.close();<a name="line.645"></a>
+<span class="sourceLineNo">646</span>                        } catch (IOException e) {<a name="line.646"></a>
+<span class="sourceLineNo">647</span>                            throw new IllegalActionException(this, e, "Error closing cmd text file.");<a name="line.647"></a>
+<span class="sourceLineNo">648</span>                        }<a name="line.648"></a>
+<span class="sourceLineNo">649</span>                                }<a name="line.649"></a>
+<span class="sourceLineNo">650</span>                            }<a name="line.650"></a>
+<span class="sourceLineNo">651</span>                            strCmdFile = file.getAbsolutePath();<a name="line.651"></a>
+<span class="sourceLineNo">652</span>                            bCmdFileLocal = true; //if commands are text, bCmdFileLocal should be true so the file will be transfered to the target cluster.<a name="line.652"></a>
+<span class="sourceLineNo">653</span>                        }<a name="line.653"></a>
+<span class="sourceLineNo">654</span>                        <a name="line.654"></a>
+<span class="sourceLineNo">655</span>                        _job.setSubmitFile(strCmdFile, bCmdFileLocal);<a name="line.655"></a>
+<span class="sourceLineNo">656</span>                        <a name="line.656"></a>
+<span class="sourceLineNo">657</span>                        if(bDefaultFork &amp;&amp; "Fork".equalsIgnoreCase(strScheduler)){<a name="line.657"></a>
+<span class="sourceLineNo">658</span>                                File resourcesDir = ConfigurationManager.getModule("job").getResourcesDir();<a name="line.658"></a>
+<span class="sourceLineNo">659</span>                                File binFile = new File(resourcesDir,"jmgr-fork.sh");<a name="line.659"></a>
+<span class="sourceLineNo">660</span>                                if(!binFile.exists()){<a name="line.660"></a>
+<span class="sourceLineNo">661</span>                                        throw new JobException("Unable to locate default fork script - "<a name="line.661"></a>
+<span class="sourceLineNo">662</span>                                                        + binFile.getAbsolutePath() + ". Please copy fork script manually.");<a name="line.662"></a>
+<span class="sourceLineNo">663</span>                                }<a name="line.663"></a>
+<span class="sourceLineNo">664</span>                                _job.setBinFile(binFile.getAbsolutePath(), true);<a name="line.664"></a>
+<span class="sourceLineNo">665</span>                                //Set the bin path explicitly if it is not already set<a name="line.665"></a>
+<span class="sourceLineNo">666</span>                                //This is required because jmgr-fork.sh fails with command not found. <a name="line.666"></a>
+<span class="sourceLineNo">667</span>                                //It works only if there is an absolute or relative path prefix to "jmgr-fork.sh"<a name="line.667"></a>
+<span class="sourceLineNo">668</span>                                if(strBinPath == null || strBinPath.trim().equals("")){<a name="line.668"></a>
+<span class="sourceLineNo">669</span>                                        strBinPath = _job.getWorkdirPath(); //setWorkdir was already called <a name="line.669"></a>
+<span class="sourceLineNo">670</span>                                                                                                        //so, this method should return the right path<a name="line.670"></a>
+<span class="sourceLineNo">671</span>                                }<a name="line.671"></a>
+<span class="sourceLineNo">672</span>                        }<a name="line.672"></a>
+<span class="sourceLineNo">673</span><a name="line.673"></a>
+<span class="sourceLineNo">674</span>                        if (inputArray != null) {<a name="line.674"></a>
+<span class="sourceLineNo">675</span>                                for (int i = 0; i &lt; inputArray.length; i++) {<a name="line.675"></a>
+<span class="sourceLineNo">676</span>                                        if (inputArray[i] != null<a name="line.676"></a>
+<span class="sourceLineNo">677</span>                                                        &amp;&amp; inputArray[i].trim().length() &gt; 0)<a name="line.677"></a>
+<span class="sourceLineNo">678</span>                                                _job.setInputFile(inputArray[i], true);<a name="line.678"></a>
+<span class="sourceLineNo">679</span>                                }<a name="line.679"></a>
+<span class="sourceLineNo">680</span>                        }<a name="line.680"></a>
+<span class="sourceLineNo">681</span><a name="line.681"></a>
+<span class="sourceLineNo">682</span>                        if (remoteArray != null) {<a name="line.682"></a>
+<span class="sourceLineNo">683</span>                                for (int i = 0; i &lt; remoteArray.length; i++) {<a name="line.683"></a>
+<span class="sourceLineNo">684</span>                                        if (remoteArray[i] != null<a name="line.684"></a>
+<span class="sourceLineNo">685</span>                                                        &amp;&amp; remoteArray[i].trim().length() &gt; 0)<a name="line.685"></a>
+<span class="sourceLineNo">686</span>                                                _job.setInputFile(remoteArray[i], false);<a name="line.686"></a>
+<span class="sourceLineNo">687</span>                                }<a name="line.687"></a>
+<span class="sourceLineNo">688</span>                        }<a name="line.688"></a>
+<span class="sourceLineNo">689</span>                } catch (JobException ex) {<a name="line.689"></a>
+<span class="sourceLineNo">690</span>                        log.error(ex);<a name="line.690"></a>
+<span class="sourceLineNo">691</span>                        JobFactory.remove(strJobID);<a name="line.691"></a>
+<span class="sourceLineNo">692</span>                        strJobID = "";<a name="line.692"></a>
+<span class="sourceLineNo">693</span>                        _job = null;<a name="line.693"></a>
+<span class="sourceLineNo">694</span>                        throw new IllegalActionException(this, ex, "Error creating job.");<a name="line.694"></a>
+<span class="sourceLineNo">695</span>                }<a name="line.695"></a>
+<span class="sourceLineNo">696</span><a name="line.696"></a>
+<span class="sourceLineNo">697</span>                /* Job Manager processing */<a name="line.697"></a>
+<span class="sourceLineNo">698</span>                <a name="line.698"></a>
+<span class="sourceLineNo">699</span>                org.kepler.job.JobManager myJmgr = null;<a name="line.699"></a>
+<span class="sourceLineNo">700</span><a name="line.700"></a>
+<span class="sourceLineNo">701</span>                try {<a name="line.701"></a>
+<span class="sourceLineNo">702</span>                        if (strScheduler==null || strScheduler.equals("")) {<a name="line.702"></a>
+<span class="sourceLineNo">703</span>                                throw new JobException(<a name="line.703"></a>
+<span class="sourceLineNo">704</span>                                                "Please provide a valid input for the port/parameter scheduler.");<a name="line.704"></a>
+<span class="sourceLineNo">705</span>                        }<a name="line.705"></a>
+<span class="sourceLineNo">706</span>                        // Read properties file.<a name="line.706"></a>
+<span class="sourceLineNo">707</span>                        // String filePath = System.getProperty("KEPLER");<a name="line.707"></a>
+<span class="sourceLineNo">708</span>                        // filePath = filePath + "/common/configs/ptolemy/configs"<a name="line.708"></a>
+<span class="sourceLineNo">709</span>                        // + "/kepler/JobLauncher.properties";<a name="line.709"></a>
+<span class="sourceLineNo">710</span><a name="line.710"></a>
+<span class="sourceLineNo">711</span>                        // File myFile = new File(filePath);<a name="line.711"></a>
+<span class="sourceLineNo">712</span>                        // Properties properties = new Properties();<a name="line.712"></a>
+<span class="sourceLineNo">713</span>                        // properties.load(new FileInputStream(filePath));<a name="line.713"></a>
+<span class="sourceLineNo">714</span>                        // String jobsSupported = properties.getProperty(strScheduler<a name="line.714"></a>
+<span class="sourceLineNo">715</span>                        // .toLowerCase());<a name="line.715"></a>
+<span class="sourceLineNo">716</span><a name="line.716"></a>
+<span class="sourceLineNo">717</span>//                      ConfigurationProperty cp = ConfigurationManager.getInstance()<a name="line.717"></a>
+<span class="sourceLineNo">718</span>//                                      .getProperty(ConfigurationManager.getModule("actors"),<a name="line.718"></a>
+<span class="sourceLineNo">719</span>//                                                      new ConfigurationNamespace("JobLauncher"));<a name="line.719"></a>
+<span class="sourceLineNo">720</span>                        properties = cp.findProperties("name",<a name="line.720"></a>
+<span class="sourceLineNo">721</span>                                        strScheduler.toLowerCase(), true);<a name="line.721"></a>
+<span class="sourceLineNo">722</span>                        String jobsSupported = null;<a name="line.722"></a>
+<span class="sourceLineNo">723</span>                        if(properties.size() != 0){<a name="line.723"></a>
+<span class="sourceLineNo">724</span>                                ConfigurationProperty prop = properties.get(0);<a name="line.724"></a>
+<span class="sourceLineNo">725</span>                                jobsSupported = prop.getProperty("value").getValue();<a name="line.725"></a>
+<span class="sourceLineNo">726</span>                        }<a name="line.726"></a>
+<span class="sourceLineNo">727</span>                        if (jobsSupported != null) {<a name="line.727"></a>
+<span class="sourceLineNo">728</span>                                strScheduler = jobsSupported;<a name="line.728"></a>
+<span class="sourceLineNo">729</span>                        } else {<a name="line.729"></a>
+<span class="sourceLineNo">730</span>                                throw new JobException("Job Scheduler " + strScheduler<a name="line.730"></a>
+<span class="sourceLineNo">731</span>                                                + " is not supported.");<a name="line.731"></a>
+<span class="sourceLineNo">732</span>                        }<a name="line.732"></a>
+<span class="sourceLineNo">733</span><a name="line.733"></a>
+<span class="sourceLineNo">734</span>                        // Create a JobManager object or get it if it was already created<a name="line.734"></a>
+<span class="sourceLineNo">735</span>                        if (isDebugging)<a name="line.735"></a>
+<span class="sourceLineNo">736</span>                                log.debug("Create/get JobManager object. Name = "<a name="line.736"></a>
+<span class="sourceLineNo">737</span>                                                + strScheduler + "; target = " + strTarget<a name="line.737"></a>
+<span class="sourceLineNo">738</span>                                                + "; binPath = " + strBinPath);<a name="line.738"></a>
+<span class="sourceLineNo">739</span>                        myJmgr = JobManagerFactory.get(strScheduler, strTarget, strBinPath);<a name="line.739"></a>
+<span class="sourceLineNo">740</span><a name="line.740"></a>
+<span class="sourceLineNo">741</span>                        <a name="line.741"></a>
+<span class="sourceLineNo">742</span>                        // Note that myJmgr.getID can give back a String reference to the<a name="line.742"></a>
+<span class="sourceLineNo">743</span>                        // object that can be used with JobManagerFactory.get<a name="line.743"></a>
+<span class="sourceLineNo">744</span>                } catch (JobException ex) {<a name="line.744"></a>
+<span class="sourceLineNo">745</span>                        log.error("Job manager object could not be created. " + ex);<a name="line.745"></a>
+<span class="sourceLineNo">746</span>                        myJmgr = null;<a name="line.746"></a>
+<span class="sourceLineNo">747</span>                        JobFactory.remove(strJobID);<a name="line.747"></a>
+<span class="sourceLineNo">748</span>                        strJobID = "";<a name="line.748"></a>
+<span class="sourceLineNo">749</span>                        throw new IllegalActionException("JobManager Error: "<a name="line.749"></a>
+<span class="sourceLineNo">750</span>                                        + ex.toString());<a name="line.750"></a>
+<span class="sourceLineNo">751</span>                }<a name="line.751"></a>
+<span class="sourceLineNo">752</span><a name="line.752"></a>
+<span class="sourceLineNo">753</span>                /* Job Submission */<a name="line.753"></a>
+<span class="sourceLineNo">754</span>                boolean bSucc = false;<a name="line.754"></a>
+<span class="sourceLineNo">755</span>                try {<a name="line.755"></a>
+<span class="sourceLineNo">756</span>                        if (_job == null) {<a name="line.756"></a>
+<span class="sourceLineNo">757</span>                                throw new JobException("JobSubmitter: incoming Job is null");<a name="line.757"></a>
+<span class="sourceLineNo">758</span>                        }<a name="line.758"></a>
+<span class="sourceLineNo">759</span><a name="line.759"></a>
+<span class="sourceLineNo">760</span>                        if (isDebugging) {<a name="line.760"></a>
+<span class="sourceLineNo">761</span>                                log.debug("JobSubmit: submit job " + _job.getJobID() + "...");<a name="line.761"></a>
+<span class="sourceLineNo">762</span>                        }<a name="line.762"></a>
+<span class="sourceLineNo">763</span>                        String realJobID;<a name="line.763"></a>
+<span class="sourceLineNo">764</span><a name="line.764"></a>
+<span class="sourceLineNo">765</span>                        int numTasksVal = ((IntToken)numTasks.getToken()).intValue();<a name="line.765"></a>
+<span class="sourceLineNo">766</span>                        if(numTasksVal &gt; 0) {<a name="line.766"></a>
+<span class="sourceLineNo">767</span>                                _job.status = new TaskParallelJobStatusInfo();<a name="line.767"></a>
+<span class="sourceLineNo">768</span>                                _job.setNumTasks(numTasksVal);<a name="line.768"></a>
+<span class="sourceLineNo">769</span>                        }<a name="line.769"></a>
+<span class="sourceLineNo">770</span>                        if(bUseGivenDir){<a name="line.770"></a>
+<span class="sourceLineNo">771</span>                                //do not overwrite existing folder. create if not present<a name="line.771"></a>
+<span class="sourceLineNo">772</span>                                realJobID = _job.submit(myJmgr, false, strJobOptions);<a name="line.772"></a>
+<span class="sourceLineNo">773</span>                        }else {<a name="line.773"></a>
+<span class="sourceLineNo">774</span>                                realJobID = _job.submit(myJmgr, true, strJobOptions);<a name="line.774"></a>
+<span class="sourceLineNo">775</span>                        }<a name="line.775"></a>
+<span class="sourceLineNo">776</span>                        strLog = new String("JobSubmitter: Job " + _job.getJobID()<a name="line.776"></a>
+<span class="sourceLineNo">777</span>                                        + " is submitted, it's real jobID is: " + realJobID);<a name="line.777"></a>
+<span class="sourceLineNo">778</span>                        log.info(strLog);<a name="line.778"></a>
+<span class="sourceLineNo">779</span>                        jobID.send(0, new StringToken(realJobID));<a name="line.779"></a>
+<span class="sourceLineNo">780</span>                        bSucc = true;<a name="line.780"></a>
+<span class="sourceLineNo">781</span>                } catch (JobException ex) {<a name="line.781"></a>
+<span class="sourceLineNo">782</span>                        log.error(ex);<a name="line.782"></a>
+<span class="sourceLineNo">783</span>                        strLog = "JobSubmitter Error: " + ex.toString();<a name="line.783"></a>
+<span class="sourceLineNo">784</span>                        success.send(0, new BooleanToken(bSucc));<a name="line.784"></a>
+<span class="sourceLineNo">785</span>                        logPort.send(0, new StringToken(strLog));<a name="line.785"></a>
+<span class="sourceLineNo">786</span>                        return;<a name="line.786"></a>
+<span class="sourceLineNo">787</span>                } catch (Exception ex) {<a name="line.787"></a>
+<span class="sourceLineNo">788</span>                        log.error(ex);<a name="line.788"></a>
+<span class="sourceLineNo">789</span>                        strLog = "JobSubmitter Error: " + ex.toString();<a name="line.789"></a>
+<span class="sourceLineNo">790</span>                        success.send(0, new BooleanToken(bSucc));<a name="line.790"></a>
+<span class="sourceLineNo">791</span>                        logPort.send(0, new StringToken(strLog));<a name="line.791"></a>
+<span class="sourceLineNo">792</span>                        return;<a name="line.792"></a>
+<span class="sourceLineNo">793</span>                }<a name="line.793"></a>
+<span class="sourceLineNo">794</span><a name="line.794"></a>
+<span class="sourceLineNo">795</span>                /* Job Status Checking */<a name="line.795"></a>
+<span class="sourceLineNo">796</span>                JobStatusCode jobStatusCode;<a name="line.796"></a>
+<span class="sourceLineNo">797</span><a name="line.797"></a>
+<span class="sourceLineNo">798</span>                try {<a name="line.798"></a>
+<span class="sourceLineNo">799</span><a name="line.799"></a>
+<span class="sourceLineNo">800</span>              do {<a name="line.800"></a>
+<span class="sourceLineNo">801</span>                //System.out.println("BEFORE CHECK JOB STATUS");<a name="line.801"></a>
+<span class="sourceLineNo">802</span>                //jobStatusCode = _checkStatus(_job);<a name="line.802"></a>
+<span class="sourceLineNo">803</span>                //System.out.println("AFTER CHECK JOB STATUS " + jobStatusCode);<a name="line.803"></a>
+<span class="sourceLineNo">804</span>                // while (_waitUntilCode != null &amp;&amp; _waitUntilCode != jobStatusCode)<a name="line.804"></a>
+<span class="sourceLineNo">805</span>                // {<a name="line.805"></a>
+<span class="sourceLineNo">806</span>                //Loop if there is no match and job status is NOT Error or NotInQueue.<a name="line.806"></a>
+<span class="sourceLineNo">807</span>                //Second check is necessary to avoid infinite loop in case where job<a name="line.807"></a>
+<span class="sourceLineNo">808</span>                //never gets to the user requested state or if the state goes undetected<a name="line.808"></a>
+<span class="sourceLineNo">809</span>                //(say during sleep between poll).<a name="line.809"></a>
+<span class="sourceLineNo">810</span>                Long time = 1000L * _sleepWhileWaitingVal;<a name="line.810"></a>
+<span class="sourceLineNo">811</span>                Thread.sleep(time);<a name="line.811"></a>
+<span class="sourceLineNo">812</span>                jobStatusCode = _checkStatus(_job);<a name="line.812"></a>
+<span class="sourceLineNo">813</span>              } while (!matchStatus(jobStatusCode) &amp;&amp; jobStatusCode.ordinal()&gt;1);<a name="line.813"></a>
+<span class="sourceLineNo">814</span><a name="line.814"></a>
+<span class="sourceLineNo">815</span>                } catch (Exception ex) {<a name="line.815"></a>
+<span class="sourceLineNo">816</span>                        log.error(ex);<a name="line.816"></a>
+<span class="sourceLineNo">817</span>                        jobStatusCode = JobStatusCode.Error;<a name="line.817"></a>
+<span class="sourceLineNo">818</span>                        strLog = "JobStatus Error: " + ex.toString();<a name="line.818"></a>
+<span class="sourceLineNo">819</span>                        bSucc = false;<a name="line.819"></a>
+<span class="sourceLineNo">820</span>                        success.send(0, new BooleanToken(bSucc));<a name="line.820"></a>
+<span class="sourceLineNo">821</span>                        logPort.send(0, new StringToken(strLog));<a name="line.821"></a>
+<span class="sourceLineNo">822</span>                        return;<a name="line.822"></a>
+<span class="sourceLineNo">823</span>                }<a name="line.823"></a>
+<span class="sourceLineNo">824</span><a name="line.824"></a>
+<span class="sourceLineNo">825</span>                if (_job != null) {<a name="line.825"></a>
+<span class="sourceLineNo">826</span>                        strLog = new String("JobStatus: Status of job " + _job.getJobID()<a name="line.826"></a>
+<span class="sourceLineNo">827</span>                                        + ": " + jobStatusCode.toString());<a name="line.827"></a>
+<span class="sourceLineNo">828</span>                        jobOut.send(0, new ObjectToken(_job));<a name="line.828"></a>
+<span class="sourceLineNo">829</span>                }<a name="line.829"></a>
+<span class="sourceLineNo">830</span>                success.send(0, new BooleanToken(bSucc));<a name="line.830"></a>
+<span class="sourceLineNo">831</span>                logPort.send(0, new StringToken(strLog));<a name="line.831"></a>
+<span class="sourceLineNo">832</span>        }<a name="line.832"></a>
+<span class="sourceLineNo">833</span><a name="line.833"></a>
+<span class="sourceLineNo">834</span>        private JobStatusCode _checkStatus(Job job) throws Exception {<a name="line.834"></a>
+<span class="sourceLineNo">835</span>                JobStatusCode jobStatusCode = JobStatusCode.Error;<a name="line.835"></a>
+<span class="sourceLineNo">836</span>                if (job == null) {<a name="line.836"></a>
+<span class="sourceLineNo">837</span>                        throw new Exception("JobStatus: Job is null");<a name="line.837"></a>
+<span class="sourceLineNo">838</span>                }<a name="line.838"></a>
+<span class="sourceLineNo">839</span><a name="line.839"></a>
+<span class="sourceLineNo">840</span>                job.status(); // successful query or exception<a name="line.840"></a>
+<span class="sourceLineNo">841</span><a name="line.841"></a>
+<span class="sourceLineNo">842</span>                jobStatusCode = job.status.statusCode;<a name="line.842"></a>
+<span class="sourceLineNo">843</span>                log.info("Status of job " + job.getJobID() + ": "<a name="line.843"></a>
+<span class="sourceLineNo">844</span>                                + jobStatusCode.toString());<a name="line.844"></a>
+<span class="sourceLineNo">845</span>                return jobStatusCode;<a name="line.845"></a>
+<span class="sourceLineNo">846</span>        }<a name="line.846"></a>
+<span class="sourceLineNo">847</span><a name="line.847"></a>
+<span class="sourceLineNo">848</span>        private boolean matchStatus(JobStatusCode jobStatusCode) {<a name="line.848"></a>
+<span class="sourceLineNo">849</span>                String str = jobStatusCode.toString();<a name="line.849"></a>
+<span class="sourceLineNo">850</span><a name="line.850"></a>
+<span class="sourceLineNo">851</span>      if (_waitUntilCodes.size() == 0 || _waitUntilCodes.contains(str)) {<a name="line.851"></a>
+<span class="sourceLineNo">852</span>                        return true;<a name="line.852"></a>
+<span class="sourceLineNo">853</span>                }<a name="line.853"></a>
+<span class="sourceLineNo">854</span>                return false;<a name="line.854"></a>
+<span class="sourceLineNo">855</span>        }<a name="line.855"></a>
+<span class="sourceLineNo">856</span><a name="line.856"></a>
+<span class="sourceLineNo">857</span>        /** React to a change in an attribute. */<a name="line.857"></a>
+<span class="sourceLineNo">858</span>        public void attributeChanged(Attribute attribute)<a name="line.858"></a>
+<span class="sourceLineNo">859</span>                        throws IllegalActionException {<a name="line.859"></a>
+<span class="sourceLineNo">860</span>                if (attribute == waitUntil) {<a name="line.860"></a>
+<span class="sourceLineNo">861</span>                        String waitUntilStr = waitUntil.getExpression();<a name="line.861"></a>
+<span class="sourceLineNo">862</span>                        waitUntilStr = waitUntilStr.trim();<a name="line.862"></a>
+<span class="sourceLineNo">863</span>                        String[] split = waitUntilStr.split("\\s*,\\s*");<a name="line.863"></a>
+<span class="sourceLineNo">864</span>                        _waitUntilCodes = new ArrayList&lt;String&gt;(Arrays.asList(split));<a name="line.864"></a>
+<span class="sourceLineNo">865</span>                        // check validity<a name="line.865"></a>
+<span class="sourceLineNo">866</span>                        if (_waitUntilCodes.contains("ANY")) {<a name="line.866"></a>
+<span class="sourceLineNo">867</span>                                _waitUntilCodes.clear();<a name="line.867"></a>
+<span class="sourceLineNo">868</span>                        } else {<a name="line.868"></a>
+<span class="sourceLineNo">869</span>                                for (int i = 0; i &lt; _waitUntilCodes.size(); i++) {<a name="line.869"></a>
+<span class="sourceLineNo">870</span>                                        JobStatusCode waitUntilCode = JobStatusCode<a name="line.870"></a>
+<span class="sourceLineNo">871</span>                                                        .getFromString(_waitUntilCodes.get(i));<a name="line.871"></a>
+<span class="sourceLineNo">872</span>                                        if (waitUntilCode == null) {<a name="line.872"></a>
+<span class="sourceLineNo">873</span>                                                throw new IllegalActionException(this,<a name="line.873"></a>
+<span class="sourceLineNo">874</span>                                                                "Invalid job status type: "<a name="line.874"></a>
+<span class="sourceLineNo">875</span>                                                                                + _waitUntilCodes.get(i));<a name="line.875"></a>
+<span class="sourceLineNo">876</span>                                        }<a name="line.876"></a>
+<span class="sourceLineNo">877</span>                                }<a name="line.877"></a>
+<span class="sourceLineNo">878</span>                        }<a name="line.878"></a>
+<span class="sourceLineNo">879</span>                } else if (attribute == sleepWhileWaiting) {<a name="line.879"></a>
+<span class="sourceLineNo">880</span>                        if ((IntToken) sleepWhileWaiting.getToken() != null) {<a name="line.880"></a>
+<span class="sourceLineNo">881</span>                                _sleepWhileWaitingVal = ((IntToken) sleepWhileWaiting<a name="line.881"></a>
+<span class="sourceLineNo">882</span>                                                .getToken()).intValue();<a name="line.882"></a>
+<span class="sourceLineNo">883</span>                                if (_sleepWhileWaitingVal &lt; 0) {<a name="line.883"></a>
+<span class="sourceLineNo">884</span>                                        throw new IllegalActionException(this,<a name="line.884"></a>
+<span class="sourceLineNo">885</span>                                                        "Sleep While Waiting value cannot be negative.");<a name="line.885"></a>
+<span class="sourceLineNo">886</span>                                }<a name="line.886"></a>
+<span class="sourceLineNo">887</span>                        }<a name="line.887"></a>
+<span class="sourceLineNo">888</span>                } else if (attribute == binPath) {<a name="line.888"></a>
+<span class="sourceLineNo">889</span>                        //if binPath is changed, we should remove JobManager from the table to force it update.<a name="line.889"></a>
+<span class="sourceLineNo">890</span>                        if (strScheduler != null &amp;&amp; !strScheduler.isEmpty() &amp;&amp; strTarget != null &amp;&amp; !strTarget.isEmpty())<a name="line.890"></a>
+<span class="sourceLineNo">891</span>                                JobManagerFactory.instance.removeJmgrFromTable(strScheduler, strTarget);<a name="line.891"></a>
+<span class="sourceLineNo">892</span>                } else {<a name="line.892"></a>
+<span class="sourceLineNo">893</span>                        super.attributeChanged(attribute);<a name="line.893"></a>
+<span class="sourceLineNo">894</span>                }<a name="line.894"></a>
+<span class="sourceLineNo">895</span>        }<a name="line.895"></a>
+<span class="sourceLineNo">896</span><a name="line.896"></a>
+<span class="sourceLineNo">897</span>        private static final Log log = LogFactory.getLog(GenericJobLauncher.class<a name="line.897"></a>
+<span class="sourceLineNo">898</span>                        .getName());<a name="line.898"></a>
+<span class="sourceLineNo">899</span>        private static final boolean isDebugging = log.isDebugEnabled();<a name="line.899"></a>
+<span class="sourceLineNo">900</span>        // private JobStatusCode _waitUntilCode = null;<a name="line.900"></a>
+<span class="sourceLineNo">901</span>        private ArrayList&lt;String&gt; _waitUntilCodes = new ArrayList&lt;String&gt;();<a name="line.901"></a>
+<span class="sourceLineNo">902</span>        private int _sleepWhileWaitingVal = 5;<a name="line.902"></a>
+<span class="sourceLineNo">903</span>        private List&lt;ConfigurationProperty&gt; properties;<a name="line.903"></a>
+<span class="sourceLineNo">904</span>        private ConfigurationProperty cp;<a name="line.904"></a>
+<span class="sourceLineNo">905</span>        private String strScheduler, strTarget;<a name="line.905"></a>
+<span class="sourceLineNo">906</span>}<a name="line.906"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

@@ -1,0 +1,403 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../../stylesheet.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>/* An actor that wraps (an instance of) a Java class.<a name="line.1"></a>
+<span class="sourceLineNo">002</span><a name="line.2"></a>
+<span class="sourceLineNo">003</span> Copyright (c) 2001-2014 The Regents of the University of California.<a name="line.3"></a>
+<span class="sourceLineNo">004</span> All rights reserved.<a name="line.4"></a>
+<span class="sourceLineNo">005</span> Permission is hereby granted, without written agreement and without<a name="line.5"></a>
+<span class="sourceLineNo">006</span> license or royalty fees, to use, copy, modify, and distribute this<a name="line.6"></a>
+<span class="sourceLineNo">007</span> software and its documentation for any purpose, provided that the above<a name="line.7"></a>
+<span class="sourceLineNo">008</span> copyright notice and the following two paragraphs appear in all copies<a name="line.8"></a>
+<span class="sourceLineNo">009</span> of this software.<a name="line.9"></a>
+<span class="sourceLineNo">010</span><a name="line.10"></a>
+<span class="sourceLineNo">011</span> IN NO EVENT SHALL THE UNIVERSITY OF CALIFORNIA BE LIABLE TO ANY PARTY<a name="line.11"></a>
+<span class="sourceLineNo">012</span> FOR DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES<a name="line.12"></a>
+<span class="sourceLineNo">013</span> ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION, EVEN IF<a name="line.13"></a>
+<span class="sourceLineNo">014</span> THE UNIVERSITY OF CALIFORNIA HAS BEEN ADVISED OF THE POSSIBILITY OF<a name="line.14"></a>
+<span class="sourceLineNo">015</span> SUCH DAMAGE.<a name="line.15"></a>
+<span class="sourceLineNo">016</span><a name="line.16"></a>
+<span class="sourceLineNo">017</span> THE UNIVERSITY OF CALIFORNIA SPECIFICALLY DISCLAIMS ANY WARRANTIES,<a name="line.17"></a>
+<span class="sourceLineNo">018</span> INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF<a name="line.18"></a>
+<span class="sourceLineNo">019</span> MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE<a name="line.19"></a>
+<span class="sourceLineNo">020</span> PROVIDED HEREUNDER IS ON AN "AS IS" BASIS, AND THE UNIVERSITY OF<a name="line.20"></a>
+<span class="sourceLineNo">021</span> CALIFORNIA HAS NO OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT, UPDATES,<a name="line.21"></a>
+<span class="sourceLineNo">022</span> ENHANCEMENTS, OR MODIFICATIONS.<a name="line.22"></a>
+<span class="sourceLineNo">023</span><a name="line.23"></a>
+<span class="sourceLineNo">024</span> PT_COPYRIGHT_VERSION_2<a name="line.24"></a>
+<span class="sourceLineNo">025</span> COPYRIGHTENDKEY<a name="line.25"></a>
+<span class="sourceLineNo">026</span><a name="line.26"></a>
+<span class="sourceLineNo">027</span> */<a name="line.27"></a>
+<span class="sourceLineNo">028</span>package ptolemy.actor.lib;<a name="line.28"></a>
+<span class="sourceLineNo">029</span><a name="line.29"></a>
+<span class="sourceLineNo">030</span>import java.lang.reflect.Constructor;<a name="line.30"></a>
+<span class="sourceLineNo">031</span>import java.lang.reflect.InvocationTargetException;<a name="line.31"></a>
+<span class="sourceLineNo">032</span>import java.lang.reflect.Method;<a name="line.32"></a>
+<span class="sourceLineNo">033</span>import java.lang.reflect.Modifier;<a name="line.33"></a>
+<span class="sourceLineNo">034</span>import java.util.Hashtable;<a name="line.34"></a>
+<span class="sourceLineNo">035</span>import java.util.Iterator;<a name="line.35"></a>
+<span class="sourceLineNo">036</span><a name="line.36"></a>
+<span class="sourceLineNo">037</span>import ptolemy.actor.IOPort;<a name="line.37"></a>
+<span class="sourceLineNo">038</span>import ptolemy.actor.TypedAtomicActor;<a name="line.38"></a>
+<span class="sourceLineNo">039</span>import ptolemy.data.BooleanToken;<a name="line.39"></a>
+<span class="sourceLineNo">040</span>import ptolemy.data.ComplexToken;<a name="line.40"></a>
+<span class="sourceLineNo">041</span>import ptolemy.data.DoubleToken;<a name="line.41"></a>
+<span class="sourceLineNo">042</span>import ptolemy.data.FixToken;<a name="line.42"></a>
+<span class="sourceLineNo">043</span>import ptolemy.data.IntToken;<a name="line.43"></a>
+<span class="sourceLineNo">044</span>import ptolemy.data.LongToken;<a name="line.44"></a>
+<span class="sourceLineNo">045</span>import ptolemy.data.RecordToken;<a name="line.45"></a>
+<span class="sourceLineNo">046</span>import ptolemy.data.StringToken;<a name="line.46"></a>
+<span class="sourceLineNo">047</span>import ptolemy.data.Token;<a name="line.47"></a>
+<span class="sourceLineNo">048</span>import ptolemy.data.expr.ConversionUtilities;<a name="line.48"></a>
+<span class="sourceLineNo">049</span>import ptolemy.kernel.CompositeEntity;<a name="line.49"></a>
+<span class="sourceLineNo">050</span>import ptolemy.kernel.util.IllegalActionException;<a name="line.50"></a>
+<span class="sourceLineNo">051</span>import ptolemy.kernel.util.NameDuplicationException;<a name="line.51"></a>
+<span class="sourceLineNo">052</span>import ptolemy.kernel.util.StringAttribute;<a name="line.52"></a>
+<span class="sourceLineNo">053</span>import ptolemy.math.Complex;<a name="line.53"></a>
+<span class="sourceLineNo">054</span>import ptolemy.math.FixPoint;<a name="line.54"></a>
+<span class="sourceLineNo">055</span><a name="line.55"></a>
+<span class="sourceLineNo">056</span>///////////////////////////////////////////////////////////////////<a name="line.56"></a>
+<span class="sourceLineNo">057</span>//// ClassWrapper<a name="line.57"></a>
+<span class="sourceLineNo">058</span><a name="line.58"></a>
+<span class="sourceLineNo">059</span>/**<a name="line.59"></a>
+<span class="sourceLineNo">060</span> This actor wraps (an instance of) a Java class specified by the<a name="line.60"></a>
+<span class="sourceLineNo">061</span> &lt;i&gt;className&lt;/i&gt; parameter. The actor has no ports when created.<a name="line.61"></a>
+<span class="sourceLineNo">062</span> If an input port is added to the actor, the name of the port is<a name="line.62"></a>
+<span class="sourceLineNo">063</span> interpreted as the name of a method of the Java class. When the<a name="line.63"></a>
+<span class="sourceLineNo">064</span> actor is fired and a token is received from this input port, the<a name="line.64"></a>
+<span class="sourceLineNo">065</span> value of the token is treated as the argument(s) for invoking<a name="line.65"></a>
+<span class="sourceLineNo">066</span> the method. If the method has a return value and the actor has<a name="line.66"></a>
+<span class="sourceLineNo">067</span> an output port named &lt;i&gt;methodName&lt;/i&gt;Result, the return value<a name="line.67"></a>
+<span class="sourceLineNo">068</span> is wrapped in a token that is sent to the output port.<a name="line.68"></a>
+<span class="sourceLineNo">069</span> &lt;p&gt;<a name="line.69"></a>
+<span class="sourceLineNo">070</span> For example, suppose the specified class has a method named foo<a name="line.70"></a>
+<span class="sourceLineNo">071</span> and the actor has an input port of the same name. If method foo<a name="line.71"></a>
+<span class="sourceLineNo">072</span> takes no argument, the token received from port &lt;i&gt;foo&lt;/i&gt; is<a name="line.72"></a>
+<span class="sourceLineNo">073</span> treated as the trigger for invoking the method, and its content<a name="line.73"></a>
+<span class="sourceLineNo">074</span> is ignored. If method foo takes arguments, the input token<a name="line.74"></a>
+<span class="sourceLineNo">075</span> should be a record token whose field values are used as the<a name="line.75"></a>
+<span class="sourceLineNo">076</span> arguments. The field labels of the record token should be "arg1",<a name="line.76"></a>
+<span class="sourceLineNo">077</span> "arg2", etc. For example, if method foo takes two double arguments,<a name="line.77"></a>
+<span class="sourceLineNo">078</span> the record token "{arg1 = 0.0, arg2 = 1.0}" can be the input.<a name="line.78"></a>
+<span class="sourceLineNo">079</span><a name="line.79"></a>
+<span class="sourceLineNo">080</span> A special case is when method foo takes one argument, the token<a name="line.80"></a>
+<span class="sourceLineNo">081</span> containing the argument value can be input directly, and does not<a name="line.81"></a>
+<span class="sourceLineNo">082</span> need to be put into a record token.<a name="line.82"></a>
+<span class="sourceLineNo">083</span> &lt;p&gt;<a name="line.83"></a>
+<span class="sourceLineNo">084</span> FIXME: Need to set type constraints appropriately.<a name="line.84"></a>
+<span class="sourceLineNo">085</span> Need (and how) to handle overloaded methods.<a name="line.85"></a>
+<span class="sourceLineNo">086</span><a name="line.86"></a>
+<span class="sourceLineNo">087</span> @author Xiaojun Liu<a name="line.87"></a>
+<span class="sourceLineNo">088</span> @version $Id$<a name="line.88"></a>
+<span class="sourceLineNo">089</span> @since Ptolemy II 2.0<a name="line.89"></a>
+<span class="sourceLineNo">090</span> @Pt.ProposedRating Red (liuxj)<a name="line.90"></a>
+<span class="sourceLineNo">091</span> @Pt.AcceptedRating Red (liuxj)<a name="line.91"></a>
+<span class="sourceLineNo">092</span> */<a name="line.92"></a>
+<span class="sourceLineNo">093</span>public class ClassWrapper extends TypedAtomicActor {<a name="line.93"></a>
+<span class="sourceLineNo">094</span>    /** Construct an actor with the given container and name.<a name="line.94"></a>
+<span class="sourceLineNo">095</span>     *  In addition to invoking the base class constructor, create<a name="line.95"></a>
+<span class="sourceLineNo">096</span>     *  the &lt;i&gt;className&lt;/i&gt; parameter.<a name="line.96"></a>
+<span class="sourceLineNo">097</span>     *  @param container The container of this actor.<a name="line.97"></a>
+<span class="sourceLineNo">098</span>     *  @param name The name of this actor.<a name="line.98"></a>
+<span class="sourceLineNo">099</span>     *  @exception IllegalActionException If the actor cannot be contained<a name="line.99"></a>
+<span class="sourceLineNo">100</span>     *   by the proposed container.<a name="line.100"></a>
+<span class="sourceLineNo">101</span>     *  @exception NameDuplicationException If the container already has an<a name="line.101"></a>
+<span class="sourceLineNo">102</span>     *   actor with the specified name.<a name="line.102"></a>
+<span class="sourceLineNo">103</span>     */<a name="line.103"></a>
+<span class="sourceLineNo">104</span>    public ClassWrapper(CompositeEntity container, String name)<a name="line.104"></a>
+<span class="sourceLineNo">105</span>            throws NameDuplicationException, IllegalActionException {<a name="line.105"></a>
+<span class="sourceLineNo">106</span>        super(container, name);<a name="line.106"></a>
+<span class="sourceLineNo">107</span>        className = new StringAttribute(this, "className");<a name="line.107"></a>
+<span class="sourceLineNo">108</span>    }<a name="line.108"></a>
+<span class="sourceLineNo">109</span><a name="line.109"></a>
+<span class="sourceLineNo">110</span>    ///////////////////////////////////////////////////////////////////<a name="line.110"></a>
+<span class="sourceLineNo">111</span>    ////                     ports and parameters                  ////<a name="line.111"></a>
+<span class="sourceLineNo">112</span><a name="line.112"></a>
+<span class="sourceLineNo">113</span>    /** The name of the Java class.<a name="line.113"></a>
+<span class="sourceLineNo">114</span>     */<a name="line.114"></a>
+<span class="sourceLineNo">115</span>    public StringAttribute className;<a name="line.115"></a>
+<span class="sourceLineNo">116</span><a name="line.116"></a>
+<span class="sourceLineNo">117</span>    ///////////////////////////////////////////////////////////////////<a name="line.117"></a>
+<span class="sourceLineNo">118</span>    ////                         public methods                    ////<a name="line.118"></a>
+<span class="sourceLineNo">119</span><a name="line.119"></a>
+<span class="sourceLineNo">120</span>    /** Read at most one token from each input port. If an input port<a name="line.120"></a>
+<span class="sourceLineNo">121</span>     *  has a token, the content of the token is used as argument(s)<a name="line.121"></a>
+<span class="sourceLineNo">122</span>     *  for invoking (on the wrapped instance or class) the method of<a name="line.122"></a>
+<span class="sourceLineNo">123</span>     *  the same name as the port. If the method has a return value,<a name="line.123"></a>
+<span class="sourceLineNo">124</span>     *  the value is wrapped in a token, and is sent to the output port<a name="line.124"></a>
+<span class="sourceLineNo">125</span>     *  named &lt;i&gt;methodName&lt;/i&gt;Result.<a name="line.125"></a>
+<span class="sourceLineNo">126</span>     *  @exception IllegalActionException If the method invocation fails.<a name="line.126"></a>
+<span class="sourceLineNo">127</span>     */<a name="line.127"></a>
+<span class="sourceLineNo">128</span>    @Override<a name="line.128"></a>
+<span class="sourceLineNo">129</span>    public void fire() throws IllegalActionException {<a name="line.129"></a>
+<span class="sourceLineNo">130</span>        super.fire();<a name="line.130"></a>
+<span class="sourceLineNo">131</span>        Iterator inPorts = inputPortList().iterator();<a name="line.131"></a>
+<span class="sourceLineNo">132</span><a name="line.132"></a>
+<span class="sourceLineNo">133</span>        while (inPorts.hasNext()) {<a name="line.133"></a>
+<span class="sourceLineNo">134</span>            IOPort inPort = (IOPort) inPorts.next();<a name="line.134"></a>
+<span class="sourceLineNo">135</span><a name="line.135"></a>
+<span class="sourceLineNo">136</span>            if (inPort.hasToken(0)) {<a name="line.136"></a>
+<span class="sourceLineNo">137</span>                _invoke(inPort, inPort.get(0));<a name="line.137"></a>
+<span class="sourceLineNo">138</span>            }<a name="line.138"></a>
+<span class="sourceLineNo">139</span>        }<a name="line.139"></a>
+<span class="sourceLineNo">140</span>    }<a name="line.140"></a>
+<span class="sourceLineNo">141</span><a name="line.141"></a>
+<span class="sourceLineNo">142</span>    /** Get the Class object of the specified class. Gather method<a name="line.142"></a>
+<span class="sourceLineNo">143</span>     *  invocation information corresponding to each input port. If<a name="line.143"></a>
+<span class="sourceLineNo">144</span>     *  at least one method corresponding to a port is not static,<a name="line.144"></a>
+<span class="sourceLineNo">145</span>     *  create an instance of the specified class.<a name="line.145"></a>
+<span class="sourceLineNo">146</span>     *  @exception IllegalActionException If the specified class cannot<a name="line.146"></a>
+<span class="sourceLineNo">147</span>     *   be loaded, or there is no method of the same name as an input<a name="line.147"></a>
+<span class="sourceLineNo">148</span>     *   port, or an instance of the class cannot be created.<a name="line.148"></a>
+<span class="sourceLineNo">149</span>     */<a name="line.149"></a>
+<span class="sourceLineNo">150</span>    @Override<a name="line.150"></a>
+<span class="sourceLineNo">151</span>    public void preinitialize() throws IllegalActionException {<a name="line.151"></a>
+<span class="sourceLineNo">152</span>        super.preinitialize();<a name="line.152"></a>
+<span class="sourceLineNo">153</span>        try {<a name="line.153"></a>
+<span class="sourceLineNo">154</span>            _class = Class.forName(className.getExpression());<a name="line.154"></a>
+<span class="sourceLineNo">155</span>        } catch (ClassNotFoundException ex) {<a name="line.155"></a>
+<span class="sourceLineNo">156</span>            throw new IllegalActionException(this, ex, "Cannot find specified "<a name="line.156"></a>
+<span class="sourceLineNo">157</span>                    + "class " + className.getExpression());<a name="line.157"></a>
+<span class="sourceLineNo">158</span>        }<a name="line.158"></a>
+<span class="sourceLineNo">159</span><a name="line.159"></a>
+<span class="sourceLineNo">160</span>        _methodTable = new Hashtable();<a name="line.160"></a>
+<span class="sourceLineNo">161</span><a name="line.161"></a>
+<span class="sourceLineNo">162</span>        Method[] methods = _class.getMethods();<a name="line.162"></a>
+<span class="sourceLineNo">163</span>        Iterator inPorts = inputPortList().iterator();<a name="line.163"></a>
+<span class="sourceLineNo">164</span>        boolean needInstance = false;<a name="line.164"></a>
+<span class="sourceLineNo">165</span><a name="line.165"></a>
+<span class="sourceLineNo">166</span>        while (inPorts.hasNext()) {<a name="line.166"></a>
+<span class="sourceLineNo">167</span>            IOPort inPort = (IOPort) inPorts.next();<a name="line.167"></a>
+<span class="sourceLineNo">168</span>            String portName = inPort.getName();<a name="line.168"></a>
+<span class="sourceLineNo">169</span>            Method m = null;<a name="line.169"></a>
+<span class="sourceLineNo">170</span><a name="line.170"></a>
+<span class="sourceLineNo">171</span>            for (int i = 0; i &lt; methods.length; ++i) {<a name="line.171"></a>
+<span class="sourceLineNo">172</span>                if (methods[i].getName().equals(portName)) {<a name="line.172"></a>
+<span class="sourceLineNo">173</span>                    m = methods[i];<a name="line.173"></a>
+<span class="sourceLineNo">174</span>                    break;<a name="line.174"></a>
+<span class="sourceLineNo">175</span>                }<a name="line.175"></a>
+<span class="sourceLineNo">176</span>            }<a name="line.176"></a>
+<span class="sourceLineNo">177</span><a name="line.177"></a>
+<span class="sourceLineNo">178</span>            if (m == null) {<a name="line.178"></a>
+<span class="sourceLineNo">179</span>                throw new IllegalActionException(this, "The specified class "<a name="line.179"></a>
+<span class="sourceLineNo">180</span>                        + "does not have a method of the same name as input "<a name="line.180"></a>
+<span class="sourceLineNo">181</span>                        + "port " + portName);<a name="line.181"></a>
+<span class="sourceLineNo">182</span>            }<a name="line.182"></a>
+<span class="sourceLineNo">183</span><a name="line.183"></a>
+<span class="sourceLineNo">184</span>            Object[] methodInfo = new Object[3];<a name="line.184"></a>
+<span class="sourceLineNo">185</span>            methodInfo[0] = m;<a name="line.185"></a>
+<span class="sourceLineNo">186</span>            methodInfo[1] = m.getParameterTypes();<a name="line.186"></a>
+<span class="sourceLineNo">187</span><a name="line.187"></a>
+<span class="sourceLineNo">188</span>            IOPort outPort = (IOPort) getPort(portName + "Result");<a name="line.188"></a>
+<span class="sourceLineNo">189</span><a name="line.189"></a>
+<span class="sourceLineNo">190</span>            if (outPort != null &amp;&amp; outPort.isOutput()) {<a name="line.190"></a>
+<span class="sourceLineNo">191</span>                methodInfo[2] = outPort;<a name="line.191"></a>
+<span class="sourceLineNo">192</span>            } else {<a name="line.192"></a>
+<span class="sourceLineNo">193</span>                methodInfo[2] = null;<a name="line.193"></a>
+<span class="sourceLineNo">194</span>            }<a name="line.194"></a>
+<span class="sourceLineNo">195</span><a name="line.195"></a>
+<span class="sourceLineNo">196</span>            _methodTable.put(inPort, methodInfo);<a name="line.196"></a>
+<span class="sourceLineNo">197</span><a name="line.197"></a>
+<span class="sourceLineNo">198</span>            if (!Modifier.isStatic(m.getModifiers())) {<a name="line.198"></a>
+<span class="sourceLineNo">199</span>                needInstance = true;<a name="line.199"></a>
+<span class="sourceLineNo">200</span>            }<a name="line.200"></a>
+<span class="sourceLineNo">201</span>        }<a name="line.201"></a>
+<span class="sourceLineNo">202</span><a name="line.202"></a>
+<span class="sourceLineNo">203</span>        _instance = null;<a name="line.203"></a>
+<span class="sourceLineNo">204</span><a name="line.204"></a>
+<span class="sourceLineNo">205</span>        if (needInstance) {<a name="line.205"></a>
+<span class="sourceLineNo">206</span>            try {<a name="line.206"></a>
+<span class="sourceLineNo">207</span>                // FIXME: here only try to use a constructor with no argument<a name="line.207"></a>
+<span class="sourceLineNo">208</span>                Constructor constructor = _class.getConstructor(new Class[0]);<a name="line.208"></a>
+<span class="sourceLineNo">209</span>                _instance = constructor.newInstance(new Object[0]);<a name="line.209"></a>
+<span class="sourceLineNo">210</span>            } catch (Exception ex) {<a name="line.210"></a>
+<span class="sourceLineNo">211</span>                throw new IllegalActionException(this, ex, "Cannot create an "<a name="line.211"></a>
+<span class="sourceLineNo">212</span>                        + "instance of the specified class");<a name="line.212"></a>
+<span class="sourceLineNo">213</span>            }<a name="line.213"></a>
+<span class="sourceLineNo">214</span>        }<a name="line.214"></a>
+<span class="sourceLineNo">215</span>    }<a name="line.215"></a>
+<span class="sourceLineNo">216</span><a name="line.216"></a>
+<span class="sourceLineNo">217</span>    ///////////////////////////////////////////////////////////////////<a name="line.217"></a>
+<span class="sourceLineNo">218</span>    ////                         private methods                   ////<a name="line.218"></a>
+<span class="sourceLineNo">219</span>    // Invoke on the wrapped instance the method with the same name as the<a name="line.219"></a>
+<span class="sourceLineNo">220</span>    // specified port, treating argv as the arguments.<a name="line.220"></a>
+<span class="sourceLineNo">221</span>    // NOTE: Should this method return a boolean, false when the invocation<a name="line.221"></a>
+<span class="sourceLineNo">222</span>    // fails? The actor may have an error output port, and send a token<a name="line.222"></a>
+<span class="sourceLineNo">223</span>    // to this port when invocation fails.<a name="line.223"></a>
+<span class="sourceLineNo">224</span>    private void _invoke(IOPort port, Token argv)<a name="line.224"></a>
+<span class="sourceLineNo">225</span>            throws IllegalActionException {<a name="line.225"></a>
+<span class="sourceLineNo">226</span>        // assert port.isInput()<a name="line.226"></a>
+<span class="sourceLineNo">227</span>        Object[] methodInfo = (Object[]) _methodTable.get(port);<a name="line.227"></a>
+<span class="sourceLineNo">228</span><a name="line.228"></a>
+<span class="sourceLineNo">229</span>        // when _methodTable is built, an entry for each input port is<a name="line.229"></a>
+<span class="sourceLineNo">230</span>        // guaranteed<a name="line.230"></a>
+<span class="sourceLineNo">231</span>        Method m = (Method) methodInfo[0];<a name="line.231"></a>
+<span class="sourceLineNo">232</span>        Class[] argTypes = (Class[]) methodInfo[1];<a name="line.232"></a>
+<span class="sourceLineNo">233</span>        int args = argTypes.length;<a name="line.233"></a>
+<span class="sourceLineNo">234</span>        IOPort outPort = (IOPort) methodInfo[2];<a name="line.234"></a>
+<span class="sourceLineNo">235</span><a name="line.235"></a>
+<span class="sourceLineNo">236</span>        // The following code is mostly copied from data.expr.ASTPtFunctionNode<a name="line.236"></a>
+<span class="sourceLineNo">237</span>        Object[] argValues = new Object[args];<a name="line.237"></a>
+<span class="sourceLineNo">238</span><a name="line.238"></a>
+<span class="sourceLineNo">239</span>        if (args &gt; 0) {<a name="line.239"></a>
+<span class="sourceLineNo">240</span>            RecordToken argRecord = null;<a name="line.240"></a>
+<span class="sourceLineNo">241</span><a name="line.241"></a>
+<span class="sourceLineNo">242</span>            if (argv instanceof RecordToken) {<a name="line.242"></a>
+<span class="sourceLineNo">243</span>                argRecord = (RecordToken) argv;<a name="line.243"></a>
+<span class="sourceLineNo">244</span>            } else if (args &gt; 1) {<a name="line.244"></a>
+<span class="sourceLineNo">245</span>                throw new IllegalActionException(this, "cannot convert "<a name="line.245"></a>
+<span class="sourceLineNo">246</span>                        + "input token to method call arguments.");<a name="line.246"></a>
+<span class="sourceLineNo">247</span>            }<a name="line.247"></a>
+<span class="sourceLineNo">248</span><a name="line.248"></a>
+<span class="sourceLineNo">249</span>            for (int i = 0; i &lt; args; ++i) {<a name="line.249"></a>
+<span class="sourceLineNo">250</span>                Token arg = null;<a name="line.250"></a>
+<span class="sourceLineNo">251</span><a name="line.251"></a>
+<span class="sourceLineNo">252</span>                if (argRecord != null) {<a name="line.252"></a>
+<span class="sourceLineNo">253</span>                    arg = argRecord.get("arg" + (i + 1));<a name="line.253"></a>
+<span class="sourceLineNo">254</span>                } else {<a name="line.254"></a>
+<span class="sourceLineNo">255</span>                    // this is the case when the method takes one argument<a name="line.255"></a>
+<span class="sourceLineNo">256</span>                    // and the input token is not a record token<a name="line.256"></a>
+<span class="sourceLineNo">257</span>                    arg = argv;<a name="line.257"></a>
+<span class="sourceLineNo">258</span>                }<a name="line.258"></a>
+<span class="sourceLineNo">259</span><a name="line.259"></a>
+<span class="sourceLineNo">260</span>                if (argTypes[i].isAssignableFrom(arg.getClass())) {<a name="line.260"></a>
+<span class="sourceLineNo">261</span>                    argValues[i] = arg;<a name="line.261"></a>
+<span class="sourceLineNo">262</span>                } else {<a name="line.262"></a>
+<span class="sourceLineNo">263</span>                    argValues[i] = ConversionUtilities<a name="line.263"></a>
+<span class="sourceLineNo">264</span>                            .convertTokenToJavaType(arg);<a name="line.264"></a>
+<span class="sourceLineNo">265</span>                }<a name="line.265"></a>
+<span class="sourceLineNo">266</span>            }<a name="line.266"></a>
+<span class="sourceLineNo">267</span>        }<a name="line.267"></a>
+<span class="sourceLineNo">268</span><a name="line.268"></a>
+<span class="sourceLineNo">269</span>        Object result = null;<a name="line.269"></a>
+<span class="sourceLineNo">270</span><a name="line.270"></a>
+<span class="sourceLineNo">271</span>        try {<a name="line.271"></a>
+<span class="sourceLineNo">272</span>            result = m.invoke(_instance, argValues);<a name="line.272"></a>
+<span class="sourceLineNo">273</span>        } catch (InvocationTargetException ex) {<a name="line.273"></a>
+<span class="sourceLineNo">274</span>            // get the exception produced by the invoked function<a name="line.274"></a>
+<span class="sourceLineNo">275</span>            ex.getTargetException().printStackTrace();<a name="line.275"></a>
+<span class="sourceLineNo">276</span>            throw new IllegalActionException(this, ex.getTargetException(),<a name="line.276"></a>
+<span class="sourceLineNo">277</span>                    "Error invoking method " + m.getName());<a name="line.277"></a>
+<span class="sourceLineNo">278</span>        } catch (Exception ex) {<a name="line.278"></a>
+<span class="sourceLineNo">279</span>            throw new IllegalActionException(this, ex,<a name="line.279"></a>
+<span class="sourceLineNo">280</span>                    "Error invoking method " + m.getName());<a name="line.280"></a>
+<span class="sourceLineNo">281</span>        }<a name="line.281"></a>
+<span class="sourceLineNo">282</span><a name="line.282"></a>
+<span class="sourceLineNo">283</span>        Token resultToken = null;<a name="line.283"></a>
+<span class="sourceLineNo">284</span><a name="line.284"></a>
+<span class="sourceLineNo">285</span>        if (result == null) {<a name="line.285"></a>
+<span class="sourceLineNo">286</span>            // the method does not return value<a name="line.286"></a>
+<span class="sourceLineNo">287</span>            return;<a name="line.287"></a>
+<span class="sourceLineNo">288</span>        } else if (result instanceof Token) {<a name="line.288"></a>
+<span class="sourceLineNo">289</span>            resultToken = (Token) result;<a name="line.289"></a>
+<span class="sourceLineNo">290</span>        } else if (result instanceof Double) {<a name="line.290"></a>
+<span class="sourceLineNo">291</span>            resultToken = new DoubleToken(((Double) result).doubleValue());<a name="line.291"></a>
+<span class="sourceLineNo">292</span>        } else if (result instanceof Integer) {<a name="line.292"></a>
+<span class="sourceLineNo">293</span>            resultToken = new IntToken(((Integer) result).intValue());<a name="line.293"></a>
+<span class="sourceLineNo">294</span>        } else if (result instanceof Long) {<a name="line.294"></a>
+<span class="sourceLineNo">295</span>            resultToken = new LongToken(((Long) result).longValue());<a name="line.295"></a>
+<span class="sourceLineNo">296</span>        } else if (result instanceof String) {<a name="line.296"></a>
+<span class="sourceLineNo">297</span>            resultToken = new StringToken((String) result);<a name="line.297"></a>
+<span class="sourceLineNo">298</span>        } else if (result instanceof Boolean) {<a name="line.298"></a>
+<span class="sourceLineNo">299</span>            resultToken = new BooleanToken(((Boolean) result).booleanValue());<a name="line.299"></a>
+<span class="sourceLineNo">300</span>        } else if (result instanceof Complex) {<a name="line.300"></a>
+<span class="sourceLineNo">301</span>            resultToken = new ComplexToken((Complex) result);<a name="line.301"></a>
+<span class="sourceLineNo">302</span>        } else if (result instanceof FixPoint) {<a name="line.302"></a>
+<span class="sourceLineNo">303</span>            resultToken = new FixToken((FixPoint) result);<a name="line.303"></a>
+<span class="sourceLineNo">304</span>        } else {<a name="line.304"></a>
+<span class="sourceLineNo">305</span>            throw new IllegalActionException(this, "Result of method call "<a name="line.305"></a>
+<span class="sourceLineNo">306</span>                    + port.getName() + " is not a supported type: boolean, "<a name="line.306"></a>
+<span class="sourceLineNo">307</span>                    + "complex, fixpoint, double, int, long  and String, "<a name="line.307"></a>
+<span class="sourceLineNo">308</span>                    + "or a Token.");<a name="line.308"></a>
+<span class="sourceLineNo">309</span>        }<a name="line.309"></a>
+<span class="sourceLineNo">310</span><a name="line.310"></a>
+<span class="sourceLineNo">311</span>        if (outPort != null) {<a name="line.311"></a>
+<span class="sourceLineNo">312</span>            outPort.send(0, resultToken);<a name="line.312"></a>
+<span class="sourceLineNo">313</span>        }<a name="line.313"></a>
+<span class="sourceLineNo">314</span>    }<a name="line.314"></a>
+<span class="sourceLineNo">315</span><a name="line.315"></a>
+<span class="sourceLineNo">316</span>    ///////////////////////////////////////////////////////////////////<a name="line.316"></a>
+<span class="sourceLineNo">317</span>    ////                         private variables                 ////<a name="line.317"></a>
+<span class="sourceLineNo">318</span>    // A hash table containing the method invocation information for the<a name="line.318"></a>
+<span class="sourceLineNo">319</span>    // input ports. For each input port, the entry in the hash table is<a name="line.319"></a>
+<span class="sourceLineNo">320</span>    // an array of three objects. The first is the Method object of the<a name="line.320"></a>
+<span class="sourceLineNo">321</span>    // method to be invoked. The second is the array of argument types<a name="line.321"></a>
+<span class="sourceLineNo">322</span>    // of the method. The third is the output port to which the return<a name="line.322"></a>
+<span class="sourceLineNo">323</span>    // value of the method is sent.<a name="line.323"></a>
+<span class="sourceLineNo">324</span>    private Hashtable _methodTable = null;<a name="line.324"></a>
+<span class="sourceLineNo">325</span><a name="line.325"></a>
+<span class="sourceLineNo">326</span>    // The instance of the specified class.<a name="line.326"></a>
+<span class="sourceLineNo">327</span>    private Object _instance = null;<a name="line.327"></a>
+<span class="sourceLineNo">328</span><a name="line.328"></a>
+<span class="sourceLineNo">329</span>    // The Class object of the specified class.<a name="line.329"></a>
+<span class="sourceLineNo">330</span>    private Class _class = null;<a name="line.330"></a>
+<span class="sourceLineNo">331</span>}<a name="line.331"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

@@ -1,0 +1,330 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../../../../stylesheet.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>/* Static methods for manipulating Ptolemy models.<a name="line.1"></a>
+<span class="sourceLineNo">002</span>@Copyright (c) 2009-2016 The Regents of the University of California.<a name="line.2"></a>
+<span class="sourceLineNo">003</span>All rights reserved.<a name="line.3"></a>
+<span class="sourceLineNo">004</span><a name="line.4"></a>
+<span class="sourceLineNo">005</span>Permission is hereby granted, without written agreement and without<a name="line.5"></a>
+<span class="sourceLineNo">006</span>license or royalty fees, to use, copy, modify, and distribute this<a name="line.6"></a>
+<span class="sourceLineNo">007</span>software and its documentation for any purpose, provided that the<a name="line.7"></a>
+<span class="sourceLineNo">008</span>above copyright notice and the following two paragraphs appear in all<a name="line.8"></a>
+<span class="sourceLineNo">009</span>copies of this software.<a name="line.9"></a>
+<span class="sourceLineNo">010</span><a name="line.10"></a>
+<span class="sourceLineNo">011</span>IN NO EVENT SHALL THE UNIVERSITY OF CALIFORNIA BE LIABLE TO ANY PARTY<a name="line.11"></a>
+<span class="sourceLineNo">012</span>FOR DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES<a name="line.12"></a>
+<span class="sourceLineNo">013</span>ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION, EVEN IF<a name="line.13"></a>
+<span class="sourceLineNo">014</span>THE UNIVERSITY OF CALIFORNIA HAS BEEN ADVISED OF THE POSSIBILITY OF<a name="line.14"></a>
+<span class="sourceLineNo">015</span>SUCH DAMAGE.<a name="line.15"></a>
+<span class="sourceLineNo">016</span><a name="line.16"></a>
+<span class="sourceLineNo">017</span>THE UNIVERSITY OF CALIFORNIA SPECIFICALLY DISCLAIMS ANY WARRANTIES,<a name="line.17"></a>
+<span class="sourceLineNo">018</span>INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF<a name="line.18"></a>
+<span class="sourceLineNo">019</span>MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE<a name="line.19"></a>
+<span class="sourceLineNo">020</span>PROVIDED HEREUNDER IS ON AN "AS IS" BASIS, AND THE UNIVERSITY OF<a name="line.20"></a>
+<span class="sourceLineNo">021</span>CALIFORNIA HAS NO OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT, UPDATES,<a name="line.21"></a>
+<span class="sourceLineNo">022</span>ENHANCEMENTS, OR MODIFICATIONS.<a name="line.22"></a>
+<span class="sourceLineNo">023</span><a name="line.23"></a>
+<span class="sourceLineNo">024</span>                                                PT_COPYRIGHT_VERSION_2<a name="line.24"></a>
+<span class="sourceLineNo">025</span>                                                COPYRIGHTENDKEY<a name="line.25"></a>
+<span class="sourceLineNo">026</span><a name="line.26"></a>
+<span class="sourceLineNo">027</span><a name="line.27"></a>
+<span class="sourceLineNo">028</span> */<a name="line.28"></a>
+<span class="sourceLineNo">029</span><a name="line.29"></a>
+<span class="sourceLineNo">030</span>package ptolemy.vergil.basic.layout.kieler;<a name="line.30"></a>
+<span class="sourceLineNo">031</span><a name="line.31"></a>
+<span class="sourceLineNo">032</span>import java.util.HashSet;<a name="line.32"></a>
+<span class="sourceLineNo">033</span>import java.util.List;<a name="line.33"></a>
+<span class="sourceLineNo">034</span>import java.util.Set;<a name="line.34"></a>
+<span class="sourceLineNo">035</span><a name="line.35"></a>
+<span class="sourceLineNo">036</span>import javax.swing.SwingConstants;<a name="line.36"></a>
+<span class="sourceLineNo">037</span><a name="line.37"></a>
+<span class="sourceLineNo">038</span>import ptolemy.actor.Actor;<a name="line.38"></a>
+<span class="sourceLineNo">039</span>import ptolemy.actor.IOPort;<a name="line.39"></a>
+<span class="sourceLineNo">040</span>import ptolemy.domains.modal.kernel.State;<a name="line.40"></a>
+<span class="sourceLineNo">041</span>import ptolemy.kernel.ComponentPort;<a name="line.41"></a>
+<span class="sourceLineNo">042</span>import ptolemy.kernel.CompositeEntity;<a name="line.42"></a>
+<span class="sourceLineNo">043</span>import ptolemy.kernel.Port;<a name="line.43"></a>
+<span class="sourceLineNo">044</span>import ptolemy.kernel.Relation;<a name="line.44"></a>
+<span class="sourceLineNo">045</span>import ptolemy.kernel.util.Attribute;<a name="line.45"></a>
+<span class="sourceLineNo">046</span>import ptolemy.kernel.util.Locatable;<a name="line.46"></a>
+<span class="sourceLineNo">047</span>import ptolemy.kernel.util.NamedObj;<a name="line.47"></a>
+<span class="sourceLineNo">048</span>import ptolemy.vergil.actor.KielerLayoutUtil;<a name="line.48"></a>
+<span class="sourceLineNo">049</span>import ptolemy.vergil.basic.RelativeLocatable;<a name="line.49"></a>
+<span class="sourceLineNo">050</span>import ptolemy.vergil.basic.RelativeLocation;<a name="line.50"></a>
+<span class="sourceLineNo">051</span><a name="line.51"></a>
+<span class="sourceLineNo">052</span>///////////////////////////////////////////////////////////////////<a name="line.52"></a>
+<span class="sourceLineNo">053</span>//// PtolemyModelUtil<a name="line.53"></a>
+<span class="sourceLineNo">054</span>/**<a name="line.54"></a>
+<span class="sourceLineNo">055</span> * Utility class for accessing properties of a Ptolemy model in the context<a name="line.55"></a>
+<span class="sourceLineNo">056</span> * of automatic layout. The methods are used by the KIELER layout bridge<a name="line.56"></a>
+<span class="sourceLineNo">057</span> * that integrates KIELER layout algorithms into Ptolemy.<a name="line.57"></a>
+<span class="sourceLineNo">058</span> *<a name="line.58"></a>
+<span class="sourceLineNo">059</span> * @author Hauke Fuhrmann (&lt;a href="mailto:haf@informatik.uni-kiel.de"&gt;haf&lt;/a&gt;),<a name="line.59"></a>
+<span class="sourceLineNo">060</span> *         Christian Motika (&lt;a href="mailto:cmot@informatik.uni-kiel.de"&gt;cmot&lt;/a&gt;),<a name="line.60"></a>
+<span class="sourceLineNo">061</span> *         Miro Spoenemann (&lt;a href="mailto:msp@informatik.uni-kiel.de"&gt;msp&lt;/a&gt;),<a name="line.61"></a>
+<span class="sourceLineNo">062</span> *         Ulf Rueegg<a name="line.62"></a>
+<span class="sourceLineNo">063</span> * @version $Id$<a name="line.63"></a>
+<span class="sourceLineNo">064</span> * @since Ptolemy II 8.0<a name="line.64"></a>
+<span class="sourceLineNo">065</span> * @Pt.ProposedRating Red (cxh)<a name="line.65"></a>
+<span class="sourceLineNo">066</span> * @Pt.AcceptedRating Red (cxh)<a name="line.66"></a>
+<span class="sourceLineNo">067</span> */<a name="line.67"></a>
+<span class="sourceLineNo">068</span>public final class PtolemyModelUtil {<a name="line.68"></a>
+<span class="sourceLineNo">069</span><a name="line.69"></a>
+<span class="sourceLineNo">070</span>    ///////////////////////////////////////////////////////////////////<a name="line.70"></a>
+<span class="sourceLineNo">071</span>    ////                         protected methods                 ////<a name="line.71"></a>
+<span class="sourceLineNo">072</span><a name="line.72"></a>
+<span class="sourceLineNo">073</span>    /**<a name="line.73"></a>
+<span class="sourceLineNo">074</span>     * For a set of relations get a set of relation groups, i.e. for each<a name="line.74"></a>
+<span class="sourceLineNo">075</span>     * relation construct a list of relations that are all interconnected,<a name="line.75"></a>
+<span class="sourceLineNo">076</span>     * either directly or indirectly.<a name="line.76"></a>
+<span class="sourceLineNo">077</span>     *<a name="line.77"></a>
+<span class="sourceLineNo">078</span>     * @param relations Set of relations<a name="line.78"></a>
+<span class="sourceLineNo">079</span>     * @return a Set of relation groups as given by List &amp;lt;Relation&amp;gt; objects by Ptolemy<a name="line.79"></a>
+<span class="sourceLineNo">080</span>     */<a name="line.80"></a>
+<span class="sourceLineNo">081</span>    protected static Set&lt;List&lt;Relation&gt;&gt; _getRelationGroups(<a name="line.81"></a>
+<span class="sourceLineNo">082</span>            Set&lt;Relation&gt; relations) {<a name="line.82"></a>
+<span class="sourceLineNo">083</span>        Set&lt;List&lt;Relation&gt;&gt; relationGroups = new HashSet&lt;List&lt;Relation&gt;&gt;();<a name="line.83"></a>
+<span class="sourceLineNo">084</span>        for (Relation relation : relations) {<a name="line.84"></a>
+<span class="sourceLineNo">085</span>            List&lt;Relation&gt; relationGroup = relation.relationGroupList();<a name="line.85"></a>
+<span class="sourceLineNo">086</span>            // check if we already have this relation group<a name="line.86"></a>
+<span class="sourceLineNo">087</span>            // TODO: verify whether relation groups are unique. Then you could<a name="line.87"></a>
+<span class="sourceLineNo">088</span>            // perform this check much more efficiently<a name="line.88"></a>
+<span class="sourceLineNo">089</span>            boolean found = false;<a name="line.89"></a>
+<span class="sourceLineNo">090</span>            for (List&lt;Relation&gt; listedRelationGroup : relationGroups) {<a name="line.90"></a>
+<span class="sourceLineNo">091</span>                if (listedRelationGroup.containsAll(relationGroup)) {<a name="line.91"></a>
+<span class="sourceLineNo">092</span>                    found = true;<a name="line.92"></a>
+<span class="sourceLineNo">093</span>                    break;<a name="line.93"></a>
+<span class="sourceLineNo">094</span>                }<a name="line.94"></a>
+<span class="sourceLineNo">095</span>            }<a name="line.95"></a>
+<span class="sourceLineNo">096</span>            if (!found) {<a name="line.96"></a>
+<span class="sourceLineNo">097</span>                relationGroups.add(relationGroup);<a name="line.97"></a>
+<span class="sourceLineNo">098</span>            }<a name="line.98"></a>
+<span class="sourceLineNo">099</span>        }<a name="line.99"></a>
+<span class="sourceLineNo">100</span>        return relationGroups;<a name="line.100"></a>
+<span class="sourceLineNo">101</span>    }<a name="line.101"></a>
+<span class="sourceLineNo">102</span><a name="line.102"></a>
+<span class="sourceLineNo">103</span>    /**<a name="line.103"></a>
+<span class="sourceLineNo">104</span>     * Check whether the given Ptolemy model object has any connections, i.e. is<a name="line.104"></a>
+<span class="sourceLineNo">105</span>     * connected to any other components via some link.<a name="line.105"></a>
+<span class="sourceLineNo">106</span>     *<a name="line.106"></a>
+<span class="sourceLineNo">107</span>     * @param namedObj The Ptolemy model object which is to be analyzed<a name="line.107"></a>
+<span class="sourceLineNo">108</span>     * @return True if the object is an Actor and any port has any relations or<a name="line.108"></a>
+<span class="sourceLineNo">109</span>     *         is connected to any other port; true if the object is a Relation;<a name="line.109"></a>
+<span class="sourceLineNo">110</span>     *         false if the object is an Attribute. Defaults to false.<a name="line.110"></a>
+<span class="sourceLineNo">111</span>     */<a name="line.111"></a>
+<span class="sourceLineNo">112</span>    protected static boolean _isConnected(NamedObj namedObj) {<a name="line.112"></a>
+<span class="sourceLineNo">113</span>        if (namedObj instanceof RelativeLocatable) {<a name="line.113"></a>
+<span class="sourceLineNo">114</span>            // Relative locatables may be connected to a reference object.<a name="line.114"></a>
+<span class="sourceLineNo">115</span>            Locatable locatable = KielerLayoutUtil.getLocation(namedObj);<a name="line.115"></a>
+<span class="sourceLineNo">116</span>            if (locatable instanceof RelativeLocation) {<a name="line.116"></a>
+<span class="sourceLineNo">117</span>                NamedObj referenceObj = _getReferencedObj(<a name="line.117"></a>
+<span class="sourceLineNo">118</span>                        (RelativeLocation) locatable);<a name="line.118"></a>
+<span class="sourceLineNo">119</span>                return referenceObj != null &amp;&amp; _isConnected(referenceObj);<a name="line.119"></a>
+<span class="sourceLineNo">120</span>            }<a name="line.120"></a>
+<span class="sourceLineNo">121</span>        }<a name="line.121"></a>
+<span class="sourceLineNo">122</span>        if (namedObj instanceof Attribute) {<a name="line.122"></a>
+<span class="sourceLineNo">123</span>            return false;<a name="line.123"></a>
+<span class="sourceLineNo">124</span>        }<a name="line.124"></a>
+<span class="sourceLineNo">125</span>        if (namedObj instanceof Actor) {<a name="line.125"></a>
+<span class="sourceLineNo">126</span>            Actor actor = (Actor) namedObj;<a name="line.126"></a>
+<span class="sourceLineNo">127</span>            // If any port of an actor is connected to any other<a name="line.127"></a>
+<span class="sourceLineNo">128</span>            // assume that there is also no visible connection.<a name="line.128"></a>
+<span class="sourceLineNo">129</span>            for (Object o : actor.inputPortList()) {<a name="line.129"></a>
+<span class="sourceLineNo">130</span>                Port port = (Port) o;<a name="line.130"></a>
+<span class="sourceLineNo">131</span>                if (!port.connectedPortList().isEmpty()<a name="line.131"></a>
+<span class="sourceLineNo">132</span>                        || !port.linkedRelationList().isEmpty()) {<a name="line.132"></a>
+<span class="sourceLineNo">133</span>                    return true;<a name="line.133"></a>
+<span class="sourceLineNo">134</span>                }<a name="line.134"></a>
+<span class="sourceLineNo">135</span>            }<a name="line.135"></a>
+<span class="sourceLineNo">136</span>            for (Object o : actor.outputPortList()) {<a name="line.136"></a>
+<span class="sourceLineNo">137</span>                Port port = (Port) o;<a name="line.137"></a>
+<span class="sourceLineNo">138</span>                if (!port.connectedPortList().isEmpty()<a name="line.138"></a>
+<span class="sourceLineNo">139</span>                        || !port.linkedRelationList().isEmpty()) {<a name="line.139"></a>
+<span class="sourceLineNo">140</span>                    return true;<a name="line.140"></a>
+<span class="sourceLineNo">141</span>                }<a name="line.141"></a>
+<span class="sourceLineNo">142</span>            }<a name="line.142"></a>
+<span class="sourceLineNo">143</span>            return false;<a name="line.143"></a>
+<span class="sourceLineNo">144</span>        }<a name="line.144"></a>
+<span class="sourceLineNo">145</span>        if (namedObj instanceof Relation) {<a name="line.145"></a>
+<span class="sourceLineNo">146</span>            return true;<a name="line.146"></a>
+<span class="sourceLineNo">147</span>        }<a name="line.147"></a>
+<span class="sourceLineNo">148</span>        if (namedObj instanceof ComponentPort) {<a name="line.148"></a>
+<span class="sourceLineNo">149</span>            ComponentPort port = (ComponentPort) namedObj;<a name="line.149"></a>
+<span class="sourceLineNo">150</span>            return !port.insidePortList().isEmpty()<a name="line.150"></a>
+<span class="sourceLineNo">151</span>                    || !port.insideRelationList().isEmpty();<a name="line.151"></a>
+<span class="sourceLineNo">152</span>        }<a name="line.152"></a>
+<span class="sourceLineNo">153</span>        if (namedObj instanceof State) {<a name="line.153"></a>
+<span class="sourceLineNo">154</span>            State state = (State) namedObj;<a name="line.154"></a>
+<span class="sourceLineNo">155</span>            return !state.getIncomingPort().connectedPortList().isEmpty()<a name="line.155"></a>
+<span class="sourceLineNo">156</span>                    || !state.getOutgoingPort().connectedPortList().isEmpty();<a name="line.156"></a>
+<span class="sourceLineNo">157</span>        }<a name="line.157"></a>
+<span class="sourceLineNo">158</span>        // default to false<a name="line.158"></a>
+<span class="sourceLineNo">159</span>        return false;<a name="line.159"></a>
+<span class="sourceLineNo">160</span>    }<a name="line.160"></a>
+<span class="sourceLineNo">161</span><a name="line.161"></a>
+<span class="sourceLineNo">162</span>    /**<a name="line.162"></a>
+<span class="sourceLineNo">163</span>     * Find the reference object for the given relative location.<a name="line.163"></a>
+<span class="sourceLineNo">164</span>     *<a name="line.164"></a>
+<span class="sourceLineNo">165</span>     * @param location A relative location<a name="line.165"></a>
+<span class="sourceLineNo">166</span>     * @return The corresponding reference object, or null if there is none<a name="line.166"></a>
+<span class="sourceLineNo">167</span>     */<a name="line.167"></a>
+<span class="sourceLineNo">168</span>    protected static NamedObj _getReferencedObj(RelativeLocation location) {<a name="line.168"></a>
+<span class="sourceLineNo">169</span>        NamedObj container = location.getContainer();<a name="line.169"></a>
+<span class="sourceLineNo">170</span>        if (container != null) {<a name="line.170"></a>
+<span class="sourceLineNo">171</span>            NamedObj containersContainer = container.getContainer();<a name="line.171"></a>
+<span class="sourceLineNo">172</span>            if (containersContainer instanceof CompositeEntity) {<a name="line.172"></a>
+<span class="sourceLineNo">173</span>                CompositeEntity composite = (CompositeEntity) containersContainer;<a name="line.173"></a>
+<span class="sourceLineNo">174</span>                String relativeToName = location.relativeTo.getExpression();<a name="line.174"></a>
+<span class="sourceLineNo">175</span>                String elementName = location.relativeToElementName<a name="line.175"></a>
+<span class="sourceLineNo">176</span>                        .getExpression();<a name="line.176"></a>
+<span class="sourceLineNo">177</span>                // The relativeTo object is not necessarily an Entity.<a name="line.177"></a>
+<span class="sourceLineNo">178</span>                NamedObj relativeToNamedObj;<a name="line.178"></a>
+<span class="sourceLineNo">179</span>                if (elementName.equals("property")) {<a name="line.179"></a>
+<span class="sourceLineNo">180</span>                    relativeToNamedObj = composite.getAttribute(relativeToName);<a name="line.180"></a>
+<span class="sourceLineNo">181</span>                } else if (elementName.equals("port")) {<a name="line.181"></a>
+<span class="sourceLineNo">182</span>                    relativeToNamedObj = composite.getPort(relativeToName);<a name="line.182"></a>
+<span class="sourceLineNo">183</span>                } else if (elementName.equals("relation")) {<a name="line.183"></a>
+<span class="sourceLineNo">184</span>                    relativeToNamedObj = composite.getRelation(relativeToName);<a name="line.184"></a>
+<span class="sourceLineNo">185</span>                } else {<a name="line.185"></a>
+<span class="sourceLineNo">186</span>                    relativeToNamedObj = composite.getEntity(relativeToName);<a name="line.186"></a>
+<span class="sourceLineNo">187</span>                }<a name="line.187"></a>
+<span class="sourceLineNo">188</span>                return relativeToNamedObj;<a name="line.188"></a>
+<span class="sourceLineNo">189</span>            }<a name="line.189"></a>
+<span class="sourceLineNo">190</span>        }<a name="line.190"></a>
+<span class="sourceLineNo">191</span>        return null;<a name="line.191"></a>
+<span class="sourceLineNo">192</span>    }<a name="line.192"></a>
+<span class="sourceLineNo">193</span><a name="line.193"></a>
+<span class="sourceLineNo">194</span>    /**<a name="line.194"></a>
+<span class="sourceLineNo">195</span>     * Determine whether a given Port is an input port.<a name="line.195"></a>
+<span class="sourceLineNo">196</span>     *<a name="line.196"></a>
+<span class="sourceLineNo">197</span>     * @param port The port to be analyzed<a name="line.197"></a>
+<span class="sourceLineNo">198</span>     * @return True if the port is an input port<a name="line.198"></a>
+<span class="sourceLineNo">199</span>     */<a name="line.199"></a>
+<span class="sourceLineNo">200</span>    protected static boolean _isInput(Port port) {<a name="line.200"></a>
+<span class="sourceLineNo">201</span>        if (port instanceof IOPort) {<a name="line.201"></a>
+<span class="sourceLineNo">202</span>            return ((IOPort) port).isInput();<a name="line.202"></a>
+<span class="sourceLineNo">203</span>        }<a name="line.203"></a>
+<span class="sourceLineNo">204</span>        NamedObj obj = port.getContainer();<a name="line.204"></a>
+<span class="sourceLineNo">205</span>        if (obj instanceof Actor) {<a name="line.205"></a>
+<span class="sourceLineNo">206</span>            Actor actor = (Actor) obj;<a name="line.206"></a>
+<span class="sourceLineNo">207</span>            if (actor.inputPortList().contains(port)) {<a name="line.207"></a>
+<span class="sourceLineNo">208</span>                return true;<a name="line.208"></a>
+<span class="sourceLineNo">209</span>            }<a name="line.209"></a>
+<span class="sourceLineNo">210</span>        }<a name="line.210"></a>
+<span class="sourceLineNo">211</span>        return false;<a name="line.211"></a>
+<span class="sourceLineNo">212</span>    }<a name="line.212"></a>
+<span class="sourceLineNo">213</span><a name="line.213"></a>
+<span class="sourceLineNo">214</span>    /**<a name="line.214"></a>
+<span class="sourceLineNo">215</span>     * Get the direction of the edge anchor point of an external port<a name="line.215"></a>
+<span class="sourceLineNo">216</span>     * inside a composite actor. It is given as a {@link SwingConstants}, like<a name="line.216"></a>
+<span class="sourceLineNo">217</span>     * {@link SwingConstants#NORTH}, {@link SwingConstants#SOUTH},<a name="line.217"></a>
+<span class="sourceLineNo">218</span>     * {@link SwingConstants#EAST}, {@link SwingConstants#WEST}.<a name="line.218"></a>
+<span class="sourceLineNo">219</span>     * @param port the external port<a name="line.219"></a>
+<span class="sourceLineNo">220</span>     * @return a SwingConstant about the direction<a name="line.220"></a>
+<span class="sourceLineNo">221</span>     */<a name="line.221"></a>
+<span class="sourceLineNo">222</span>    protected static int _getExternalPortDirection(Port port) {<a name="line.222"></a>
+<span class="sourceLineNo">223</span>        if (port instanceof IOPort) {<a name="line.223"></a>
+<span class="sourceLineNo">224</span>            boolean isInput = ((IOPort) port).isInput();<a name="line.224"></a>
+<span class="sourceLineNo">225</span>            boolean isOutput = ((IOPort) port).isOutput();<a name="line.225"></a>
+<span class="sourceLineNo">226</span>            if (isInput &amp;&amp; !isOutput) {<a name="line.226"></a>
+<span class="sourceLineNo">227</span>                return SwingConstants.EAST;<a name="line.227"></a>
+<span class="sourceLineNo">228</span>            }<a name="line.228"></a>
+<span class="sourceLineNo">229</span>            if (!isInput &amp;&amp; isOutput) {<a name="line.229"></a>
+<span class="sourceLineNo">230</span>                return SwingConstants.WEST;<a name="line.230"></a>
+<span class="sourceLineNo">231</span>            }<a name="line.231"></a>
+<span class="sourceLineNo">232</span>            if (isInput &amp;&amp; isOutput) {<a name="line.232"></a>
+<span class="sourceLineNo">233</span>                return SwingConstants.NORTH;<a name="line.233"></a>
+<span class="sourceLineNo">234</span>            }<a name="line.234"></a>
+<span class="sourceLineNo">235</span>        }<a name="line.235"></a>
+<span class="sourceLineNo">236</span>        return SwingConstants.SOUTH;<a name="line.236"></a>
+<span class="sourceLineNo">237</span>    }<a name="line.237"></a>
+<span class="sourceLineNo">238</span><a name="line.238"></a>
+<span class="sourceLineNo">239</span>    /**<a name="line.239"></a>
+<span class="sourceLineNo">240</span>     * Return true if the state is an initial state.<a name="line.240"></a>
+<span class="sourceLineNo">241</span>     * @param state a {@link State} to test<a name="line.241"></a>
+<span class="sourceLineNo">242</span>     * @return whether the passed state has the isInitialState parameter set to true.<a name="line.242"></a>
+<span class="sourceLineNo">243</span>     */<a name="line.243"></a>
+<span class="sourceLineNo">244</span>    protected static boolean _isInitialState(State state) {<a name="line.244"></a>
+<span class="sourceLineNo">245</span>        return state.isInitialState.getValueAsString()<a name="line.245"></a>
+<span class="sourceLineNo">246</span>                .equals(Boolean.TRUE.toString());<a name="line.246"></a>
+<span class="sourceLineNo">247</span>    }<a name="line.247"></a>
+<span class="sourceLineNo">248</span><a name="line.248"></a>
+<span class="sourceLineNo">249</span>    /**<a name="line.249"></a>
+<span class="sourceLineNo">250</span>     * Return true if the state is a final state.<a name="line.250"></a>
+<span class="sourceLineNo">251</span>     * @param state a {@link State} to test<a name="line.251"></a>
+<span class="sourceLineNo">252</span>     * @return whether the passed state has the isFinalState parameter set to true.<a name="line.252"></a>
+<span class="sourceLineNo">253</span>     */<a name="line.253"></a>
+<span class="sourceLineNo">254</span>    protected static boolean _isFinalState(State state) {<a name="line.254"></a>
+<span class="sourceLineNo">255</span>        return state.isFinalState.getValueAsString()<a name="line.255"></a>
+<span class="sourceLineNo">256</span>                .equals(Boolean.TRUE.toString());<a name="line.256"></a>
+<span class="sourceLineNo">257</span>    }<a name="line.257"></a>
+<span class="sourceLineNo">258</span>}<a name="line.258"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

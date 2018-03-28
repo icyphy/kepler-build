@@ -1,0 +1,463 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../../stylesheet.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>/* Utilities for User Actor Libraries<a name="line.1"></a>
+<span class="sourceLineNo">002</span><a name="line.2"></a>
+<span class="sourceLineNo">003</span> Copyright (c) 2006-2014 The Regents of the University of California.<a name="line.3"></a>
+<span class="sourceLineNo">004</span> All rights reserved.<a name="line.4"></a>
+<span class="sourceLineNo">005</span> Permission is hereby granted, without written agreement and without<a name="line.5"></a>
+<span class="sourceLineNo">006</span> license or royalty fees, to use, copy, modify, and distribute this<a name="line.6"></a>
+<span class="sourceLineNo">007</span> software and its documentation for any purpose, provided that the above<a name="line.7"></a>
+<span class="sourceLineNo">008</span> copyright notice and the following two paragraphs appear in all copies<a name="line.8"></a>
+<span class="sourceLineNo">009</span> of this software.<a name="line.9"></a>
+<span class="sourceLineNo">010</span><a name="line.10"></a>
+<span class="sourceLineNo">011</span> IN NO EVENT SHALL THE UNIVERSITY OF CALIFORNIA BE LIABLE TO ANY PARTY<a name="line.11"></a>
+<span class="sourceLineNo">012</span> FOR DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES<a name="line.12"></a>
+<span class="sourceLineNo">013</span> ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION, EVEN IF<a name="line.13"></a>
+<span class="sourceLineNo">014</span> THE UNIVERSITY OF CALIFORNIA HAS BEEN ADVISED OF THE POSSIBILITY OF<a name="line.14"></a>
+<span class="sourceLineNo">015</span> SUCH DAMAGE.<a name="line.15"></a>
+<span class="sourceLineNo">016</span><a name="line.16"></a>
+<span class="sourceLineNo">017</span> THE UNIVERSITY OF CALIFORNIA SPECIFICALLY DISCLAIMS ANY WARRANTIES,<a name="line.17"></a>
+<span class="sourceLineNo">018</span> INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF<a name="line.18"></a>
+<span class="sourceLineNo">019</span> MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE<a name="line.19"></a>
+<span class="sourceLineNo">020</span> PROVIDED HEREUNDER IS ON AN "AS IS" BASIS, AND THE UNIVERSITY OF<a name="line.20"></a>
+<span class="sourceLineNo">021</span> CALIFORNIA HAS NO OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT, UPDATES,<a name="line.21"></a>
+<span class="sourceLineNo">022</span> ENHANCEMENTS, OR MODIFICATIONS.<a name="line.22"></a>
+<span class="sourceLineNo">023</span><a name="line.23"></a>
+<span class="sourceLineNo">024</span> PT_COPYRIGHT_VERSION_2<a name="line.24"></a>
+<span class="sourceLineNo">025</span> COPYRIGHTENDKEY<a name="line.25"></a>
+<span class="sourceLineNo">026</span> */<a name="line.26"></a>
+<span class="sourceLineNo">027</span>package ptolemy.actor.gui;<a name="line.27"></a>
+<span class="sourceLineNo">028</span><a name="line.28"></a>
+<span class="sourceLineNo">029</span>import java.io.File;<a name="line.29"></a>
+<span class="sourceLineNo">030</span>import java.io.FileWriter;<a name="line.30"></a>
+<span class="sourceLineNo">031</span>import java.io.IOException;<a name="line.31"></a>
+<span class="sourceLineNo">032</span>import java.io.StringWriter;<a name="line.32"></a>
+<span class="sourceLineNo">033</span>import java.net.URL;<a name="line.33"></a>
+<span class="sourceLineNo">034</span><a name="line.34"></a>
+<span class="sourceLineNo">035</span>import ptolemy.kernel.CompositeEntity;<a name="line.35"></a>
+<span class="sourceLineNo">036</span>import ptolemy.kernel.Entity;<a name="line.36"></a>
+<span class="sourceLineNo">037</span>import ptolemy.kernel.attributes.URIAttribute;<a name="line.37"></a>
+<span class="sourceLineNo">038</span>import ptolemy.kernel.util.ChangeRequest;<a name="line.38"></a>
+<span class="sourceLineNo">039</span>import ptolemy.kernel.util.IllegalActionException;<a name="line.39"></a>
+<span class="sourceLineNo">040</span>import ptolemy.kernel.util.InternalErrorException;<a name="line.40"></a>
+<span class="sourceLineNo">041</span>import ptolemy.kernel.util.NameDuplicationException;<a name="line.41"></a>
+<span class="sourceLineNo">042</span>import ptolemy.kernel.util.StringAttribute;<a name="line.42"></a>
+<span class="sourceLineNo">043</span>import ptolemy.moml.LibraryBuilder;<a name="line.43"></a>
+<span class="sourceLineNo">044</span>import ptolemy.moml.MoMLChangeRequest;<a name="line.44"></a>
+<span class="sourceLineNo">045</span>import ptolemy.moml.MoMLParser;<a name="line.45"></a>
+<span class="sourceLineNo">046</span>import ptolemy.util.StringUtilities;<a name="line.46"></a>
+<span class="sourceLineNo">047</span><a name="line.47"></a>
+<span class="sourceLineNo">048</span>///////////////////////////////////////////////////////////////////<a name="line.48"></a>
+<span class="sourceLineNo">049</span>//// UserActorLibrary<a name="line.49"></a>
+<span class="sourceLineNo">050</span><a name="line.50"></a>
+<span class="sourceLineNo">051</span>/**<a name="line.51"></a>
+<span class="sourceLineNo">052</span> Access the User Actor Library.<a name="line.52"></a>
+<span class="sourceLineNo">053</span><a name="line.53"></a>
+<span class="sourceLineNo">054</span> @author Christopher Brooks, based on work by Steve Neuendorffer, Edward A. Lee, Contributor: Chad Berkeley (Kepler)<a name="line.54"></a>
+<span class="sourceLineNo">055</span> @version $Id$<a name="line.55"></a>
+<span class="sourceLineNo">056</span> @since Ptolemy II 5.2<a name="line.56"></a>
+<span class="sourceLineNo">057</span> @Pt.ProposedRating Red (neuendor)<a name="line.57"></a>
+<span class="sourceLineNo">058</span> @Pt.AcceptedRating Red (neuendor)<a name="line.58"></a>
+<span class="sourceLineNo">059</span> */<a name="line.59"></a>
+<span class="sourceLineNo">060</span>public class UserActorLibrary {<a name="line.60"></a>
+<span class="sourceLineNo">061</span>    /**<a name="line.61"></a>
+<span class="sourceLineNo">062</span>     *  Open the user actor library as a new library in the actor<a name="line.62"></a>
+<span class="sourceLineNo">063</span>     *  library for this application.<a name="line.63"></a>
+<span class="sourceLineNo">064</span>     *<a name="line.64"></a>
+<span class="sourceLineNo">065</span>     *  &lt;p&gt;The name of the user actor library consists of the<a name="line.65"></a>
+<span class="sourceLineNo">066</span>     *  values of {@link ptolemy.util.StringUtilities#preferencesDirectory()}<a name="line.66"></a>
+<span class="sourceLineNo">067</span>     *  and {@link #USER_LIBRARY_NAME} and ".xml" concatenated.<a name="line.67"></a>
+<span class="sourceLineNo">068</span>     *<a name="line.68"></a>
+<span class="sourceLineNo">069</span>     *  &lt;p&gt;An alternate class can be used to build the library if reading the<a name="line.69"></a>
+<span class="sourceLineNo">070</span>     *  MoML is not desired.  The class must extend ptolemy.moml.LibraryBuilder<a name="line.70"></a>
+<span class="sourceLineNo">071</span>     *  and the _alternateLibraryBuilder property must be set with the 'value'<a name="line.71"></a>
+<span class="sourceLineNo">072</span>     *  set to the class that extends LibraryBuilder.<a name="line.72"></a>
+<span class="sourceLineNo">073</span>     *<a name="line.73"></a>
+<span class="sourceLineNo">074</span>     *  @param configuration The configuration where we look for the<a name="line.74"></a>
+<span class="sourceLineNo">075</span>     *  actor library.<a name="line.75"></a>
+<span class="sourceLineNo">076</span>     *  @exception Exception If there is a problem opening the configuration,<a name="line.76"></a>
+<span class="sourceLineNo">077</span>     *  opening the MoML file, or opening the MoML file as a new library.<a name="line.77"></a>
+<span class="sourceLineNo">078</span>     */<a name="line.78"></a>
+<span class="sourceLineNo">079</span>    public static void openUserLibrary(Configuration configuration)<a name="line.79"></a>
+<span class="sourceLineNo">080</span>            throws Exception {<a name="line.80"></a>
+<span class="sourceLineNo">081</span><a name="line.81"></a>
+<span class="sourceLineNo">082</span>        // FIXME: If the name is something like<a name="line.82"></a>
+<span class="sourceLineNo">083</span>        // "vergilUserLibrary.xml" then when we save an actor in the<a name="line.83"></a>
+<span class="sourceLineNo">084</span>        // library and then save the window that comes up the name of<a name="line.84"></a>
+<span class="sourceLineNo">085</span>        // entity gets set to vergilUserLibrary instead of the value<a name="line.85"></a>
+<span class="sourceLineNo">086</span>        // of USER_LIBRARY_NAME. This causes problems when we<a name="line.86"></a>
+<span class="sourceLineNo">087</span>        // try to save another file. The name of the entity gets<a name="line.87"></a>
+<span class="sourceLineNo">088</span>        // changed by the saveAs code.<a name="line.88"></a>
+<span class="sourceLineNo">089</span><a name="line.89"></a>
+<span class="sourceLineNo">090</span>        String libraryName = null;<a name="line.90"></a>
+<span class="sourceLineNo">091</span><a name="line.91"></a>
+<span class="sourceLineNo">092</span>        try {<a name="line.92"></a>
+<span class="sourceLineNo">093</span>            libraryName = StringUtilities.preferencesDirectory()<a name="line.93"></a>
+<span class="sourceLineNo">094</span>                    + USER_LIBRARY_NAME + ".xml";<a name="line.94"></a>
+<span class="sourceLineNo">095</span>        } catch (Exception ex) {<a name="line.95"></a>
+<span class="sourceLineNo">096</span>            System.out.println("Warning: Failed to get the preferences "<a name="line.96"></a>
+<span class="sourceLineNo">097</span>                    + "directory (-sandbox always causes this): " + ex);<a name="line.97"></a>
+<span class="sourceLineNo">098</span>        }<a name="line.98"></a>
+<span class="sourceLineNo">099</span><a name="line.99"></a>
+<span class="sourceLineNo">100</span>        if (libraryName != null) {<a name="line.100"></a>
+<span class="sourceLineNo">101</span>            File file = new File(libraryName);<a name="line.101"></a>
+<span class="sourceLineNo">102</span><a name="line.102"></a>
+<span class="sourceLineNo">103</span>            if (!file.isFile() || !file.exists()) {<a name="line.103"></a>
+<span class="sourceLineNo">104</span>                // File might exist under an old name.<a name="line.104"></a>
+<span class="sourceLineNo">105</span>                // Try to read it.<a name="line.105"></a>
+<span class="sourceLineNo">106</span>                String oldLibraryName = StringUtilities.preferencesDirectory()<a name="line.106"></a>
+<span class="sourceLineNo">107</span>                        + "user library.xml";<a name="line.107"></a>
+<span class="sourceLineNo">108</span>                File oldFile = new File(oldLibraryName);<a name="line.108"></a>
+<span class="sourceLineNo">109</span><a name="line.109"></a>
+<span class="sourceLineNo">110</span>                if (oldFile.isFile() &amp;&amp; oldFile.exists()) {<a name="line.110"></a>
+<span class="sourceLineNo">111</span>                    if (!oldFile.renameTo(file)) {<a name="line.111"></a>
+<span class="sourceLineNo">112</span>                        throw new IOException("Failed to rename \"" + oldFile<a name="line.112"></a>
+<span class="sourceLineNo">113</span>                                + "\" to \"" + file + "\".");<a name="line.113"></a>
+<span class="sourceLineNo">114</span>                    }<a name="line.114"></a>
+<span class="sourceLineNo">115</span>                }<a name="line.115"></a>
+<span class="sourceLineNo">116</span>            }<a name="line.116"></a>
+<span class="sourceLineNo">117</span><a name="line.117"></a>
+<span class="sourceLineNo">118</span>            if (!file.isFile() || !file.exists()) {<a name="line.118"></a>
+<span class="sourceLineNo">119</span>                FileWriter writer = null;<a name="line.119"></a>
+<span class="sourceLineNo">120</span><a name="line.120"></a>
+<span class="sourceLineNo">121</span>                try {<a name="line.121"></a>
+<span class="sourceLineNo">122</span>                    if (!file.createNewFile()) {<a name="line.122"></a>
+<span class="sourceLineNo">123</span>                        throw new Exception(file + "already exists?");<a name="line.123"></a>
+<span class="sourceLineNo">124</span>                    }<a name="line.124"></a>
+<span class="sourceLineNo">125</span><a name="line.125"></a>
+<span class="sourceLineNo">126</span>                    writer = new FileWriter(file);<a name="line.126"></a>
+<span class="sourceLineNo">127</span>                    writer.write("&lt;entity name=\"" + USER_LIBRARY_NAME<a name="line.127"></a>
+<span class="sourceLineNo">128</span>                            + "\" class=\"ptolemy.moml.EntityLibrary\"/&gt;");<a name="line.128"></a>
+<span class="sourceLineNo">129</span>                    writer.close();<a name="line.129"></a>
+<span class="sourceLineNo">130</span>                } catch (Exception ex) {<a name="line.130"></a>
+<span class="sourceLineNo">131</span>                    throw new Exception("Failed to create an empty user "<a name="line.131"></a>
+<span class="sourceLineNo">132</span>                            + "library: " + libraryName, ex);<a name="line.132"></a>
+<span class="sourceLineNo">133</span>                } finally {<a name="line.133"></a>
+<span class="sourceLineNo">134</span>                    if (writer != null) {<a name="line.134"></a>
+<span class="sourceLineNo">135</span>                        writer.close();<a name="line.135"></a>
+<span class="sourceLineNo">136</span>                    }<a name="line.136"></a>
+<span class="sourceLineNo">137</span>                }<a name="line.137"></a>
+<span class="sourceLineNo">138</span>            }<a name="line.138"></a>
+<span class="sourceLineNo">139</span>            openLibrary(configuration, file);<a name="line.139"></a>
+<span class="sourceLineNo">140</span>        }<a name="line.140"></a>
+<span class="sourceLineNo">141</span>    }<a name="line.141"></a>
+<span class="sourceLineNo">142</span><a name="line.142"></a>
+<span class="sourceLineNo">143</span>    /**<a name="line.143"></a>
+<span class="sourceLineNo">144</span>     *  Open the MoML file at the given location as a new library in<a name="line.144"></a>
+<span class="sourceLineNo">145</span>     *  the actor library for this application.<a name="line.145"></a>
+<span class="sourceLineNo">146</span>     *<a name="line.146"></a>
+<span class="sourceLineNo">147</span>     *  &lt;p&gt;An alternate class can be used to build the library if reading<a name="line.147"></a>
+<span class="sourceLineNo">148</span>     *  the MoML is not desired.  The class must extend<a name="line.148"></a>
+<span class="sourceLineNo">149</span>     *  ptolemy.moml.LibraryBuilder and the _alternateLibraryBuilder<a name="line.149"></a>
+<span class="sourceLineNo">150</span>     *  property must be set with the 'value' set to the class that<a name="line.150"></a>
+<span class="sourceLineNo">151</span>     *  extends LibraryBuilder.&lt;/p&gt;<a name="line.151"></a>
+<span class="sourceLineNo">152</span>     *<a name="line.152"></a>
+<span class="sourceLineNo">153</span>     *  &lt;p&gt;A library of components is a .xml file that defines a MoML Class<a name="line.153"></a>
+<span class="sourceLineNo">154</span>     *  that extends ptolemy.moml.EntityLibrary, for example, the following<a name="line.154"></a>
+<span class="sourceLineNo">155</span>     *  file creates a library called "MyActors" that has an XYPlotter<a name="line.155"></a>
+<span class="sourceLineNo">156</span>     *  in the library:&lt;/p&gt;<a name="line.156"></a>
+<span class="sourceLineNo">157</span>     *  &lt;pre&gt;<a name="line.157"></a>
+<span class="sourceLineNo">158</span>     *  &amp;lt;?xml version="1.0" standalone="no"?&amp;gt;<a name="line.158"></a>
+<span class="sourceLineNo">159</span>     *  &amp;lt;!DOCTYPE class PUBLIC "-//UC Berkeley//DTD MoML 1//EN"<a name="line.159"></a>
+<span class="sourceLineNo">160</span>     *      "http://ptolemy.eecs.berkeley.edu/xml/dtd/MoML_1.dtd"&amp;gt;<a name="line.160"></a>
+<span class="sourceLineNo">161</span>     *  &amp;lt;class name="MyActors" extends="ptolemy.moml.EntityLibrary"&amp;gt;<a name="line.161"></a>
+<span class="sourceLineNo">162</span>     *    &amp;lt;configure&amp;gt;<a name="line.162"></a>
+<span class="sourceLineNo">163</span>     *      &amp;lt;group&amp;gt;<a name="line.163"></a>
+<span class="sourceLineNo">164</span>     *         &amp;lt;entity name="XY Plotter" class="ptolemy.actor.lib.gui.XYPlotter"/&amp;gt;<a name="line.164"></a>
+<span class="sourceLineNo">165</span>     *      &amp;lt;/group&amp;gt;<a name="line.165"></a>
+<span class="sourceLineNo">166</span>     *    &amp;lt;/configure&amp;gt;<a name="line.166"></a>
+<span class="sourceLineNo">167</span>     *  &amp;lt;/class&amp;gt;<a name="line.167"></a>
+<span class="sourceLineNo">168</span>     *  &lt;/pre&gt;<a name="line.168"></a>
+<span class="sourceLineNo">169</span>     *<a name="line.169"></a>
+<span class="sourceLineNo">170</span>     *  &lt;p&gt;Note that one restriction is to see the new library, one must<a name="line.170"></a>
+<span class="sourceLineNo">171</span>     *  open a new Graph viewer (New -&amp;gt; Graph).&lt;/p&gt;<a name="line.171"></a>
+<span class="sourceLineNo">172</span>     *<a name="line.172"></a>
+<span class="sourceLineNo">173</span>     *  @param configuration The configuration where we look for the<a name="line.173"></a>
+<span class="sourceLineNo">174</span>     *  actor library.<a name="line.174"></a>
+<span class="sourceLineNo">175</span>     *  @param file The MoML file to open.<a name="line.175"></a>
+<span class="sourceLineNo">176</span>     *  @exception Exception If there is a problem opening the<a name="line.176"></a>
+<span class="sourceLineNo">177</span>     *  configuration, opening the MoML file, or opening the MoML file<a name="line.177"></a>
+<span class="sourceLineNo">178</span>     *  as a new library.<a name="line.178"></a>
+<span class="sourceLineNo">179</span>     */<a name="line.179"></a>
+<span class="sourceLineNo">180</span>    public static void openLibrary(Configuration configuration, File file)<a name="line.180"></a>
+<span class="sourceLineNo">181</span>            throws Exception {<a name="line.181"></a>
+<span class="sourceLineNo">182</span>        CompositeEntity library = null;<a name="line.182"></a>
+<span class="sourceLineNo">183</span>        final CompositeEntity libraryContainer = (CompositeEntity) configuration<a name="line.183"></a>
+<span class="sourceLineNo">184</span>                .getEntity("actor library");<a name="line.184"></a>
+<span class="sourceLineNo">185</span><a name="line.185"></a>
+<span class="sourceLineNo">186</span>        final ModelDirectory directory = (ModelDirectory) configuration<a name="line.186"></a>
+<span class="sourceLineNo">187</span>                .getEntity(Configuration._DIRECTORY_NAME);<a name="line.187"></a>
+<span class="sourceLineNo">188</span><a name="line.188"></a>
+<span class="sourceLineNo">189</span>        if (directory == null) {<a name="line.189"></a>
+<span class="sourceLineNo">190</span>            return;<a name="line.190"></a>
+<span class="sourceLineNo">191</span>        }<a name="line.191"></a>
+<span class="sourceLineNo">192</span><a name="line.192"></a>
+<span class="sourceLineNo">193</span>        if (libraryContainer == null) {<a name="line.193"></a>
+<span class="sourceLineNo">194</span>            return;<a name="line.194"></a>
+<span class="sourceLineNo">195</span>        }<a name="line.195"></a>
+<span class="sourceLineNo">196</span><a name="line.196"></a>
+<span class="sourceLineNo">197</span>        StringAttribute alternateLibraryBuilderAttribute = (StringAttribute) libraryContainer<a name="line.197"></a>
+<span class="sourceLineNo">198</span>                .getAttribute("_alternateLibraryBuilder");<a name="line.198"></a>
+<span class="sourceLineNo">199</span><a name="line.199"></a>
+<span class="sourceLineNo">200</span>        // If the _alternateLibraryBuilder attribute is present,<a name="line.200"></a>
+<span class="sourceLineNo">201</span>        // then we use the specified class to build the library<a name="line.201"></a>
+<span class="sourceLineNo">202</span>        // instead of just reading the moml.<a name="line.202"></a>
+<span class="sourceLineNo">203</span><a name="line.203"></a>
+<span class="sourceLineNo">204</span>        if (alternateLibraryBuilderAttribute != null) {<a name="line.204"></a>
+<span class="sourceLineNo">205</span>            // Get the class that will build the library from the plugins<a name="line.205"></a>
+<span class="sourceLineNo">206</span>            String libraryBuilderClassName = alternateLibraryBuilderAttribute<a name="line.206"></a>
+<span class="sourceLineNo">207</span>                    .getExpression();<a name="line.207"></a>
+<span class="sourceLineNo">208</span><a name="line.208"></a>
+<span class="sourceLineNo">209</span>            // Dynamically load the library builder and build the library<a name="line.209"></a>
+<span class="sourceLineNo">210</span>            Class libraryBuilderClass = Class.forName(libraryBuilderClassName);<a name="line.210"></a>
+<span class="sourceLineNo">211</span>            LibraryBuilder libraryBuilder = (LibraryBuilder) libraryBuilderClass<a name="line.211"></a>
+<span class="sourceLineNo">212</span>                    .newInstance();<a name="line.212"></a>
+<span class="sourceLineNo">213</span><a name="line.213"></a>
+<span class="sourceLineNo">214</span>            // Set the attributes defined in the moml to the attributes of the<a name="line.214"></a>
+<span class="sourceLineNo">215</span>            // LibraryBuilder<a name="line.215"></a>
+<span class="sourceLineNo">216</span>            libraryBuilder.addAttributes(<a name="line.216"></a>
+<span class="sourceLineNo">217</span>                    alternateLibraryBuilderAttribute.attributeList());<a name="line.217"></a>
+<span class="sourceLineNo">218</span><a name="line.218"></a>
+<span class="sourceLineNo">219</span>            try {<a name="line.219"></a>
+<span class="sourceLineNo">220</span>                library = libraryBuilder<a name="line.220"></a>
+<span class="sourceLineNo">221</span>                        .buildLibrary(libraryContainer.workspace());<a name="line.221"></a>
+<span class="sourceLineNo">222</span>            } catch (Exception ex) {<a name="line.222"></a>
+<span class="sourceLineNo">223</span>                ex.printStackTrace();<a name="line.223"></a>
+<span class="sourceLineNo">224</span>                throw new Exception(<a name="line.224"></a>
+<span class="sourceLineNo">225</span>                        "Cannot create library with " + "LibraryBuilder: ", ex);<a name="line.225"></a>
+<span class="sourceLineNo">226</span>            }<a name="line.226"></a>
+<span class="sourceLineNo">227</span>        }<a name="line.227"></a>
+<span class="sourceLineNo">228</span><a name="line.228"></a>
+<span class="sourceLineNo">229</span>        // If we have a jar URL, convert spaces to %20<a name="line.229"></a>
+<span class="sourceLineNo">230</span>        URL fileURL = JNLPUtilities.canonicalizeJarURL(file.toURI().toURL());<a name="line.230"></a>
+<span class="sourceLineNo">231</span><a name="line.231"></a>
+<span class="sourceLineNo">232</span>        String identifier = fileURL.toExternalForm();<a name="line.232"></a>
+<span class="sourceLineNo">233</span><a name="line.233"></a>
+<span class="sourceLineNo">234</span>        // Check to see whether the library is already open.<a name="line.234"></a>
+<span class="sourceLineNo">235</span>        Effigy libraryEffigy = directory.getEffigy(identifier);<a name="line.235"></a>
+<span class="sourceLineNo">236</span><a name="line.236"></a>
+<span class="sourceLineNo">237</span>        if (libraryEffigy == null) {<a name="line.237"></a>
+<span class="sourceLineNo">238</span>            if (library == null) {<a name="line.238"></a>
+<span class="sourceLineNo">239</span>                // Only do this if the library hasn't been set above<a name="line.239"></a>
+<span class="sourceLineNo">240</span>                // by a LibraryBuilder<a name="line.240"></a>
+<span class="sourceLineNo">241</span>                // No previous libraryEffigy exists that is identified<a name="line.241"></a>
+<span class="sourceLineNo">242</span>                // by this URL. Parse the user library into the<a name="line.242"></a>
+<span class="sourceLineNo">243</span>                // workspace of the actor library.<a name="line.243"></a>
+<span class="sourceLineNo">244</span>                MoMLParser parser = new MoMLParser(<a name="line.244"></a>
+<span class="sourceLineNo">245</span>                        libraryContainer.workspace());<a name="line.245"></a>
+<span class="sourceLineNo">246</span><a name="line.246"></a>
+<span class="sourceLineNo">247</span>                // Set the ErrorHandler so that if we have<a name="line.247"></a>
+<span class="sourceLineNo">248</span>                // compatibility problems between devel and production<a name="line.248"></a>
+<span class="sourceLineNo">249</span>                // versions, we can skip that element.<a name="line.249"></a>
+<span class="sourceLineNo">250</span>                // MoMLParser.setErrorHandler(new VergilErrorHandler());<a name="line.250"></a>
+<span class="sourceLineNo">251</span>                parser.parse(fileURL, fileURL);<a name="line.251"></a>
+<span class="sourceLineNo">252</span><a name="line.252"></a>
+<span class="sourceLineNo">253</span>                library = (CompositeEntity) parser.getToplevel();<a name="line.253"></a>
+<span class="sourceLineNo">254</span>            }<a name="line.254"></a>
+<span class="sourceLineNo">255</span><a name="line.255"></a>
+<span class="sourceLineNo">256</span>            // library.setContainer(libraryContainer); //i don't know if this is<a name="line.256"></a>
+<span class="sourceLineNo">257</span>            // needed<a name="line.257"></a>
+<span class="sourceLineNo">258</span>            // Now create the effigy with no tableau.<a name="line.258"></a>
+<span class="sourceLineNo">259</span>            final PtolemyEffigy finalLibraryEffigy = new PtolemyEffigy(<a name="line.259"></a>
+<span class="sourceLineNo">260</span>                    directory.workspace());<a name="line.260"></a>
+<span class="sourceLineNo">261</span>            finalLibraryEffigy.setSystemEffigy(true);<a name="line.261"></a>
+<span class="sourceLineNo">262</span><a name="line.262"></a>
+<span class="sourceLineNo">263</span>            // Correct old library name, if the loaded library happens<a name="line.263"></a>
+<span class="sourceLineNo">264</span>            // to be user library.<a name="line.264"></a>
+<span class="sourceLineNo">265</span>            if (library == null) {<a name="line.265"></a>
+<span class="sourceLineNo">266</span>                throw new NullPointerException("library == null?");<a name="line.266"></a>
+<span class="sourceLineNo">267</span>            }<a name="line.267"></a>
+<span class="sourceLineNo">268</span>            if (library.getName().equals("user library")) {<a name="line.268"></a>
+<span class="sourceLineNo">269</span>                library.setName(USER_LIBRARY_NAME);<a name="line.269"></a>
+<span class="sourceLineNo">270</span>            }<a name="line.270"></a>
+<span class="sourceLineNo">271</span><a name="line.271"></a>
+<span class="sourceLineNo">272</span>            finalLibraryEffigy.setName(directory.uniqueName(library.getName()));<a name="line.272"></a>
+<span class="sourceLineNo">273</span><a name="line.273"></a>
+<span class="sourceLineNo">274</span>            _instantiateLibrary(library, directory, configuration, file,<a name="line.274"></a>
+<span class="sourceLineNo">275</span>                    libraryContainer, finalLibraryEffigy);<a name="line.275"></a>
+<span class="sourceLineNo">276</span><a name="line.276"></a>
+<span class="sourceLineNo">277</span>            finalLibraryEffigy.setModel(library);<a name="line.277"></a>
+<span class="sourceLineNo">278</span><a name="line.278"></a>
+<span class="sourceLineNo">279</span>            // Identify the URL from which the model was read<a name="line.279"></a>
+<span class="sourceLineNo">280</span>            // by inserting an attribute into both the model<a name="line.280"></a>
+<span class="sourceLineNo">281</span>            // and the effigy.<a name="line.281"></a>
+<span class="sourceLineNo">282</span>            URIAttribute uri = new URIAttribute(library, "_uri");<a name="line.282"></a>
+<span class="sourceLineNo">283</span>            uri.setURL(fileURL);<a name="line.283"></a>
+<span class="sourceLineNo">284</span><a name="line.284"></a>
+<span class="sourceLineNo">285</span>            // This is used by TableauFrame in its _save() method.<a name="line.285"></a>
+<span class="sourceLineNo">286</span>            finalLibraryEffigy.uri.setURL(fileURL);<a name="line.286"></a>
+<span class="sourceLineNo">287</span><a name="line.287"></a>
+<span class="sourceLineNo">288</span>            finalLibraryEffigy.identifier.setExpression(identifier);<a name="line.288"></a>
+<span class="sourceLineNo">289</span>        }<a name="line.289"></a>
+<span class="sourceLineNo">290</span>    }<a name="line.290"></a>
+<span class="sourceLineNo">291</span><a name="line.291"></a>
+<span class="sourceLineNo">292</span>    /** Save the given entity in the user library in the given<a name="line.292"></a>
+<span class="sourceLineNo">293</span>     *  configuration.<a name="line.293"></a>
+<span class="sourceLineNo">294</span>     *  @param configuration The configuration.<a name="line.294"></a>
+<span class="sourceLineNo">295</span>     *  @param entity The entity to save.<a name="line.295"></a>
+<span class="sourceLineNo">296</span>     *  @exception IOException if the user library cannot be found.<a name="line.296"></a>
+<span class="sourceLineNo">297</span>     *  @exception IllegalActionException If there is a problem creating<a name="line.297"></a>
+<span class="sourceLineNo">298</span>     *  the entity in the library.<a name="line.298"></a>
+<span class="sourceLineNo">299</span>     *  @exception NameDuplicationException If a entity with the same<a name="line.299"></a>
+<span class="sourceLineNo">300</span>     *  name already exists in the library.<a name="line.300"></a>
+<span class="sourceLineNo">301</span>     *  @since Ptolemy II 5.2<a name="line.301"></a>
+<span class="sourceLineNo">302</span>     */<a name="line.302"></a>
+<span class="sourceLineNo">303</span>    public static void saveComponentInLibrary(Configuration configuration,<a name="line.303"></a>
+<span class="sourceLineNo">304</span>            Entity entity) throws IOException, IllegalActionException,<a name="line.304"></a>
+<span class="sourceLineNo">305</span>            NameDuplicationException {<a name="line.305"></a>
+<span class="sourceLineNo">306</span>        if (entity == null) {<a name="line.306"></a>
+<span class="sourceLineNo">307</span>            throw new NullPointerException("Save in library failed. "<a name="line.307"></a>
+<span class="sourceLineNo">308</span>                    + "entity was null, cannot save a null entity.");<a name="line.308"></a>
+<span class="sourceLineNo">309</span>        }<a name="line.309"></a>
+<span class="sourceLineNo">310</span>        CompositeEntity libraryInstance = (CompositeEntity) configuration<a name="line.310"></a>
+<span class="sourceLineNo">311</span>                .getEntity("actor library." + USER_LIBRARY_NAME);<a name="line.311"></a>
+<span class="sourceLineNo">312</span><a name="line.312"></a>
+<span class="sourceLineNo">313</span>        if (libraryInstance == null) {<a name="line.313"></a>
+<span class="sourceLineNo">314</span>            throw new IOException("Save In Library failed: "<a name="line.314"></a>
+<span class="sourceLineNo">315</span>                    + "Could not find user library with name \""<a name="line.315"></a>
+<span class="sourceLineNo">316</span>                    + USER_LIBRARY_NAME + "\".");<a name="line.316"></a>
+<span class="sourceLineNo">317</span>        }<a name="line.317"></a>
+<span class="sourceLineNo">318</span><a name="line.318"></a>
+<span class="sourceLineNo">319</span>        // Note that the library in the configuration is an<a name="line.319"></a>
+<span class="sourceLineNo">320</span>        // instance of another model. We have to go get the<a name="line.320"></a>
+<span class="sourceLineNo">321</span>        // original model to make sure that the change propagates<a name="line.321"></a>
+<span class="sourceLineNo">322</span>        // back to the file from which the library is loaded.<a name="line.322"></a>
+<span class="sourceLineNo">323</span>        Tableau libraryTableau = configuration.openModel(libraryInstance);<a name="line.323"></a>
+<span class="sourceLineNo">324</span>        PtolemyEffigy libraryEffigy = (PtolemyEffigy) libraryTableau<a name="line.324"></a>
+<span class="sourceLineNo">325</span>                .getContainer();<a name="line.325"></a>
+<span class="sourceLineNo">326</span>        CompositeEntity library = (CompositeEntity) libraryEffigy.getModel();<a name="line.326"></a>
+<span class="sourceLineNo">327</span><a name="line.327"></a>
+<span class="sourceLineNo">328</span>        StringWriter buffer = new StringWriter();<a name="line.328"></a>
+<span class="sourceLineNo">329</span><a name="line.329"></a>
+<span class="sourceLineNo">330</span>        // Check whether there is already something existing in the<a name="line.330"></a>
+<span class="sourceLineNo">331</span>        // user library with this name.<a name="line.331"></a>
+<span class="sourceLineNo">332</span>        if (library == null) {<a name="line.332"></a>
+<span class="sourceLineNo">333</span>            throw new InternalErrorException("Save in library failed. "<a name="line.333"></a>
+<span class="sourceLineNo">334</span>                    + "libraryEffigy.getModel() returned null.");<a name="line.334"></a>
+<span class="sourceLineNo">335</span>        }<a name="line.335"></a>
+<span class="sourceLineNo">336</span>        if (library.getEntity(entity.getName()) != null) {<a name="line.336"></a>
+<span class="sourceLineNo">337</span>            throw new NameDuplicationException(entity,<a name="line.337"></a>
+<span class="sourceLineNo">338</span>                    "Save In Library failed: An object"<a name="line.338"></a>
+<span class="sourceLineNo">339</span>                            + " already exists in the user library with name "<a name="line.339"></a>
+<span class="sourceLineNo">340</span>                            + "\"" + entity.getName() + "\".");<a name="line.340"></a>
+<span class="sourceLineNo">341</span>        }<a name="line.341"></a>
+<span class="sourceLineNo">342</span><a name="line.342"></a>
+<span class="sourceLineNo">343</span>        if (entity.getName().trim().equals("")) {<a name="line.343"></a>
+<span class="sourceLineNo">344</span>            entity.exportMoML(buffer, 1, "Unnamed");<a name="line.344"></a>
+<span class="sourceLineNo">345</span>        } else {<a name="line.345"></a>
+<span class="sourceLineNo">346</span>            entity.exportMoML(buffer, 1);<a name="line.346"></a>
+<span class="sourceLineNo">347</span>        }<a name="line.347"></a>
+<span class="sourceLineNo">348</span><a name="line.348"></a>
+<span class="sourceLineNo">349</span>        ChangeRequest request = new MoMLChangeRequest(entity, library,<a name="line.349"></a>
+<span class="sourceLineNo">350</span>                buffer.toString());<a name="line.350"></a>
+<span class="sourceLineNo">351</span>        library.requestChange(request);<a name="line.351"></a>
+<span class="sourceLineNo">352</span>    }<a name="line.352"></a>
+<span class="sourceLineNo">353</span><a name="line.353"></a>
+<span class="sourceLineNo">354</span>    ///////////////////////////////////////////////////////////////////<a name="line.354"></a>
+<span class="sourceLineNo">355</span>    ////                         public variables                  ////<a name="line.355"></a>
+<span class="sourceLineNo">356</span><a name="line.356"></a>
+<span class="sourceLineNo">357</span>    /** The name of the user library.  The default value is<a name="line.357"></a>
+<span class="sourceLineNo">358</span>     *  "UserLibrary".  The value of this variable is what appears<a name="line.358"></a>
+<span class="sourceLineNo">359</span>     *  in the Vergil left hand tree menu.<a name="line.359"></a>
+<span class="sourceLineNo">360</span>     *  &lt;p&gt;This variable is not final so that users of this class<a name="line.360"></a>
+<span class="sourceLineNo">361</span>     *  may change it.<a name="line.361"></a>
+<span class="sourceLineNo">362</span>     */<a name="line.362"></a>
+<span class="sourceLineNo">363</span>    public static/* final */String USER_LIBRARY_NAME = "UserLibrary";<a name="line.363"></a>
+<span class="sourceLineNo">364</span><a name="line.364"></a>
+<span class="sourceLineNo">365</span>    ///////////////////////////////////////////////////////////////////<a name="line.365"></a>
+<span class="sourceLineNo">366</span>    ////                         private methods                   ////<a name="line.366"></a>
+<span class="sourceLineNo">367</span><a name="line.367"></a>
+<span class="sourceLineNo">368</span>    /**<a name="line.368"></a>
+<span class="sourceLineNo">369</span>     * instantiate a ComponentEntity and create the changeRequest to<a name="line.369"></a>
+<span class="sourceLineNo">370</span>     * implement it in the model<a name="line.370"></a>
+<span class="sourceLineNo">371</span>     */<a name="line.371"></a>
+<span class="sourceLineNo">372</span>    private static void _instantiateLibrary(final CompositeEntity library,<a name="line.372"></a>
+<span class="sourceLineNo">373</span>            final ModelDirectory directory, Configuration configuration,<a name="line.373"></a>
+<span class="sourceLineNo">374</span>            File file, final CompositeEntity libraryContainer,<a name="line.374"></a>
+<span class="sourceLineNo">375</span>            final PtolemyEffigy finalLibraryEffigy) throws Exception {<a name="line.375"></a>
+<span class="sourceLineNo">376</span>        ChangeRequest request = new ChangeRequest(configuration,<a name="line.376"></a>
+<span class="sourceLineNo">377</span>                file.toURI().toURL().toString()) {<a name="line.377"></a>
+<span class="sourceLineNo">378</span>            @Override<a name="line.378"></a>
+<span class="sourceLineNo">379</span>            protected void _execute() throws Exception {<a name="line.379"></a>
+<span class="sourceLineNo">380</span>                // The library is a class!<a name="line.380"></a>
+<span class="sourceLineNo">381</span>                library.setClassDefinition(true);<a name="line.381"></a>
+<span class="sourceLineNo">382</span>                library.instantiate(libraryContainer, library.getName());<a name="line.382"></a>
+<span class="sourceLineNo">383</span>                finalLibraryEffigy.setContainer(directory);<a name="line.383"></a>
+<span class="sourceLineNo">384</span>            }<a name="line.384"></a>
+<span class="sourceLineNo">385</span>        };<a name="line.385"></a>
+<span class="sourceLineNo">386</span><a name="line.386"></a>
+<span class="sourceLineNo">387</span>        libraryContainer.requestChange(request);<a name="line.387"></a>
+<span class="sourceLineNo">388</span>        request.waitForCompletion();<a name="line.388"></a>
+<span class="sourceLineNo">389</span>    }<a name="line.389"></a>
+<span class="sourceLineNo">390</span><a name="line.390"></a>
+<span class="sourceLineNo">391</span>}<a name="line.391"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

@@ -1,0 +1,1041 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../../stylesheet.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>/** A class representing the type of a RecordToken.<a name="line.1"></a>
+<span class="sourceLineNo">002</span><a name="line.2"></a>
+<span class="sourceLineNo">003</span> Copyright (c) 1997-2015 The Regents of the University of California.<a name="line.3"></a>
+<span class="sourceLineNo">004</span> All rights reserved.<a name="line.4"></a>
+<span class="sourceLineNo">005</span> Permission is hereby granted, without written agreement and without<a name="line.5"></a>
+<span class="sourceLineNo">006</span> license or royalty fees, to use, copy, modify, and distribute this<a name="line.6"></a>
+<span class="sourceLineNo">007</span> software and its documentation for any purpose, provided that the above<a name="line.7"></a>
+<span class="sourceLineNo">008</span> copyright notice and the following two paragraphs appear in all copies<a name="line.8"></a>
+<span class="sourceLineNo">009</span> of this software.<a name="line.9"></a>
+<span class="sourceLineNo">010</span><a name="line.10"></a>
+<span class="sourceLineNo">011</span> IN NO EVENT SHALL THE UNIVERSITY OF CALIFORNIA BE LIABLE TO ANY PARTY<a name="line.11"></a>
+<span class="sourceLineNo">012</span> FOR DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES<a name="line.12"></a>
+<span class="sourceLineNo">013</span> ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION, EVEN IF<a name="line.13"></a>
+<span class="sourceLineNo">014</span> THE UNIVERSITY OF CALIFORNIA HAS BEEN ADVISED OF THE POSSIBILITY OF<a name="line.14"></a>
+<span class="sourceLineNo">015</span> SUCH DAMAGE.<a name="line.15"></a>
+<span class="sourceLineNo">016</span><a name="line.16"></a>
+<span class="sourceLineNo">017</span> THE UNIVERSITY OF CALIFORNIA SPECIFICALLY DISCLAIMS ANY WARRANTIES,<a name="line.17"></a>
+<span class="sourceLineNo">018</span> INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF<a name="line.18"></a>
+<span class="sourceLineNo">019</span> MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE<a name="line.19"></a>
+<span class="sourceLineNo">020</span> PROVIDED HEREUNDER IS ON AN "AS IS" BASIS, AND THE UNIVERSITY OF<a name="line.20"></a>
+<span class="sourceLineNo">021</span> CALIFORNIA HAS NO OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT, UPDATES,<a name="line.21"></a>
+<span class="sourceLineNo">022</span> ENHANCEMENTS, OR MODIFICATIONS.<a name="line.22"></a>
+<span class="sourceLineNo">023</span><a name="line.23"></a>
+<span class="sourceLineNo">024</span> PT_COPYRIGHT_VERSION_2<a name="line.24"></a>
+<span class="sourceLineNo">025</span> COPYRIGHTENDKEY<a name="line.25"></a>
+<span class="sourceLineNo">026</span> */<a name="line.26"></a>
+<span class="sourceLineNo">027</span>package ptolemy.data.type;<a name="line.27"></a>
+<span class="sourceLineNo">028</span><a name="line.28"></a>
+<span class="sourceLineNo">029</span>import java.util.HashMap;<a name="line.29"></a>
+<span class="sourceLineNo">030</span>import java.util.HashSet;<a name="line.30"></a>
+<span class="sourceLineNo">031</span>import java.util.Iterator;<a name="line.31"></a>
+<span class="sourceLineNo">032</span>import java.util.Map;<a name="line.32"></a>
+<span class="sourceLineNo">033</span>import java.util.Set;<a name="line.33"></a>
+<span class="sourceLineNo">034</span><a name="line.34"></a>
+<span class="sourceLineNo">035</span>import ptolemy.data.OrderedRecordToken;<a name="line.35"></a>
+<span class="sourceLineNo">036</span>import ptolemy.data.RecordToken;<a name="line.36"></a>
+<span class="sourceLineNo">037</span>import ptolemy.data.Token;<a name="line.37"></a>
+<span class="sourceLineNo">038</span>import ptolemy.graph.CPO;<a name="line.38"></a>
+<span class="sourceLineNo">039</span>import ptolemy.graph.InequalityTerm;<a name="line.39"></a>
+<span class="sourceLineNo">040</span>import ptolemy.kernel.util.IllegalActionException;<a name="line.40"></a>
+<span class="sourceLineNo">041</span>import ptolemy.kernel.util.InternalErrorException;<a name="line.41"></a>
+<span class="sourceLineNo">042</span>import ptolemy.util.StringUtilities;<a name="line.42"></a>
+<span class="sourceLineNo">043</span><a name="line.43"></a>
+<span class="sourceLineNo">044</span>///////////////////////////////////////////////////////////////////<a name="line.44"></a>
+<span class="sourceLineNo">045</span>//// RecordType<a name="line.45"></a>
+<span class="sourceLineNo">046</span><a name="line.46"></a>
+<span class="sourceLineNo">047</span>/**<a name="line.47"></a>
+<span class="sourceLineNo">048</span> A class representing the type of a RecordToken.<a name="line.48"></a>
+<span class="sourceLineNo">049</span> To set the type of a typeable object (such as a port or parameter)<a name="line.49"></a>
+<span class="sourceLineNo">050</span> to a record with particular fields, create an instance of this<a name="line.50"></a>
+<span class="sourceLineNo">051</span> class and call setTypeEquals() with that instance as an argument.<a name="line.51"></a>
+<span class="sourceLineNo">052</span> &lt;p&gt;<a name="line.52"></a>
+<span class="sourceLineNo">053</span> Note that a record type with more fields is a subtype of a record<a name="line.53"></a>
+<span class="sourceLineNo">054</span> type with a subset of the fields.  For example, {x = double, y = int}<a name="line.54"></a>
+<span class="sourceLineNo">055</span> is a subtype of {x = double}. When a record of type<a name="line.55"></a>
+<span class="sourceLineNo">056</span> {x = double, y = int} is converted to one of type {x = double},<a name="line.56"></a>
+<span class="sourceLineNo">057</span> the extra field is preserved. The converted record, therefore,<a name="line.57"></a>
+<span class="sourceLineNo">058</span> may have more fields than the type indicates, but not fewer.<a name="line.58"></a>
+<span class="sourceLineNo">059</span> &lt;p&gt;<a name="line.59"></a>
+<span class="sourceLineNo">060</span> A consequence of this is that all record types are subtypes<a name="line.60"></a>
+<span class="sourceLineNo">061</span> of the empty record type. Hence, to require that a typeable<a name="line.61"></a>
+<span class="sourceLineNo">062</span> object be a record type without specifying what the fields<a name="line.62"></a>
+<span class="sourceLineNo">063</span> are, use<a name="line.63"></a>
+<span class="sourceLineNo">064</span> &lt;pre&gt;<a name="line.64"></a>
+<span class="sourceLineNo">065</span> typeable.setTypeAtMost(BaseType.RECORD);<a name="line.65"></a>
+<span class="sourceLineNo">066</span> &lt;/pre&gt;<a name="line.66"></a>
+<span class="sourceLineNo">067</span> Note, however, that by itself this type constraint will<a name="line.67"></a>
+<span class="sourceLineNo">068</span> not be useful because it does not, by itself, prevent the<a name="line.68"></a>
+<span class="sourceLineNo">069</span> type from resolving to unknown (the unknown type is at the<a name="line.69"></a>
+<span class="sourceLineNo">070</span> bottom of the type lattice, and hence satisfies this type<a name="line.70"></a>
+<span class="sourceLineNo">071</span> constraint). To force a port to resolve to the empty record<a name="line.71"></a>
+<span class="sourceLineNo">072</span> type, you can state<a name="line.72"></a>
+<span class="sourceLineNo">073</span> &lt;pre&gt;<a name="line.73"></a>
+<span class="sourceLineNo">074</span> typeable.setTypeEquals(BaseType.RECORD);<a name="line.74"></a>
+<span class="sourceLineNo">075</span> &lt;/pre&gt;<a name="line.75"></a>
+<span class="sourceLineNo">076</span> Equivalently, in a port configurer dialog, you can set the type<a name="line.76"></a>
+<span class="sourceLineNo">077</span> of a port to record, which references an empty record.<a name="line.77"></a>
+<span class="sourceLineNo">078</span><a name="line.78"></a>
+<span class="sourceLineNo">079</span> @author Yuhong Xiong, Elaine Cheong and Steve Neuendorffer; contributors: J. S. Senecal, Marten Lohstroh<a name="line.79"></a>
+<span class="sourceLineNo">080</span> @version $Id$<a name="line.80"></a>
+<span class="sourceLineNo">081</span> @since Ptolemy II 3.0<a name="line.81"></a>
+<span class="sourceLineNo">082</span> @Pt.ProposedRating Red (neuendor)<a name="line.82"></a>
+<span class="sourceLineNo">083</span> @Pt.AcceptedRating Red (cxh)<a name="line.83"></a>
+<span class="sourceLineNo">084</span> */<a name="line.84"></a>
+<span class="sourceLineNo">085</span>public class RecordType extends AssociativeType implements Cloneable {<a name="line.85"></a>
+<span class="sourceLineNo">086</span>    /** Construct a new RecordType with the specified labels and types.<a name="line.86"></a>
+<span class="sourceLineNo">087</span>     *  To leave the types of some fields undeclared, use BaseType.UNKNOWN.<a name="line.87"></a>
+<span class="sourceLineNo">088</span>     *  The labels and the types are specified in two arrays. These two<a name="line.88"></a>
+<span class="sourceLineNo">089</span>     *  arrays must have the same length, and their elements have one to<a name="line.89"></a>
+<span class="sourceLineNo">090</span>     *  one correspondence. That is, the i'th entry in the types array is<a name="line.90"></a>
+<span class="sourceLineNo">091</span>     *  the type for the i'th label in the labels array. Record labels may be<a name="line.91"></a>
+<span class="sourceLineNo">092</span>     *  arbitrary strings. To construct the empty record type, set the length<a name="line.92"></a>
+<span class="sourceLineNo">093</span>     *  of the argument arrays to 0.<a name="line.93"></a>
+<span class="sourceLineNo">094</span>     *     *<a name="line.94"></a>
+<span class="sourceLineNo">095</span>     *  @param labels An array of String.<a name="line.95"></a>
+<span class="sourceLineNo">096</span>     *  @param types An array of Type.<a name="line.96"></a>
+<span class="sourceLineNo">097</span>     *  @exception IllegalArgumentException If the two arrays do not have<a name="line.97"></a>
+<span class="sourceLineNo">098</span>     *   the same size.<a name="line.98"></a>
+<span class="sourceLineNo">099</span>     *  @exception NullPointerException If one of the arguments is null.<a name="line.99"></a>
+<span class="sourceLineNo">100</span>     */<a name="line.100"></a>
+<span class="sourceLineNo">101</span>    public RecordType(String[] labels, Type[] types) {<a name="line.101"></a>
+<span class="sourceLineNo">102</span>        if (labels.length != types.length) {<a name="line.102"></a>
+<span class="sourceLineNo">103</span>            throw new IllegalArgumentException("RecordType: the labels "<a name="line.103"></a>
+<span class="sourceLineNo">104</span>                    + "and types arrays do not have the same size.");<a name="line.104"></a>
+<span class="sourceLineNo">105</span>        }<a name="line.105"></a>
+<span class="sourceLineNo">106</span><a name="line.106"></a>
+<span class="sourceLineNo">107</span>        for (int i = 0; i &lt; labels.length; i++) {<a name="line.107"></a>
+<span class="sourceLineNo">108</span>            if (labels[i] == null) {<a name="line.108"></a>
+<span class="sourceLineNo">109</span>                throw new IllegalArgumentException("RecordType: the " + i<a name="line.109"></a>
+<span class="sourceLineNo">110</span>                        + "'th element of the labels array is null.");<a name="line.110"></a>
+<span class="sourceLineNo">111</span>            }<a name="line.111"></a>
+<span class="sourceLineNo">112</span>            //labels[i] = StringUtilities.sanitizeName(labels[i]);<a name="line.112"></a>
+<span class="sourceLineNo">113</span>            labels[i] = labels[i];<a name="line.113"></a>
+<span class="sourceLineNo">114</span>            if (!_fields.containsKey(labels[i])) {<a name="line.114"></a>
+<span class="sourceLineNo">115</span>                FieldType fieldType = new FieldType(types[i]);<a name="line.115"></a>
+<span class="sourceLineNo">116</span>                _fields.put(labels[i], fieldType);<a name="line.116"></a>
+<span class="sourceLineNo">117</span>            } else {<a name="line.117"></a>
+<span class="sourceLineNo">118</span>                throw new IllegalArgumentException("RecordType: The "<a name="line.118"></a>
+<span class="sourceLineNo">119</span>                        + "labels array contain duplicate element: "<a name="line.119"></a>
+<span class="sourceLineNo">120</span>                        + labels[i]);<a name="line.120"></a>
+<span class="sourceLineNo">121</span>            }<a name="line.121"></a>
+<span class="sourceLineNo">122</span>        }<a name="line.122"></a>
+<span class="sourceLineNo">123</span>    }<a name="line.123"></a>
+<span class="sourceLineNo">124</span><a name="line.124"></a>
+<span class="sourceLineNo">125</span>    /** Construct a RecordType with the labels and values specified by<a name="line.125"></a>
+<span class="sourceLineNo">126</span>     *  a given Map object. The object cannot contain any null keys or<a name="line.126"></a>
+<span class="sourceLineNo">127</span>     *  values.<a name="line.127"></a>
+<span class="sourceLineNo">128</span>     *  @param fieldMap A Map that has keys of type String and<a name="line.128"></a>
+<span class="sourceLineNo">129</span>     *  values of type Token.<a name="line.129"></a>
+<span class="sourceLineNo">130</span>     *  @exception IllegalActionException If the map contains null<a name="line.130"></a>
+<span class="sourceLineNo">131</span>     *  keys or values, or if it contains non-String keys or non-Type<a name="line.131"></a>
+<span class="sourceLineNo">132</span>     *  values<a name="line.132"></a>
+<span class="sourceLineNo">133</span>     */<a name="line.133"></a>
+<span class="sourceLineNo">134</span>    public RecordType(Map&lt;String, FieldType&gt; fieldMap)<a name="line.134"></a>
+<span class="sourceLineNo">135</span>            throws IllegalActionException {<a name="line.135"></a>
+<span class="sourceLineNo">136</span>        Iterator&lt;Map.Entry&lt;String, FieldType&gt;&gt; fields = fieldMap.entrySet()<a name="line.136"></a>
+<span class="sourceLineNo">137</span>                .iterator();<a name="line.137"></a>
+<span class="sourceLineNo">138</span>        while (fields.hasNext()) {<a name="line.138"></a>
+<span class="sourceLineNo">139</span>            Map.Entry&lt;String, FieldType&gt; entry = fields.next();<a name="line.139"></a>
+<span class="sourceLineNo">140</span>            if (entry.getKey() == null || entry.getValue() == null) {<a name="line.140"></a>
+<span class="sourceLineNo">141</span>                throw new IllegalActionException("RecordType: given map"<a name="line.141"></a>
+<span class="sourceLineNo">142</span>                        + " contains either null keys or null values.");<a name="line.142"></a>
+<span class="sourceLineNo">143</span>            }<a name="line.143"></a>
+<span class="sourceLineNo">144</span>            if (!(entry.getKey() instanceof String)<a name="line.144"></a>
+<span class="sourceLineNo">145</span>                    || !(entry.getValue() instanceof Type)) {<a name="line.145"></a>
+<span class="sourceLineNo">146</span>                throw new IllegalActionException("RecordType: given map"<a name="line.146"></a>
+<span class="sourceLineNo">147</span>                        + " contains either non-String keys or"<a name="line.147"></a>
+<span class="sourceLineNo">148</span>                        + " non-Type values.");<a name="line.148"></a>
+<span class="sourceLineNo">149</span>            }<a name="line.149"></a>
+<span class="sourceLineNo">150</span>            _fields.put(entry.getKey(), new FieldType((Type) entry.getValue()));<a name="line.150"></a>
+<span class="sourceLineNo">151</span>        }<a name="line.151"></a>
+<span class="sourceLineNo">152</span>    }<a name="line.152"></a>
+<span class="sourceLineNo">153</span><a name="line.153"></a>
+<span class="sourceLineNo">154</span>    ///////////////////////////////////////////////////////////////////<a name="line.154"></a>
+<span class="sourceLineNo">155</span>    ////                         public methods                    ////<a name="line.155"></a>
+<span class="sourceLineNo">156</span><a name="line.156"></a>
+<span class="sourceLineNo">157</span>    /** Return a deep copy of this RecordType if it is a variable, or<a name="line.157"></a>
+<span class="sourceLineNo">158</span>     *  itself if it is a constant.<a name="line.158"></a>
+<span class="sourceLineNo">159</span>     *  @return A RecordType.<a name="line.159"></a>
+<span class="sourceLineNo">160</span>     */<a name="line.160"></a>
+<span class="sourceLineNo">161</span>    @Override<a name="line.161"></a>
+<span class="sourceLineNo">162</span>    public Object clone() {<a name="line.162"></a>
+<span class="sourceLineNo">163</span>        if (isConstant()) {<a name="line.163"></a>
+<span class="sourceLineNo">164</span>            return this;<a name="line.164"></a>
+<span class="sourceLineNo">165</span>        } else {<a name="line.165"></a>
+<span class="sourceLineNo">166</span>            // empty record is a constant, so this record type is not empty.<a name="line.166"></a>
+<span class="sourceLineNo">167</span>            // construct the labels and declared types array<a name="line.167"></a>
+<span class="sourceLineNo">168</span>            Object[] labelsObj = _fields.keySet().toArray();<a name="line.168"></a>
+<span class="sourceLineNo">169</span>            String[] labels = new String[labelsObj.length];<a name="line.169"></a>
+<span class="sourceLineNo">170</span>            Type[] types = new Type[labelsObj.length];<a name="line.170"></a>
+<span class="sourceLineNo">171</span><a name="line.171"></a>
+<span class="sourceLineNo">172</span>            for (int i = 0; i &lt; labels.length; i++) {<a name="line.172"></a>
+<span class="sourceLineNo">173</span>                labels[i] = (String) labelsObj[i];<a name="line.173"></a>
+<span class="sourceLineNo">174</span><a name="line.174"></a>
+<span class="sourceLineNo">175</span>                FieldType fieldType = _fields.get(labels[i]);<a name="line.175"></a>
+<span class="sourceLineNo">176</span>                types[i] = fieldType._declaredType;<a name="line.176"></a>
+<span class="sourceLineNo">177</span>            }<a name="line.177"></a>
+<span class="sourceLineNo">178</span><a name="line.178"></a>
+<span class="sourceLineNo">179</span>            RecordType newObj = new RecordType(labels, types);<a name="line.179"></a>
+<span class="sourceLineNo">180</span><a name="line.180"></a>
+<span class="sourceLineNo">181</span>            try {<a name="line.181"></a>
+<span class="sourceLineNo">182</span>                newObj.updateType(this);<a name="line.182"></a>
+<span class="sourceLineNo">183</span>            } catch (IllegalActionException ex) {<a name="line.183"></a>
+<span class="sourceLineNo">184</span>                throw new InternalErrorException("RecordType.clone: Cannot "<a name="line.184"></a>
+<span class="sourceLineNo">185</span>                        + "update new instance. " + ex.getMessage());<a name="line.185"></a>
+<span class="sourceLineNo">186</span>            }<a name="line.186"></a>
+<span class="sourceLineNo">187</span><a name="line.187"></a>
+<span class="sourceLineNo">188</span>            return newObj;<a name="line.188"></a>
+<span class="sourceLineNo">189</span>        }<a name="line.189"></a>
+<span class="sourceLineNo">190</span>    }<a name="line.190"></a>
+<span class="sourceLineNo">191</span><a name="line.191"></a>
+<span class="sourceLineNo">192</span>    /** Convert the argument token into a RecordToken having this<a name="line.192"></a>
+<span class="sourceLineNo">193</span>     *  type, if compatible.  The argument must be a RecordToken,<a name="line.193"></a>
+<span class="sourceLineNo">194</span>     *  and its type must be a subtype of this record type.  The<a name="line.194"></a>
+<span class="sourceLineNo">195</span>     *  argument token must have at least the fields of this type.<a name="line.195"></a>
+<span class="sourceLineNo">196</span>     *  Extra fields in the argument token that are not in this<a name="line.196"></a>
+<span class="sourceLineNo">197</span>     *  type are preserved.<a name="line.197"></a>
+<span class="sourceLineNo">198</span>     *  @param token A token.<a name="line.198"></a>
+<span class="sourceLineNo">199</span>     *  @return An RecordToken.<a name="line.199"></a>
+<span class="sourceLineNo">200</span>     *  @exception IllegalActionException If token is incompatible<a name="line.200"></a>
+<span class="sourceLineNo">201</span>     *  with this type.<a name="line.201"></a>
+<span class="sourceLineNo">202</span>     */<a name="line.202"></a>
+<span class="sourceLineNo">203</span>    @Override<a name="line.203"></a>
+<span class="sourceLineNo">204</span>    public Token convert(Token token) throws IllegalActionException {<a name="line.204"></a>
+<span class="sourceLineNo">205</span>        if (!isCompatible(token.getType())) {<a name="line.205"></a>
+<span class="sourceLineNo">206</span>            throw new IllegalArgumentException(Token<a name="line.206"></a>
+<span class="sourceLineNo">207</span>                    .notSupportedConversionMessage(token, this.toString()));<a name="line.207"></a>
+<span class="sourceLineNo">208</span>        }<a name="line.208"></a>
+<span class="sourceLineNo">209</span><a name="line.209"></a>
+<span class="sourceLineNo">210</span>        RecordToken recordToken = (RecordToken) token;<a name="line.210"></a>
+<span class="sourceLineNo">211</span><a name="line.211"></a>
+<span class="sourceLineNo">212</span>        // Undeclared fields are preserved.<a name="line.212"></a>
+<span class="sourceLineNo">213</span>        // If we don't do this, it would not be possible to express<a name="line.213"></a>
+<span class="sourceLineNo">214</span>        // type constraints to accommodate actors that operate<a name="line.214"></a>
+<span class="sourceLineNo">215</span>        // on the entirety of any received record, which may be just<a name="line.215"></a>
+<span class="sourceLineNo">216</span>        // any record, or a record that must least contains a certain<a name="line.216"></a>
+<span class="sourceLineNo">217</span>        // set of labels.<a name="line.217"></a>
+<span class="sourceLineNo">218</span>        Object[] labelArray = recordToken.labelSet().toArray();<a name="line.218"></a>
+<span class="sourceLineNo">219</span><a name="line.219"></a>
+<span class="sourceLineNo">220</span>        // Arrays that will be used to create the new token.<a name="line.220"></a>
+<span class="sourceLineNo">221</span>        String[] labelStringArray = new String[labelArray.length];<a name="line.221"></a>
+<span class="sourceLineNo">222</span>        Token[] values = new Token[labelArray.length];<a name="line.222"></a>
+<span class="sourceLineNo">223</span><a name="line.223"></a>
+<span class="sourceLineNo">224</span>        for (int i = 0; i &lt; labelArray.length; i++) {<a name="line.224"></a>
+<span class="sourceLineNo">225</span>            String label = (String) labelArray[i];<a name="line.225"></a>
+<span class="sourceLineNo">226</span><a name="line.226"></a>
+<span class="sourceLineNo">227</span>            // Convert each field of the record.<a name="line.227"></a>
+<span class="sourceLineNo">228</span>            Token fieldToken = recordToken.get(label);<a name="line.228"></a>
+<span class="sourceLineNo">229</span>            Type newFieldType = get(label);<a name="line.229"></a>
+<span class="sourceLineNo">230</span><a name="line.230"></a>
+<span class="sourceLineNo">231</span>            // If the type of the field is specified, then convert it.<a name="line.231"></a>
+<span class="sourceLineNo">232</span>            // Otherwise, leave it alone.<a name="line.232"></a>
+<span class="sourceLineNo">233</span>            if (newFieldType != null) {<a name="line.233"></a>
+<span class="sourceLineNo">234</span>                values[i] = newFieldType.convert(fieldToken);<a name="line.234"></a>
+<span class="sourceLineNo">235</span>            } else {<a name="line.235"></a>
+<span class="sourceLineNo">236</span>                values[i] = fieldToken;<a name="line.236"></a>
+<span class="sourceLineNo">237</span>            }<a name="line.237"></a>
+<span class="sourceLineNo">238</span><a name="line.238"></a>
+<span class="sourceLineNo">239</span>            // Store the label for each field.<a name="line.239"></a>
+<span class="sourceLineNo">240</span>            labelStringArray[i] = label;<a name="line.240"></a>
+<span class="sourceLineNo">241</span>        }<a name="line.241"></a>
+<span class="sourceLineNo">242</span><a name="line.242"></a>
+<span class="sourceLineNo">243</span>        // If the original token preserves ordering of the<a name="line.243"></a>
+<span class="sourceLineNo">244</span>        // fields, then the new one will too.<a name="line.244"></a>
+<span class="sourceLineNo">245</span>        // FIXME: This seems questionable. But if we don't<a name="line.245"></a>
+<span class="sourceLineNo">246</span>        // do this, then the ordering will be mysteriously lost<a name="line.246"></a>
+<span class="sourceLineNo">247</span>        // when, for example, an OrderedRecordToken is put<a name="line.247"></a>
+<span class="sourceLineNo">248</span>        // into an ArrayToken. A better solution would be<a name="line.248"></a>
+<span class="sourceLineNo">249</span>        // to include OrderedRecordToken in the type system.<a name="line.249"></a>
+<span class="sourceLineNo">250</span>        if (recordToken instanceof OrderedRecordToken) {<a name="line.250"></a>
+<span class="sourceLineNo">251</span>            return new OrderedRecordToken(labelStringArray, values);<a name="line.251"></a>
+<span class="sourceLineNo">252</span>        } else {<a name="line.252"></a>
+<span class="sourceLineNo">253</span>            return new RecordToken(labelStringArray, values);<a name="line.253"></a>
+<span class="sourceLineNo">254</span>        }<a name="line.254"></a>
+<span class="sourceLineNo">255</span>    }<a name="line.255"></a>
+<span class="sourceLineNo">256</span><a name="line.256"></a>
+<span class="sourceLineNo">257</span>    /** Return the depth of a record type. The depth of a<a name="line.257"></a>
+<span class="sourceLineNo">258</span>     *  record type is the number of times it<a name="line.258"></a>
+<span class="sourceLineNo">259</span>     *  contains other structured types. For example, a record<a name="line.259"></a>
+<span class="sourceLineNo">260</span>     *  of arrays has depth 2.<a name="line.260"></a>
+<span class="sourceLineNo">261</span>     *  @return the depth of a record type.<a name="line.261"></a>
+<span class="sourceLineNo">262</span>     */<a name="line.262"></a>
+<span class="sourceLineNo">263</span>    @Override<a name="line.263"></a>
+<span class="sourceLineNo">264</span>    public int depth() {<a name="line.264"></a>
+<span class="sourceLineNo">265</span>        Object[] labelsObj = _fields.keySet().toArray();<a name="line.265"></a>
+<span class="sourceLineNo">266</span>        String[] labels = new String[labelsObj.length];<a name="line.266"></a>
+<span class="sourceLineNo">267</span>        int[] depth = new int[labelsObj.length];<a name="line.267"></a>
+<span class="sourceLineNo">268</span>        int maxDepth = 1;<a name="line.268"></a>
+<span class="sourceLineNo">269</span>        for (int i = 0; i &lt; labels.length; i++) {<a name="line.269"></a>
+<span class="sourceLineNo">270</span>            labels[i] = (String) labelsObj[i];<a name="line.270"></a>
+<span class="sourceLineNo">271</span>            Type fieldType = get(labels[i]);<a name="line.271"></a>
+<span class="sourceLineNo">272</span>            depth[i] = 1;<a name="line.272"></a>
+<span class="sourceLineNo">273</span>            if (fieldType instanceof StructuredType) {<a name="line.273"></a>
+<span class="sourceLineNo">274</span>                depth[i] += ((StructuredType) fieldType).depth();<a name="line.274"></a>
+<span class="sourceLineNo">275</span>            }<a name="line.275"></a>
+<span class="sourceLineNo">276</span>            if (depth[i] &gt; maxDepth) {<a name="line.276"></a>
+<span class="sourceLineNo">277</span>                maxDepth = depth[i];<a name="line.277"></a>
+<span class="sourceLineNo">278</span>            }<a name="line.278"></a>
+<span class="sourceLineNo">279</span>        }<a name="line.279"></a>
+<span class="sourceLineNo">280</span>        return maxDepth;<a name="line.280"></a>
+<span class="sourceLineNo">281</span>    }<a name="line.281"></a>
+<span class="sourceLineNo">282</span><a name="line.282"></a>
+<span class="sourceLineNo">283</span>    /** Determine if the argument represents the same RecordType as this<a name="line.283"></a>
+<span class="sourceLineNo">284</span>     *  object.  Two record types are equal if they have the same field names<a name="line.284"></a>
+<span class="sourceLineNo">285</span>     *  and the type of each field is the same.<a name="line.285"></a>
+<span class="sourceLineNo">286</span>     *  @param object Another object.<a name="line.286"></a>
+<span class="sourceLineNo">287</span>     *  @return True if the argument represents the same RecordType as<a name="line.287"></a>
+<span class="sourceLineNo">288</span>     *  this object.<a name="line.288"></a>
+<span class="sourceLineNo">289</span>     */<a name="line.289"></a>
+<span class="sourceLineNo">290</span>    @Override<a name="line.290"></a>
+<span class="sourceLineNo">291</span>    public boolean equals(Object object) {<a name="line.291"></a>
+<span class="sourceLineNo">292</span>        if (!(object instanceof RecordType)) {<a name="line.292"></a>
+<span class="sourceLineNo">293</span>            return false;<a name="line.293"></a>
+<span class="sourceLineNo">294</span>        }<a name="line.294"></a>
+<span class="sourceLineNo">295</span><a name="line.295"></a>
+<span class="sourceLineNo">296</span>        RecordType recordType = (RecordType) object;<a name="line.296"></a>
+<span class="sourceLineNo">297</span><a name="line.297"></a>
+<span class="sourceLineNo">298</span>        // Check that the label sets are equal<a name="line.298"></a>
+<span class="sourceLineNo">299</span>        Set&lt;String&gt; myLabelSet = _fields.keySet();<a name="line.299"></a>
+<span class="sourceLineNo">300</span>        Set&lt;String&gt; argLabelSet = recordType._fields.keySet();<a name="line.300"></a>
+<span class="sourceLineNo">301</span><a name="line.301"></a>
+<span class="sourceLineNo">302</span>        if (!myLabelSet.equals(argLabelSet)) {<a name="line.302"></a>
+<span class="sourceLineNo">303</span>            return false;<a name="line.303"></a>
+<span class="sourceLineNo">304</span>        }<a name="line.304"></a>
+<span class="sourceLineNo">305</span><a name="line.305"></a>
+<span class="sourceLineNo">306</span>        Iterator&lt;String&gt; fieldNames = myLabelSet.iterator();<a name="line.306"></a>
+<span class="sourceLineNo">307</span><a name="line.307"></a>
+<span class="sourceLineNo">308</span>        while (fieldNames.hasNext()) {<a name="line.308"></a>
+<span class="sourceLineNo">309</span>            String label = fieldNames.next();<a name="line.309"></a>
+<span class="sourceLineNo">310</span>            Type myType = this.get(label);<a name="line.310"></a>
+<span class="sourceLineNo">311</span>            Type argType = recordType.get(label);<a name="line.311"></a>
+<span class="sourceLineNo">312</span><a name="line.312"></a>
+<span class="sourceLineNo">313</span>            if (!myType.equals(argType)) {<a name="line.313"></a>
+<span class="sourceLineNo">314</span>                return false;<a name="line.314"></a>
+<span class="sourceLineNo">315</span>            }<a name="line.315"></a>
+<span class="sourceLineNo">316</span>        }<a name="line.316"></a>
+<span class="sourceLineNo">317</span><a name="line.317"></a>
+<span class="sourceLineNo">318</span>        return true;<a name="line.318"></a>
+<span class="sourceLineNo">319</span>    }<a name="line.319"></a>
+<span class="sourceLineNo">320</span><a name="line.320"></a>
+<span class="sourceLineNo">321</span>    /** Return the type of the specified label. If this type does not<a name="line.321"></a>
+<span class="sourceLineNo">322</span>     *  contain the specified label, return null.<a name="line.322"></a>
+<span class="sourceLineNo">323</span>     *  @param label The specified label.<a name="line.323"></a>
+<span class="sourceLineNo">324</span>     *  @return a Type.<a name="line.324"></a>
+<span class="sourceLineNo">325</span>     */<a name="line.325"></a>
+<span class="sourceLineNo">326</span>    @Override<a name="line.326"></a>
+<span class="sourceLineNo">327</span>    public Type get(String label) {<a name="line.327"></a>
+<span class="sourceLineNo">328</span>        FieldType fieldType = _fields.get(label);<a name="line.328"></a>
+<span class="sourceLineNo">329</span><a name="line.329"></a>
+<span class="sourceLineNo">330</span>        if (fieldType == null) {<a name="line.330"></a>
+<span class="sourceLineNo">331</span>            return null;<a name="line.331"></a>
+<span class="sourceLineNo">332</span>        }<a name="line.332"></a>
+<span class="sourceLineNo">333</span><a name="line.333"></a>
+<span class="sourceLineNo">334</span>        return fieldType._resolvedType;<a name="line.334"></a>
+<span class="sourceLineNo">335</span>    }<a name="line.335"></a>
+<span class="sourceLineNo">336</span><a name="line.336"></a>
+<span class="sourceLineNo">337</span>    /** Return the class for tokens that this type represents.<a name="line.337"></a>
+<span class="sourceLineNo">338</span>     *  @return The class for tokens that this type represents.<a name="line.338"></a>
+<span class="sourceLineNo">339</span>     */<a name="line.339"></a>
+<span class="sourceLineNo">340</span>    @Override<a name="line.340"></a>
+<span class="sourceLineNo">341</span>    public Class&lt;RecordToken&gt; getTokenClass() {<a name="line.341"></a>
+<span class="sourceLineNo">342</span>        return RecordToken.class;<a name="line.342"></a>
+<span class="sourceLineNo">343</span>    }<a name="line.343"></a>
+<span class="sourceLineNo">344</span><a name="line.344"></a>
+<span class="sourceLineNo">345</span>    /** Return the InequalityTerm representing the type of the specified<a name="line.345"></a>
+<span class="sourceLineNo">346</span>     *  label.<a name="line.346"></a>
+<span class="sourceLineNo">347</span>     *  @param label The specified label.<a name="line.347"></a>
+<span class="sourceLineNo">348</span>     *  @return An InequalityTerm.<a name="line.348"></a>
+<span class="sourceLineNo">349</span>     *  @see ptolemy.graph.InequalityTerm<a name="line.349"></a>
+<span class="sourceLineNo">350</span>     */<a name="line.350"></a>
+<span class="sourceLineNo">351</span>    public InequalityTerm getTypeTerm(String label) {<a name="line.351"></a>
+<span class="sourceLineNo">352</span>        return _fields.get(label);<a name="line.352"></a>
+<span class="sourceLineNo">353</span>    }<a name="line.353"></a>
+<span class="sourceLineNo">354</span><a name="line.354"></a>
+<span class="sourceLineNo">355</span>    /** Return a hash code value for this object.<a name="line.355"></a>
+<span class="sourceLineNo">356</span>     */<a name="line.356"></a>
+<span class="sourceLineNo">357</span>    @Override<a name="line.357"></a>
+<span class="sourceLineNo">358</span>    public int hashCode() {<a name="line.358"></a>
+<span class="sourceLineNo">359</span>        return _fields.keySet().hashCode() + 2917;<a name="line.359"></a>
+<span class="sourceLineNo">360</span>    }<a name="line.360"></a>
+<span class="sourceLineNo">361</span><a name="line.361"></a>
+<span class="sourceLineNo">362</span>    /** Return true if this type does not correspond to a single token<a name="line.362"></a>
+<span class="sourceLineNo">363</span>     *  class.  This occurs if the type is not instantiable, or it<a name="line.363"></a>
+<span class="sourceLineNo">364</span>     *  represents either an abstract base class or an interface.<a name="line.364"></a>
+<span class="sourceLineNo">365</span>     *  @return true if the type of any field is abstract.<a name="line.365"></a>
+<span class="sourceLineNo">366</span>     */<a name="line.366"></a>
+<span class="sourceLineNo">367</span>    @Override<a name="line.367"></a>
+<span class="sourceLineNo">368</span>    public boolean isAbstract() {<a name="line.368"></a>
+<span class="sourceLineNo">369</span>        // Loop through all of the fields.<a name="line.369"></a>
+<span class="sourceLineNo">370</span>        Iterator&lt;String&gt; fieldNames = _fields.keySet().iterator();<a name="line.370"></a>
+<span class="sourceLineNo">371</span><a name="line.371"></a>
+<span class="sourceLineNo">372</span>        while (fieldNames.hasNext()) {<a name="line.372"></a>
+<span class="sourceLineNo">373</span>            String label = fieldNames.next();<a name="line.373"></a>
+<span class="sourceLineNo">374</span>            Type type = this.get(label);<a name="line.374"></a>
+<span class="sourceLineNo">375</span><a name="line.375"></a>
+<span class="sourceLineNo">376</span>            // Return false if the field is not instantiable.<a name="line.376"></a>
+<span class="sourceLineNo">377</span>            if (type.isAbstract()) {<a name="line.377"></a>
+<span class="sourceLineNo">378</span>                return true;<a name="line.378"></a>
+<span class="sourceLineNo">379</span>            }<a name="line.379"></a>
+<span class="sourceLineNo">380</span>        }<a name="line.380"></a>
+<span class="sourceLineNo">381</span><a name="line.381"></a>
+<span class="sourceLineNo">382</span>        return false;<a name="line.382"></a>
+<span class="sourceLineNo">383</span>    }<a name="line.383"></a>
+<span class="sourceLineNo">384</span><a name="line.384"></a>
+<span class="sourceLineNo">385</span>    /** Set the elements that have declared type BaseType.UNKNOWN (the leaf<a name="line.385"></a>
+<span class="sourceLineNo">386</span>     *  type variable) to the specified type.<a name="line.386"></a>
+<span class="sourceLineNo">387</span>     *  @param type the type to set the leaf type variable to.<a name="line.387"></a>
+<span class="sourceLineNo">388</span>     */<a name="line.388"></a>
+<span class="sourceLineNo">389</span>    @Override<a name="line.389"></a>
+<span class="sourceLineNo">390</span>    public void initialize(Type type) {<a name="line.390"></a>
+<span class="sourceLineNo">391</span>        try {<a name="line.391"></a>
+<span class="sourceLineNo">392</span>            // FindBugs: ptolemy.data.type.RecordType.initialize(Type) makes inefficient use of keySet iterator instead of entrySet iterator<a name="line.392"></a>
+<span class="sourceLineNo">393</span>            // Iterator&lt;String&gt; fieldNames = _fields.keySet().iterator();<a name="line.393"></a>
+<span class="sourceLineNo">394</span>            // while (fieldNames.hasNext()) {<a name="line.394"></a>
+<span class="sourceLineNo">395</span>            //   String label = fieldNames.next();<a name="line.395"></a>
+<span class="sourceLineNo">396</span>            //   FieldType fieldType = _fields.get(label);<a name="line.396"></a>
+<span class="sourceLineNo">397</span>            for (Map.Entry&lt;String, FieldType&gt; fields : _fields.entrySet()) {<a name="line.397"></a>
+<span class="sourceLineNo">398</span>                FieldType fieldType = fields.getValue();<a name="line.398"></a>
+<span class="sourceLineNo">399</span>                if (fieldType.isSettable()) {<a name="line.399"></a>
+<span class="sourceLineNo">400</span>                    fieldType.initialize(type);<a name="line.400"></a>
+<span class="sourceLineNo">401</span>                }<a name="line.401"></a>
+<span class="sourceLineNo">402</span>            }<a name="line.402"></a>
+<span class="sourceLineNo">403</span>        } catch (IllegalActionException iae) {<a name="line.403"></a>
+<span class="sourceLineNo">404</span>            throw new InternalErrorException("RecordType.initialize: Cannot "<a name="line.404"></a>
+<span class="sourceLineNo">405</span>                    + "initialize the element type to " + type + " "<a name="line.405"></a>
+<span class="sourceLineNo">406</span>                    + iae.getMessage());<a name="line.406"></a>
+<span class="sourceLineNo">407</span>        }<a name="line.407"></a>
+<span class="sourceLineNo">408</span>    }<a name="line.408"></a>
+<span class="sourceLineNo">409</span><a name="line.409"></a>
+<span class="sourceLineNo">410</span>    /** Test whether the argument type is compatible with this type<a name="line.410"></a>
+<span class="sourceLineNo">411</span>     *  (is less than or equal to this type in the type lattice).  The<a name="line.411"></a>
+<span class="sourceLineNo">412</span>     *  given type will be compatible with this type if it is<a name="line.412"></a>
+<span class="sourceLineNo">413</span>     *  BaseType.UNKNOWN, or it is a RecordType that contains at<a name="line.413"></a>
+<span class="sourceLineNo">414</span>     *  least the fields of this record type.<a name="line.414"></a>
+<span class="sourceLineNo">415</span>     *  @param type An instance of Type.<a name="line.415"></a>
+<span class="sourceLineNo">416</span>     *  @return True if the argument is compatible with this type.<a name="line.416"></a>
+<span class="sourceLineNo">417</span>     */<a name="line.417"></a>
+<span class="sourceLineNo">418</span>    @Override<a name="line.418"></a>
+<span class="sourceLineNo">419</span>    public boolean isCompatible(Type type) {<a name="line.419"></a>
+<span class="sourceLineNo">420</span>        if (type.equals(BaseType.UNKNOWN)) {<a name="line.420"></a>
+<span class="sourceLineNo">421</span>            return true;<a name="line.421"></a>
+<span class="sourceLineNo">422</span>        }<a name="line.422"></a>
+<span class="sourceLineNo">423</span><a name="line.423"></a>
+<span class="sourceLineNo">424</span>        if (!(type instanceof RecordType)) {<a name="line.424"></a>
+<span class="sourceLineNo">425</span>            return false;<a name="line.425"></a>
+<span class="sourceLineNo">426</span>        }<a name="line.426"></a>
+<span class="sourceLineNo">427</span><a name="line.427"></a>
+<span class="sourceLineNo">428</span>        RecordType argumentRecordType = (RecordType) type;<a name="line.428"></a>
+<span class="sourceLineNo">429</span><a name="line.429"></a>
+<span class="sourceLineNo">430</span>        // Loop through all of the fields of this type...<a name="line.430"></a>
+<span class="sourceLineNo">431</span>        Iterator&lt;String&gt; iterator = _fields.keySet().iterator();<a name="line.431"></a>
+<span class="sourceLineNo">432</span><a name="line.432"></a>
+<span class="sourceLineNo">433</span>        while (iterator.hasNext()) {<a name="line.433"></a>
+<span class="sourceLineNo">434</span>            String label = iterator.next();<a name="line.434"></a>
+<span class="sourceLineNo">435</span><a name="line.435"></a>
+<span class="sourceLineNo">436</span>            // The given type cannot be losslessly converted to this type<a name="line.436"></a>
+<span class="sourceLineNo">437</span>            // if it does not contain one of the fields of this type.<a name="line.437"></a>
+<span class="sourceLineNo">438</span>            Type argumentFieldType = argumentRecordType.get(label);<a name="line.438"></a>
+<span class="sourceLineNo">439</span><a name="line.439"></a>
+<span class="sourceLineNo">440</span>            if (argumentFieldType == null) {<a name="line.440"></a>
+<span class="sourceLineNo">441</span>                // argument token does not contain this label<a name="line.441"></a>
+<span class="sourceLineNo">442</span>                return false;<a name="line.442"></a>
+<span class="sourceLineNo">443</span>            }<a name="line.443"></a>
+<span class="sourceLineNo">444</span><a name="line.444"></a>
+<span class="sourceLineNo">445</span>            // The given type cannot be losslessly converted to this type<a name="line.445"></a>
+<span class="sourceLineNo">446</span>            // if the individual fields are not compatible.<a name="line.446"></a>
+<span class="sourceLineNo">447</span>            Type thisFieldType = this.get(label);<a name="line.447"></a>
+<span class="sourceLineNo">448</span><a name="line.448"></a>
+<span class="sourceLineNo">449</span>            if (!thisFieldType.isCompatible(argumentFieldType)) {<a name="line.449"></a>
+<span class="sourceLineNo">450</span>                return false;<a name="line.450"></a>
+<span class="sourceLineNo">451</span>            }<a name="line.451"></a>
+<span class="sourceLineNo">452</span>        }<a name="line.452"></a>
+<span class="sourceLineNo">453</span><a name="line.453"></a>
+<span class="sourceLineNo">454</span>        return true;<a name="line.454"></a>
+<span class="sourceLineNo">455</span>    }<a name="line.455"></a>
+<span class="sourceLineNo">456</span><a name="line.456"></a>
+<span class="sourceLineNo">457</span>    /** Test if this RecordType is a constant. A RecordType is a constant if<a name="line.457"></a>
+<span class="sourceLineNo">458</span>     *  the declared type of all of its fields are constant.<a name="line.458"></a>
+<span class="sourceLineNo">459</span>     *  @return True if this type is a constant.<a name="line.459"></a>
+<span class="sourceLineNo">460</span>     */<a name="line.460"></a>
+<span class="sourceLineNo">461</span>    @Override<a name="line.461"></a>
+<span class="sourceLineNo">462</span>    public boolean isConstant() {<a name="line.462"></a>
+<span class="sourceLineNo">463</span>        // Loop through all of the fields.<a name="line.463"></a>
+<span class="sourceLineNo">464</span>        Iterator&lt;FieldType&gt; fieldTypes = _fields.values().iterator();<a name="line.464"></a>
+<span class="sourceLineNo">465</span><a name="line.465"></a>
+<span class="sourceLineNo">466</span>        while (fieldTypes.hasNext()) {<a name="line.466"></a>
+<span class="sourceLineNo">467</span>            FieldType fieldType = fieldTypes.next();<a name="line.467"></a>
+<span class="sourceLineNo">468</span>            Type type = fieldType._declaredType;<a name="line.468"></a>
+<span class="sourceLineNo">469</span><a name="line.469"></a>
+<span class="sourceLineNo">470</span>            // Return false if the field is not constant.<a name="line.470"></a>
+<span class="sourceLineNo">471</span>            if (!type.isConstant()) {<a name="line.471"></a>
+<span class="sourceLineNo">472</span>                return false;<a name="line.472"></a>
+<span class="sourceLineNo">473</span>            }<a name="line.473"></a>
+<span class="sourceLineNo">474</span>        }<a name="line.474"></a>
+<span class="sourceLineNo">475</span><a name="line.475"></a>
+<span class="sourceLineNo">476</span>        return true;<a name="line.476"></a>
+<span class="sourceLineNo">477</span>    }<a name="line.477"></a>
+<span class="sourceLineNo">478</span><a name="line.478"></a>
+<span class="sourceLineNo">479</span>    /** Test if this type corresponds to an instantiable token<a name="line.479"></a>
+<span class="sourceLineNo">480</span>     *  class. A RecordType is instantiable if all of its fields are<a name="line.480"></a>
+<span class="sourceLineNo">481</span>     *  instantiable.<a name="line.481"></a>
+<span class="sourceLineNo">482</span>     *  @return True if this type is instantiable.<a name="line.482"></a>
+<span class="sourceLineNo">483</span>     */<a name="line.483"></a>
+<span class="sourceLineNo">484</span>    @Override<a name="line.484"></a>
+<span class="sourceLineNo">485</span>    public boolean isInstantiable() {<a name="line.485"></a>
+<span class="sourceLineNo">486</span>        // Loop through all of the fields.<a name="line.486"></a>
+<span class="sourceLineNo">487</span>        Iterator&lt;String&gt; fieldNames = _fields.keySet().iterator();<a name="line.487"></a>
+<span class="sourceLineNo">488</span><a name="line.488"></a>
+<span class="sourceLineNo">489</span>        while (fieldNames.hasNext()) {<a name="line.489"></a>
+<span class="sourceLineNo">490</span>            String label = fieldNames.next();<a name="line.490"></a>
+<span class="sourceLineNo">491</span>            Type type = this.get(label);<a name="line.491"></a>
+<span class="sourceLineNo">492</span><a name="line.492"></a>
+<span class="sourceLineNo">493</span>            // Return false if the field is not instantiable.<a name="line.493"></a>
+<span class="sourceLineNo">494</span>            if (!type.isInstantiable()) {<a name="line.494"></a>
+<span class="sourceLineNo">495</span>                return false;<a name="line.495"></a>
+<span class="sourceLineNo">496</span>            }<a name="line.496"></a>
+<span class="sourceLineNo">497</span>        }<a name="line.497"></a>
+<span class="sourceLineNo">498</span><a name="line.498"></a>
+<span class="sourceLineNo">499</span>        return true;<a name="line.499"></a>
+<span class="sourceLineNo">500</span>    }<a name="line.500"></a>
+<span class="sourceLineNo">501</span><a name="line.501"></a>
+<span class="sourceLineNo">502</span>    /** Test whether the specified type is a substitution instance of this<a name="line.502"></a>
+<span class="sourceLineNo">503</span>     *  type.  One record is a substitution instance of another if they<a name="line.503"></a>
+<span class="sourceLineNo">504</span>     *  have fields with the same names and each field of the given type is<a name="line.504"></a>
+<span class="sourceLineNo">505</span>     *  a substitution instance of the corresponding field in this type.<a name="line.505"></a>
+<span class="sourceLineNo">506</span>     *  @param type A Type.<a name="line.506"></a>
+<span class="sourceLineNo">507</span>     *  @return True if the argument is a substitution instance of this type.<a name="line.507"></a>
+<span class="sourceLineNo">508</span>     *  @see Type#isSubstitutionInstance<a name="line.508"></a>
+<span class="sourceLineNo">509</span>     */<a name="line.509"></a>
+<span class="sourceLineNo">510</span>    @Override<a name="line.510"></a>
+<span class="sourceLineNo">511</span>    public boolean isSubstitutionInstance(Type type) {<a name="line.511"></a>
+<span class="sourceLineNo">512</span>        if (!(type instanceof RecordType)) {<a name="line.512"></a>
+<span class="sourceLineNo">513</span>            return false;<a name="line.513"></a>
+<span class="sourceLineNo">514</span>        }<a name="line.514"></a>
+<span class="sourceLineNo">515</span><a name="line.515"></a>
+<span class="sourceLineNo">516</span>        RecordType recordType = (RecordType) type;<a name="line.516"></a>
+<span class="sourceLineNo">517</span><a name="line.517"></a>
+<span class="sourceLineNo">518</span>        // Check if this record type and the argument have the same<a name="line.518"></a>
+<span class="sourceLineNo">519</span>        // label set.<a name="line.519"></a>
+<span class="sourceLineNo">520</span>        Set&lt;String&gt; myLabelSet = _fields.keySet();<a name="line.520"></a>
+<span class="sourceLineNo">521</span>        Set&lt;String&gt; argLabelSet = recordType._fields.keySet();<a name="line.521"></a>
+<span class="sourceLineNo">522</span><a name="line.522"></a>
+<span class="sourceLineNo">523</span>        if (!myLabelSet.equals(argLabelSet)) {<a name="line.523"></a>
+<span class="sourceLineNo">524</span>            return false;<a name="line.524"></a>
+<span class="sourceLineNo">525</span>        }<a name="line.525"></a>
+<span class="sourceLineNo">526</span><a name="line.526"></a>
+<span class="sourceLineNo">527</span>        // Loop over all the labels.<a name="line.527"></a>
+<span class="sourceLineNo">528</span>        // FindBugs: ptolemy.data.type.RecordType.isSubstitutionInstance(Type) makes inefficient use of keySet iterator instead of entrySet iterator<a name="line.528"></a>
+<span class="sourceLineNo">529</span>        // Iterator&lt;String&gt; fieldNames = myLabelSet.iterator();<a name="line.529"></a>
+<span class="sourceLineNo">530</span>        // while (fieldNames.hasNext()) {<a name="line.530"></a>
+<span class="sourceLineNo">531</span>        //     String label = fieldNames.next();<a name="line.531"></a>
+<span class="sourceLineNo">532</span>        //     FieldType fieldType = _fields.get(label);<a name="line.532"></a>
+<span class="sourceLineNo">533</span>        for (Map.Entry&lt;String, FieldType&gt; fields : _fields.entrySet()) {<a name="line.533"></a>
+<span class="sourceLineNo">534</span>            FieldType fieldType = fields.getValue();<a name="line.534"></a>
+<span class="sourceLineNo">535</span><a name="line.535"></a>
+<span class="sourceLineNo">536</span>            Type myDeclaredType = fieldType._declaredType;<a name="line.536"></a>
+<span class="sourceLineNo">537</span>            //Type argType = recordType.get(label);<a name="line.537"></a>
+<span class="sourceLineNo">538</span>            Type argType = recordType.get(fields.getKey());<a name="line.538"></a>
+<span class="sourceLineNo">539</span><a name="line.539"></a>
+<span class="sourceLineNo">540</span>            if (!myDeclaredType.isSubstitutionInstance(argType)) {<a name="line.540"></a>
+<span class="sourceLineNo">541</span>                return false;<a name="line.541"></a>
+<span class="sourceLineNo">542</span>            }<a name="line.542"></a>
+<span class="sourceLineNo">543</span>        }<a name="line.543"></a>
+<span class="sourceLineNo">544</span><a name="line.544"></a>
+<span class="sourceLineNo">545</span>        return true;<a name="line.545"></a>
+<span class="sourceLineNo">546</span>    }<a name="line.546"></a>
+<span class="sourceLineNo">547</span><a name="line.547"></a>
+<span class="sourceLineNo">548</span>    /** Return the labels of this record type as a Set.<a name="line.548"></a>
+<span class="sourceLineNo">549</span>     *  @return A Set containing strings.<a name="line.549"></a>
+<span class="sourceLineNo">550</span>     */<a name="line.550"></a>
+<span class="sourceLineNo">551</span>    public Set&lt;String&gt; labelSet() {<a name="line.551"></a>
+<span class="sourceLineNo">552</span>        return _fields.keySet();<a name="line.552"></a>
+<span class="sourceLineNo">553</span>    }<a name="line.553"></a>
+<span class="sourceLineNo">554</span><a name="line.554"></a>
+<span class="sourceLineNo">555</span>    /** Return the string representation of this type. The format is<a name="line.555"></a>
+<span class="sourceLineNo">556</span>     *  {&lt;i&gt;label&lt;/i&gt; = &lt;i&gt;type&lt;/i&gt;, &lt;i&gt;label&lt;/i&gt; = &lt;i&gt;type&lt;/i&gt;, ...}.<a name="line.556"></a>
+<span class="sourceLineNo">557</span>     *  The record fields are listed in the lexicographical order of the<a name="line.557"></a>
+<span class="sourceLineNo">558</span>     *  labels determined by the java.lang.String.compareTo() method.<a name="line.558"></a>
+<span class="sourceLineNo">559</span>     *  @return A String.<a name="line.559"></a>
+<span class="sourceLineNo">560</span>     */<a name="line.560"></a>
+<span class="sourceLineNo">561</span>    @Override<a name="line.561"></a>
+<span class="sourceLineNo">562</span>    public String toString() {<a name="line.562"></a>
+<span class="sourceLineNo">563</span>        Object[] labelArray = _fields.keySet().toArray();<a name="line.563"></a>
+<span class="sourceLineNo">564</span><a name="line.564"></a>
+<span class="sourceLineNo">565</span>        // Order the labels<a name="line.565"></a>
+<span class="sourceLineNo">566</span>        int size = labelArray.length;<a name="line.566"></a>
+<span class="sourceLineNo">567</span><a name="line.567"></a>
+<span class="sourceLineNo">568</span>        for (int i = 0; i &lt; size - 1; i++) {<a name="line.568"></a>
+<span class="sourceLineNo">569</span>            for (int j = i + 1; j &lt; size; j++) {<a name="line.569"></a>
+<span class="sourceLineNo">570</span>                String labeli = (String) labelArray[i];<a name="line.570"></a>
+<span class="sourceLineNo">571</span>                String labelj = (String) labelArray[j];<a name="line.571"></a>
+<span class="sourceLineNo">572</span><a name="line.572"></a>
+<span class="sourceLineNo">573</span>                if (labeli.compareTo(labelj) &gt;= 0) {<a name="line.573"></a>
+<span class="sourceLineNo">574</span>                    Object temp = labelArray[i];<a name="line.574"></a>
+<span class="sourceLineNo">575</span>                    labelArray[i] = labelArray[j];<a name="line.575"></a>
+<span class="sourceLineNo">576</span>                    labelArray[j] = temp;<a name="line.576"></a>
+<span class="sourceLineNo">577</span>                }<a name="line.577"></a>
+<span class="sourceLineNo">578</span>            }<a name="line.578"></a>
+<span class="sourceLineNo">579</span>        }<a name="line.579"></a>
+<span class="sourceLineNo">580</span><a name="line.580"></a>
+<span class="sourceLineNo">581</span>        // construct the string representation of this token.<a name="line.581"></a>
+<span class="sourceLineNo">582</span>        StringBuffer results = new StringBuffer("{");<a name="line.582"></a>
+<span class="sourceLineNo">583</span><a name="line.583"></a>
+<span class="sourceLineNo">584</span>        for (int i = 0; i &lt; size; i++) {<a name="line.584"></a>
+<span class="sourceLineNo">585</span>            String label = (String) labelArray[i];<a name="line.585"></a>
+<span class="sourceLineNo">586</span>            String type = this.get(label).toString();<a name="line.586"></a>
+<span class="sourceLineNo">587</span><a name="line.587"></a>
+<span class="sourceLineNo">588</span>            if (i != 0) {<a name="line.588"></a>
+<span class="sourceLineNo">589</span>                results.append(", ");<a name="line.589"></a>
+<span class="sourceLineNo">590</span>            }<a name="line.590"></a>
+<span class="sourceLineNo">591</span><a name="line.591"></a>
+<span class="sourceLineNo">592</span>            // quote and escape labels that are not valid Java identifiers<a name="line.592"></a>
+<span class="sourceLineNo">593</span>            if (!StringUtilities.isValidIdentifier(label)) {<a name="line.593"></a>
+<span class="sourceLineNo">594</span>                label = "\"" + StringUtilities.escapeString(label) + "\"";<a name="line.594"></a>
+<span class="sourceLineNo">595</span>            }<a name="line.595"></a>
+<span class="sourceLineNo">596</span>            results.append(label + " = " + type);<a name="line.596"></a>
+<span class="sourceLineNo">597</span>        }<a name="line.597"></a>
+<span class="sourceLineNo">598</span><a name="line.598"></a>
+<span class="sourceLineNo">599</span>        return results.toString() + "}";<a name="line.599"></a>
+<span class="sourceLineNo">600</span>    }<a name="line.600"></a>
+<span class="sourceLineNo">601</span><a name="line.601"></a>
+<span class="sourceLineNo">602</span>    /** Update this Type to the specified RecordType.<a name="line.602"></a>
+<span class="sourceLineNo">603</span>     *  The specified type must be a RecordType and have the same structure<a name="line.603"></a>
+<span class="sourceLineNo">604</span>     *  as this one, and have depth less than the MAXDEPTHDOUND.<a name="line.604"></a>
+<span class="sourceLineNo">605</span>     *  This method will only update the component whose declared type is<a name="line.605"></a>
+<span class="sourceLineNo">606</span>     *  BaseType.UNKNOWN, and leave the constant part of this type intact.<a name="line.606"></a>
+<span class="sourceLineNo">607</span>     *  @param newType A StructuredType.<a name="line.607"></a>
+<span class="sourceLineNo">608</span>     *  @exception IllegalActionException If the specified type is not a<a name="line.608"></a>
+<span class="sourceLineNo">609</span>     *   RecordType or it does not have the same structure as this one.<a name="line.609"></a>
+<span class="sourceLineNo">610</span>     */<a name="line.610"></a>
+<span class="sourceLineNo">611</span>    @Override<a name="line.611"></a>
+<span class="sourceLineNo">612</span>    public void updateType(StructuredType newType)<a name="line.612"></a>
+<span class="sourceLineNo">613</span>            throws IllegalActionException {<a name="line.613"></a>
+<span class="sourceLineNo">614</span>        super.updateType(newType);<a name="line.614"></a>
+<span class="sourceLineNo">615</span>        if (this.isConstant()) {<a name="line.615"></a>
+<span class="sourceLineNo">616</span>            if (this.equals(newType)) {<a name="line.616"></a>
+<span class="sourceLineNo">617</span>                return;<a name="line.617"></a>
+<span class="sourceLineNo">618</span>            }<a name="line.618"></a>
+<span class="sourceLineNo">619</span><a name="line.619"></a>
+<span class="sourceLineNo">620</span>            throw new IllegalActionException("RecordType.updateType: "<a name="line.620"></a>
+<span class="sourceLineNo">621</span>                    + "This type is a constant and the argument is not the"<a name="line.621"></a>
+<span class="sourceLineNo">622</span>                    + " same as this type. This type: " + this.toString()<a name="line.622"></a>
+<span class="sourceLineNo">623</span>                    + " argument: " + newType.toString());<a name="line.623"></a>
+<span class="sourceLineNo">624</span>        }<a name="line.624"></a>
+<span class="sourceLineNo">625</span><a name="line.625"></a>
+<span class="sourceLineNo">626</span>        // This type is a variable.<a name="line.626"></a>
+<span class="sourceLineNo">627</span>        if (!this.isSubstitutionInstance(newType)) {<a name="line.627"></a>
+<span class="sourceLineNo">628</span>            throw new IllegalActionException("RecordType.updateType: "<a name="line.628"></a>
+<span class="sourceLineNo">629</span>                    + "Cannot update this type to the new type.");<a name="line.629"></a>
+<span class="sourceLineNo">630</span>        }<a name="line.630"></a>
+<span class="sourceLineNo">631</span><a name="line.631"></a>
+<span class="sourceLineNo">632</span>        // FindBugs: ptolemy.data.type.RecordType.updateType(StructuredType) makes inefficient use of keySet iterator instead of entrySet iterator<a name="line.632"></a>
+<span class="sourceLineNo">633</span>        // Iterator&lt;String&gt; fieldNames = _fields.keySet().iterator();<a name="line.633"></a>
+<span class="sourceLineNo">634</span>        // while (fieldNames.hasNext()) {<a name="line.634"></a>
+<span class="sourceLineNo">635</span>        //    String label = fieldNames.next();<a name="line.635"></a>
+<span class="sourceLineNo">636</span>        //    FieldType fieldType = _fields.get(label);<a name="line.636"></a>
+<span class="sourceLineNo">637</span>        for (Map.Entry&lt;String, FieldType&gt; fields : _fields.entrySet()) {<a name="line.637"></a>
+<span class="sourceLineNo">638</span>            FieldType fieldType = fields.getValue();<a name="line.638"></a>
+<span class="sourceLineNo">639</span>            if (fieldType.isSettable()) {<a name="line.639"></a>
+<span class="sourceLineNo">640</span>                //Type newFieldType = ((RecordType) newType).get(label);<a name="line.640"></a>
+<span class="sourceLineNo">641</span>                Type newFieldType = ((RecordType) newType).get(fields.getKey());<a name="line.641"></a>
+<span class="sourceLineNo">642</span>                fieldType.setValue(newFieldType);<a name="line.642"></a>
+<span class="sourceLineNo">643</span>            }<a name="line.643"></a>
+<span class="sourceLineNo">644</span>        }<a name="line.644"></a>
+<span class="sourceLineNo">645</span>    }<a name="line.645"></a>
+<span class="sourceLineNo">646</span><a name="line.646"></a>
+<span class="sourceLineNo">647</span>    ///////////////////////////////////////////////////////////////////<a name="line.647"></a>
+<span class="sourceLineNo">648</span>    ////                         public fields                     ////<a name="line.648"></a>
+<span class="sourceLineNo">649</span><a name="line.649"></a>
+<span class="sourceLineNo">650</span>    /** An empty record. */<a name="line.650"></a>
+<span class="sourceLineNo">651</span>    public static RecordType EMPTY_RECORD = new RecordType(new String[0],<a name="line.651"></a>
+<span class="sourceLineNo">652</span>            new Type[0]);<a name="line.652"></a>
+<span class="sourceLineNo">653</span><a name="line.653"></a>
+<span class="sourceLineNo">654</span>    ///////////////////////////////////////////////////////////////////<a name="line.654"></a>
+<span class="sourceLineNo">655</span>    ////                         protected methods                 ////<a name="line.655"></a>
+<span class="sourceLineNo">656</span><a name="line.656"></a>
+<span class="sourceLineNo">657</span>    /** Compare this type with the specified type. The specified type<a name="line.657"></a>
+<span class="sourceLineNo">658</span>     *  must be a RecordType, otherwise an exception will be thrown.<a name="line.658"></a>
+<span class="sourceLineNo">659</span>     *<a name="line.659"></a>
+<span class="sourceLineNo">660</span>     *  This method returns one of ptolemy.graph.CPO.LOWER,<a name="line.660"></a>
+<span class="sourceLineNo">661</span>     *  ptolemy.graph.CPO.SAME, ptolemy.graph.CPO.HIGHER,<a name="line.661"></a>
+<span class="sourceLineNo">662</span>     *  ptolemy.graph.CPO.INCOMPARABLE, indicating this type is lower<a name="line.662"></a>
+<span class="sourceLineNo">663</span>     *  than, equal to, higher than, or incomparable with the<a name="line.663"></a>
+<span class="sourceLineNo">664</span>     *  specified type in the type hierarchy, respectively.<a name="line.664"></a>
+<span class="sourceLineNo">665</span>     *  @param type a RecordType.<a name="line.665"></a>
+<span class="sourceLineNo">666</span>     *  @return An integer.<a name="line.666"></a>
+<span class="sourceLineNo">667</span>     *  @exception IllegalArgumentException If the specified type is<a name="line.667"></a>
+<span class="sourceLineNo">668</span>     *   not a RecordType.<a name="line.668"></a>
+<span class="sourceLineNo">669</span>     */<a name="line.669"></a>
+<span class="sourceLineNo">670</span>    @Override<a name="line.670"></a>
+<span class="sourceLineNo">671</span>    protected int _compare(StructuredType type) {<a name="line.671"></a>
+<span class="sourceLineNo">672</span>        if (!(type instanceof RecordType)) {<a name="line.672"></a>
+<span class="sourceLineNo">673</span>            throw new IllegalArgumentException("RecordType._compare: "<a name="line.673"></a>
+<span class="sourceLineNo">674</span>                    + "The argument is not a RecordType.");<a name="line.674"></a>
+<span class="sourceLineNo">675</span>        }<a name="line.675"></a>
+<span class="sourceLineNo">676</span><a name="line.676"></a>
+<span class="sourceLineNo">677</span>        if (this.equals(type)) {<a name="line.677"></a>
+<span class="sourceLineNo">678</span>            return CPO.SAME;<a name="line.678"></a>
+<span class="sourceLineNo">679</span>        }<a name="line.679"></a>
+<span class="sourceLineNo">680</span><a name="line.680"></a>
+<span class="sourceLineNo">681</span>        if (_isLessThanOrEqualTo(this, (RecordType) type)) {<a name="line.681"></a>
+<span class="sourceLineNo">682</span>            return CPO.LOWER;<a name="line.682"></a>
+<span class="sourceLineNo">683</span>        }<a name="line.683"></a>
+<span class="sourceLineNo">684</span><a name="line.684"></a>
+<span class="sourceLineNo">685</span>        if (_isLessThanOrEqualTo((RecordType) type, this)) {<a name="line.685"></a>
+<span class="sourceLineNo">686</span>            return CPO.HIGHER;<a name="line.686"></a>
+<span class="sourceLineNo">687</span>        }<a name="line.687"></a>
+<span class="sourceLineNo">688</span><a name="line.688"></a>
+<span class="sourceLineNo">689</span>        return CPO.INCOMPARABLE;<a name="line.689"></a>
+<span class="sourceLineNo">690</span>    }<a name="line.690"></a>
+<span class="sourceLineNo">691</span><a name="line.691"></a>
+<span class="sourceLineNo">692</span>    /** Return a static instance of RecordType.<a name="line.692"></a>
+<span class="sourceLineNo">693</span>     *  @return a RecordType.<a name="line.693"></a>
+<span class="sourceLineNo">694</span>     */<a name="line.694"></a>
+<span class="sourceLineNo">695</span>    @Override<a name="line.695"></a>
+<span class="sourceLineNo">696</span>    protected StructuredType _getRepresentative() {<a name="line.696"></a>
+<span class="sourceLineNo">697</span>        return EMPTY_RECORD;<a name="line.697"></a>
+<span class="sourceLineNo">698</span>    }<a name="line.698"></a>
+<span class="sourceLineNo">699</span><a name="line.699"></a>
+<span class="sourceLineNo">700</span>    /** Return the greatest lower bound of this type with the specified<a name="line.700"></a>
+<span class="sourceLineNo">701</span>     *  type. The specified type must be a RecordType, otherwise an<a name="line.701"></a>
+<span class="sourceLineNo">702</span>     *  exception will be thrown.<a name="line.702"></a>
+<span class="sourceLineNo">703</span>     *  @param type a RecordType.<a name="line.703"></a>
+<span class="sourceLineNo">704</span>     *  @return a RecordType.<a name="line.704"></a>
+<span class="sourceLineNo">705</span>     *  @exception IllegalArgumentException If the specified type is<a name="line.705"></a>
+<span class="sourceLineNo">706</span>     *   not a RecordType.<a name="line.706"></a>
+<span class="sourceLineNo">707</span>     */<a name="line.707"></a>
+<span class="sourceLineNo">708</span>    @Override<a name="line.708"></a>
+<span class="sourceLineNo">709</span>    protected StructuredType _greatestLowerBound(StructuredType type) {<a name="line.709"></a>
+<span class="sourceLineNo">710</span>        if (!(type instanceof RecordType)) {<a name="line.710"></a>
+<span class="sourceLineNo">711</span>            throw new IllegalArgumentException(<a name="line.711"></a>
+<span class="sourceLineNo">712</span>                    "RecordType.greatestLowerBound: The argument is not a "<a name="line.712"></a>
+<span class="sourceLineNo">713</span>                            + "RecordType.");<a name="line.713"></a>
+<span class="sourceLineNo">714</span>        }<a name="line.714"></a>
+<span class="sourceLineNo">715</span><a name="line.715"></a>
+<span class="sourceLineNo">716</span>        RecordType recordType = (RecordType) type;<a name="line.716"></a>
+<span class="sourceLineNo">717</span><a name="line.717"></a>
+<span class="sourceLineNo">718</span>        // the label set of the GLB is the union of the two label sets.<a name="line.718"></a>
+<span class="sourceLineNo">719</span>        Set&lt;String&gt; unionSet = new HashSet&lt;String&gt;();<a name="line.719"></a>
+<span class="sourceLineNo">720</span>        Set&lt;String&gt; myLabelSet = _fields.keySet();<a name="line.720"></a>
+<span class="sourceLineNo">721</span>        Set&lt;String&gt; argLabelSet = recordType._fields.keySet();<a name="line.721"></a>
+<span class="sourceLineNo">722</span><a name="line.722"></a>
+<span class="sourceLineNo">723</span>        unionSet.addAll(myLabelSet);<a name="line.723"></a>
+<span class="sourceLineNo">724</span>        unionSet.addAll(argLabelSet);<a name="line.724"></a>
+<span class="sourceLineNo">725</span><a name="line.725"></a>
+<span class="sourceLineNo">726</span>        // construct the GLB RecordToken<a name="line.726"></a>
+<span class="sourceLineNo">727</span>        Object[] labelArray = unionSet.toArray();<a name="line.727"></a>
+<span class="sourceLineNo">728</span>        int size = labelArray.length;<a name="line.728"></a>
+<span class="sourceLineNo">729</span>        String[] labels = new String[size];<a name="line.729"></a>
+<span class="sourceLineNo">730</span>        Type[] types = new Type[size];<a name="line.730"></a>
+<span class="sourceLineNo">731</span><a name="line.731"></a>
+<span class="sourceLineNo">732</span>        for (int i = 0; i &lt; size; i++) {<a name="line.732"></a>
+<span class="sourceLineNo">733</span>            labels[i] = (String) labelArray[i];<a name="line.733"></a>
+<span class="sourceLineNo">734</span><a name="line.734"></a>
+<span class="sourceLineNo">735</span>            Type type1 = this.get(labels[i]);<a name="line.735"></a>
+<span class="sourceLineNo">736</span>            Type type2 = recordType.get(labels[i]);<a name="line.736"></a>
+<span class="sourceLineNo">737</span><a name="line.737"></a>
+<span class="sourceLineNo">738</span>            if (type1 == null) {<a name="line.738"></a>
+<span class="sourceLineNo">739</span>                types[i] = type2;<a name="line.739"></a>
+<span class="sourceLineNo">740</span>            } else if (type2 == null) {<a name="line.740"></a>
+<span class="sourceLineNo">741</span>                types[i] = type1;<a name="line.741"></a>
+<span class="sourceLineNo">742</span>            } else {<a name="line.742"></a>
+<span class="sourceLineNo">743</span>                types[i] = (Type) TypeLattice.lattice()<a name="line.743"></a>
+<span class="sourceLineNo">744</span>                        .greatestLowerBound(type1, type2);<a name="line.744"></a>
+<span class="sourceLineNo">745</span>            }<a name="line.745"></a>
+<span class="sourceLineNo">746</span>        }<a name="line.746"></a>
+<span class="sourceLineNo">747</span><a name="line.747"></a>
+<span class="sourceLineNo">748</span>        return new RecordType(labels, types);<a name="line.748"></a>
+<span class="sourceLineNo">749</span>    }<a name="line.749"></a>
+<span class="sourceLineNo">750</span><a name="line.750"></a>
+<span class="sourceLineNo">751</span>    /** Return the least Upper bound of this type with the specified<a name="line.751"></a>
+<span class="sourceLineNo">752</span>     *  type. The specified type must be a RecordType, otherwise an<a name="line.752"></a>
+<span class="sourceLineNo">753</span>     *  exception will be thrown.<a name="line.753"></a>
+<span class="sourceLineNo">754</span>     *  @param type a RecordType.<a name="line.754"></a>
+<span class="sourceLineNo">755</span>     *  @return a RecordType.<a name="line.755"></a>
+<span class="sourceLineNo">756</span>     *  @exception IllegalArgumentException If the specified type is<a name="line.756"></a>
+<span class="sourceLineNo">757</span>     *   not a RecordType.<a name="line.757"></a>
+<span class="sourceLineNo">758</span>     */<a name="line.758"></a>
+<span class="sourceLineNo">759</span>    @Override<a name="line.759"></a>
+<span class="sourceLineNo">760</span>    protected StructuredType _leastUpperBound(StructuredType type) {<a name="line.760"></a>
+<span class="sourceLineNo">761</span>        if (!(type instanceof RecordType)) {<a name="line.761"></a>
+<span class="sourceLineNo">762</span>            throw new IllegalArgumentException("RecordType.leastUpperBound: "<a name="line.762"></a>
+<span class="sourceLineNo">763</span>                    + "The argument is not a RecordType.");<a name="line.763"></a>
+<span class="sourceLineNo">764</span>        }<a name="line.764"></a>
+<span class="sourceLineNo">765</span><a name="line.765"></a>
+<span class="sourceLineNo">766</span>        RecordType recordType = (RecordType) type;<a name="line.766"></a>
+<span class="sourceLineNo">767</span><a name="line.767"></a>
+<span class="sourceLineNo">768</span>        // the label set of the LUB is the intersection of the two label sets.<a name="line.768"></a>
+<span class="sourceLineNo">769</span>        Set&lt;String&gt; intersectionSet = new HashSet&lt;String&gt;();<a name="line.769"></a>
+<span class="sourceLineNo">770</span>        Set&lt;String&gt; myLabelSet = _fields.keySet();<a name="line.770"></a>
+<span class="sourceLineNo">771</span>        Set&lt;String&gt; argLabelSet = recordType._fields.keySet();<a name="line.771"></a>
+<span class="sourceLineNo">772</span><a name="line.772"></a>
+<span class="sourceLineNo">773</span>        intersectionSet.addAll(myLabelSet);<a name="line.773"></a>
+<span class="sourceLineNo">774</span>        intersectionSet.retainAll(argLabelSet);<a name="line.774"></a>
+<span class="sourceLineNo">775</span><a name="line.775"></a>
+<span class="sourceLineNo">776</span>        // construct the GLB RecordToken<a name="line.776"></a>
+<span class="sourceLineNo">777</span>        Object[] labelArray = intersectionSet.toArray();<a name="line.777"></a>
+<span class="sourceLineNo">778</span>        int size = labelArray.length;<a name="line.778"></a>
+<span class="sourceLineNo">779</span>        String[] labels = new String[size];<a name="line.779"></a>
+<span class="sourceLineNo">780</span>        Type[] types = new Type[size];<a name="line.780"></a>
+<span class="sourceLineNo">781</span><a name="line.781"></a>
+<span class="sourceLineNo">782</span>        for (int i = 0; i &lt; size; i++) {<a name="line.782"></a>
+<span class="sourceLineNo">783</span>            labels[i] = (String) labelArray[i];<a name="line.783"></a>
+<span class="sourceLineNo">784</span><a name="line.784"></a>
+<span class="sourceLineNo">785</span>            Type type1 = this.get(labels[i]);<a name="line.785"></a>
+<span class="sourceLineNo">786</span>            Type type2 = recordType.get(labels[i]);<a name="line.786"></a>
+<span class="sourceLineNo">787</span>            types[i] = (Type) TypeLattice.lattice().leastUpperBound(type1,<a name="line.787"></a>
+<span class="sourceLineNo">788</span>                    type2);<a name="line.788"></a>
+<span class="sourceLineNo">789</span>        }<a name="line.789"></a>
+<span class="sourceLineNo">790</span><a name="line.790"></a>
+<span class="sourceLineNo">791</span>        return new RecordType(labels, types);<a name="line.791"></a>
+<span class="sourceLineNo">792</span>    }<a name="line.792"></a>
+<span class="sourceLineNo">793</span><a name="line.793"></a>
+<span class="sourceLineNo">794</span>    ///////////////////////////////////////////////////////////////////<a name="line.794"></a>
+<span class="sourceLineNo">795</span>    ////                         private methods                   ////<a name="line.795"></a>
+<span class="sourceLineNo">796</span>    // Test if the first RecordType is less than or equal to the second<a name="line.796"></a>
+<span class="sourceLineNo">797</span>    private boolean _isLessThanOrEqualTo(RecordType t1, RecordType t2) {<a name="line.797"></a>
+<span class="sourceLineNo">798</span>        Set&lt;String&gt; labelSet1 = t1._fields.keySet();<a name="line.798"></a>
+<span class="sourceLineNo">799</span>        Set&lt;String&gt; labelSet2 = t2._fields.keySet();<a name="line.799"></a>
+<span class="sourceLineNo">800</span><a name="line.800"></a>
+<span class="sourceLineNo">801</span>        if (!labelSet1.containsAll(labelSet2)) {<a name="line.801"></a>
+<span class="sourceLineNo">802</span>            return false;<a name="line.802"></a>
+<span class="sourceLineNo">803</span>        }<a name="line.803"></a>
+<span class="sourceLineNo">804</span><a name="line.804"></a>
+<span class="sourceLineNo">805</span>        // iterate over the labels of the second type<a name="line.805"></a>
+<span class="sourceLineNo">806</span>        Iterator&lt;String&gt; iter = labelSet2.iterator();<a name="line.806"></a>
+<span class="sourceLineNo">807</span><a name="line.807"></a>
+<span class="sourceLineNo">808</span>        while (iter.hasNext()) {<a name="line.808"></a>
+<span class="sourceLineNo">809</span>            String label = iter.next();<a name="line.809"></a>
+<span class="sourceLineNo">810</span>            Type type1 = t1.get(label);<a name="line.810"></a>
+<span class="sourceLineNo">811</span>            Type type2 = t2.get(label);<a name="line.811"></a>
+<span class="sourceLineNo">812</span>            int result = TypeLattice.compare(type1, type2);<a name="line.812"></a>
+<span class="sourceLineNo">813</span><a name="line.813"></a>
+<span class="sourceLineNo">814</span>            if (result == CPO.HIGHER || result == CPO.INCOMPARABLE) {<a name="line.814"></a>
+<span class="sourceLineNo">815</span>                return false;<a name="line.815"></a>
+<span class="sourceLineNo">816</span>            }<a name="line.816"></a>
+<span class="sourceLineNo">817</span>        }<a name="line.817"></a>
+<span class="sourceLineNo">818</span><a name="line.818"></a>
+<span class="sourceLineNo">819</span>        return true;<a name="line.819"></a>
+<span class="sourceLineNo">820</span>    }<a name="line.820"></a>
+<span class="sourceLineNo">821</span><a name="line.821"></a>
+<span class="sourceLineNo">822</span>    ///////////////////////////////////////////////////////////////////<a name="line.822"></a>
+<span class="sourceLineNo">823</span>    ////                         private variables                 ////<a name="line.823"></a>
+<span class="sourceLineNo">824</span>    // Mapping from label to field information.<a name="line.824"></a>
+<span class="sourceLineNo">825</span>    private Map&lt;String, FieldType&gt; _fields = new HashMap&lt;String, FieldType&gt;();<a name="line.825"></a>
+<span class="sourceLineNo">826</span><a name="line.826"></a>
+<span class="sourceLineNo">827</span>    ///////////////////////////////////////////////////////////////////<a name="line.827"></a>
+<span class="sourceLineNo">828</span>    ////                         inner class                       ////<a name="line.828"></a>
+<span class="sourceLineNo">829</span>    // A class that encapsulates the declared and resolved types of a<a name="line.829"></a>
+<span class="sourceLineNo">830</span>    // field and implements the InequalityTerm interface.<a name="line.830"></a>
+<span class="sourceLineNo">831</span>    private class FieldType implements InequalityTerm {<a name="line.831"></a>
+<span class="sourceLineNo">832</span>        // Construct an instance of FieldType.<a name="line.832"></a>
+<span class="sourceLineNo">833</span>        private FieldType(Type declaredType) {<a name="line.833"></a>
+<span class="sourceLineNo">834</span>            try {<a name="line.834"></a>
+<span class="sourceLineNo">835</span>                _declaredType = (Type) declaredType.clone();<a name="line.835"></a>
+<span class="sourceLineNo">836</span>                _resolvedType = _declaredType;<a name="line.836"></a>
+<span class="sourceLineNo">837</span>            } catch (CloneNotSupportedException cnse) {<a name="line.837"></a>
+<span class="sourceLineNo">838</span>                throw new InternalErrorException("RecordType.FieldType: "<a name="line.838"></a>
+<span class="sourceLineNo">839</span>                        + "The specified type cannot be cloned.");<a name="line.839"></a>
+<span class="sourceLineNo">840</span>            }<a name="line.840"></a>
+<span class="sourceLineNo">841</span>        }<a name="line.841"></a>
+<span class="sourceLineNo">842</span><a name="line.842"></a>
+<span class="sourceLineNo">843</span>        ///////////////////////////////////////////////////////////////<a name="line.843"></a>
+<span class="sourceLineNo">844</span>        ////                   public inner methods                ////<a name="line.844"></a>
+<span class="sourceLineNo">845</span><a name="line.845"></a>
+<span class="sourceLineNo">846</span>        /** Return this RecordType.<a name="line.846"></a>
+<span class="sourceLineNo">847</span>         *  @return a RecordType.<a name="line.847"></a>
+<span class="sourceLineNo">848</span>         */<a name="line.848"></a>
+<span class="sourceLineNo">849</span>        @Override<a name="line.849"></a>
+<span class="sourceLineNo">850</span>        public Object getAssociatedObject() {<a name="line.850"></a>
+<span class="sourceLineNo">851</span>            return RecordType.this;<a name="line.851"></a>
+<span class="sourceLineNo">852</span>        }<a name="line.852"></a>
+<span class="sourceLineNo">853</span><a name="line.853"></a>
+<span class="sourceLineNo">854</span>        /** Return the resolved type.<a name="line.854"></a>
+<span class="sourceLineNo">855</span>         *  @return a Type.<a name="line.855"></a>
+<span class="sourceLineNo">856</span>         */<a name="line.856"></a>
+<span class="sourceLineNo">857</span>        @Override<a name="line.857"></a>
+<span class="sourceLineNo">858</span>        public Object getValue() {<a name="line.858"></a>
+<span class="sourceLineNo">859</span>            return _resolvedType;<a name="line.859"></a>
+<span class="sourceLineNo">860</span>        }<a name="line.860"></a>
+<span class="sourceLineNo">861</span><a name="line.861"></a>
+<span class="sourceLineNo">862</span>        /** Return this FieldType in an array if it represents a type<a name="line.862"></a>
+<span class="sourceLineNo">863</span>         *  variable. Otherwise, return an array of size zero.<a name="line.863"></a>
+<span class="sourceLineNo">864</span>         *  @return An array of InequalityTerm.<a name="line.864"></a>
+<span class="sourceLineNo">865</span>         */<a name="line.865"></a>
+<span class="sourceLineNo">866</span>        @Override<a name="line.866"></a>
+<span class="sourceLineNo">867</span>        public InequalityTerm[] getVariables() {<a name="line.867"></a>
+<span class="sourceLineNo">868</span>            if (isSettable()) {<a name="line.868"></a>
+<span class="sourceLineNo">869</span>                InequalityTerm[] variable = new InequalityTerm[1];<a name="line.869"></a>
+<span class="sourceLineNo">870</span>                variable[0] = this;<a name="line.870"></a>
+<span class="sourceLineNo">871</span>                return variable;<a name="line.871"></a>
+<span class="sourceLineNo">872</span>            }<a name="line.872"></a>
+<span class="sourceLineNo">873</span><a name="line.873"></a>
+<span class="sourceLineNo">874</span>            return new InequalityTerm[0];<a name="line.874"></a>
+<span class="sourceLineNo">875</span>        }<a name="line.875"></a>
+<span class="sourceLineNo">876</span><a name="line.876"></a>
+<span class="sourceLineNo">877</span>        /** Reset the variable part of the element type to the specified<a name="line.877"></a>
+<span class="sourceLineNo">878</span>         *  type.<a name="line.878"></a>
+<span class="sourceLineNo">879</span>         *  @param e A Type.<a name="line.879"></a>
+<span class="sourceLineNo">880</span>         *  @exception IllegalActionException If this type is not settable,<a name="line.880"></a>
+<span class="sourceLineNo">881</span>         *   or the argument is not a Type.<a name="line.881"></a>
+<span class="sourceLineNo">882</span>         */<a name="line.882"></a>
+<span class="sourceLineNo">883</span>        @Override<a name="line.883"></a>
+<span class="sourceLineNo">884</span>        public void initialize(Object e) throws IllegalActionException {<a name="line.884"></a>
+<span class="sourceLineNo">885</span>            if (!isSettable()) {<a name="line.885"></a>
+<span class="sourceLineNo">886</span>                throw new IllegalActionException("RecordType$FieldType."<a name="line.886"></a>
+<span class="sourceLineNo">887</span>                        + "initialize: The type is not settable.");<a name="line.887"></a>
+<span class="sourceLineNo">888</span>            }<a name="line.888"></a>
+<span class="sourceLineNo">889</span><a name="line.889"></a>
+<span class="sourceLineNo">890</span>            if (!(e instanceof Type)) {<a name="line.890"></a>
+<span class="sourceLineNo">891</span>                throw new IllegalActionException("FieldType.initialize: "<a name="line.891"></a>
+<span class="sourceLineNo">892</span>                        + "The argument is not a Type.");<a name="line.892"></a>
+<span class="sourceLineNo">893</span>            }<a name="line.893"></a>
+<span class="sourceLineNo">894</span><a name="line.894"></a>
+<span class="sourceLineNo">895</span>            if (_declaredType == BaseType.UNKNOWN) {<a name="line.895"></a>
+<span class="sourceLineNo">896</span>                _resolvedType = (Type) e;<a name="line.896"></a>
+<span class="sourceLineNo">897</span>            } else {<a name="line.897"></a>
+<span class="sourceLineNo">898</span>                // this field type is a structured type.<a name="line.898"></a>
+<span class="sourceLineNo">899</span>                ((StructuredType) _resolvedType).initialize((Type) e);<a name="line.899"></a>
+<span class="sourceLineNo">900</span>            }<a name="line.900"></a>
+<span class="sourceLineNo">901</span>        }<a name="line.901"></a>
+<span class="sourceLineNo">902</span><a name="line.902"></a>
+<span class="sourceLineNo">903</span>        /** Test if this field type is a type variable.<a name="line.903"></a>
+<span class="sourceLineNo">904</span>         *  @return True if this field type is a type variable.<a name="line.904"></a>
+<span class="sourceLineNo">905</span>         */<a name="line.905"></a>
+<span class="sourceLineNo">906</span>        @Override<a name="line.906"></a>
+<span class="sourceLineNo">907</span>        public boolean isSettable() {<a name="line.907"></a>
+<span class="sourceLineNo">908</span>            return !_declaredType.isConstant();<a name="line.908"></a>
+<span class="sourceLineNo">909</span>        }<a name="line.909"></a>
+<span class="sourceLineNo">910</span><a name="line.910"></a>
+<span class="sourceLineNo">911</span>        /** Check whether the current element type is acceptable.<a name="line.911"></a>
+<span class="sourceLineNo">912</span>         *  The element type is acceptable if it represents an<a name="line.912"></a>
+<span class="sourceLineNo">913</span>         *  instantiable object.<a name="line.913"></a>
+<span class="sourceLineNo">914</span>         *  @return True if the element type is acceptable.<a name="line.914"></a>
+<span class="sourceLineNo">915</span>         */<a name="line.915"></a>
+<span class="sourceLineNo">916</span>        @Override<a name="line.916"></a>
+<span class="sourceLineNo">917</span>        public boolean isValueAcceptable() {<a name="line.917"></a>
+<span class="sourceLineNo">918</span>            return _resolvedType.isInstantiable();<a name="line.918"></a>
+<span class="sourceLineNo">919</span>        }<a name="line.919"></a>
+<span class="sourceLineNo">920</span><a name="line.920"></a>
+<span class="sourceLineNo">921</span>        /** Set the element type to the specified type.<a name="line.921"></a>
+<span class="sourceLineNo">922</span>         *  @param e a Type.<a name="line.922"></a>
+<span class="sourceLineNo">923</span>         *  @exception IllegalActionException If the specified type violates<a name="line.923"></a>
+<span class="sourceLineNo">924</span>         *   the declared field type.<a name="line.924"></a>
+<span class="sourceLineNo">925</span>         */<a name="line.925"></a>
+<span class="sourceLineNo">926</span>        @Override<a name="line.926"></a>
+<span class="sourceLineNo">927</span>        public void setValue(Object e) throws IllegalActionException {<a name="line.927"></a>
+<span class="sourceLineNo">928</span>            if (!isSettable()) {<a name="line.928"></a>
+<span class="sourceLineNo">929</span>                throw new IllegalActionException(<a name="line.929"></a>
+<span class="sourceLineNo">930</span>                        "RecordType$FieldType.setValue: The type is not "<a name="line.930"></a>
+<span class="sourceLineNo">931</span>                                + "settable.");<a name="line.931"></a>
+<span class="sourceLineNo">932</span>            }<a name="line.932"></a>
+<span class="sourceLineNo">933</span><a name="line.933"></a>
+<span class="sourceLineNo">934</span>            if (!_declaredType.isSubstitutionInstance((Type) e)) {<a name="line.934"></a>
+<span class="sourceLineNo">935</span>                throw new IllegalActionException("FieldType.setValue: "<a name="line.935"></a>
+<span class="sourceLineNo">936</span>                        + "Cannot update the field type of this RecordType "<a name="line.936"></a>
+<span class="sourceLineNo">937</span>                        + "to the new type." + " Field type: "<a name="line.937"></a>
+<span class="sourceLineNo">938</span>                        + _declaredType.toString() + ", New type: "<a name="line.938"></a>
+<span class="sourceLineNo">939</span>                        + e.toString());<a name="line.939"></a>
+<span class="sourceLineNo">940</span>            }<a name="line.940"></a>
+<span class="sourceLineNo">941</span><a name="line.941"></a>
+<span class="sourceLineNo">942</span>            if (_declaredType == BaseType.UNKNOWN) {<a name="line.942"></a>
+<span class="sourceLineNo">943</span>                try {<a name="line.943"></a>
+<span class="sourceLineNo">944</span>                    _resolvedType = (Type) ((Type) e).clone();<a name="line.944"></a>
+<span class="sourceLineNo">945</span>                } catch (CloneNotSupportedException cnse) {<a name="line.945"></a>
+<span class="sourceLineNo">946</span>                    throw new InternalErrorException(<a name="line.946"></a>
+<span class="sourceLineNo">947</span>                            "RecordType$FieldType.setValue: "<a name="line.947"></a>
+<span class="sourceLineNo">948</span>                                    + "The specified type cannot be cloned.");<a name="line.948"></a>
+<span class="sourceLineNo">949</span>                }<a name="line.949"></a>
+<span class="sourceLineNo">950</span>            } else {<a name="line.950"></a>
+<span class="sourceLineNo">951</span>                ((StructuredType) _resolvedType).updateType((StructuredType) e);<a name="line.951"></a>
+<span class="sourceLineNo">952</span>            }<a name="line.952"></a>
+<span class="sourceLineNo">953</span>        }<a name="line.953"></a>
+<span class="sourceLineNo">954</span><a name="line.954"></a>
+<span class="sourceLineNo">955</span>        /** Return a string representation of this term.<a name="line.955"></a>
+<span class="sourceLineNo">956</span>         *  @return A String.<a name="line.956"></a>
+<span class="sourceLineNo">957</span>         */<a name="line.957"></a>
+<span class="sourceLineNo">958</span>        @Override<a name="line.958"></a>
+<span class="sourceLineNo">959</span>        public String toString() {<a name="line.959"></a>
+<span class="sourceLineNo">960</span>            return "(RecordFieldType, " + getValue() + ")";<a name="line.960"></a>
+<span class="sourceLineNo">961</span>        }<a name="line.961"></a>
+<span class="sourceLineNo">962</span><a name="line.962"></a>
+<span class="sourceLineNo">963</span>        ///////////////////////////////////////////////////////////////<a name="line.963"></a>
+<span class="sourceLineNo">964</span>        ////                  private inner variables              ////<a name="line.964"></a>
+<span class="sourceLineNo">965</span>        private Type _declaredType = null;<a name="line.965"></a>
+<span class="sourceLineNo">966</span><a name="line.966"></a>
+<span class="sourceLineNo">967</span>        private Type _resolvedType = null;<a name="line.967"></a>
+<span class="sourceLineNo">968</span>    }<a name="line.968"></a>
+<span class="sourceLineNo">969</span>}<a name="line.969"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

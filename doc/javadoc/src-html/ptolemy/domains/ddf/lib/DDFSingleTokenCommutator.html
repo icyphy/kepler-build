@@ -1,0 +1,251 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../../../stylesheet.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>/* A commutator that processes a single token per iteration, used in DDF doamin.<a name="line.1"></a>
+<span class="sourceLineNo">002</span><a name="line.2"></a>
+<span class="sourceLineNo">003</span> Copyright (c) 1997-2014 The Regents of the University of California.<a name="line.3"></a>
+<span class="sourceLineNo">004</span> All rights reserved.<a name="line.4"></a>
+<span class="sourceLineNo">005</span> Permission is hereby granted, without written agreement and without<a name="line.5"></a>
+<span class="sourceLineNo">006</span> license or royalty fees, to use, copy, modify, and distribute this<a name="line.6"></a>
+<span class="sourceLineNo">007</span> software and its documentation for any purpose, provided that the above<a name="line.7"></a>
+<span class="sourceLineNo">008</span> copyright notice and the following two paragraphs appear in all copies<a name="line.8"></a>
+<span class="sourceLineNo">009</span> of this software.<a name="line.9"></a>
+<span class="sourceLineNo">010</span><a name="line.10"></a>
+<span class="sourceLineNo">011</span> IN NO EVENT SHALL THE UNIVERSITY OF CALIFORNIA BE LIABLE TO ANY PARTY<a name="line.11"></a>
+<span class="sourceLineNo">012</span> FOR DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES<a name="line.12"></a>
+<span class="sourceLineNo">013</span> ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION, EVEN IF<a name="line.13"></a>
+<span class="sourceLineNo">014</span> THE UNIVERSITY OF CALIFORNIA HAS BEEN ADVISED OF THE POSSIBILITY OF<a name="line.14"></a>
+<span class="sourceLineNo">015</span> SUCH DAMAGE.<a name="line.15"></a>
+<span class="sourceLineNo">016</span><a name="line.16"></a>
+<span class="sourceLineNo">017</span> THE UNIVERSITY OF CALIFORNIA SPECIFICALLY DISCLAIMS ANY WARRANTIES,<a name="line.17"></a>
+<span class="sourceLineNo">018</span> INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF<a name="line.18"></a>
+<span class="sourceLineNo">019</span> MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE<a name="line.19"></a>
+<span class="sourceLineNo">020</span> PROVIDED HEREUNDER IS ON AN "AS IS" BASIS, AND THE UNIVERSITY OF<a name="line.20"></a>
+<span class="sourceLineNo">021</span> CALIFORNIA HAS NO OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT, UPDATES,<a name="line.21"></a>
+<span class="sourceLineNo">022</span> ENHANCEMENTS, OR MODIFICATIONS.<a name="line.22"></a>
+<span class="sourceLineNo">023</span><a name="line.23"></a>
+<span class="sourceLineNo">024</span> PT_COPYRIGHT_VERSION_2<a name="line.24"></a>
+<span class="sourceLineNo">025</span> COPYRIGHTENDKEY<a name="line.25"></a>
+<span class="sourceLineNo">026</span><a name="line.26"></a>
+<span class="sourceLineNo">027</span> */<a name="line.27"></a>
+<span class="sourceLineNo">028</span>package ptolemy.domains.ddf.lib;<a name="line.28"></a>
+<span class="sourceLineNo">029</span><a name="line.29"></a>
+<span class="sourceLineNo">030</span>import ptolemy.actor.lib.SingleTokenCommutator;<a name="line.30"></a>
+<span class="sourceLineNo">031</span>import ptolemy.data.ArrayToken;<a name="line.31"></a>
+<span class="sourceLineNo">032</span>import ptolemy.data.IntToken;<a name="line.32"></a>
+<span class="sourceLineNo">033</span>import ptolemy.data.expr.Parameter;<a name="line.33"></a>
+<span class="sourceLineNo">034</span>import ptolemy.data.type.ArrayType;<a name="line.34"></a>
+<span class="sourceLineNo">035</span>import ptolemy.data.type.BaseType;<a name="line.35"></a>
+<span class="sourceLineNo">036</span>import ptolemy.kernel.CompositeEntity;<a name="line.36"></a>
+<span class="sourceLineNo">037</span>import ptolemy.kernel.Port;<a name="line.37"></a>
+<span class="sourceLineNo">038</span>import ptolemy.kernel.util.IllegalActionException;<a name="line.38"></a>
+<span class="sourceLineNo">039</span>import ptolemy.kernel.util.InternalErrorException;<a name="line.39"></a>
+<span class="sourceLineNo">040</span>import ptolemy.kernel.util.NameDuplicationException;<a name="line.40"></a>
+<span class="sourceLineNo">041</span>import ptolemy.kernel.util.Settable;<a name="line.41"></a>
+<span class="sourceLineNo">042</span><a name="line.42"></a>
+<span class="sourceLineNo">043</span>///////////////////////////////////////////////////////////////////<a name="line.43"></a>
+<span class="sourceLineNo">044</span>//// DDFSingleTokenCommutator<a name="line.44"></a>
+<span class="sourceLineNo">045</span><a name="line.45"></a>
+<span class="sourceLineNo">046</span>/**<a name="line.46"></a>
+<span class="sourceLineNo">047</span> The DDFSingleTokenCommutator has a multiport input port and an output<a name="line.47"></a>
+<span class="sourceLineNo">048</span> port.  The types of the ports are undeclared and will be resolved by<a name="line.48"></a>
+<span class="sourceLineNo">049</span> the type resolution mechanism, with the constraint that the output<a name="line.49"></a>
+<span class="sourceLineNo">050</span> type must be greater than or equal to the input type. On each call to<a name="line.50"></a>
+<span class="sourceLineNo">051</span> the fire() method, the actor reads one token from the current input<a name="line.51"></a>
+<span class="sourceLineNo">052</span> channel, and writes the token to the output port. Then in the postfire()<a name="line.52"></a>
+<span class="sourceLineNo">053</span> method, it will update token consumption rate of the input port so that<a name="line.53"></a>
+<span class="sourceLineNo">054</span> it will read token from the next channel in the next iteration.<a name="line.54"></a>
+<span class="sourceLineNo">055</span><a name="line.55"></a>
+<span class="sourceLineNo">056</span> @author Gang Zhou<a name="line.56"></a>
+<span class="sourceLineNo">057</span> @version $Id$<a name="line.57"></a>
+<span class="sourceLineNo">058</span> @since Ptolemy II 4.1<a name="line.58"></a>
+<span class="sourceLineNo">059</span> @Pt.ProposedRating Yellow (zgang)<a name="line.59"></a>
+<span class="sourceLineNo">060</span> @Pt.AcceptedRating Yellow (cxh)<a name="line.60"></a>
+<span class="sourceLineNo">061</span> */<a name="line.61"></a>
+<span class="sourceLineNo">062</span>public class DDFSingleTokenCommutator extends SingleTokenCommutator {<a name="line.62"></a>
+<span class="sourceLineNo">063</span><a name="line.63"></a>
+<span class="sourceLineNo">064</span>    // FIXME: This actor extends sr.lib.SingleTokenCommutator which is<a name="line.64"></a>
+<span class="sourceLineNo">065</span>    // really wrong because it means that if we ship DDF, then we _must_<a name="line.65"></a>
+<span class="sourceLineNo">066</span>    // ship SR.  One solution would be to move this actor elsewhere,<a name="line.66"></a>
+<span class="sourceLineNo">067</span>    // say actor/lib.  It would be interesting to see what happens when<a name="line.67"></a>
+<span class="sourceLineNo">068</span>    // this actor is used with SDF, perhaps we should throw an error<a name="line.68"></a>
+<span class="sourceLineNo">069</span>    // automatically.<a name="line.69"></a>
+<span class="sourceLineNo">070</span><a name="line.70"></a>
+<span class="sourceLineNo">071</span>    /** Construct an actor in the specified container with the specified name.<a name="line.71"></a>
+<span class="sourceLineNo">072</span>     *  @param container The container.<a name="line.72"></a>
+<span class="sourceLineNo">073</span>     *  @param name This is the name of this distributor within the container.<a name="line.73"></a>
+<span class="sourceLineNo">074</span>     *  @exception NameDuplicationException If an actor<a name="line.74"></a>
+<span class="sourceLineNo">075</span>     *   with an identical name already exists in the container.<a name="line.75"></a>
+<span class="sourceLineNo">076</span>     *  @exception IllegalActionException If the actor cannot be contained<a name="line.76"></a>
+<span class="sourceLineNo">077</span>     *   by the proposed container.<a name="line.77"></a>
+<span class="sourceLineNo">078</span>     */<a name="line.78"></a>
+<span class="sourceLineNo">079</span>    public DDFSingleTokenCommutator(CompositeEntity container, String name)<a name="line.79"></a>
+<span class="sourceLineNo">080</span>            throws NameDuplicationException, IllegalActionException {<a name="line.80"></a>
+<span class="sourceLineNo">081</span>        super(container, name);<a name="line.81"></a>
+<span class="sourceLineNo">082</span><a name="line.82"></a>
+<span class="sourceLineNo">083</span>        input_tokenConsumptionRate = new Parameter(input,<a name="line.83"></a>
+<span class="sourceLineNo">084</span>                "tokenConsumptionRate");<a name="line.84"></a>
+<span class="sourceLineNo">085</span>        input_tokenConsumptionRate.setVisibility(Settable.NOT_EDITABLE);<a name="line.85"></a>
+<span class="sourceLineNo">086</span>        input_tokenConsumptionRate.setTypeEquals(new ArrayType(BaseType.INT));<a name="line.86"></a>
+<span class="sourceLineNo">087</span>    }<a name="line.87"></a>
+<span class="sourceLineNo">088</span><a name="line.88"></a>
+<span class="sourceLineNo">089</span>    ///////////////////////////////////////////////////////////////////<a name="line.89"></a>
+<span class="sourceLineNo">090</span>    ////                          parameters                       ////<a name="line.90"></a>
+<span class="sourceLineNo">091</span><a name="line.91"></a>
+<span class="sourceLineNo">092</span>    /** This parameter provides token consumption rate for each input<a name="line.92"></a>
+<span class="sourceLineNo">093</span>     *  channel. The type is array of ints.<a name="line.93"></a>
+<span class="sourceLineNo">094</span>     */<a name="line.94"></a>
+<span class="sourceLineNo">095</span>    public Parameter input_tokenConsumptionRate;<a name="line.95"></a>
+<span class="sourceLineNo">096</span><a name="line.96"></a>
+<span class="sourceLineNo">097</span>    ///////////////////////////////////////////////////////////////////<a name="line.97"></a>
+<span class="sourceLineNo">098</span>    ////                         public methods                    ////<a name="line.98"></a>
+<span class="sourceLineNo">099</span><a name="line.99"></a>
+<span class="sourceLineNo">100</span>    /** Pre-calculate the rates to be set in the rate parameter of the<a name="line.100"></a>
+<span class="sourceLineNo">101</span>     *  &lt;i&gt;input&lt;/i&gt; port. Initialize the private variable _rateArray,<a name="line.101"></a>
+<span class="sourceLineNo">102</span>     *  each element of which indicates the &lt;i&gt;input&lt;/i&gt; port needs to<a name="line.102"></a>
+<span class="sourceLineNo">103</span>     *  consume one token from a corresponding channel and no token from<a name="line.103"></a>
+<span class="sourceLineNo">104</span>     *  the rest of the channels.<a name="line.104"></a>
+<span class="sourceLineNo">105</span>     *  @param port The port that has connection changes.<a name="line.105"></a>
+<span class="sourceLineNo">106</span>     */<a name="line.106"></a>
+<span class="sourceLineNo">107</span>    @Override<a name="line.107"></a>
+<span class="sourceLineNo">108</span>    public void connectionsChanged(Port port) {<a name="line.108"></a>
+<span class="sourceLineNo">109</span>        super.connectionsChanged(port);<a name="line.109"></a>
+<span class="sourceLineNo">110</span><a name="line.110"></a>
+<span class="sourceLineNo">111</span>        if (port == input) {<a name="line.111"></a>
+<span class="sourceLineNo">112</span>            try {<a name="line.112"></a>
+<span class="sourceLineNo">113</span>                _rateArray = new ArrayToken[input.getWidth()];<a name="line.113"></a>
+<span class="sourceLineNo">114</span><a name="line.114"></a>
+<span class="sourceLineNo">115</span>                IntToken[] rate = new IntToken[input.getWidth()];<a name="line.115"></a>
+<span class="sourceLineNo">116</span><a name="line.116"></a>
+<span class="sourceLineNo">117</span>                for (int i = 0; i &lt; input.getWidth(); i++) {<a name="line.117"></a>
+<span class="sourceLineNo">118</span>                    rate[i] = _zero;<a name="line.118"></a>
+<span class="sourceLineNo">119</span>                }<a name="line.119"></a>
+<span class="sourceLineNo">120</span><a name="line.120"></a>
+<span class="sourceLineNo">121</span>                for (int i = 0; i &lt; input.getWidth(); i++) {<a name="line.121"></a>
+<span class="sourceLineNo">122</span>                    rate[i] = _one;<a name="line.122"></a>
+<span class="sourceLineNo">123</span>                    _rateArray[i] = new ArrayToken(BaseType.INT, rate);<a name="line.123"></a>
+<span class="sourceLineNo">124</span>                    rate[i] = _zero;<a name="line.124"></a>
+<span class="sourceLineNo">125</span>                }<a name="line.125"></a>
+<span class="sourceLineNo">126</span>            } catch (IllegalActionException ex) {<a name="line.126"></a>
+<span class="sourceLineNo">127</span>                throw new InternalErrorException(this, ex,<a name="line.127"></a>
+<span class="sourceLineNo">128</span>                        "At this time IllegalActionExceptions are not allowed to happen.\n"<a name="line.128"></a>
+<span class="sourceLineNo">129</span>                                + "Width inference should already have been done.");<a name="line.129"></a>
+<span class="sourceLineNo">130</span>            }<a name="line.130"></a>
+<span class="sourceLineNo">131</span>        }<a name="line.131"></a>
+<span class="sourceLineNo">132</span>    }<a name="line.132"></a>
+<span class="sourceLineNo">133</span><a name="line.133"></a>
+<span class="sourceLineNo">134</span>    /** Begin execution by setting rate parameter indicating it will<a name="line.134"></a>
+<span class="sourceLineNo">135</span>     *  read the zeroth input channel.<a name="line.135"></a>
+<span class="sourceLineNo">136</span>     *  @exception IllegalActionException If there is no director.<a name="line.136"></a>
+<span class="sourceLineNo">137</span>     */<a name="line.137"></a>
+<span class="sourceLineNo">138</span>    @Override<a name="line.138"></a>
+<span class="sourceLineNo">139</span>    public void initialize() throws IllegalActionException {<a name="line.139"></a>
+<span class="sourceLineNo">140</span>        super.initialize();<a name="line.140"></a>
+<span class="sourceLineNo">141</span><a name="line.141"></a>
+<span class="sourceLineNo">142</span>        input_tokenConsumptionRate.setToken(_rateArray[0]);<a name="line.142"></a>
+<span class="sourceLineNo">143</span>    }<a name="line.143"></a>
+<span class="sourceLineNo">144</span><a name="line.144"></a>
+<span class="sourceLineNo">145</span>    /** Update rate parameter indicating the next input channel.<a name="line.145"></a>
+<span class="sourceLineNo">146</span>     *  @return True if execution can continue into the next iteration.<a name="line.146"></a>
+<span class="sourceLineNo">147</span>     *  @exception IllegalActionException If any called method throws<a name="line.147"></a>
+<span class="sourceLineNo">148</span>     *   IllegalActionException.<a name="line.148"></a>
+<span class="sourceLineNo">149</span>     */<a name="line.149"></a>
+<span class="sourceLineNo">150</span>    @Override<a name="line.150"></a>
+<span class="sourceLineNo">151</span>    public boolean postfire() throws IllegalActionException {<a name="line.151"></a>
+<span class="sourceLineNo">152</span>        // Call postfire first so that current input position is updated.<a name="line.152"></a>
+<span class="sourceLineNo">153</span>        boolean postfireReturn = super.postfire();<a name="line.153"></a>
+<span class="sourceLineNo">154</span><a name="line.154"></a>
+<span class="sourceLineNo">155</span>        input_tokenConsumptionRate<a name="line.155"></a>
+<span class="sourceLineNo">156</span>                .setToken(_rateArray[_getCurrentInputPosition()]);<a name="line.156"></a>
+<span class="sourceLineNo">157</span><a name="line.157"></a>
+<span class="sourceLineNo">158</span>        return postfireReturn;<a name="line.158"></a>
+<span class="sourceLineNo">159</span>    }<a name="line.159"></a>
+<span class="sourceLineNo">160</span><a name="line.160"></a>
+<span class="sourceLineNo">161</span>    ///////////////////////////////////////////////////////////////////<a name="line.161"></a>
+<span class="sourceLineNo">162</span>    ////                         private variables                 ////<a name="line.162"></a>
+<span class="sourceLineNo">163</span><a name="line.163"></a>
+<span class="sourceLineNo">164</span>    /** A final static IntToken with value 1.<a name="line.164"></a>
+<span class="sourceLineNo">165</span>     */<a name="line.165"></a>
+<span class="sourceLineNo">166</span>    private final static IntToken _one = new IntToken(1);<a name="line.166"></a>
+<span class="sourceLineNo">167</span><a name="line.167"></a>
+<span class="sourceLineNo">168</span>    /** A final static IntToken with value 0.<a name="line.168"></a>
+<span class="sourceLineNo">169</span>     */<a name="line.169"></a>
+<span class="sourceLineNo">170</span>    private final static IntToken _zero = new IntToken(0);<a name="line.170"></a>
+<span class="sourceLineNo">171</span><a name="line.171"></a>
+<span class="sourceLineNo">172</span>    /** An array of ArrayTokens to be used to set tokenConsumptionRate<a name="line.172"></a>
+<span class="sourceLineNo">173</span>     *  of the input port. Each ArrayToken indicates the &lt;i&gt;input&lt;/i&gt;<a name="line.173"></a>
+<span class="sourceLineNo">174</span>     *  port needs to consume one token from a corresponding channel and<a name="line.174"></a>
+<span class="sourceLineNo">175</span>     *  no token from the rest of the channels. The array is initialized<a name="line.175"></a>
+<span class="sourceLineNo">176</span>     *  in the method connectionsChanged().<a name="line.176"></a>
+<span class="sourceLineNo">177</span>     */<a name="line.177"></a>
+<span class="sourceLineNo">178</span>    private ArrayToken[] _rateArray;<a name="line.178"></a>
+<span class="sourceLineNo">179</span>}<a name="line.179"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

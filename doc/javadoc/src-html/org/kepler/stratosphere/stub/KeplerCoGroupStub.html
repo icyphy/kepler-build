@@ -1,0 +1,368 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../../../stylesheet.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>/* A PACT CoGroup stub that runs a Kepler workflow.<a name="line.1"></a>
+<span class="sourceLineNo">002</span> * <a name="line.2"></a>
+<span class="sourceLineNo">003</span> * Copyright (c) 2011-2012 The Regents of the University of California.<a name="line.3"></a>
+<span class="sourceLineNo">004</span> * All rights reserved.<a name="line.4"></a>
+<span class="sourceLineNo">005</span> *<a name="line.5"></a>
+<span class="sourceLineNo">006</span> * '$Author: crawl $'<a name="line.6"></a>
+<span class="sourceLineNo">007</span> * '$Date: 2015-08-24 15:42:20 -0700 (Mon, 24 Aug 2015) $' <a name="line.7"></a>
+<span class="sourceLineNo">008</span> * '$Revision: 33628 $'<a name="line.8"></a>
+<span class="sourceLineNo">009</span> * <a name="line.9"></a>
+<span class="sourceLineNo">010</span> * Permission is hereby granted, without written agreement and without<a name="line.10"></a>
+<span class="sourceLineNo">011</span> * license or royalty fees, to use, copy, modify, and distribute this<a name="line.11"></a>
+<span class="sourceLineNo">012</span> * software and its documentation for any purpose, provided that the above<a name="line.12"></a>
+<span class="sourceLineNo">013</span> * copyright notice and the following two paragraphs appear in all copies<a name="line.13"></a>
+<span class="sourceLineNo">014</span> * of this software.<a name="line.14"></a>
+<span class="sourceLineNo">015</span> *<a name="line.15"></a>
+<span class="sourceLineNo">016</span> * IN NO EVENT SHALL THE UNIVERSITY OF CALIFORNIA BE LIABLE TO ANY PARTY<a name="line.16"></a>
+<span class="sourceLineNo">017</span> * FOR DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES<a name="line.17"></a>
+<span class="sourceLineNo">018</span> * ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION, EVEN IF<a name="line.18"></a>
+<span class="sourceLineNo">019</span> * THE UNIVERSITY OF CALIFORNIA HAS BEEN ADVISED OF THE POSSIBILITY OF<a name="line.19"></a>
+<span class="sourceLineNo">020</span> * SUCH DAMAGE.<a name="line.20"></a>
+<span class="sourceLineNo">021</span> *<a name="line.21"></a>
+<span class="sourceLineNo">022</span> * THE UNIVERSITY OF CALIFORNIA SPECIFICALLY DISCLAIMS ANY WARRANTIES,<a name="line.22"></a>
+<span class="sourceLineNo">023</span> * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF<a name="line.23"></a>
+<span class="sourceLineNo">024</span> * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE<a name="line.24"></a>
+<span class="sourceLineNo">025</span> * PROVIDED HEREUNDER IS ON AN "AS IS" BASIS, AND THE UNIVERSITY OF<a name="line.25"></a>
+<span class="sourceLineNo">026</span> * CALIFORNIA HAS NO OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT, UPDATES,<a name="line.26"></a>
+<span class="sourceLineNo">027</span> * ENHANCEMENTS, OR MODIFICATIONS.<a name="line.27"></a>
+<span class="sourceLineNo">028</span> *<a name="line.28"></a>
+<span class="sourceLineNo">029</span> */<a name="line.29"></a>
+<span class="sourceLineNo">030</span>package org.kepler.stratosphere.stub;<a name="line.30"></a>
+<span class="sourceLineNo">031</span><a name="line.31"></a>
+<span class="sourceLineNo">032</span>import java.util.ArrayList;<a name="line.32"></a>
+<span class="sourceLineNo">033</span>import java.util.Iterator;<a name="line.33"></a>
+<span class="sourceLineNo">034</span>import java.util.List;<a name="line.34"></a>
+<span class="sourceLineNo">035</span><a name="line.35"></a>
+<span class="sourceLineNo">036</span>import org.apache.commons.logging.Log;<a name="line.36"></a>
+<span class="sourceLineNo">037</span>import org.apache.commons.logging.LogFactory;<a name="line.37"></a>
+<span class="sourceLineNo">038</span>import org.kepler.ddp.Utilities;<a name="line.38"></a>
+<span class="sourceLineNo">039</span>import org.kepler.ddp.actor.pattern.stub.CoGroupInput;<a name="line.39"></a>
+<span class="sourceLineNo">040</span>import org.kepler.ddp.actor.pattern.stub.StubSinkActor;<a name="line.40"></a>
+<span class="sourceLineNo">041</span>import org.kepler.stratosphere.type.TypeUtilities;<a name="line.41"></a>
+<span class="sourceLineNo">042</span><a name="line.42"></a>
+<span class="sourceLineNo">043</span>import eu.stratosphere.api.java.record.functions.CoGroupFunction;<a name="line.43"></a>
+<span class="sourceLineNo">044</span>import eu.stratosphere.configuration.Configuration;<a name="line.44"></a>
+<span class="sourceLineNo">045</span>import eu.stratosphere.types.Key;<a name="line.45"></a>
+<span class="sourceLineNo">046</span>import eu.stratosphere.types.Record;<a name="line.46"></a>
+<span class="sourceLineNo">047</span>import eu.stratosphere.types.Value;<a name="line.47"></a>
+<span class="sourceLineNo">048</span>import eu.stratosphere.util.Collector;<a name="line.48"></a>
+<span class="sourceLineNo">049</span>import ptolemy.actor.CompositeActor;<a name="line.49"></a>
+<span class="sourceLineNo">050</span>import ptolemy.actor.ExecutionListener;<a name="line.50"></a>
+<span class="sourceLineNo">051</span>import ptolemy.actor.Manager;<a name="line.51"></a>
+<span class="sourceLineNo">052</span>import ptolemy.data.ArrayToken;<a name="line.52"></a>
+<span class="sourceLineNo">053</span>import ptolemy.data.Token;<a name="line.53"></a>
+<span class="sourceLineNo">054</span>import ptolemy.data.type.ArrayType;<a name="line.54"></a>
+<span class="sourceLineNo">055</span>import ptolemy.data.type.RecordType;<a name="line.55"></a>
+<span class="sourceLineNo">056</span>import ptolemy.kernel.util.IllegalActionException;<a name="line.56"></a>
+<span class="sourceLineNo">057</span><a name="line.57"></a>
+<span class="sourceLineNo">058</span>/** A PACT CoGroup stub that runs a Kepler workflow. The workflow is loaded in<a name="line.58"></a>
+<span class="sourceLineNo">059</span> *  configure(), and executed each time coGroup() is called.<a name="line.59"></a>
+<span class="sourceLineNo">060</span> * <a name="line.60"></a>
+<span class="sourceLineNo">061</span> *  @author Daniel Crawl<a name="line.61"></a>
+<span class="sourceLineNo">062</span> *  @version $Id: KeplerCoGroupStub.java 33628 2015-08-24 22:42:20Z crawl $<a name="line.62"></a>
+<span class="sourceLineNo">063</span> */<a name="line.63"></a>
+<span class="sourceLineNo">064</span>public class KeplerCoGroupStub extends CoGroupFunction implements ExecutionListener {<a name="line.64"></a>
+<span class="sourceLineNo">065</span><a name="line.65"></a>
+<span class="sourceLineNo">066</span>    /** Free resources. */<a name="line.66"></a>
+<span class="sourceLineNo">067</span>    @Override<a name="line.67"></a>
+<span class="sourceLineNo">068</span>    public void close() throws Exception<a name="line.68"></a>
+<span class="sourceLineNo">069</span>    {<a name="line.69"></a>
+<span class="sourceLineNo">070</span>        super.close();<a name="line.70"></a>
+<span class="sourceLineNo">071</span>        //LOG.info("stopping CoGroup stub");<a name="line.71"></a>
+<span class="sourceLineNo">072</span>        if(!_runWorkflowLifecyclePerInput) {<a name="line.72"></a>
+<span class="sourceLineNo">073</span>            _sourceActor.finish();<a name="line.73"></a>
+<span class="sourceLineNo">074</span>            _manager.waitForCompletion();<a name="line.74"></a>
+<span class="sourceLineNo">075</span>        }<a name="line.75"></a>
+<span class="sourceLineNo">076</span>        _manager.removeExecutionListener(this);<a name="line.76"></a>
+<span class="sourceLineNo">077</span>        _manager = null;<a name="line.77"></a>
+<span class="sourceLineNo">078</span>        _sinkActor = null;<a name="line.78"></a>
+<span class="sourceLineNo">079</span>        _sourceActor = null;<a name="line.79"></a>
+<span class="sourceLineNo">080</span>        //LOG.info("stopped CoGroup stub");<a name="line.80"></a>
+<span class="sourceLineNo">081</span>    }<a name="line.81"></a>
+<span class="sourceLineNo">082</span><a name="line.82"></a>
+<span class="sourceLineNo">083</span>    /** Configure the stub by loading the workflow and setting the PACT data<a name="line.83"></a>
+<span class="sourceLineNo">084</span>     *  types from the workflow stub actors.<a name="line.84"></a>
+<span class="sourceLineNo">085</span>     */<a name="line.85"></a>
+<span class="sourceLineNo">086</span>    @Override<a name="line.86"></a>
+<span class="sourceLineNo">087</span>    public void open(Configuration parameters) throws Exception {<a name="line.87"></a>
+<span class="sourceLineNo">088</span>                <a name="line.88"></a>
+<span class="sourceLineNo">089</span>        StubUtilities.initializePtolemy();<a name="line.89"></a>
+<span class="sourceLineNo">090</span>                <a name="line.90"></a>
+<span class="sourceLineNo">091</span>        // initialize kepler to run the workflow in the stub<a name="line.91"></a>
+<span class="sourceLineNo">092</span>        if(!parameters.getBoolean(Utilities.CONFIGURATION_KEPLER_SAME_JVM, false)) {<a name="line.92"></a>
+<span class="sourceLineNo">093</span>                StubUtilities.initializeKepler(parameters);<a name="line.93"></a>
+<span class="sourceLineNo">094</span>        }<a name="line.94"></a>
+<span class="sourceLineNo">095</span><a name="line.95"></a>
+<span class="sourceLineNo">096</span>        final CompositeActor model = Utilities.getModel(<a name="line.96"></a>
+<span class="sourceLineNo">097</span>                parameters.getString(Utilities.CONFIGURATION_KEPLER_MODEL_NAME, null),<a name="line.97"></a>
+<span class="sourceLineNo">098</span>                parameters.getString(Utilities.CONFIGURATION_KEPLER_MODEL, null),<a name="line.98"></a>
+<span class="sourceLineNo">099</span>                parameters.getString(Utilities.CONFIGURATION_KEPLER_MODEL_PATH, null),<a name="line.99"></a>
+<span class="sourceLineNo">100</span>                parameters.getBoolean(Utilities.CONFIGURATION_KEPLER_SAME_JVM, false),<a name="line.100"></a>
+<span class="sourceLineNo">101</span>                parameters.getString(Utilities.CONFIGURATION_KEPLER_REDIRECT_DIR, ""));<a name="line.101"></a>
+<span class="sourceLineNo">102</span>                                <a name="line.102"></a>
+<span class="sourceLineNo">103</span>        _sourceActor = (CoGroupInput) model.getEntity("CoGroupInput");<a name="line.103"></a>
+<span class="sourceLineNo">104</span>        if(_sourceActor == null) {<a name="line.104"></a>
+<span class="sourceLineNo">105</span>            throw new RuntimeException("Could not find CoGroupInput actor in model.");<a name="line.105"></a>
+<span class="sourceLineNo">106</span>        }<a name="line.106"></a>
+<span class="sourceLineNo">107</span>        <a name="line.107"></a>
+<span class="sourceLineNo">108</span>        _sinkActor = (StubSinkActor) model.getEntity("CoGroupOutput");<a name="line.108"></a>
+<span class="sourceLineNo">109</span>        if(_sinkActor == null) {<a name="line.109"></a>
+<span class="sourceLineNo">110</span>            throw new RuntimeException("Could not find CoGroupOutput actor in model.");<a name="line.110"></a>
+<span class="sourceLineNo">111</span>        }<a name="line.111"></a>
+<span class="sourceLineNo">112</span>        <a name="line.112"></a>
+<span class="sourceLineNo">113</span>                        <a name="line.113"></a>
+<span class="sourceLineNo">114</span>        firstIK = TypeUtilities.getPactKeyTypeForFieldInKeyValuePort(_sourceActor.in, "key");<a name="line.114"></a>
+<span class="sourceLineNo">115</span>        firstIV = TypeUtilities.getPactValueTypeForFieldInKeyValuePort(_sourceActor.in, "value");<a name="line.115"></a>
+<span class="sourceLineNo">116</span>        secondIK = TypeUtilities.getPactKeyTypeForFieldInKeyValuePort(_sourceActor.in2, "key");<a name="line.116"></a>
+<span class="sourceLineNo">117</span>        secondIV = TypeUtilities.getPactValueTypeForFieldInKeyValuePort(_sourceActor.in2, "value");<a name="line.117"></a>
+<span class="sourceLineNo">118</span><a name="line.118"></a>
+<span class="sourceLineNo">119</span>        //LOG.info("cogroup types: ik1 = " + firstIK + " iv1 = " + firstIV +<a name="line.119"></a>
+<span class="sourceLineNo">120</span>            //" ik2 = " + secondIK + " iv2 = " + secondIV);<a name="line.120"></a>
+<span class="sourceLineNo">121</span>                <a name="line.121"></a>
+<span class="sourceLineNo">122</span>        _runWorkflowLifecyclePerInput = parameters.getBoolean(<a name="line.122"></a>
+<span class="sourceLineNo">123</span>                Utilities.CONFIGURATION_KEPLER_RUN_WORKFLOW_LIFECYCLE_PER_INPUT, false);<a name="line.123"></a>
+<span class="sourceLineNo">124</span>        <a name="line.124"></a>
+<span class="sourceLineNo">125</span>        _runWorkflowLifecyclePerInput = Utilities.checkDirectorIterations(model,<a name="line.125"></a>
+<span class="sourceLineNo">126</span>                _runWorkflowLifecyclePerInput);<a name="line.126"></a>
+<span class="sourceLineNo">127</span><a name="line.127"></a>
+<span class="sourceLineNo">128</span>        _stubThread = Thread.currentThread();<a name="line.128"></a>
+<span class="sourceLineNo">129</span><a name="line.129"></a>
+<span class="sourceLineNo">130</span>        _manager = Utilities.createManagerForModel(model, this, _sourceActor, _sinkActor,<a name="line.130"></a>
+<span class="sourceLineNo">131</span>                _runWorkflowLifecyclePerInput,<a name="line.131"></a>
+<span class="sourceLineNo">132</span>                parameters.getBoolean(Utilities.CONFIGURATION_KEPLER_PRINT_EXE_INFO, false));<a name="line.132"></a>
+<span class="sourceLineNo">133</span>        <a name="line.133"></a>
+<span class="sourceLineNo">134</span>        //LOG.info("started CoGroup stub");<a name="line.134"></a>
+<span class="sourceLineNo">135</span><a name="line.135"></a>
+<span class="sourceLineNo">136</span>    }<a name="line.136"></a>
+<span class="sourceLineNo">137</span><a name="line.137"></a>
+<span class="sourceLineNo">138</span>    /** Transfer the data from Stratosphere to Kepler, execute the workflow,<a name="line.138"></a>
+<span class="sourceLineNo">139</span>     *  and then transfer the data from Kepler to Stratosphere.<a name="line.139"></a>
+<span class="sourceLineNo">140</span>     */<a name="line.140"></a>
+<span class="sourceLineNo">141</span>    @Override<a name="line.141"></a>
+<span class="sourceLineNo">142</span>    public void coGroup(Iterator&lt;Record&gt; records1, Iterator&lt;Record&gt; records2, Collector&lt;Record&gt; out) throws Exception {<a name="line.142"></a>
+<span class="sourceLineNo">143</span>        <a name="line.143"></a>
+<span class="sourceLineNo">144</span>        //LOG.info("k = " + key);<a name="line.144"></a>
+<span class="sourceLineNo">145</span>        //LOG.info("v1 = " + values1);<a name="line.145"></a>
+<span class="sourceLineNo">146</span>        //LOG.info("v2 = " + values2);<a name="line.146"></a>
+<span class="sourceLineNo">147</span><a name="line.147"></a>
+<span class="sourceLineNo">148</span>        Token keyToken = null;<a name="line.148"></a>
+<span class="sourceLineNo">149</span>        <a name="line.149"></a>
+<span class="sourceLineNo">150</span>        // see if values1 is empty<a name="line.150"></a>
+<span class="sourceLineNo">151</span>        Token values1Token;<a name="line.151"></a>
+<span class="sourceLineNo">152</span>        if(!records1.hasNext()) {<a name="line.152"></a>
+<span class="sourceLineNo">153</span>            values1Token = new ArrayToken(((RecordType)((ArrayType)_sourceActor.in.getType()).getElementType()).get("value"));<a name="line.153"></a>
+<span class="sourceLineNo">154</span>        } else {<a name="line.154"></a>
+<span class="sourceLineNo">155</span>            final List&lt;Token&gt; tokenList = new ArrayList&lt;Token&gt;();<a name="line.155"></a>
+<span class="sourceLineNo">156</span>            while(records1.hasNext()) {<a name="line.156"></a>
+<span class="sourceLineNo">157</span>                final Record record = records1.next();<a name="line.157"></a>
+<span class="sourceLineNo">158</span>                <a name="line.158"></a>
+<span class="sourceLineNo">159</span>                if(keyToken == null) {<a name="line.159"></a>
+<span class="sourceLineNo">160</span>                    keyToken = StubUtilities.convertPactDataToToken(record, TypeUtilities.KEY_FIELD, firstIK);<a name="line.160"></a>
+<span class="sourceLineNo">161</span>                }<a name="line.161"></a>
+<span class="sourceLineNo">162</span>                    <a name="line.162"></a>
+<span class="sourceLineNo">163</span>                tokenList.add(StubUtilities.convertPactDataToToken(record, TypeUtilities.VALUE_FIELD, firstIV));<a name="line.163"></a>
+<span class="sourceLineNo">164</span>            }<a name="line.164"></a>
+<span class="sourceLineNo">165</span>            try {<a name="line.165"></a>
+<span class="sourceLineNo">166</span>                values1Token = new ArrayToken(tokenList.toArray(new Token[tokenList.size()]));<a name="line.166"></a>
+<span class="sourceLineNo">167</span>            } catch (IllegalActionException e) {<a name="line.167"></a>
+<span class="sourceLineNo">168</span>                throw new RuntimeException("Error creating array token.", e);<a name="line.168"></a>
+<span class="sourceLineNo">169</span>            }<a name="line.169"></a>
+<span class="sourceLineNo">170</span><a name="line.170"></a>
+<span class="sourceLineNo">171</span>        }<a name="line.171"></a>
+<span class="sourceLineNo">172</span><a name="line.172"></a>
+<span class="sourceLineNo">173</span>        // see if values2 is empty<a name="line.173"></a>
+<span class="sourceLineNo">174</span>        Token values2Token;<a name="line.174"></a>
+<span class="sourceLineNo">175</span>        if(!records2.hasNext()) {<a name="line.175"></a>
+<span class="sourceLineNo">176</span>            values2Token = new ArrayToken(((RecordType)((ArrayType)_sourceActor.in2.getType()).getElementType()).get("value"));<a name="line.176"></a>
+<span class="sourceLineNo">177</span>        } else {<a name="line.177"></a>
+<span class="sourceLineNo">178</span>            final List&lt;Token&gt; tokenList = new ArrayList&lt;Token&gt;();<a name="line.178"></a>
+<span class="sourceLineNo">179</span>            while(records2.hasNext()) {<a name="line.179"></a>
+<span class="sourceLineNo">180</span>                final Record record = records2.next();<a name="line.180"></a>
+<span class="sourceLineNo">181</span>                <a name="line.181"></a>
+<span class="sourceLineNo">182</span>                if(keyToken == null) {<a name="line.182"></a>
+<span class="sourceLineNo">183</span>                    keyToken = StubUtilities.convertPactDataToToken(record, TypeUtilities.KEY_FIELD, secondIK);<a name="line.183"></a>
+<span class="sourceLineNo">184</span>                }<a name="line.184"></a>
+<span class="sourceLineNo">185</span>                    <a name="line.185"></a>
+<span class="sourceLineNo">186</span>                tokenList.add(StubUtilities.convertPactDataToToken(record, TypeUtilities.VALUE_FIELD, secondIV));<a name="line.186"></a>
+<span class="sourceLineNo">187</span>            }<a name="line.187"></a>
+<span class="sourceLineNo">188</span>            try {<a name="line.188"></a>
+<span class="sourceLineNo">189</span>                values2Token = new ArrayToken(tokenList.toArray(new Token[tokenList.size()]));<a name="line.189"></a>
+<span class="sourceLineNo">190</span>            } catch (IllegalActionException e) {<a name="line.190"></a>
+<span class="sourceLineNo">191</span>                throw new RuntimeException("Error creating array token.", e);<a name="line.191"></a>
+<span class="sourceLineNo">192</span>            }<a name="line.192"></a>
+<span class="sourceLineNo">193</span>        }<a name="line.193"></a>
+<span class="sourceLineNo">194</span><a name="line.194"></a>
+<span class="sourceLineNo">195</span>        <a name="line.195"></a>
+<span class="sourceLineNo">196</span>        // set the inputs<a name="line.196"></a>
+<span class="sourceLineNo">197</span>        _sourceActor.setInput(keyToken, values1Token, values2Token);<a name="line.197"></a>
+<span class="sourceLineNo">198</span>        <a name="line.198"></a>
+<span class="sourceLineNo">199</span>        if(_runWorkflowLifecyclePerInput) {<a name="line.199"></a>
+<span class="sourceLineNo">200</span>            _manager.execute();<a name="line.200"></a>
+<span class="sourceLineNo">201</span>        }<a name="line.201"></a>
+<span class="sourceLineNo">202</span><a name="line.202"></a>
+<span class="sourceLineNo">203</span>        // read the output from the output actor<a name="line.203"></a>
+<span class="sourceLineNo">204</span>        List&lt;Token&gt; tokenList = null;<a name="line.204"></a>
+<span class="sourceLineNo">205</span>        try {<a name="line.205"></a>
+<span class="sourceLineNo">206</span>            tokenList = _sinkActor.getOutput();<a name="line.206"></a>
+<span class="sourceLineNo">207</span>        } catch (IllegalActionException e) {<a name="line.207"></a>
+<span class="sourceLineNo">208</span>            throw new Exception("Error getting output for " + _sinkActor.getName() + ".", e);<a name="line.208"></a>
+<span class="sourceLineNo">209</span>        }<a name="line.209"></a>
+<span class="sourceLineNo">210</span><a name="line.210"></a>
+<span class="sourceLineNo">211</span>        if(tokenList != null) {<a name="line.211"></a>
+<span class="sourceLineNo">212</span>            StubUtilities.convertTokenToCollector(tokenList, out);<a name="line.212"></a>
+<span class="sourceLineNo">213</span>        } else if(_keplerManagerException != null) {<a name="line.213"></a>
+<span class="sourceLineNo">214</span>            throw _keplerManagerException;<a name="line.214"></a>
+<span class="sourceLineNo">215</span>        }<a name="line.215"></a>
+<span class="sourceLineNo">216</span><a name="line.216"></a>
+<span class="sourceLineNo">217</span>    }<a name="line.217"></a>
+<span class="sourceLineNo">218</span><a name="line.218"></a>
+<span class="sourceLineNo">219</span>    /** Report workflow execution errors to the log. */<a name="line.219"></a>
+<span class="sourceLineNo">220</span>    @Override<a name="line.220"></a>
+<span class="sourceLineNo">221</span>    public void executionError(Manager manager, Throwable throwable) {<a name="line.221"></a>
+<span class="sourceLineNo">222</span>        <a name="line.222"></a>
+<span class="sourceLineNo">223</span>        if(throwable instanceof Exception) {<a name="line.223"></a>
+<span class="sourceLineNo">224</span>            _keplerManagerException = (Exception) throwable;<a name="line.224"></a>
+<span class="sourceLineNo">225</span>        } else {<a name="line.225"></a>
+<span class="sourceLineNo">226</span>            _keplerManagerException = new Exception(throwable);<a name="line.226"></a>
+<span class="sourceLineNo">227</span>        }<a name="line.227"></a>
+<span class="sourceLineNo">228</span>        _stubThread.interrupt();<a name="line.228"></a>
+<span class="sourceLineNo">229</span>        <a name="line.229"></a>
+<span class="sourceLineNo">230</span>    }<a name="line.230"></a>
+<span class="sourceLineNo">231</span><a name="line.231"></a>
+<span class="sourceLineNo">232</span>    /** Do nothing. */<a name="line.232"></a>
+<span class="sourceLineNo">233</span>    @Override<a name="line.233"></a>
+<span class="sourceLineNo">234</span>    public void executionFinished(Manager manager) {<a name="line.234"></a>
+<span class="sourceLineNo">235</span>        <a name="line.235"></a>
+<span class="sourceLineNo">236</span>        //LOG.info("cogroup execution finished");<a name="line.236"></a>
+<span class="sourceLineNo">237</span><a name="line.237"></a>
+<span class="sourceLineNo">238</span>    }<a name="line.238"></a>
+<span class="sourceLineNo">239</span><a name="line.239"></a>
+<span class="sourceLineNo">240</span>    /** Do nothing. */<a name="line.240"></a>
+<span class="sourceLineNo">241</span>    @Override<a name="line.241"></a>
+<span class="sourceLineNo">242</span>    public void managerStateChanged(Manager manager) {<a name="line.242"></a>
+<span class="sourceLineNo">243</span><a name="line.243"></a>
+<span class="sourceLineNo">244</span>        //LOG.info("cogroup manager state changed: " + manager.getState());<a name="line.244"></a>
+<span class="sourceLineNo">245</span>       <a name="line.245"></a>
+<span class="sourceLineNo">246</span>    }<a name="line.246"></a>
+<span class="sourceLineNo">247</span><a name="line.247"></a>
+<span class="sourceLineNo">248</span>    /** A source actor used for reading data from Stratosphere and writing<a name="line.248"></a>
+<span class="sourceLineNo">249</span>     *  it the Kepler workflow.<a name="line.249"></a>
+<span class="sourceLineNo">250</span>     */<a name="line.250"></a>
+<span class="sourceLineNo">251</span>    private CoGroupInput _sourceActor;<a name="line.251"></a>
+<span class="sourceLineNo">252</span><a name="line.252"></a>
+<span class="sourceLineNo">253</span>    /** A sink actor used for reading data from the workflow and writing<a name="line.253"></a>
+<span class="sourceLineNo">254</span>     *  it to Stratosphere.<a name="line.254"></a>
+<span class="sourceLineNo">255</span>     */<a name="line.255"></a>
+<span class="sourceLineNo">256</span>    private StubSinkActor _sinkActor;<a name="line.256"></a>
+<span class="sourceLineNo">257</span><a name="line.257"></a>
+<span class="sourceLineNo">258</span>    /** Logging. */<a name="line.258"></a>
+<span class="sourceLineNo">259</span>    private static final Log LOG = LogFactory.getLog(KeplerCoGroupStub.class);<a name="line.259"></a>
+<span class="sourceLineNo">260</span><a name="line.260"></a>
+<span class="sourceLineNo">261</span>    /** Manager to execute the workflow. */<a name="line.261"></a>
+<span class="sourceLineNo">262</span>    private Manager _manager;<a name="line.262"></a>
+<span class="sourceLineNo">263</span><a name="line.263"></a>
+<span class="sourceLineNo">264</span>    /**<a name="line.264"></a>
+<span class="sourceLineNo">265</span>     * First input key type.<a name="line.265"></a>
+<span class="sourceLineNo">266</span>     */<a name="line.266"></a>
+<span class="sourceLineNo">267</span>    private Class&lt;? extends Key&gt; firstIK;<a name="line.267"></a>
+<span class="sourceLineNo">268</span><a name="line.268"></a>
+<span class="sourceLineNo">269</span>    /**<a name="line.269"></a>
+<span class="sourceLineNo">270</span>     * First input value type.<a name="line.270"></a>
+<span class="sourceLineNo">271</span>     */<a name="line.271"></a>
+<span class="sourceLineNo">272</span>    private Class&lt;? extends Value&gt; firstIV;<a name="line.272"></a>
+<span class="sourceLineNo">273</span><a name="line.273"></a>
+<span class="sourceLineNo">274</span>    /**<a name="line.274"></a>
+<span class="sourceLineNo">275</span>     * Second input key type.<a name="line.275"></a>
+<span class="sourceLineNo">276</span>     */<a name="line.276"></a>
+<span class="sourceLineNo">277</span>    private Class&lt;? extends Key&gt; secondIK;<a name="line.277"></a>
+<span class="sourceLineNo">278</span><a name="line.278"></a>
+<span class="sourceLineNo">279</span>    /**<a name="line.279"></a>
+<span class="sourceLineNo">280</span>     * Second input value type.<a name="line.280"></a>
+<span class="sourceLineNo">281</span>     */<a name="line.281"></a>
+<span class="sourceLineNo">282</span>    private Class&lt;? extends Value&gt; secondIV;<a name="line.282"></a>
+<span class="sourceLineNo">283</span>    <a name="line.283"></a>
+<span class="sourceLineNo">284</span>    /** If true, the entire workflow lifecycle is executed for each input. */<a name="line.284"></a>
+<span class="sourceLineNo">285</span>    private boolean _runWorkflowLifecyclePerInput = false;<a name="line.285"></a>
+<span class="sourceLineNo">286</span><a name="line.286"></a>
+<span class="sourceLineNo">287</span>    /** If the workflow is running in a separate thread<a name="line.287"></a>
+<span class="sourceLineNo">288</span>     *  (_runWorkflowLifecyclePerInput = false) and an exception<a name="line.288"></a>
+<span class="sourceLineNo">289</span>     *  is thrown, this field is set to that exception.<a name="line.289"></a>
+<span class="sourceLineNo">290</span>     */<a name="line.290"></a>
+<span class="sourceLineNo">291</span>    private Exception _keplerManagerException;<a name="line.291"></a>
+<span class="sourceLineNo">292</span>    <a name="line.292"></a>
+<span class="sourceLineNo">293</span>    /** The thread executing the stub (not the workflow). */<a name="line.293"></a>
+<span class="sourceLineNo">294</span>    private Thread _stubThread;<a name="line.294"></a>
+<span class="sourceLineNo">295</span><a name="line.295"></a>
+<span class="sourceLineNo">296</span>}<a name="line.296"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

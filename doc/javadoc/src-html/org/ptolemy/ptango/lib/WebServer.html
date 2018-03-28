@@ -1,0 +1,715 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../../../stylesheet.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>/* An attribute that runs a Jetty web server and routes requests to objects<a name="line.1"></a>
+<span class="sourceLineNo">002</span> * in the model.<a name="line.2"></a>
+<span class="sourceLineNo">003</span><a name="line.3"></a>
+<span class="sourceLineNo">004</span> Copyright (c) 1997-2015 The Regents of the University of California.<a name="line.4"></a>
+<span class="sourceLineNo">005</span> All rights reserved.<a name="line.5"></a>
+<span class="sourceLineNo">006</span> Permission is hereby granted, without written agreement and without<a name="line.6"></a>
+<span class="sourceLineNo">007</span> license or royalty fees, to use, copy, modify, and distribute this<a name="line.7"></a>
+<span class="sourceLineNo">008</span> software and its documentation for any purpose, provided that the above<a name="line.8"></a>
+<span class="sourceLineNo">009</span> copyright notice and the following two paragraphs appear in all copies<a name="line.9"></a>
+<span class="sourceLineNo">010</span> of this software.<a name="line.10"></a>
+<span class="sourceLineNo">011</span><a name="line.11"></a>
+<span class="sourceLineNo">012</span> IN NO EVENT SHALL THE UNIVERSITY OF CALIFORNIA BE LIABLE TO ANY PARTY<a name="line.12"></a>
+<span class="sourceLineNo">013</span> FOR DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES<a name="line.13"></a>
+<span class="sourceLineNo">014</span> ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION, EVEN IF<a name="line.14"></a>
+<span class="sourceLineNo">015</span> THE UNIVERSITY OF CALIFORNIA HAS BEEN ADVISED OF THE POSSIBILITY OF<a name="line.15"></a>
+<span class="sourceLineNo">016</span> SUCH DAMAGE.<a name="line.16"></a>
+<span class="sourceLineNo">017</span><a name="line.17"></a>
+<span class="sourceLineNo">018</span> THE UNIVERSITY OF CALIFORNIA SPECIFICALLY DISCLAIMS ANY WARRANTIES,<a name="line.18"></a>
+<span class="sourceLineNo">019</span> INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF<a name="line.19"></a>
+<span class="sourceLineNo">020</span> MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE<a name="line.20"></a>
+<span class="sourceLineNo">021</span> PROVIDED HEREUNDER IS ON AN "AS IS" BASIS, AND THE UNIVERSITY OF<a name="line.21"></a>
+<span class="sourceLineNo">022</span> CALIFORNIA HAS NO OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT, UPDATES,<a name="line.22"></a>
+<span class="sourceLineNo">023</span> ENHANCEMENTS, OR MODIFICATIONS.<a name="line.23"></a>
+<span class="sourceLineNo">024</span><a name="line.24"></a>
+<span class="sourceLineNo">025</span> PT_COPYRIGHT_VERSION_2<a name="line.25"></a>
+<span class="sourceLineNo">026</span> COPYRIGHTENDKEY<a name="line.26"></a>
+<span class="sourceLineNo">027</span><a name="line.27"></a>
+<span class="sourceLineNo">028</span> */<a name="line.28"></a>
+<span class="sourceLineNo">029</span><a name="line.29"></a>
+<span class="sourceLineNo">030</span>package org.ptolemy.ptango.lib;<a name="line.30"></a>
+<span class="sourceLineNo">031</span><a name="line.31"></a>
+<span class="sourceLineNo">032</span>import java.io.IOException;<a name="line.32"></a>
+<span class="sourceLineNo">033</span>import java.net.URI;<a name="line.33"></a>
+<span class="sourceLineNo">034</span>import java.net.URISyntaxException;<a name="line.34"></a>
+<span class="sourceLineNo">035</span>import java.net.URL;<a name="line.35"></a>
+<span class="sourceLineNo">036</span>import java.util.HashSet;<a name="line.36"></a>
+<span class="sourceLineNo">037</span>import java.util.LinkedHashSet;<a name="line.37"></a>
+<span class="sourceLineNo">038</span>import java.util.List;<a name="line.38"></a>
+<span class="sourceLineNo">039</span><a name="line.39"></a>
+<span class="sourceLineNo">040</span>import org.eclipse.jetty.util.resource.Resource;<a name="line.40"></a>
+<span class="sourceLineNo">041</span>import org.ptolemy.ptango.lib.webSocket.WebSocketEndpointManager;<a name="line.41"></a>
+<span class="sourceLineNo">042</span>import org.ptolemy.ptango.lib.webSocket.WebSocketService;<a name="line.42"></a>
+<span class="sourceLineNo">043</span><a name="line.43"></a>
+<span class="sourceLineNo">044</span>import ptolemy.actor.AbstractInitializableAttribute;<a name="line.44"></a>
+<span class="sourceLineNo">045</span>import ptolemy.data.expr.FileParameter;<a name="line.45"></a>
+<span class="sourceLineNo">046</span>import ptolemy.data.expr.Parameter;<a name="line.46"></a>
+<span class="sourceLineNo">047</span>import ptolemy.data.expr.StringParameter;<a name="line.47"></a>
+<span class="sourceLineNo">048</span>import ptolemy.data.type.BaseType;<a name="line.48"></a>
+<span class="sourceLineNo">049</span>import ptolemy.kernel.CompositeEntity;<a name="line.49"></a>
+<span class="sourceLineNo">050</span>import ptolemy.kernel.Entity;<a name="line.50"></a>
+<span class="sourceLineNo">051</span>import ptolemy.kernel.attributes.URIAttribute;<a name="line.51"></a>
+<span class="sourceLineNo">052</span>import ptolemy.kernel.util.Attribute;<a name="line.52"></a>
+<span class="sourceLineNo">053</span>import ptolemy.kernel.util.IllegalActionException;<a name="line.53"></a>
+<span class="sourceLineNo">054</span>import ptolemy.kernel.util.NameDuplicationException;<a name="line.54"></a>
+<span class="sourceLineNo">055</span>import ptolemy.kernel.util.NamedObj;<a name="line.55"></a>
+<span class="sourceLineNo">056</span>import ptolemy.kernel.util.Settable;<a name="line.56"></a>
+<span class="sourceLineNo">057</span>import ptolemy.kernel.util.Workspace;<a name="line.57"></a>
+<span class="sourceLineNo">058</span><a name="line.58"></a>
+<span class="sourceLineNo">059</span>///////////////////////////////////////////////////////////////////<a name="line.59"></a>
+<span class="sourceLineNo">060</span>//// WebServer<a name="line.60"></a>
+<span class="sourceLineNo">061</span><a name="line.61"></a>
+<span class="sourceLineNo">062</span>/** An attribute that runs a Jetty web server and routes incoming<a name="line.62"></a>
+<span class="sourceLineNo">063</span> *  HTTP requests to objects in the model that implement<a name="line.63"></a>
+<span class="sourceLineNo">064</span> *  {@link HttpService}. The server is set up during<a name="line.64"></a>
+<span class="sourceLineNo">065</span> *  {@link #initialize()} and taken down during<a name="line.65"></a>
+<span class="sourceLineNo">066</span> *  {@link #wrapup()}.  The &lt;i&gt;resourceLocation&lt;/i&gt;<a name="line.66"></a>
+<span class="sourceLineNo">067</span> *  parameter gives a directory or URL relative to which this<a name="line.67"></a>
+<span class="sourceLineNo">068</span> *  web server should look for resources (like image files and<a name="line.68"></a>
+<span class="sourceLineNo">069</span> *  the like).<a name="line.69"></a>
+<span class="sourceLineNo">070</span> *  You can add additional resource bases by adding additional<a name="line.70"></a>
+<span class="sourceLineNo">071</span> *  parameters of type ptolemy.data.expr.FileParameter to<a name="line.71"></a>
+<span class="sourceLineNo">072</span> *  this WebServer (select Configure in the context menu).<a name="line.72"></a>
+<span class="sourceLineNo">073</span> *<a name="line.73"></a>
+<span class="sourceLineNo">074</span> *  &lt;p&gt;&lt;a href="http://wiki.eclipse.org/Jetty/Tutorial"&gt;http://wiki.eclipse.org/Jetty/Tutorial&lt;/a&gt;<a name="line.74"></a>
+<span class="sourceLineNo">075</span> *  - The Jetty Tutorial&lt;/p&gt;<a name="line.75"></a>
+<span class="sourceLineNo">076</span> *<a name="line.76"></a>
+<span class="sourceLineNo">077</span> *   @author Elizabeth Latronico and Edward A. Lee<a name="line.77"></a>
+<span class="sourceLineNo">078</span> *   @version $Id$<a name="line.78"></a>
+<span class="sourceLineNo">079</span> *   @since Ptolemy II 10.0<a name="line.79"></a>
+<span class="sourceLineNo">080</span> *   @Pt.ProposedRating Yellow (eal)<a name="line.80"></a>
+<span class="sourceLineNo">081</span> *   @Pt.AcceptedRating Red (ltrnc)<a name="line.81"></a>
+<span class="sourceLineNo">082</span> */<a name="line.82"></a>
+<span class="sourceLineNo">083</span>public class WebServer extends AbstractInitializableAttribute {<a name="line.83"></a>
+<span class="sourceLineNo">084</span><a name="line.84"></a>
+<span class="sourceLineNo">085</span>    /** Construct an instance of the attribute.<a name="line.85"></a>
+<span class="sourceLineNo">086</span>     * @param container The container.<a name="line.86"></a>
+<span class="sourceLineNo">087</span>     * @param name The name.<a name="line.87"></a>
+<span class="sourceLineNo">088</span>     * @exception IllegalActionException If the superclass throws it.<a name="line.88"></a>
+<span class="sourceLineNo">089</span>     * @exception NameDuplicationException If the superclass throws it.<a name="line.89"></a>
+<span class="sourceLineNo">090</span>     */<a name="line.90"></a>
+<span class="sourceLineNo">091</span>    public WebServer(NamedObj container, String name)<a name="line.91"></a>
+<span class="sourceLineNo">092</span>            throws IllegalActionException, NameDuplicationException {<a name="line.92"></a>
+<span class="sourceLineNo">093</span>        super(container, name);<a name="line.93"></a>
+<span class="sourceLineNo">094</span><a name="line.94"></a>
+<span class="sourceLineNo">095</span>        preferredPort = new Parameter(this, "preferredPort");<a name="line.95"></a>
+<span class="sourceLineNo">096</span>        preferredPort.setTypeEquals(BaseType.INT);<a name="line.96"></a>
+<span class="sourceLineNo">097</span>        preferredPort.setExpression(<a name="line.97"></a>
+<span class="sourceLineNo">098</span>                Integer.toString(WebServerUtilities.DEFAULT_PORT_NUMBER));<a name="line.98"></a>
+<span class="sourceLineNo">099</span><a name="line.99"></a>
+<span class="sourceLineNo">100</span>        applicationPath = new StringParameter(this, "applicationPath");<a name="line.100"></a>
+<span class="sourceLineNo">101</span>        applicationPath.setExpression("/");<a name="line.101"></a>
+<span class="sourceLineNo">102</span><a name="line.102"></a>
+<span class="sourceLineNo">103</span>        resourcePath = new StringParameter(this, "resourcePath");<a name="line.103"></a>
+<span class="sourceLineNo">104</span>        resourcePath.setExpression("/");<a name="line.104"></a>
+<span class="sourceLineNo">105</span><a name="line.105"></a>
+<span class="sourceLineNo">106</span>        // Set up a parameter to specify the location for reading and writing<a name="line.106"></a>
+<span class="sourceLineNo">107</span>        // resources (files).  This parameter defaults to the directory that<a name="line.107"></a>
+<span class="sourceLineNo">108</span>        // the current model is located in.<a name="line.108"></a>
+<span class="sourceLineNo">109</span>        // FIXME: The full path is encoded. If this file is in the $PTII tree,<a name="line.109"></a>
+<span class="sourceLineNo">110</span>        // then the path should begin with $PTII.<a name="line.110"></a>
+<span class="sourceLineNo">111</span><a name="line.111"></a>
+<span class="sourceLineNo">112</span>        // The Jetty web server supports searching multiple directories/URLs for<a name="line.112"></a>
+<span class="sourceLineNo">113</span>        // resources (files) to return as part of an HttpResponse.  However, if<a name="line.113"></a>
+<span class="sourceLineNo">114</span>        // there are two different files with the same names in different<a name="line.114"></a>
+<span class="sourceLineNo">115</span>        // directories, it is not clear which file will be served.  Right now,<a name="line.115"></a>
+<span class="sourceLineNo">116</span>        // the directories are searched in alphabetical order by parameter name.<a name="line.116"></a>
+<span class="sourceLineNo">117</span>        // WebServer itself currently only contains a reader<a name="line.117"></a>
+<span class="sourceLineNo">118</span>        // (the resourceHandler in setResourceHandlers()<a name="line.118"></a>
+<span class="sourceLineNo">119</span>        // Other actors (e.g. HttpCompositeServiceActor) are writers, and<a name="line.119"></a>
+<span class="sourceLineNo">120</span>        // will look for a WebServer in the model to determine the directory<a name="line.120"></a>
+<span class="sourceLineNo">121</span>        // to write to<a name="line.121"></a>
+<span class="sourceLineNo">122</span>        resourceLocation = new FileParameter(this, "resourceLocation");<a name="line.122"></a>
+<span class="sourceLineNo">123</span><a name="line.123"></a>
+<span class="sourceLineNo">124</span>        // Want resourceLocation to correspond to a directory<a name="line.124"></a>
+<span class="sourceLineNo">125</span>        // Add parameters to specify that only directories are allowed<a name="line.125"></a>
+<span class="sourceLineNo">126</span>        Parameter allowDirectories = new Parameter(resourceLocation,<a name="line.126"></a>
+<span class="sourceLineNo">127</span>                "allowDirectories");<a name="line.127"></a>
+<span class="sourceLineNo">128</span>        allowDirectories.setToken("true");<a name="line.128"></a>
+<span class="sourceLineNo">129</span>        allowDirectories.setVisibility(Settable.NONE);<a name="line.129"></a>
+<span class="sourceLineNo">130</span><a name="line.130"></a>
+<span class="sourceLineNo">131</span>        Parameter allowFiles = new Parameter(resourceLocation, "allowFiles");<a name="line.131"></a>
+<span class="sourceLineNo">132</span>        allowFiles.setToken("false");<a name="line.132"></a>
+<span class="sourceLineNo">133</span>        allowFiles.setVisibility(Settable.NONE);<a name="line.133"></a>
+<span class="sourceLineNo">134</span><a name="line.134"></a>
+<span class="sourceLineNo">135</span>        URI modelURI = URIAttribute.getModelURI(this);<a name="line.135"></a>
+<span class="sourceLineNo">136</span>        // Get the directory excluding the model's name<a name="line.136"></a>
+<span class="sourceLineNo">137</span>        // This may be null for newly created models that have not been saved<a name="line.137"></a>
+<span class="sourceLineNo">138</span>        // In that case, default to the temporary directory<a name="line.138"></a>
+<span class="sourceLineNo">139</span>        // FIXME:  Register an attributeChanged event for when a model is saved<a name="line.139"></a>
+<span class="sourceLineNo">140</span>        // to update this directory?<a name="line.140"></a>
+<span class="sourceLineNo">141</span>        String path;<a name="line.141"></a>
+<span class="sourceLineNo">142</span>        if (modelURI != null &amp;&amp; modelURI.getPath() != null<a name="line.142"></a>
+<span class="sourceLineNo">143</span>                &amp;&amp; !modelURI.getPath().isEmpty()) {<a name="line.143"></a>
+<span class="sourceLineNo">144</span>            path = modelURI.getPath();<a name="line.144"></a>
+<span class="sourceLineNo">145</span>            int slash = path.lastIndexOf("/");<a name="line.145"></a>
+<span class="sourceLineNo">146</span>            if (slash != -1) {<a name="line.146"></a>
+<span class="sourceLineNo">147</span>                path = path.substring(0, slash);<a name="line.147"></a>
+<span class="sourceLineNo">148</span>            }<a name="line.148"></a>
+<span class="sourceLineNo">149</span>        } else {<a name="line.149"></a>
+<span class="sourceLineNo">150</span>            path = "$TMPDIR";<a name="line.150"></a>
+<span class="sourceLineNo">151</span>        }<a name="line.151"></a>
+<span class="sourceLineNo">152</span>        resourceLocation.setExpression(path);<a name="line.152"></a>
+<span class="sourceLineNo">153</span><a name="line.153"></a>
+<span class="sourceLineNo">154</span>        temporaryFileLocation = new FileParameter(this,<a name="line.154"></a>
+<span class="sourceLineNo">155</span>                "temporaryFileLocation");<a name="line.155"></a>
+<span class="sourceLineNo">156</span>        temporaryFileLocation.setExpression("$TMPDIR");<a name="line.156"></a>
+<span class="sourceLineNo">157</span><a name="line.157"></a>
+<span class="sourceLineNo">158</span>        deployedPort = new Parameter(this, "deployedPort");<a name="line.158"></a>
+<span class="sourceLineNo">159</span>        deployedPort.setExpression("-1");<a name="line.159"></a>
+<span class="sourceLineNo">160</span>        deployedPort.setVisibility(Settable.NOT_EDITABLE);<a name="line.160"></a>
+<span class="sourceLineNo">161</span>        // Don't save deployed port in MoML.  Otherwise, Ptolemy will ask you to<a name="line.161"></a>
+<span class="sourceLineNo">162</span>        // save the model upon exiting every time a new deployed port is chosen<a name="line.162"></a>
+<span class="sourceLineNo">163</span>        deployedPort.setPersistent(false);<a name="line.163"></a>
+<span class="sourceLineNo">164</span><a name="line.164"></a>
+<span class="sourceLineNo">165</span>        _dynamicPortSelection = false;<a name="line.165"></a>
+<span class="sourceLineNo">166</span>    }<a name="line.166"></a>
+<span class="sourceLineNo">167</span><a name="line.167"></a>
+<span class="sourceLineNo">168</span>    ///////////////////////////////////////////////////////////////////<a name="line.168"></a>
+<span class="sourceLineNo">169</span>    ////                         parameters                        ////<a name="line.169"></a>
+<span class="sourceLineNo">170</span><a name="line.170"></a>
+<span class="sourceLineNo">171</span>    /** The URL prefix to map this model to.  A model can be thought of as a<a name="line.171"></a>
+<span class="sourceLineNo">172</span>     *  single application.<a name="line.172"></a>
+<span class="sourceLineNo">173</span>     *<a name="line.173"></a>
+<span class="sourceLineNo">174</span>     *  This defaults to "/", meaning, accept requests for all URLs.<a name="line.174"></a>
+<span class="sourceLineNo">175</span>     *  For example, if the WebServer is handling requests on {@link #preferredPort} 8078<a name="line.175"></a>
+<span class="sourceLineNo">176</span>     *  of localhost, the model will handle all requests that begin with<a name="line.176"></a>
+<span class="sourceLineNo">177</span>     *  &lt;pre&gt;<a name="line.177"></a>
+<span class="sourceLineNo">178</span>     *  http://localhost:8078/<a name="line.178"></a>
+<span class="sourceLineNo">179</span>     *  &lt;/pre&gt;<a name="line.179"></a>
+<span class="sourceLineNo">180</span>     *<a name="line.180"></a>
+<span class="sourceLineNo">181</span>     *  If multiple applications are running on the same server, it's typical<a name="line.181"></a>
+<span class="sourceLineNo">182</span>     *  to assign a unique application prefix for each.  For example, two<a name="line.182"></a>
+<span class="sourceLineNo">183</span>     *  applications with application paths of "/calendar" and "/music" would<a name="line.183"></a>
+<span class="sourceLineNo">184</span>     *  receive requests directed to<a name="line.184"></a>
+<span class="sourceLineNo">185</span>     *  &lt;pre&gt;<a name="line.185"></a>
+<span class="sourceLineNo">186</span>     *  http://localhost:8078/calendar<a name="line.186"></a>
+<span class="sourceLineNo">187</span>     *  http://localhost:8078/music<a name="line.187"></a>
+<span class="sourceLineNo">188</span>     *  &lt;/pre&gt;<a name="line.188"></a>
+<span class="sourceLineNo">189</span>     *  respectively.<a name="line.189"></a>
+<span class="sourceLineNo">190</span>     *<a name="line.190"></a>
+<span class="sourceLineNo">191</span>     *  Applications may contain multiple servlets (provided by e.g.<a name="line.191"></a>
+<span class="sourceLineNo">192</span>     *  {@link HttpActor}s).<a name="line.192"></a>
+<span class="sourceLineNo">193</span>     *  Each servlet typically defines a servlet path which is appended to<a name="line.193"></a>
+<span class="sourceLineNo">194</span>     *  the application path for request routing.  For example, two servlets<a name="line.194"></a>
+<span class="sourceLineNo">195</span>     *  with servlet paths "/play" and "/upload" in the music application<a name="line.195"></a>
+<span class="sourceLineNo">196</span>     *  would receive requests directed to:<a name="line.196"></a>
+<span class="sourceLineNo">197</span>     *  &lt;pre&gt;<a name="line.197"></a>
+<span class="sourceLineNo">198</span>     *  http://localhost:8078/music/play<a name="line.198"></a>
+<span class="sourceLineNo">199</span>     *  http://localhost:8078/music/upload<a name="line.199"></a>
+<span class="sourceLineNo">200</span>     *  &lt;/pre&gt;<a name="line.200"></a>
+<span class="sourceLineNo">201</span>     *  respectively.<a name="line.201"></a>
+<span class="sourceLineNo">202</span>     */<a name="line.202"></a>
+<span class="sourceLineNo">203</span>    public StringParameter applicationPath;<a name="line.203"></a>
+<span class="sourceLineNo">204</span><a name="line.204"></a>
+<span class="sourceLineNo">205</span>    /** The port number the server is listening to.  Can be different from<a name="line.205"></a>
+<span class="sourceLineNo">206</span>     *  preferredPort if dynamic port selection is enabled.<a name="line.206"></a>
+<span class="sourceLineNo">207</span>     */<a name="line.207"></a>
+<span class="sourceLineNo">208</span>    public Parameter deployedPort;<a name="line.208"></a>
+<span class="sourceLineNo">209</span><a name="line.209"></a>
+<span class="sourceLineNo">210</span>    /** The preferred port number for the server to listen to. This is a integer<a name="line.210"></a>
+<span class="sourceLineNo">211</span>     *  that defaults to 8078.<a name="line.211"></a>
+<span class="sourceLineNo">212</span>     */<a name="line.212"></a>
+<span class="sourceLineNo">213</span>    public Parameter preferredPort;<a name="line.213"></a>
+<span class="sourceLineNo">214</span><a name="line.214"></a>
+<span class="sourceLineNo">215</span>    /** The URL prefix used to request resources (files) from this web service.<a name="line.215"></a>
+<span class="sourceLineNo">216</span>     *<a name="line.216"></a>
+<span class="sourceLineNo">217</span>     *  This defaults to "/", meaning, clients should issue requests for files<a name="line.217"></a>
+<span class="sourceLineNo">218</span>     *  to the base URL.  For example, if the WebServer is handling requests on<a name="line.218"></a>
+<span class="sourceLineNo">219</span>     *  {@link #preferredPort} 8078 of localhost, the client can request file "image.png"<a name="line.219"></a>
+<span class="sourceLineNo">220</span>     *  using:<a name="line.220"></a>
+<span class="sourceLineNo">221</span>     *  &lt;pre&gt;<a name="line.221"></a>
+<span class="sourceLineNo">222</span>     *  http://localhost:8078/image.png<a name="line.222"></a>
+<span class="sourceLineNo">223</span>     *  &lt;/pre&gt;<a name="line.223"></a>
+<span class="sourceLineNo">224</span>     *<a name="line.224"></a>
+<span class="sourceLineNo">225</span>     *  The resourcePath is added as a prefix before the file's name in the URL.<a name="line.225"></a>
+<span class="sourceLineNo">226</span>     *  For example, given the resourcePath "/files", the client can request<a name="line.226"></a>
+<span class="sourceLineNo">227</span>     *  file "image.png" using:<a name="line.227"></a>
+<span class="sourceLineNo">228</span>     *  &lt;pre&gt;<a name="line.228"></a>
+<span class="sourceLineNo">229</span>     *  http://localhost:8078/files/image.png<a name="line.229"></a>
+<span class="sourceLineNo">230</span>     *  &lt;/pre&gt;<a name="line.230"></a>
+<span class="sourceLineNo">231</span>     *<a name="line.231"></a>
+<span class="sourceLineNo">232</span>     *  Relative URLs are permissible for files requested by pages served by<a name="line.232"></a>
+<span class="sourceLineNo">233</span>     *  this WebServer (common for e.g. custom Javascript libraries).<a name="line.233"></a>
+<span class="sourceLineNo">234</span>     *  For example, given the resourcePath "/files", a file named "custom.js"<a name="line.234"></a>
+<span class="sourceLineNo">235</span>     *  may be retrieved at the relative URL:<a name="line.235"></a>
+<span class="sourceLineNo">236</span>     *  &lt;pre&gt;<a name="line.236"></a>
+<span class="sourceLineNo">237</span>     *  /files/custom.js<a name="line.237"></a>
+<span class="sourceLineNo">238</span>     *  &lt;/pre&gt;<a name="line.238"></a>
+<span class="sourceLineNo">239</span>     *<a name="line.239"></a>
+<span class="sourceLineNo">240</span>     *  Note that the name of the directory containing resources does NOT have<a name="line.240"></a>
+<span class="sourceLineNo">241</span>     *  to match the URL used to access these resources.  See<a name="line.241"></a>
+<span class="sourceLineNo">242</span>     *  {@link #resourceLocation} regarding the resource directory.<a name="line.242"></a>
+<span class="sourceLineNo">243</span>     *<a name="line.243"></a>
+<span class="sourceLineNo">244</span>     *  Subdirectory search is supported (here, for subdirectories to the<a name="line.244"></a>
+<span class="sourceLineNo">245</span>     *  directory specified by {@link #resourceLocation}). Add the subdirectory<a name="line.245"></a>
+<span class="sourceLineNo">246</span>     *  path to the URL.  For example, given the resourcePath "/files",<a name="line.246"></a>
+<span class="sourceLineNo">247</span>     *  a file in subdirectory /user/photos named "selfie.png" may be<a name="line.247"></a>
+<span class="sourceLineNo">248</span>     *  retrieved at URL:<a name="line.248"></a>
+<span class="sourceLineNo">249</span>     *<a name="line.249"></a>
+<span class="sourceLineNo">250</span>     *  &lt;pre&gt;<a name="line.250"></a>
+<span class="sourceLineNo">251</span>     *  http://localhost:8078/files/user/photos/selfie.png<a name="line.251"></a>
+<span class="sourceLineNo">252</span>     *  &lt;/pre&gt;<a name="line.252"></a>
+<span class="sourceLineNo">253</span>     */<a name="line.253"></a>
+<span class="sourceLineNo">254</span><a name="line.254"></a>
+<span class="sourceLineNo">255</span>    public StringParameter resourcePath;<a name="line.255"></a>
+<span class="sourceLineNo">256</span><a name="line.256"></a>
+<span class="sourceLineNo">257</span>    /** A directory or URL where the web server will look for resources<a name="line.257"></a>
+<span class="sourceLineNo">258</span>     *  (like image files and the like).<a name="line.258"></a>
+<span class="sourceLineNo">259</span>     *  This defaults to the current model's directory.<a name="line.259"></a>
+<span class="sourceLineNo">260</span>     *<a name="line.260"></a>
+<span class="sourceLineNo">261</span>     *  You can add additional resource locations by adding additional<a name="line.261"></a>
+<span class="sourceLineNo">262</span>     *  parameters of type ptolemy.data.expr.FileParameter to<a name="line.262"></a>
+<span class="sourceLineNo">263</span>     *  this WebServer (select Configure in the context menu).<a name="line.263"></a>
+<span class="sourceLineNo">264</span>     *<a name="line.264"></a>
+<span class="sourceLineNo">265</span>     *  If multiple resourceLocations are given, they will be searched in the<a name="line.265"></a>
+<span class="sourceLineNo">266</span>     *  order that the parameters were instantiated.  The first file located<a name="line.266"></a>
+<span class="sourceLineNo">267</span>     *  will be returned.<a name="line.267"></a>
+<span class="sourceLineNo">268</span>     *<a name="line.268"></a>
+<span class="sourceLineNo">269</span>     *  Note that the name of the directory containing resources does NOT have<a name="line.269"></a>
+<span class="sourceLineNo">270</span>     *  to match the URL used to access these resources.  See<a name="line.270"></a>
+<span class="sourceLineNo">271</span>     *  {@link #resourcePath} regarding the URL.<a name="line.271"></a>
+<span class="sourceLineNo">272</span>     */<a name="line.272"></a>
+<span class="sourceLineNo">273</span>    public FileParameter resourceLocation;<a name="line.273"></a>
+<span class="sourceLineNo">274</span><a name="line.274"></a>
+<span class="sourceLineNo">275</span>    /** A directory where the web server will look for resources<a name="line.275"></a>
+<span class="sourceLineNo">276</span>     *  (like image files and the like). This specifies an additional<a name="line.276"></a>
+<span class="sourceLineNo">277</span>     *  resource location after {@link #resourceLocation}, but the<a name="line.277"></a>
+<span class="sourceLineNo">278</span>     *  directory specified here may be used by components implementing<a name="line.278"></a>
+<span class="sourceLineNo">279</span>     *  {@link HttpService} as a place to write temporary files<a name="line.279"></a>
+<span class="sourceLineNo">280</span>     *  that will be found by the web server.<a name="line.280"></a>
+<span class="sourceLineNo">281</span>     *  This defaults to "$TMPDIR", a built-in variable<a name="line.281"></a>
+<span class="sourceLineNo">282</span>     *  that specifies a temporary file location.<a name="line.282"></a>
+<span class="sourceLineNo">283</span>     *  See the explanation of {@link #resourcePath}.<a name="line.283"></a>
+<span class="sourceLineNo">284</span>     */<a name="line.284"></a>
+<span class="sourceLineNo">285</span>    public FileParameter temporaryFileLocation;<a name="line.285"></a>
+<span class="sourceLineNo">286</span><a name="line.286"></a>
+<span class="sourceLineNo">287</span>    ///////////////////////////////////////////////////////////////////<a name="line.287"></a>
+<span class="sourceLineNo">288</span>    ////                         public methods                    ////<a name="line.288"></a>
+<span class="sourceLineNo">289</span><a name="line.289"></a>
+<span class="sourceLineNo">290</span>    /** React to a change in an attribute.  If the attribute is an<a name="line.290"></a>
+<span class="sourceLineNo">291</span>     *  instance of FileParameter and the server is running (initialize()<a name="line.291"></a>
+<span class="sourceLineNo">292</span>     *  has been called and wrapup() has not), then update the resource<a name="line.292"></a>
+<span class="sourceLineNo">293</span>     *  handlers in the server.<a name="line.293"></a>
+<span class="sourceLineNo">294</span>     *  @param attribute The attribute that changed.<a name="line.294"></a>
+<span class="sourceLineNo">295</span>     *  @exception IllegalActionException If the change is not acceptable<a name="line.295"></a>
+<span class="sourceLineNo">296</span>     *   to this container (not thrown in this base class).<a name="line.296"></a>
+<span class="sourceLineNo">297</span>     */<a name="line.297"></a>
+<span class="sourceLineNo">298</span><a name="line.298"></a>
+<span class="sourceLineNo">299</span>    @Override<a name="line.299"></a>
+<span class="sourceLineNo">300</span>    public void attributeChanged(Attribute attribute)<a name="line.300"></a>
+<span class="sourceLineNo">301</span>            throws IllegalActionException {<a name="line.301"></a>
+<span class="sourceLineNo">302</span><a name="line.302"></a>
+<span class="sourceLineNo">303</span>        // Changes to attributes are not currently propagated to the<a name="line.303"></a>
+<span class="sourceLineNo">304</span>        // web server directly.  They will take effect the next time<a name="line.304"></a>
+<span class="sourceLineNo">305</span>        // initialize() is called.<a name="line.305"></a>
+<span class="sourceLineNo">306</span><a name="line.306"></a>
+<span class="sourceLineNo">307</span>        // In the future, changes could be propagated immediately to the<a name="line.307"></a>
+<span class="sourceLineNo">308</span>        // web server.<a name="line.308"></a>
+<span class="sourceLineNo">309</span><a name="line.309"></a>
+<span class="sourceLineNo">310</span>        if (attribute == preferredPort) {<a name="line.310"></a>
+<span class="sourceLineNo">311</span>            if (preferredPort == null<a name="line.311"></a>
+<span class="sourceLineNo">312</span>                    || preferredPort.getExpression().isEmpty()) {<a name="line.312"></a>
+<span class="sourceLineNo">313</span>                _dynamicPortSelection = true;<a name="line.313"></a>
+<span class="sourceLineNo">314</span>            } else {<a name="line.314"></a>
+<span class="sourceLineNo">315</span>                _dynamicPortSelection = false;<a name="line.315"></a>
+<span class="sourceLineNo">316</span>            }<a name="line.316"></a>
+<span class="sourceLineNo">317</span>        } else {<a name="line.317"></a>
+<span class="sourceLineNo">318</span>            super.attributeChanged(attribute);<a name="line.318"></a>
+<span class="sourceLineNo">319</span>        }<a name="line.319"></a>
+<span class="sourceLineNo">320</span>    }<a name="line.320"></a>
+<span class="sourceLineNo">321</span><a name="line.321"></a>
+<span class="sourceLineNo">322</span>    /** Clone the attribute.<a name="line.322"></a>
+<span class="sourceLineNo">323</span>     *  @param workspace The workspace in which to place the cloned attribute.<a name="line.323"></a>
+<span class="sourceLineNo">324</span>     *  @exception CloneNotSupportedException Not thrown in this base class.<a name="line.324"></a>
+<span class="sourceLineNo">325</span>     *  @see java.lang.Object#clone()<a name="line.325"></a>
+<span class="sourceLineNo">326</span>     *  @return The cloned attribute.<a name="line.326"></a>
+<span class="sourceLineNo">327</span>     */<a name="line.327"></a>
+<span class="sourceLineNo">328</span>    @Override<a name="line.328"></a>
+<span class="sourceLineNo">329</span>    public Object clone(Workspace workspace) throws CloneNotSupportedException {<a name="line.329"></a>
+<span class="sourceLineNo">330</span>        WebServer newObject = (WebServer) super.clone(workspace);<a name="line.330"></a>
+<span class="sourceLineNo">331</span>        // _appInfo is set in initialize()<a name="line.331"></a>
+<span class="sourceLineNo">332</span>        newObject._appInfo = null;<a name="line.332"></a>
+<span class="sourceLineNo">333</span>        newObject._dynamicPortSelection = false;<a name="line.333"></a>
+<span class="sourceLineNo">334</span>        newObject._serverManager = null;<a name="line.334"></a>
+<span class="sourceLineNo">335</span><a name="line.335"></a>
+<span class="sourceLineNo">336</span>        return newObject;<a name="line.336"></a>
+<span class="sourceLineNo">337</span>    }<a name="line.337"></a>
+<span class="sourceLineNo">338</span><a name="line.338"></a>
+<span class="sourceLineNo">339</span>    /** Collect servlets from all model objects implementing HttpService<a name="line.339"></a>
+<span class="sourceLineNo">340</span>     *  and WebSocketService and start the web server in a new thread.<a name="line.340"></a>
+<span class="sourceLineNo">341</span>     *  &lt;p&gt;<a name="line.341"></a>
+<span class="sourceLineNo">342</span>     * In the current implementation, servlets must be registered before the<a name="line.342"></a>
+<span class="sourceLineNo">343</span>     * Jetty server starts.  Servlets are not allowed to be added to a running<a name="line.343"></a>
+<span class="sourceLineNo">344</span>     * ContextHandler.  Currently, the Jetty server is started once and runs<a name="line.344"></a>
+<span class="sourceLineNo">345</span>     * until the model finishes executing.  It would also be possible to pause<a name="line.345"></a>
+<span class="sourceLineNo">346</span>     * the server, add a servlet, and restart the server, which would allow<a name="line.346"></a>
+<span class="sourceLineNo">347</span>     * a model to dynamically add servlets.  This might cause strange behavior<a name="line.347"></a>
+<span class="sourceLineNo">348</span>     * to an outside observer, however, since some HttpRequests could fail<a name="line.348"></a>
+<span class="sourceLineNo">349</span>     * if a servlet has not been loaded yet.<a name="line.349"></a>
+<span class="sourceLineNo">350</span>     *<a name="line.350"></a>
+<span class="sourceLineNo">351</span>     *  References:<a name="line.351"></a>
+<span class="sourceLineNo">352</span>     *  &lt;ul&gt;<a name="line.352"></a>
+<span class="sourceLineNo">353</span>     *  &lt;li&gt; &lt;a href="http://wiki.eclipse.org/Jetty/Tutorial/Embedding_Jetty"&gt;http://wiki.eclipse.org/Jetty/Tutorial/Embedding_Jetty&lt;/a&gt;&lt;/li&gt;<a name="line.353"></a>
+<span class="sourceLineNo">354</span>     *  &lt;li&gt; &lt;a href="http://wiki.eclipse.org/Jetty/Tutorial/Embedding_Jetty"&gt;http://wiki.eclipse.org/Jetty/Tutorial/Embedding_Jetty&lt;/a&gt;&lt;/li&gt;<a name="line.354"></a>
+<span class="sourceLineNo">355</span>     *  &lt;li&gt; &lt;a href="http://draconianoverlord.com/2009/01/10/war-less-dev-with-jetty.html"&gt;http://draconianoverlord.com/2009/01/10/war-less-dev-with-jetty.html&lt;/a&gt;&lt;/li&gt;<a name="line.355"></a>
+<span class="sourceLineNo">356</span>     *  &lt;/ul&gt;<a name="line.356"></a>
+<span class="sourceLineNo">357</span>     *  @exception IllegalActionException Not thrown in this base class.<a name="line.357"></a>
+<span class="sourceLineNo">358</span>     */<a name="line.358"></a>
+<span class="sourceLineNo">359</span>    @Override<a name="line.359"></a>
+<span class="sourceLineNo">360</span>    public void initialize() throws IllegalActionException {<a name="line.360"></a>
+<span class="sourceLineNo">361</span><a name="line.361"></a>
+<span class="sourceLineNo">362</span>        super.initialize();<a name="line.362"></a>
+<span class="sourceLineNo">363</span><a name="line.363"></a>
+<span class="sourceLineNo">364</span>        if (_debugging) {<a name="line.364"></a>
+<span class="sourceLineNo">365</span>            _debug("Initializing web server.");<a name="line.365"></a>
+<span class="sourceLineNo">366</span>        }<a name="line.366"></a>
+<span class="sourceLineNo">367</span><a name="line.367"></a>
+<span class="sourceLineNo">368</span>        if (_endpointManager == null) {<a name="line.368"></a>
+<span class="sourceLineNo">369</span>            _endpointManager = WebSocketEndpointManager.getInstance();<a name="line.369"></a>
+<span class="sourceLineNo">370</span>        }<a name="line.370"></a>
+<span class="sourceLineNo">371</span><a name="line.371"></a>
+<span class="sourceLineNo">372</span>        // Remember local websocket services so the websockets can be<a name="line.372"></a>
+<span class="sourceLineNo">373</span>        // opened after the web server is started and its port number determined<a name="line.373"></a>
+<span class="sourceLineNo">374</span>        HashSet&lt;WebSocketService&gt; servicesToOpen = new HashSet();<a name="line.374"></a>
+<span class="sourceLineNo">375</span><a name="line.375"></a>
+<span class="sourceLineNo">376</span>        int preferredPortValue = WebServerUtilities.DEFAULT_PORT_NUMBER;<a name="line.376"></a>
+<span class="sourceLineNo">377</span><a name="line.377"></a>
+<span class="sourceLineNo">378</span>        if (preferredPort != null &amp;&amp; !preferredPort.getExpression().isEmpty()) {<a name="line.378"></a>
+<span class="sourceLineNo">379</span>            preferredPortValue = Integer<a name="line.379"></a>
+<span class="sourceLineNo">380</span>                    .parseInt(preferredPort.getExpression());<a name="line.380"></a>
+<span class="sourceLineNo">381</span>            _dynamicPortSelection = false;<a name="line.381"></a>
+<span class="sourceLineNo">382</span>        } else {<a name="line.382"></a>
+<span class="sourceLineNo">383</span>            _dynamicPortSelection = true;<a name="line.383"></a>
+<span class="sourceLineNo">384</span>        }<a name="line.384"></a>
+<span class="sourceLineNo">385</span><a name="line.385"></a>
+<span class="sourceLineNo">386</span>        // Get the web server manager to register this application with<a name="line.386"></a>
+<span class="sourceLineNo">387</span>        if (_serverManager == null) {<a name="line.387"></a>
+<span class="sourceLineNo">388</span>            _serverManager = WebServerManager.getInstance();<a name="line.388"></a>
+<span class="sourceLineNo">389</span>        }<a name="line.389"></a>
+<span class="sourceLineNo">390</span><a name="line.390"></a>
+<span class="sourceLineNo">391</span>        // Get the model name, application path and temporary file location<a name="line.391"></a>
+<span class="sourceLineNo">392</span>        String modelName = getFullName();<a name="line.392"></a>
+<span class="sourceLineNo">393</span><a name="line.393"></a>
+<span class="sourceLineNo">394</span>        String applicationPathString = "/";<a name="line.394"></a>
+<span class="sourceLineNo">395</span>        if (applicationPath != null) {<a name="line.395"></a>
+<span class="sourceLineNo">396</span><a name="line.396"></a>
+<span class="sourceLineNo">397</span>            // Application path must begin with an "/"; add one if missing<a name="line.397"></a>
+<span class="sourceLineNo">398</span>            if (applicationPath.getExpression().startsWith("/")) {<a name="line.398"></a>
+<span class="sourceLineNo">399</span>                applicationPathString = applicationPath.getExpression();<a name="line.399"></a>
+<span class="sourceLineNo">400</span>            } else {<a name="line.400"></a>
+<span class="sourceLineNo">401</span>                applicationPathString = "/" + applicationPath.getExpression();<a name="line.401"></a>
+<span class="sourceLineNo">402</span>            }<a name="line.402"></a>
+<span class="sourceLineNo">403</span>        }<a name="line.403"></a>
+<span class="sourceLineNo">404</span><a name="line.404"></a>
+<span class="sourceLineNo">405</span>        // Assemble info about this model into a WebApplicationInfo object<a name="line.405"></a>
+<span class="sourceLineNo">406</span>        // Throw an exception if the model does not have a name<a name="line.406"></a>
+<span class="sourceLineNo">407</span>        try {<a name="line.407"></a>
+<span class="sourceLineNo">408</span>            _appInfo = new WebApplicationInfo(modelName, applicationPathString,<a name="line.408"></a>
+<span class="sourceLineNo">409</span>                    temporaryFileLocation);<a name="line.409"></a>
+<span class="sourceLineNo">410</span>        } catch (Exception e) {<a name="line.410"></a>
+<span class="sourceLineNo">411</span>            throw new IllegalActionException(this, e,<a name="line.411"></a>
+<span class="sourceLineNo">412</span>                    "Failed to create WebApplicationInfo");<a name="line.412"></a>
+<span class="sourceLineNo">413</span>        }<a name="line.413"></a>
+<span class="sourceLineNo">414</span><a name="line.414"></a>
+<span class="sourceLineNo">415</span>        // Collect requested servlet mappings from all model objects<a name="line.415"></a>
+<span class="sourceLineNo">416</span>        // implementing HttpService.  Check for duplicates.<a name="line.416"></a>
+<span class="sourceLineNo">417</span>        // NOTE: This used to use the top level, but it makes more sense to use the container.<a name="line.417"></a>
+<span class="sourceLineNo">418</span>        // Also, now it only looks for entities, and it does not penetrate opaque composites.<a name="line.418"></a>
+<span class="sourceLineNo">419</span>        NamedObj container = getContainer();<a name="line.419"></a>
+<span class="sourceLineNo">420</span>        if (!(container instanceof CompositeEntity)) {<a name="line.420"></a>
+<span class="sourceLineNo">421</span>            throw new IllegalActionException(this,<a name="line.421"></a>
+<span class="sourceLineNo">422</span>                    "Container is required to be a CompositeEntity.");<a name="line.422"></a>
+<span class="sourceLineNo">423</span>        }<a name="line.423"></a>
+<span class="sourceLineNo">424</span>        List&lt;Entity&gt; entities = ((CompositeEntity) container)<a name="line.424"></a>
+<span class="sourceLineNo">425</span>                .allAtomicEntityList();<a name="line.425"></a>
+<span class="sourceLineNo">426</span>        for (Entity entity : entities) {<a name="line.426"></a>
+<span class="sourceLineNo">427</span>            if (entity instanceof HttpService) {<a name="line.427"></a>
+<span class="sourceLineNo">428</span>                HttpService service = (HttpService) entity;<a name="line.428"></a>
+<span class="sourceLineNo">429</span>                // Tell the HttpService that this is its WebServer,<a name="line.429"></a>
+<span class="sourceLineNo">430</span>                // so that it can get, for example, critical information such<a name="line.430"></a>
+<span class="sourceLineNo">431</span>                // as resourcePath.<a name="line.431"></a>
+<span class="sourceLineNo">432</span>                service.setWebServer(this);<a name="line.432"></a>
+<span class="sourceLineNo">433</span><a name="line.433"></a>
+<span class="sourceLineNo">434</span>                if (_debugging) {<a name="line.434"></a>
+<span class="sourceLineNo">435</span>                    _debug("Found web service: " + entity.getFullName());<a name="line.435"></a>
+<span class="sourceLineNo">436</span>                }<a name="line.436"></a>
+<span class="sourceLineNo">437</span><a name="line.437"></a>
+<span class="sourceLineNo">438</span>                // Add this path to the list of servlet paths<a name="line.438"></a>
+<span class="sourceLineNo">439</span>                URI path = service.getRelativePath();<a name="line.439"></a>
+<span class="sourceLineNo">440</span><a name="line.440"></a>
+<span class="sourceLineNo">441</span>                try {<a name="line.441"></a>
+<span class="sourceLineNo">442</span>                    _appInfo.addServletInfo(path, service.getServlet());<a name="line.442"></a>
+<span class="sourceLineNo">443</span>                } catch (Exception e) {<a name="line.443"></a>
+<span class="sourceLineNo">444</span>                    throw new IllegalActionException(this, "Actor "<a name="line.444"></a>
+<span class="sourceLineNo">445</span>                            + entity.getName()<a name="line.445"></a>
+<span class="sourceLineNo">446</span>                            + " requested the web service URL " + path<a name="line.446"></a>
+<span class="sourceLineNo">447</span>                            + " , but this URL has already been claimed "<a name="line.447"></a>
+<span class="sourceLineNo">448</span>                            + "by another actor or by a resource in this "<a name="line.448"></a>
+<span class="sourceLineNo">449</span>                            + "WebServer.  Please specify a unique URL.");<a name="line.449"></a>
+<span class="sourceLineNo">450</span>                }<a name="line.450"></a>
+<span class="sourceLineNo">451</span>            } else if (entity instanceof WebSocketService) {<a name="line.451"></a>
+<span class="sourceLineNo">452</span>                // Set up support for local websocket services.  Remote<a name="line.452"></a>
+<span class="sourceLineNo">453</span>                // websocket services do not require anything from the server<a name="line.453"></a>
+<span class="sourceLineNo">454</span>                WebSocketService service = (WebSocketService) entity;<a name="line.454"></a>
+<span class="sourceLineNo">455</span>                boolean isLocal = !WebSocketEndpointManager<a name="line.455"></a>
+<span class="sourceLineNo">456</span>                        .isRemoteURI(service.getRelativePath());<a name="line.456"></a>
+<span class="sourceLineNo">457</span><a name="line.457"></a>
+<span class="sourceLineNo">458</span>                // If local and client side, remember, in order to open after<a name="line.458"></a>
+<span class="sourceLineNo">459</span>                // the server has started<a name="line.459"></a>
+<span class="sourceLineNo">460</span>                if (isLocal &amp;&amp; service.isClient()) {<a name="line.460"></a>
+<span class="sourceLineNo">461</span>                    servicesToOpen.add(service);<a name="line.461"></a>
+<span class="sourceLineNo">462</span>                }<a name="line.462"></a>
+<span class="sourceLineNo">463</span><a name="line.463"></a>
+<span class="sourceLineNo">464</span>                if (_debugging) {<a name="line.464"></a>
+<span class="sourceLineNo">465</span>                    _debug("Found WebSocket actor: " + entity.getFullName());<a name="line.465"></a>
+<span class="sourceLineNo">466</span>                }<a name="line.466"></a>
+<span class="sourceLineNo">467</span><a name="line.467"></a>
+<span class="sourceLineNo">468</span>                if (isLocal) {<a name="line.468"></a>
+<span class="sourceLineNo">469</span>                    // Add this path to the list of socket paths to check for<a name="line.469"></a>
+<span class="sourceLineNo">470</span>                    // duplicates with HttpActor paths<a name="line.470"></a>
+<span class="sourceLineNo">471</span>                    URI path = service.getRelativePath();<a name="line.471"></a>
+<span class="sourceLineNo">472</span><a name="line.472"></a>
+<span class="sourceLineNo">473</span>                    try {<a name="line.473"></a>
+<span class="sourceLineNo">474</span>                        _appInfo.addSocketInfo(path, entity);<a name="line.474"></a>
+<span class="sourceLineNo">475</span>                    } catch (Exception e) {<a name="line.475"></a>
+<span class="sourceLineNo">476</span>                        throw new IllegalActionException(this, "Actor "<a name="line.476"></a>
+<span class="sourceLineNo">477</span>                                + entity.getName()<a name="line.477"></a>
+<span class="sourceLineNo">478</span>                                + " requested the web service URL " + path<a name="line.478"></a>
+<span class="sourceLineNo">479</span>                                + " , but this URL has already been claimed "<a name="line.479"></a>
+<span class="sourceLineNo">480</span>                                + "by another actor or by a resource in this "<a name="line.480"></a>
+<span class="sourceLineNo">481</span>                                + "WebServer.  Please specify a unique URL.");<a name="line.481"></a>
+<span class="sourceLineNo">482</span>                    }<a name="line.482"></a>
+<span class="sourceLineNo">483</span>                }<a name="line.483"></a>
+<span class="sourceLineNo">484</span>            }<a name="line.484"></a>
+<span class="sourceLineNo">485</span>        }<a name="line.485"></a>
+<span class="sourceLineNo">486</span><a name="line.486"></a>
+<span class="sourceLineNo">487</span>        // Specify directories or URLs in which to look for resources.<a name="line.487"></a>
+<span class="sourceLineNo">488</span>        // These are given by all instances of FileParameter in this<a name="line.488"></a>
+<span class="sourceLineNo">489</span>        // WebServer. Use a LinkedHashSet to preserve the order.<a name="line.489"></a>
+<span class="sourceLineNo">490</span>        LinkedHashSet&lt;Resource&gt; resourceLocations = new LinkedHashSet&lt;Resource&gt;();<a name="line.490"></a>
+<span class="sourceLineNo">491</span>        List&lt;FileParameter&gt; bases = attributeList(FileParameter.class);<a name="line.491"></a>
+<span class="sourceLineNo">492</span>        // To prevent duplicates, keep track of bases added<a name="line.492"></a>
+<span class="sourceLineNo">493</span>        // This set includes the temporary file location<a name="line.493"></a>
+<span class="sourceLineNo">494</span>        HashSet&lt;URL&gt; seen = new HashSet&lt;URL&gt;();<a name="line.494"></a>
+<span class="sourceLineNo">495</span>        for (FileParameter base : bases) {<a name="line.495"></a>
+<span class="sourceLineNo">496</span>            // If blank, omit<a name="line.496"></a>
+<span class="sourceLineNo">497</span>            if (base.getExpression() != null<a name="line.497"></a>
+<span class="sourceLineNo">498</span>                    &amp;&amp; !base.getExpression().isEmpty()) {<a name="line.498"></a>
+<span class="sourceLineNo">499</span>                try {<a name="line.499"></a>
+<span class="sourceLineNo">500</span><a name="line.500"></a>
+<span class="sourceLineNo">501</span>                    // Use the ClassLoader to obtain the location (vs. specifying<a name="line.501"></a>
+<span class="sourceLineNo">502</span>                    // a directory on the file system), so that the demos<a name="line.502"></a>
+<span class="sourceLineNo">503</span>                    // can also be run from within a .jar file<a name="line.503"></a>
+<span class="sourceLineNo">504</span><a name="line.504"></a>
+<span class="sourceLineNo">505</span>                    // If expression starts with $PTII/ , strip this<a name="line.505"></a>
+<span class="sourceLineNo">506</span>                    // Also strip out $CLASSPATH (WebStart uses this)<a name="line.506"></a>
+<span class="sourceLineNo">507</span>                    // Assumes .jar file uses $PTII as root location<a name="line.507"></a>
+<span class="sourceLineNo">508</span>                    // Assumes full path is given<a name="line.508"></a>
+<span class="sourceLineNo">509</span>                    // TODO:  What to do about paths relative to model's location?<a name="line.509"></a>
+<span class="sourceLineNo">510</span>                    // Would these work?  None are used so far.<a name="line.510"></a>
+<span class="sourceLineNo">511</span><a name="line.511"></a>
+<span class="sourceLineNo">512</span>                    String expression = base.getExpression();<a name="line.512"></a>
+<span class="sourceLineNo">513</span>                    if (expression.startsWith("$PTII/")) {<a name="line.513"></a>
+<span class="sourceLineNo">514</span>                        expression = expression.substring(6);<a name="line.514"></a>
+<span class="sourceLineNo">515</span>                    }<a name="line.515"></a>
+<span class="sourceLineNo">516</span><a name="line.516"></a>
+<span class="sourceLineNo">517</span>                    // Get directory<a name="line.517"></a>
+<span class="sourceLineNo">518</span>                    // Try ClassLoader first to resolve any directories within<a name="line.518"></a>
+<span class="sourceLineNo">519</span>                    // Ptolemy tree.  If the directory is not part of the tree<a name="line.519"></a>
+<span class="sourceLineNo">520</span>                    // (e.g. $TMPDIR), the ClassLoader will not find it, so then<a name="line.520"></a>
+<span class="sourceLineNo">521</span>                    // use the expression directly<a name="line.521"></a>
+<span class="sourceLineNo">522</span>                    URL baseURL;<a name="line.522"></a>
+<span class="sourceLineNo">523</span><a name="line.523"></a>
+<span class="sourceLineNo">524</span>                    if (expression.startsWith("$CLASSPATH/")) {<a name="line.524"></a>
+<span class="sourceLineNo">525</span>                        baseURL = base.asURL();<a name="line.525"></a>
+<span class="sourceLineNo">526</span>                    } else if (this.getClass().getClassLoader()<a name="line.526"></a>
+<span class="sourceLineNo">527</span>                            .getResource(expression) != null) {<a name="line.527"></a>
+<span class="sourceLineNo">528</span>                        baseURL = new URL(this.getClass().getClassLoader()<a name="line.528"></a>
+<span class="sourceLineNo">529</span>                                .getResource(expression).toExternalForm());<a name="line.529"></a>
+<span class="sourceLineNo">530</span>                    } else {<a name="line.530"></a>
+<span class="sourceLineNo">531</span>                        baseURL = base.asURL();<a name="line.531"></a>
+<span class="sourceLineNo">532</span>                    }<a name="line.532"></a>
+<span class="sourceLineNo">533</span><a name="line.533"></a>
+<span class="sourceLineNo">534</span>                    if (baseURL != null) {<a name="line.534"></a>
+<span class="sourceLineNo">535</span>                        URL baseAsURL = base.asURL();<a name="line.535"></a>
+<span class="sourceLineNo">536</span>                        if (seen.contains(baseAsURL)) {<a name="line.536"></a>
+<span class="sourceLineNo">537</span>                            continue;<a name="line.537"></a>
+<span class="sourceLineNo">538</span>                        }<a name="line.538"></a>
+<span class="sourceLineNo">539</span>                        seen.add(baseAsURL);<a name="line.539"></a>
+<span class="sourceLineNo">540</span>                        if (_debugging) {<a name="line.540"></a>
+<span class="sourceLineNo">541</span>                            _debug("Adding resource location: " + baseAsURL);<a name="line.541"></a>
+<span class="sourceLineNo">542</span>                        }<a name="line.542"></a>
+<span class="sourceLineNo">543</span><a name="line.543"></a>
+<span class="sourceLineNo">544</span>                        // Use Resource.newResource() to support WebStart<a name="line.544"></a>
+<span class="sourceLineNo">545</span>                        // http://67-23-9-112.static.slicehost.net/faq?s=960-WebStart&amp;t=Eclipse<a name="line.545"></a>
+<span class="sourceLineNo">546</span>                        String stringURL = baseAsURL.toExternalForm();<a name="line.546"></a>
+<span class="sourceLineNo">547</span>                        if (!stringURL.endsWith("/")) {<a name="line.547"></a>
+<span class="sourceLineNo">548</span>                            stringURL = stringURL + "/";<a name="line.548"></a>
+<span class="sourceLineNo">549</span>                        }<a name="line.549"></a>
+<span class="sourceLineNo">550</span><a name="line.550"></a>
+<span class="sourceLineNo">551</span>                        resourceLocations.add(Resource.newResource(stringURL));<a name="line.551"></a>
+<span class="sourceLineNo">552</span>                    }<a name="line.552"></a>
+<span class="sourceLineNo">553</span>                } catch (IOException e3) {<a name="line.553"></a>
+<span class="sourceLineNo">554</span>                    throw new IllegalActionException(this,<a name="line.554"></a>
+<span class="sourceLineNo">555</span>                            "Can't access resource base: "<a name="line.555"></a>
+<span class="sourceLineNo">556</span>                                    + base.stringValue());<a name="line.556"></a>
+<span class="sourceLineNo">557</span>                }<a name="line.557"></a>
+<span class="sourceLineNo">558</span>            }<a name="line.558"></a>
+<span class="sourceLineNo">559</span>        }<a name="line.559"></a>
+<span class="sourceLineNo">560</span><a name="line.560"></a>
+<span class="sourceLineNo">561</span>        // Throw an exception if resource path is not a valid URI, if a<a name="line.561"></a>
+<span class="sourceLineNo">562</span>        // duplicate path is requested or if the directory does not exist<a name="line.562"></a>
+<span class="sourceLineNo">563</span>        try {<a name="line.563"></a>
+<span class="sourceLineNo">564</span>            _appInfo.addResourceInfo(new URI(resourcePath.stringValue()),<a name="line.564"></a>
+<span class="sourceLineNo">565</span>                    resourceLocations);<a name="line.565"></a>
+<span class="sourceLineNo">566</span>        } catch (URISyntaxException e) {<a name="line.566"></a>
+<span class="sourceLineNo">567</span>            throw new IllegalActionException(this,<a name="line.567"></a>
+<span class="sourceLineNo">568</span>                    "Resource path is not a " + "valid URI.");<a name="line.568"></a>
+<span class="sourceLineNo">569</span>        } catch (Exception e2) {<a name="line.569"></a>
+<span class="sourceLineNo">570</span>            throw new IllegalActionException(this, e2,<a name="line.570"></a>
+<span class="sourceLineNo">571</span>                    "Failed to add resource info.");<a name="line.571"></a>
+<span class="sourceLineNo">572</span>        }<a name="line.572"></a>
+<span class="sourceLineNo">573</span><a name="line.573"></a>
+<span class="sourceLineNo">574</span>        try {<a name="line.574"></a>
+<span class="sourceLineNo">575</span>            int actualPort = _serverManager.register(_appInfo,<a name="line.575"></a>
+<span class="sourceLineNo">576</span>                    preferredPortValue, _dynamicPortSelection);<a name="line.576"></a>
+<span class="sourceLineNo">577</span>            if (actualPort != -1) {<a name="line.577"></a>
+<span class="sourceLineNo">578</span><a name="line.578"></a>
+<span class="sourceLineNo">579</span>                deployedPort.setExpression(Integer.toString(actualPort));<a name="line.579"></a>
+<span class="sourceLineNo">580</span>                deployedPort.validate();<a name="line.580"></a>
+<span class="sourceLineNo">581</span>            }<a name="line.581"></a>
+<span class="sourceLineNo">582</span><a name="line.582"></a>
+<span class="sourceLineNo">583</span>            // Open all local web sockets<a name="line.583"></a>
+<span class="sourceLineNo">584</span>            _endpointManager.openLocalServices(servicesToOpen, actualPort);<a name="line.584"></a>
+<span class="sourceLineNo">585</span><a name="line.585"></a>
+<span class="sourceLineNo">586</span>            // TODO:  How to handle server-side sockets?  This would work<a name="line.586"></a>
+<span class="sourceLineNo">587</span>            // for client sockets.  Do server-side sockets need the URI to be<a name="line.587"></a>
+<span class="sourceLineNo">588</span>            // changed to the localhost://?<a name="line.588"></a>
+<span class="sourceLineNo">589</span><a name="line.589"></a>
+<span class="sourceLineNo">590</span>        } catch (Exception e) {<a name="line.590"></a>
+<span class="sourceLineNo">591</span>            throw new IllegalActionException(this, e,<a name="line.591"></a>
+<span class="sourceLineNo">592</span>                    "Failed to register web server.");<a name="line.592"></a>
+<span class="sourceLineNo">593</span>        }<a name="line.593"></a>
+<span class="sourceLineNo">594</span>    }<a name="line.594"></a>
+<span class="sourceLineNo">595</span><a name="line.595"></a>
+<span class="sourceLineNo">596</span>    /** Unregister this application with the web server manager.<a name="line.596"></a>
+<span class="sourceLineNo">597</span>     *<a name="line.597"></a>
+<span class="sourceLineNo">598</span>     * @exception IllegalActionException if there is a problem unregistering<a name="line.598"></a>
+<span class="sourceLineNo">599</span>     * the application */<a name="line.599"></a>
+<span class="sourceLineNo">600</span>    @Override<a name="line.600"></a>
+<span class="sourceLineNo">601</span>    public void wrapup() throws IllegalActionException {<a name="line.601"></a>
+<span class="sourceLineNo">602</span>        super.wrapup();<a name="line.602"></a>
+<span class="sourceLineNo">603</span>        if (_debugging) {<a name="line.603"></a>
+<span class="sourceLineNo">604</span>            _debug("Unregistering web application.");<a name="line.604"></a>
+<span class="sourceLineNo">605</span>        }<a name="line.605"></a>
+<span class="sourceLineNo">606</span><a name="line.606"></a>
+<span class="sourceLineNo">607</span>        if (deployedPort != null &amp;&amp; deployedPort.getExpression() != null) {<a name="line.607"></a>
+<span class="sourceLineNo">608</span>            // Only attempt to unregister application if registration was<a name="line.608"></a>
+<span class="sourceLineNo">609</span>            // successful.<a name="line.609"></a>
+<span class="sourceLineNo">610</span><a name="line.610"></a>
+<span class="sourceLineNo">611</span>            // If we are exporting to JNLP, then initialize might not<a name="line.611"></a>
+<span class="sourceLineNo">612</span>            // have been called.<a name="line.612"></a>
+<span class="sourceLineNo">613</span><a name="line.613"></a>
+<span class="sourceLineNo">614</span>            int deployedPortValue = Integer<a name="line.614"></a>
+<span class="sourceLineNo">615</span>                    .parseInt(deployedPort.getExpression());<a name="line.615"></a>
+<span class="sourceLineNo">616</span>            if (_serverManager != null &amp;&amp; _appInfo != null &amp;&amp; _serverManager<a name="line.616"></a>
+<span class="sourceLineNo">617</span>                    .isRegistered(_appInfo.getModelName(), deployedPortValue)) {<a name="line.617"></a>
+<span class="sourceLineNo">618</span>                try {<a name="line.618"></a>
+<span class="sourceLineNo">619</span>                    _serverManager.unregister(_appInfo, deployedPortValue);<a name="line.619"></a>
+<span class="sourceLineNo">620</span>                } catch (Exception e) {<a name="line.620"></a>
+<span class="sourceLineNo">621</span>                    throw new IllegalActionException(this, e,<a name="line.621"></a>
+<span class="sourceLineNo">622</span>                            "Failed to stop web application.");<a name="line.622"></a>
+<span class="sourceLineNo">623</span>                }<a name="line.623"></a>
+<span class="sourceLineNo">624</span>            }<a name="line.624"></a>
+<span class="sourceLineNo">625</span>        }<a name="line.625"></a>
+<span class="sourceLineNo">626</span>    }<a name="line.626"></a>
+<span class="sourceLineNo">627</span><a name="line.627"></a>
+<span class="sourceLineNo">628</span>    ///////////////////////////////////////////////////////////////////<a name="line.628"></a>
+<span class="sourceLineNo">629</span>    ////                         private variables                 ////<a name="line.629"></a>
+<span class="sourceLineNo">630</span><a name="line.630"></a>
+<span class="sourceLineNo">631</span>    /** Info about the web application defined by the model.<a name="line.631"></a>
+<span class="sourceLineNo">632</span>     */<a name="line.632"></a>
+<span class="sourceLineNo">633</span>    private WebApplicationInfo _appInfo;<a name="line.633"></a>
+<span class="sourceLineNo">634</span><a name="line.634"></a>
+<span class="sourceLineNo">635</span>    /** A flag indicating if dynamic port allocation is enabled. */<a name="line.635"></a>
+<span class="sourceLineNo">636</span>    private boolean _dynamicPortSelection;<a name="line.636"></a>
+<span class="sourceLineNo">637</span><a name="line.637"></a>
+<span class="sourceLineNo">638</span>    /** A manager responsible for generating and releasing websockets. */<a name="line.638"></a>
+<span class="sourceLineNo">639</span>    private WebSocketEndpointManager _endpointManager;<a name="line.639"></a>
+<span class="sourceLineNo">640</span><a name="line.640"></a>
+<span class="sourceLineNo">641</span>    /** The manager for this web application. */<a name="line.641"></a>
+<span class="sourceLineNo">642</span>    private WebServerManager _serverManager;<a name="line.642"></a>
+<span class="sourceLineNo">643</span>}<a name="line.643"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

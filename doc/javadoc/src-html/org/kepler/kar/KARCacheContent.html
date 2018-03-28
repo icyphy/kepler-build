@@ -1,0 +1,290 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../../stylesheet.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>/**<a name="line.1"></a>
+<span class="sourceLineNo">002</span> *  '$RCSfile$'<a name="line.2"></a>
+<span class="sourceLineNo">003</span> *  '$Author: crawl $'<a name="line.3"></a>
+<span class="sourceLineNo">004</span> *  '$Date: 2013-02-21 11:13:44 -0800 (Thu, 21 Feb 2013) $'<a name="line.4"></a>
+<span class="sourceLineNo">005</span> *  '$Revision: 31472 $'<a name="line.5"></a>
+<span class="sourceLineNo">006</span> *<a name="line.6"></a>
+<span class="sourceLineNo">007</span> *  For Details:<a name="line.7"></a>
+<span class="sourceLineNo">008</span> *  http://www.kepler-project.org<a name="line.8"></a>
+<span class="sourceLineNo">009</span> *<a name="line.9"></a>
+<span class="sourceLineNo">010</span> *  Copyright (c) 2010 The Regents of the<a name="line.10"></a>
+<span class="sourceLineNo">011</span> *  University of California. All rights reserved. Permission is hereby granted,<a name="line.11"></a>
+<span class="sourceLineNo">012</span> *  without written agreement and without license or royalty fees, to use, copy,<a name="line.12"></a>
+<span class="sourceLineNo">013</span> *  modify, and distribute this software and its documentation for any purpose,<a name="line.13"></a>
+<span class="sourceLineNo">014</span> *  provided that the above copyright notice and the following two paragraphs<a name="line.14"></a>
+<span class="sourceLineNo">015</span> *  appear in all copies of this software. IN NO EVENT SHALL THE UNIVERSITY OF<a name="line.15"></a>
+<span class="sourceLineNo">016</span> *  CALIFORNIA BE LIABLE TO ANY PARTY FOR DIRECT, INDIRECT, SPECIAL, INCIDENTAL,<a name="line.16"></a>
+<span class="sourceLineNo">017</span> *  OR CONSEQUENTIAL DAMAGES ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS<a name="line.17"></a>
+<span class="sourceLineNo">018</span> *  DOCUMENTATION, EVEN IF THE UNIVERSITY OF CALIFORNIA HAS BEEN ADVISED OF THE<a name="line.18"></a>
+<span class="sourceLineNo">019</span> *  POSSIBILITY OF SUCH DAMAGE. THE UNIVERSITY OF CALIFORNIA SPECIFICALLY<a name="line.19"></a>
+<span class="sourceLineNo">020</span> *  DISCLAIMS ANY WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED<a name="line.20"></a>
+<span class="sourceLineNo">021</span> *  WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. THE<a name="line.21"></a>
+<span class="sourceLineNo">022</span> *  SOFTWARE PROVIDED HEREUNDER IS ON AN "AS IS" BASIS, AND THE UNIVERSITY OF<a name="line.22"></a>
+<span class="sourceLineNo">023</span> *  CALIFORNIA HAS NO OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT, UPDATES,<a name="line.23"></a>
+<span class="sourceLineNo">024</span> *  ENHANCEMENTS, OR MODIFICATIONS.<a name="line.24"></a>
+<span class="sourceLineNo">025</span> */<a name="line.25"></a>
+<span class="sourceLineNo">026</span><a name="line.26"></a>
+<span class="sourceLineNo">027</span>package org.kepler.kar;<a name="line.27"></a>
+<span class="sourceLineNo">028</span><a name="line.28"></a>
+<span class="sourceLineNo">029</span>import java.io.File;<a name="line.29"></a>
+<span class="sourceLineNo">030</span>import java.sql.ResultSet;<a name="line.30"></a>
+<span class="sourceLineNo">031</span>import java.sql.SQLException;<a name="line.31"></a>
+<span class="sourceLineNo">032</span>import java.sql.Statement;<a name="line.32"></a>
+<span class="sourceLineNo">033</span>import java.util.Vector;<a name="line.33"></a>
+<span class="sourceLineNo">034</span><a name="line.34"></a>
+<span class="sourceLineNo">035</span>import org.apache.commons.logging.Log;<a name="line.35"></a>
+<span class="sourceLineNo">036</span>import org.apache.commons.logging.LogFactory;<a name="line.36"></a>
+<span class="sourceLineNo">037</span>import org.kepler.objectmanager.cache.CacheContent;<a name="line.37"></a>
+<span class="sourceLineNo">038</span>import org.kepler.objectmanager.cache.CacheManager;<a name="line.38"></a>
+<span class="sourceLineNo">039</span>import org.kepler.objectmanager.lsid.KeplerLSID;<a name="line.39"></a>
+<span class="sourceLineNo">040</span>import org.kepler.sms.SemanticType;<a name="line.40"></a>
+<span class="sourceLineNo">041</span><a name="line.41"></a>
+<span class="sourceLineNo">042</span>/**<a name="line.42"></a>
+<span class="sourceLineNo">043</span> * This class holds the information for one row of the KAR_CACHE_CONTENT table.<a name="line.43"></a>
+<span class="sourceLineNo">044</span> * <a name="line.44"></a>
+<span class="sourceLineNo">045</span> * @author Aaron Schultz<a name="line.45"></a>
+<span class="sourceLineNo">046</span> */<a name="line.46"></a>
+<span class="sourceLineNo">047</span>public class KARCacheContent {<a name="line.47"></a>
+<span class="sourceLineNo">048</span>        private static final Log log = LogFactory.getLog(KARCacheContent.class.getName());<a name="line.48"></a>
+<span class="sourceLineNo">049</span>        private static final boolean isDebugging = log.isDebugEnabled();<a name="line.49"></a>
+<span class="sourceLineNo">050</span><a name="line.50"></a>
+<span class="sourceLineNo">051</span>        private String _name;<a name="line.51"></a>
+<span class="sourceLineNo">052</span>        private String _type;<a name="line.52"></a>
+<span class="sourceLineNo">053</span><a name="line.53"></a>
+<span class="sourceLineNo">054</span>        private KARCached _karCached;<a name="line.54"></a>
+<span class="sourceLineNo">055</span>        private CacheContent _cacheContent;<a name="line.55"></a>
+<span class="sourceLineNo">056</span><a name="line.56"></a>
+<span class="sourceLineNo">057</span>        private Vector&lt;KeplerLSID&gt; _semanticTypes;<a name="line.57"></a>
+<span class="sourceLineNo">058</span><a name="line.58"></a>
+<span class="sourceLineNo">059</span>        public KARCacheContent() {<a name="line.59"></a>
+<span class="sourceLineNo">060</span>                _semanticTypes = new Vector&lt;KeplerLSID&gt;();<a name="line.60"></a>
+<span class="sourceLineNo">061</span>        }<a name="line.61"></a>
+<span class="sourceLineNo">062</span><a name="line.62"></a>
+<span class="sourceLineNo">063</span>        /**<a name="line.63"></a>
+<span class="sourceLineNo">064</span>         * Populate this object from the database. setKarLsid() and setLsid() must<a name="line.64"></a>
+<span class="sourceLineNo">065</span>         * be called before running this method.<a name="line.65"></a>
+<span class="sourceLineNo">066</span>         * <a name="line.66"></a>
+<span class="sourceLineNo">067</span>         * @param stmt<a name="line.67"></a>
+<span class="sourceLineNo">068</span>         * @throws Exception<a name="line.68"></a>
+<span class="sourceLineNo">069</span>         */<a name="line.69"></a>
+<span class="sourceLineNo">070</span>        public void populate(File karFile, KeplerLSID lsid, Statement stmt) throws Exception {<a name="line.70"></a>
+<span class="sourceLineNo">071</span><a name="line.71"></a>
+<span class="sourceLineNo">072</span>                String query = "SELECT NAME,TYPE FROM "<a name="line.72"></a>
+<span class="sourceLineNo">073</span>                                + KARCacheManager.KAR_CONTENTS_TABLE_NAME<a name="line.73"></a>
+<span class="sourceLineNo">074</span>                                + " WHERE FILE = '" + karFile + "' AND LSID = '"<a name="line.74"></a>
+<span class="sourceLineNo">075</span>                                + lsid.toString() + "'";<a name="line.75"></a>
+<span class="sourceLineNo">076</span>                if (isDebugging) log.debug(query);<a name="line.76"></a>
+<span class="sourceLineNo">077</span>                ResultSet rs = stmt.executeQuery(query);<a name="line.77"></a>
+<span class="sourceLineNo">078</span>                if (rs == null)<a name="line.78"></a>
+<span class="sourceLineNo">079</span>                        throw new SQLException("Query Failed: " + query);<a name="line.79"></a>
+<span class="sourceLineNo">080</span>                if (rs.next()) {<a name="line.80"></a>
+<span class="sourceLineNo">081</span>                        String name = rs.getString(1);<a name="line.81"></a>
+<span class="sourceLineNo">082</span>                        String type = rs.getString(2);<a name="line.82"></a>
+<span class="sourceLineNo">083</span><a name="line.83"></a>
+<span class="sourceLineNo">084</span>                        setName(name);<a name="line.84"></a>
+<span class="sourceLineNo">085</span>                        setType(type);<a name="line.85"></a>
+<span class="sourceLineNo">086</span><a name="line.86"></a>
+<span class="sourceLineNo">087</span>                        // Populate the foreign key object<a name="line.87"></a>
+<span class="sourceLineNo">088</span>                        KARCached kc = new KARCached();<a name="line.88"></a>
+<span class="sourceLineNo">089</span>                        kc.populate(karFile,stmt);<a name="line.89"></a>
+<span class="sourceLineNo">090</span>                        setKarCached(kc);<a name="line.90"></a>
+<span class="sourceLineNo">091</span>                        <a name="line.91"></a>
+<span class="sourceLineNo">092</span>                        CacheContent cc = new CacheContent();<a name="line.92"></a>
+<span class="sourceLineNo">093</span>                        cc.populate(getLsid(),stmt);<a name="line.93"></a>
+<span class="sourceLineNo">094</span>                        setCacheContent(cc);<a name="line.94"></a>
+<span class="sourceLineNo">095</span>                        <a name="line.95"></a>
+<span class="sourceLineNo">096</span>                        // Populate the semantic types<a name="line.96"></a>
+<span class="sourceLineNo">097</span>                        populateSemanticTypes(stmt);<a name="line.97"></a>
+<span class="sourceLineNo">098</span>                } else {<a name="line.98"></a>
+<span class="sourceLineNo">099</span>                        throw new SQLException(karFile + " - " + lsid.toString()<a name="line.99"></a>
+<span class="sourceLineNo">100</span>                                        + " was not found in "<a name="line.100"></a>
+<span class="sourceLineNo">101</span>                                        + KARCacheManager.KAR_CONTENTS_TABLE_NAME);<a name="line.101"></a>
+<span class="sourceLineNo">102</span>                }<a name="line.102"></a>
+<span class="sourceLineNo">103</span>                rs.close();<a name="line.103"></a>
+<span class="sourceLineNo">104</span><a name="line.104"></a>
+<span class="sourceLineNo">105</span>        }<a name="line.105"></a>
+<span class="sourceLineNo">106</span>        <a name="line.106"></a>
+<span class="sourceLineNo">107</span>        /**<a name="line.107"></a>
+<span class="sourceLineNo">108</span>         * @return File that points to the kar file<a name="line.108"></a>
+<span class="sourceLineNo">109</span>         */<a name="line.109"></a>
+<span class="sourceLineNo">110</span>        public File getKarFile() {<a name="line.110"></a>
+<span class="sourceLineNo">111</span>                return getKarCached().getFile();<a name="line.111"></a>
+<span class="sourceLineNo">112</span>        }<a name="line.112"></a>
+<span class="sourceLineNo">113</span><a name="line.113"></a>
+<span class="sourceLineNo">114</span>        /**<a name="line.114"></a>
+<span class="sourceLineNo">115</span>         * @return the lsid of the cache content<a name="line.115"></a>
+<span class="sourceLineNo">116</span>         */<a name="line.116"></a>
+<span class="sourceLineNo">117</span>        public KeplerLSID getLsid() {<a name="line.117"></a>
+<span class="sourceLineNo">118</span>                return getCacheContent().getLsid();<a name="line.118"></a>
+<span class="sourceLineNo">119</span>        }<a name="line.119"></a>
+<span class="sourceLineNo">120</span><a name="line.120"></a>
+<span class="sourceLineNo">121</span>        /**<a name="line.121"></a>
+<span class="sourceLineNo">122</span>         * @return the name<a name="line.122"></a>
+<span class="sourceLineNo">123</span>         */<a name="line.123"></a>
+<span class="sourceLineNo">124</span>        public String getName() {<a name="line.124"></a>
+<span class="sourceLineNo">125</span>                return _name;<a name="line.125"></a>
+<span class="sourceLineNo">126</span>        }<a name="line.126"></a>
+<span class="sourceLineNo">127</span><a name="line.127"></a>
+<span class="sourceLineNo">128</span>        /**<a name="line.128"></a>
+<span class="sourceLineNo">129</span>         * @param name<a name="line.129"></a>
+<span class="sourceLineNo">130</span>         *            the name to set<a name="line.130"></a>
+<span class="sourceLineNo">131</span>         */<a name="line.131"></a>
+<span class="sourceLineNo">132</span>        public void setName(String name) {<a name="line.132"></a>
+<span class="sourceLineNo">133</span>                this._name = name;<a name="line.133"></a>
+<span class="sourceLineNo">134</span>        }<a name="line.134"></a>
+<span class="sourceLineNo">135</span><a name="line.135"></a>
+<span class="sourceLineNo">136</span>        /**<a name="line.136"></a>
+<span class="sourceLineNo">137</span>         * @return the type<a name="line.137"></a>
+<span class="sourceLineNo">138</span>         */<a name="line.138"></a>
+<span class="sourceLineNo">139</span>        public String getType() {<a name="line.139"></a>
+<span class="sourceLineNo">140</span>                return _type;<a name="line.140"></a>
+<span class="sourceLineNo">141</span>        }<a name="line.141"></a>
+<span class="sourceLineNo">142</span><a name="line.142"></a>
+<span class="sourceLineNo">143</span>        /**<a name="line.143"></a>
+<span class="sourceLineNo">144</span>         * @param type<a name="line.144"></a>
+<span class="sourceLineNo">145</span>         *            the type to set<a name="line.145"></a>
+<span class="sourceLineNo">146</span>         */<a name="line.146"></a>
+<span class="sourceLineNo">147</span>        public void setType(String type) {<a name="line.147"></a>
+<span class="sourceLineNo">148</span>                this._type = type;<a name="line.148"></a>
+<span class="sourceLineNo">149</span>        }<a name="line.149"></a>
+<span class="sourceLineNo">150</span><a name="line.150"></a>
+<span class="sourceLineNo">151</span>        /**<a name="line.151"></a>
+<span class="sourceLineNo">152</span>         * @return the karCached<a name="line.152"></a>
+<span class="sourceLineNo">153</span>         */<a name="line.153"></a>
+<span class="sourceLineNo">154</span>        public KARCached getKarCached() {<a name="line.154"></a>
+<span class="sourceLineNo">155</span>                return _karCached;<a name="line.155"></a>
+<span class="sourceLineNo">156</span>        }<a name="line.156"></a>
+<span class="sourceLineNo">157</span><a name="line.157"></a>
+<span class="sourceLineNo">158</span>        /**<a name="line.158"></a>
+<span class="sourceLineNo">159</span>         * @param karCached<a name="line.159"></a>
+<span class="sourceLineNo">160</span>         *            the karCached to set<a name="line.160"></a>
+<span class="sourceLineNo">161</span>         */<a name="line.161"></a>
+<span class="sourceLineNo">162</span>        public void setKarCached(KARCached karCached) {<a name="line.162"></a>
+<span class="sourceLineNo">163</span>                this._karCached = karCached;<a name="line.163"></a>
+<span class="sourceLineNo">164</span>        }<a name="line.164"></a>
+<span class="sourceLineNo">165</span>        <a name="line.165"></a>
+<span class="sourceLineNo">166</span>        public CacheContent getCacheContent() {<a name="line.166"></a>
+<span class="sourceLineNo">167</span>                return _cacheContent;<a name="line.167"></a>
+<span class="sourceLineNo">168</span>        }<a name="line.168"></a>
+<span class="sourceLineNo">169</span>        <a name="line.169"></a>
+<span class="sourceLineNo">170</span>        public void setCacheContent(CacheContent cacheContent) {<a name="line.170"></a>
+<span class="sourceLineNo">171</span>                _cacheContent = cacheContent;<a name="line.171"></a>
+<span class="sourceLineNo">172</span>        }<a name="line.172"></a>
+<span class="sourceLineNo">173</span>        <a name="line.173"></a>
+<span class="sourceLineNo">174</span>        /**<a name="line.174"></a>
+<span class="sourceLineNo">175</span>         * @return the _semanticTypes<a name="line.175"></a>
+<span class="sourceLineNo">176</span>         */<a name="line.176"></a>
+<span class="sourceLineNo">177</span>        public Vector&lt;KeplerLSID&gt; getSemanticTypes() {<a name="line.177"></a>
+<span class="sourceLineNo">178</span>                return _semanticTypes;<a name="line.178"></a>
+<span class="sourceLineNo">179</span>        }<a name="line.179"></a>
+<span class="sourceLineNo">180</span><a name="line.180"></a>
+<span class="sourceLineNo">181</span>        /**<a name="line.181"></a>
+<span class="sourceLineNo">182</span>         * @param semanticTypes the _semanticTypes to set<a name="line.182"></a>
+<span class="sourceLineNo">183</span>         */<a name="line.183"></a>
+<span class="sourceLineNo">184</span>        public void setSemanticTypes(Vector&lt;KeplerLSID&gt; semanticTypes) {<a name="line.184"></a>
+<span class="sourceLineNo">185</span>                _semanticTypes = semanticTypes;<a name="line.185"></a>
+<span class="sourceLineNo">186</span>        }<a name="line.186"></a>
+<span class="sourceLineNo">187</span>        <a name="line.187"></a>
+<span class="sourceLineNo">188</span>        /**<a name="line.188"></a>
+<span class="sourceLineNo">189</span>         * Populate the semantic types from the CACHE_SEMTYPES table.<a name="line.189"></a>
+<span class="sourceLineNo">190</span>         * @param stmt<a name="line.190"></a>
+<span class="sourceLineNo">191</span>         * @throws SQLException<a name="line.191"></a>
+<span class="sourceLineNo">192</span>         */<a name="line.192"></a>
+<span class="sourceLineNo">193</span>        public void populateSemanticTypes(Statement stmt) throws SQLException {<a name="line.193"></a>
+<span class="sourceLineNo">194</span>                String query = "SELECT SEMTYPE FROM " + CacheManager.CACHE_SEMTYPES_TABLE_NAME<a name="line.194"></a>
+<span class="sourceLineNo">195</span>                        + " WHERE LSID = '" + getLsid().toString() + "'";<a name="line.195"></a>
+<span class="sourceLineNo">196</span>                ResultSet rs = null;<a name="line.196"></a>
+<span class="sourceLineNo">197</span>                try {<a name="line.197"></a>
+<span class="sourceLineNo">198</span>                        rs = stmt.executeQuery(query);<a name="line.198"></a>
+<span class="sourceLineNo">199</span>                        if (rs == null) throw new SQLException("Query Failed: " + query);<a name="line.199"></a>
+<span class="sourceLineNo">200</span>                        while (rs.next()) {<a name="line.200"></a>
+<span class="sourceLineNo">201</span>                                try {<a name="line.201"></a>
+<span class="sourceLineNo">202</span>                                        String rawEntry = rs.getString(1);<a name="line.202"></a>
+<span class="sourceLineNo">203</span>                                        SemanticType st = new SemanticType();<a name="line.203"></a>
+<span class="sourceLineNo">204</span>                                        st.setExpression(rawEntry);<a name="line.204"></a>
+<span class="sourceLineNo">205</span>                                        KeplerLSID semType = new KeplerLSID(st.getConceptUri());<a name="line.205"></a>
+<span class="sourceLineNo">206</span>                                        _semanticTypes.add(semType);<a name="line.206"></a>
+<span class="sourceLineNo">207</span>                                } catch (Exception e) {<a name="line.207"></a>
+<span class="sourceLineNo">208</span>                                        e.printStackTrace();<a name="line.208"></a>
+<span class="sourceLineNo">209</span>                                }<a name="line.209"></a>
+<span class="sourceLineNo">210</span>                        }<a name="line.210"></a>
+<span class="sourceLineNo">211</span>                } finally {<a name="line.211"></a>
+<span class="sourceLineNo">212</span>                        if(rs != null) {<a name="line.212"></a>
+<span class="sourceLineNo">213</span>                                rs.close();<a name="line.213"></a>
+<span class="sourceLineNo">214</span>                        }<a name="line.214"></a>
+<span class="sourceLineNo">215</span>                }<a name="line.215"></a>
+<span class="sourceLineNo">216</span>        }<a name="line.216"></a>
+<span class="sourceLineNo">217</span><a name="line.217"></a>
+<span class="sourceLineNo">218</span>}<a name="line.218"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

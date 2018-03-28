@@ -1,0 +1,335 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../../stylesheet.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>/* A representative of a text file contained in an external text editor.<a name="line.1"></a>
+<span class="sourceLineNo">002</span><a name="line.2"></a>
+<span class="sourceLineNo">003</span> Copyright (c) 1998-2014 The Regents of the University of California and<a name="line.3"></a>
+<span class="sourceLineNo">004</span> Research in Motion Limited.<a name="line.4"></a>
+<span class="sourceLineNo">005</span> All rights reserved.<a name="line.5"></a>
+<span class="sourceLineNo">006</span> Permission is hereby granted, without written agreement and without<a name="line.6"></a>
+<span class="sourceLineNo">007</span> license or royalty fees, to use, copy, modify, and distribute this<a name="line.7"></a>
+<span class="sourceLineNo">008</span> software and its documentation for any purpose, provided that the above<a name="line.8"></a>
+<span class="sourceLineNo">009</span> copyright notice and the following two paragraphs appear in all copies<a name="line.9"></a>
+<span class="sourceLineNo">010</span> of this software.<a name="line.10"></a>
+<span class="sourceLineNo">011</span><a name="line.11"></a>
+<span class="sourceLineNo">012</span> IN NO EVENT SHALL THE UNIVERSITY OF CALIFORNIA OR RESEARCH IN MOTION<a name="line.12"></a>
+<span class="sourceLineNo">013</span> LIMITED BE LIABLE TO ANY PARTY FOR DIRECT, INDIRECT, SPECIAL,<a name="line.13"></a>
+<span class="sourceLineNo">014</span> INCIDENTAL, OR CONSEQUENTIAL DAMAGES ARISING OUT OF THE USE OF THIS<a name="line.14"></a>
+<span class="sourceLineNo">015</span> SOFTWARE AND ITS DOCUMENTATION, EVEN IF THE UNIVERSITY OF CALIFORNIA<a name="line.15"></a>
+<span class="sourceLineNo">016</span> OR RESEARCH IN MOTION LIMITED HAVE BEEN ADVISED OF THE POSSIBILITY OF<a name="line.16"></a>
+<span class="sourceLineNo">017</span> SUCH DAMAGE.<a name="line.17"></a>
+<span class="sourceLineNo">018</span><a name="line.18"></a>
+<span class="sourceLineNo">019</span> THE UNIVERSITY OF CALIFORNIA AND RESEARCH IN MOTION LIMITED<a name="line.19"></a>
+<span class="sourceLineNo">020</span> SPECIFICALLY DISCLAIM ANY WARRANTIES, INCLUDING, BUT NOT LIMITED TO,<a name="line.20"></a>
+<span class="sourceLineNo">021</span> THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A<a name="line.21"></a>
+<span class="sourceLineNo">022</span> PARTICULAR PURPOSE. THE SOFTWARE PROVIDED HEREUNDER IS ON AN "AS IS"<a name="line.22"></a>
+<span class="sourceLineNo">023</span> BASIS, AND THE UNIVERSITY OF CALIFORNIA AND RESEARCH IN MOTION<a name="line.23"></a>
+<span class="sourceLineNo">024</span> LIMITED HAVE NO OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT, UPDATES,<a name="line.24"></a>
+<span class="sourceLineNo">025</span> ENHANCEMENTS, OR MODIFICATIONS.<a name="line.25"></a>
+<span class="sourceLineNo">026</span><a name="line.26"></a>
+<span class="sourceLineNo">027</span> PT_COPYRIGHT_VERSION_2<a name="line.27"></a>
+<span class="sourceLineNo">028</span> COPYRIGHTENDKEY<a name="line.28"></a>
+<span class="sourceLineNo">029</span><a name="line.29"></a>
+<span class="sourceLineNo">030</span> */<a name="line.30"></a>
+<span class="sourceLineNo">031</span>package ptolemy.actor.gui;<a name="line.31"></a>
+<span class="sourceLineNo">032</span><a name="line.32"></a>
+<span class="sourceLineNo">033</span>import java.io.File;<a name="line.33"></a>
+<span class="sourceLineNo">034</span>import java.io.FileWriter;<a name="line.34"></a>
+<span class="sourceLineNo">035</span>import java.net.MalformedURLException;<a name="line.35"></a>
+<span class="sourceLineNo">036</span>import java.net.URL;<a name="line.36"></a>
+<span class="sourceLineNo">037</span><a name="line.37"></a>
+<span class="sourceLineNo">038</span>import ptolemy.kernel.CompositeEntity;<a name="line.38"></a>
+<span class="sourceLineNo">039</span>import ptolemy.kernel.util.Attribute;<a name="line.39"></a>
+<span class="sourceLineNo">040</span>import ptolemy.kernel.util.IllegalActionException;<a name="line.40"></a>
+<span class="sourceLineNo">041</span>import ptolemy.kernel.util.InternalErrorException;<a name="line.41"></a>
+<span class="sourceLineNo">042</span>import ptolemy.kernel.util.NameDuplicationException;<a name="line.42"></a>
+<span class="sourceLineNo">043</span>import ptolemy.kernel.util.Workspace;<a name="line.43"></a>
+<span class="sourceLineNo">044</span><a name="line.44"></a>
+<span class="sourceLineNo">045</span>///////////////////////////////////////////////////////////////////<a name="line.45"></a>
+<span class="sourceLineNo">046</span>//// ExternalTextEffigy<a name="line.46"></a>
+<span class="sourceLineNo">047</span><a name="line.47"></a>
+<span class="sourceLineNo">048</span>/**<a name="line.48"></a>
+<span class="sourceLineNo">049</span> An external EDITOR-based effigy for a text file (see {@link<a name="line.49"></a>
+<span class="sourceLineNo">050</span> ExternalTextTableau}).<a name="line.50"></a>
+<span class="sourceLineNo">051</span><a name="line.51"></a>
+<span class="sourceLineNo">052</span> @author Zoltan Kemenczy, Research in Motion Limited<a name="line.52"></a>
+<span class="sourceLineNo">053</span> @version $Id$<a name="line.53"></a>
+<span class="sourceLineNo">054</span> @since Ptolemy II 2.2<a name="line.54"></a>
+<span class="sourceLineNo">055</span> @Pt.ProposedRating Red (neuendor)<a name="line.55"></a>
+<span class="sourceLineNo">056</span> @Pt.AcceptedRating Red (neuendor)<a name="line.56"></a>
+<span class="sourceLineNo">057</span> */<a name="line.57"></a>
+<span class="sourceLineNo">058</span>public class ExternalTextEffigy extends TextEffigy {<a name="line.58"></a>
+<span class="sourceLineNo">059</span>    /** Create a new effigy in the specified workspace with an empty string<a name="line.59"></a>
+<span class="sourceLineNo">060</span>     *  for its name.<a name="line.60"></a>
+<span class="sourceLineNo">061</span>     *  @param workspace The workspace for this effigy.<a name="line.61"></a>
+<span class="sourceLineNo">062</span>     */<a name="line.62"></a>
+<span class="sourceLineNo">063</span>    public ExternalTextEffigy(Workspace workspace) {<a name="line.63"></a>
+<span class="sourceLineNo">064</span>        super(workspace);<a name="line.64"></a>
+<span class="sourceLineNo">065</span>    }<a name="line.65"></a>
+<span class="sourceLineNo">066</span><a name="line.66"></a>
+<span class="sourceLineNo">067</span>    /** Create a new effigy in the given directory with the given name.<a name="line.67"></a>
+<span class="sourceLineNo">068</span>     *  @param container The directory that contains this effigy.<a name="line.68"></a>
+<span class="sourceLineNo">069</span>     *  @param name The name of this effigy.<a name="line.69"></a>
+<span class="sourceLineNo">070</span>     *  @exception IllegalActionException If the entity cannot be contained<a name="line.70"></a>
+<span class="sourceLineNo">071</span>     *   by the proposed container.<a name="line.71"></a>
+<span class="sourceLineNo">072</span>     *  @exception NameDuplicationException If the name coincides with<a name="line.72"></a>
+<span class="sourceLineNo">073</span>     *   an entity already in the container.<a name="line.73"></a>
+<span class="sourceLineNo">074</span>     */<a name="line.74"></a>
+<span class="sourceLineNo">075</span>    public ExternalTextEffigy(CompositeEntity container, String name)<a name="line.75"></a>
+<span class="sourceLineNo">076</span>            throws IllegalActionException, NameDuplicationException {<a name="line.76"></a>
+<span class="sourceLineNo">077</span>        super(container, name);<a name="line.77"></a>
+<span class="sourceLineNo">078</span>    }<a name="line.78"></a>
+<span class="sourceLineNo">079</span><a name="line.79"></a>
+<span class="sourceLineNo">080</span>    ///////////////////////////////////////////////////////////////////<a name="line.80"></a>
+<span class="sourceLineNo">081</span>    ////                         public methods                    ////<a name="line.81"></a>
+<span class="sourceLineNo">082</span><a name="line.82"></a>
+<span class="sourceLineNo">083</span>    /** If the argument is the &lt;i&gt;identifier&lt;/i&gt; parameter, then tell<a name="line.83"></a>
+<span class="sourceLineNo">084</span>     *  the external editor to finally open the file specified by the<a name="line.84"></a>
+<span class="sourceLineNo">085</span>     *  identifier (as opposed to at newTextEffigy(container, text) time<a name="line.85"></a>
+<span class="sourceLineNo">086</span>     *  at which the document file is not yet specified. This greatly<a name="line.86"></a>
+<span class="sourceLineNo">087</span>     *  simplifies the interaction with the external text editor: instead<a name="line.87"></a>
+<span class="sourceLineNo">088</span>     *  of first telling it to create a text buffer with some name and<a name="line.88"></a>
+<span class="sourceLineNo">089</span>     *  no file attached, the buffer, its associated file name, and any<a name="line.89"></a>
+<span class="sourceLineNo">090</span>     *  text saved by newTextEffigy(container, text) is given to the<a name="line.90"></a>
+<span class="sourceLineNo">091</span>     *  text editor in one transaction. NOTE: This depends on<a name="line.91"></a>
+<span class="sourceLineNo">092</span>     *  TextEditorTableau.createTableau(effigy) setting the identifier<a name="line.92"></a>
+<span class="sourceLineNo">093</span>     *  expression after newTextEffigy(container, text).<a name="line.93"></a>
+<span class="sourceLineNo">094</span>     *  @param attribute The attribute that changed.<a name="line.94"></a>
+<span class="sourceLineNo">095</span>     *  @exception IllegalActionException If the base class throws it.<a name="line.95"></a>
+<span class="sourceLineNo">096</span>     */<a name="line.96"></a>
+<span class="sourceLineNo">097</span>    @Override<a name="line.97"></a>
+<span class="sourceLineNo">098</span>    public void attributeChanged(Attribute attribute)<a name="line.98"></a>
+<span class="sourceLineNo">099</span>            throws IllegalActionException {<a name="line.99"></a>
+<span class="sourceLineNo">100</span>        // Let Effigy handle it first<a name="line.100"></a>
+<span class="sourceLineNo">101</span>        super.attributeChanged(attribute);<a name="line.101"></a>
+<span class="sourceLineNo">102</span><a name="line.102"></a>
+<span class="sourceLineNo">103</span>        // Now do the external-text-specific stuff<a name="line.103"></a>
+<span class="sourceLineNo">104</span>        if (attribute == identifier) {<a name="line.104"></a>
+<span class="sourceLineNo">105</span>            URL url;<a name="line.105"></a>
+<span class="sourceLineNo">106</span><a name="line.106"></a>
+<span class="sourceLineNo">107</span>            try {<a name="line.107"></a>
+<span class="sourceLineNo">108</span>                url = new URL(identifier.getExpression());<a name="line.108"></a>
+<span class="sourceLineNo">109</span><a name="line.109"></a>
+<span class="sourceLineNo">110</span>                File file = new File(url.getFile());<a name="line.110"></a>
+<span class="sourceLineNo">111</span>                String path = file.getAbsolutePath().replace('\\', '/');<a name="line.111"></a>
+<span class="sourceLineNo">112</span>                showContent(path);<a name="line.112"></a>
+<span class="sourceLineNo">113</span>            } catch (MalformedURLException ex) {<a name="line.113"></a>
+<span class="sourceLineNo">114</span>                // just ignore. This happens when the tableau sets<a name="line.114"></a>
+<span class="sourceLineNo">115</span>                // "Unnamed" arbitrarily<a name="line.115"></a>
+<span class="sourceLineNo">116</span>            }<a name="line.116"></a>
+<span class="sourceLineNo">117</span>        }<a name="line.117"></a>
+<span class="sourceLineNo">118</span>    }<a name="line.118"></a>
+<span class="sourceLineNo">119</span><a name="line.119"></a>
+<span class="sourceLineNo">120</span>    /** Create a new effigy in the given container containing the specified<a name="line.120"></a>
+<span class="sourceLineNo">121</span>     *  text.  The new effigy will have a new instance of<a name="line.121"></a>
+<span class="sourceLineNo">122</span>     *  DefaultStyledDocument associated with it.<a name="line.122"></a>
+<span class="sourceLineNo">123</span>     *  @param container The container for the effigy.<a name="line.123"></a>
+<span class="sourceLineNo">124</span>     *  @param text The text to insert in the effigy.<a name="line.124"></a>
+<span class="sourceLineNo">125</span>     *  @return A new instance of TextEffigy.<a name="line.125"></a>
+<span class="sourceLineNo">126</span>     *  @exception Exception If the text effigy cannot be<a name="line.126"></a>
+<span class="sourceLineNo">127</span>     *   contained by the specified container, or if the specified<a name="line.127"></a>
+<span class="sourceLineNo">128</span>     *   text cannot be inserted into the document.<a name="line.128"></a>
+<span class="sourceLineNo">129</span>     */<a name="line.129"></a>
+<span class="sourceLineNo">130</span>    public static TextEffigy newTextEffigy(CompositeEntity container,<a name="line.130"></a>
+<span class="sourceLineNo">131</span>            String text) throws Exception {<a name="line.131"></a>
+<span class="sourceLineNo">132</span>        // Create a new effigy.<a name="line.132"></a>
+<span class="sourceLineNo">133</span>        ExternalTextEffigy effigy = new ExternalTextEffigy(container,<a name="line.133"></a>
+<span class="sourceLineNo">134</span>                container.uniqueName("effigy"));<a name="line.134"></a>
+<span class="sourceLineNo">135</span><a name="line.135"></a>
+<span class="sourceLineNo">136</span>        // Cheat: we'll get the text off the container at<a name="line.136"></a>
+<span class="sourceLineNo">137</span>        // show(Content)-time. This get's around the problem of stale<a name="line.137"></a>
+<span class="sourceLineNo">138</span>        // text after the model is updated and answers YES to the<a name="line.138"></a>
+<span class="sourceLineNo">139</span>        // question regarding moml viewing in<a name="line.139"></a>
+<span class="sourceLineNo">140</span>        // TextEditorTableau.createTableau()...<a name="line.140"></a>
+<span class="sourceLineNo">141</span>        effigy.setUseContainerMoML(true);<a name="line.141"></a>
+<span class="sourceLineNo">142</span>        return effigy;<a name="line.142"></a>
+<span class="sourceLineNo">143</span>    }<a name="line.143"></a>
+<span class="sourceLineNo">144</span><a name="line.144"></a>
+<span class="sourceLineNo">145</span>    /** Create a new ExternalTextEffigy.<a name="line.145"></a>
+<span class="sourceLineNo">146</span>     *  @param container The container for the effigy.<a name="line.146"></a>
+<span class="sourceLineNo">147</span>     *  @param base The base for relative file references, or null if<a name="line.147"></a>
+<span class="sourceLineNo">148</span>     *   there are no relative file references.  This is ignored in this<a name="line.148"></a>
+<span class="sourceLineNo">149</span>     *   class.<a name="line.149"></a>
+<span class="sourceLineNo">150</span>     *  @param in The input URL, or null if there is none.<a name="line.150"></a>
+<span class="sourceLineNo">151</span>     *  @return A new instance of TextEffigy.<a name="line.151"></a>
+<span class="sourceLineNo">152</span>     *  @exception Exception If the URL cannot be read, or if the data<a name="line.152"></a>
+<span class="sourceLineNo">153</span>     *   is malformed in some way.<a name="line.153"></a>
+<span class="sourceLineNo">154</span>     */<a name="line.154"></a>
+<span class="sourceLineNo">155</span>    public static TextEffigy newTextEffigy(CompositeEntity container, URL base,<a name="line.155"></a>
+<span class="sourceLineNo">156</span>            URL in) throws Exception {<a name="line.156"></a>
+<span class="sourceLineNo">157</span>        ExternalTextEffigy effigy = new ExternalTextEffigy(container,<a name="line.157"></a>
+<span class="sourceLineNo">158</span>                container.uniqueName("effigy"));<a name="line.158"></a>
+<span class="sourceLineNo">159</span><a name="line.159"></a>
+<span class="sourceLineNo">160</span>        // A URL has been given.  Read it.<a name="line.160"></a>
+<span class="sourceLineNo">161</span>        // Note: Here the text editor would be given the in URL to<a name="line.161"></a>
+<span class="sourceLineNo">162</span>        // open. However, to simplify the interaction with the external<a name="line.162"></a>
+<span class="sourceLineNo">163</span>        // text editor, the handling of 1) opening existing text<a name="line.163"></a>
+<span class="sourceLineNo">164</span>        // URLs, and 2) effigies of moml files where we want the current<a name="line.164"></a>
+<span class="sourceLineNo">165</span>        // moml content of an already open PtolemyEffigy (its moml file<a name="line.165"></a>
+<span class="sourceLineNo">166</span>        // is not read), the opening of the file is delayed until its<a name="line.166"></a>
+<span class="sourceLineNo">167</span>        // identifier attribute is updated.<a name="line.167"></a>
+<span class="sourceLineNo">168</span>        return effigy;<a name="line.168"></a>
+<span class="sourceLineNo">169</span>    }<a name="line.169"></a>
+<span class="sourceLineNo">170</span><a name="line.170"></a>
+<span class="sourceLineNo">171</span>    /** Pass the modifiable flag onto the external text editor. */<a name="line.171"></a>
+<span class="sourceLineNo">172</span>    @Override<a name="line.172"></a>
+<span class="sourceLineNo">173</span>    public void setModifiable(boolean flag) {<a name="line.173"></a>
+<span class="sourceLineNo">174</span>        super.setModifiable(flag);<a name="line.174"></a>
+<span class="sourceLineNo">175</span>    }<a name="line.175"></a>
+<span class="sourceLineNo">176</span><a name="line.176"></a>
+<span class="sourceLineNo">177</span>    /** Signal the external text editor to (re)display its buffer<a name="line.177"></a>
+<span class="sourceLineNo">178</span>     associated with this effigy. */<a name="line.178"></a>
+<span class="sourceLineNo">179</span>    public void show() {<a name="line.179"></a>
+<span class="sourceLineNo">180</span>        showContent(_pathName);<a name="line.180"></a>
+<span class="sourceLineNo">181</span>    }<a name="line.181"></a>
+<span class="sourceLineNo">182</span><a name="line.182"></a>
+<span class="sourceLineNo">183</span>    ///////////////////////////////////////////////////////////////////<a name="line.183"></a>
+<span class="sourceLineNo">184</span>    ////                         private methods                   ////<a name="line.184"></a>
+<span class="sourceLineNo">185</span>    // Set private useContainerMoML attribute<a name="line.185"></a>
+<span class="sourceLineNo">186</span>    private void setUseContainerMoML(boolean useContainerMoML) {<a name="line.186"></a>
+<span class="sourceLineNo">187</span>        _useContainerMoML = useContainerMoML;<a name="line.187"></a>
+<span class="sourceLineNo">188</span>    }<a name="line.188"></a>
+<span class="sourceLineNo">189</span><a name="line.189"></a>
+<span class="sourceLineNo">190</span>    private void showContent(String path) {<a name="line.190"></a>
+<span class="sourceLineNo">191</span>        try {<a name="line.191"></a>
+<span class="sourceLineNo">192</span>            File tmpFile = null;<a name="line.192"></a>
+<span class="sourceLineNo">193</span>            String todo;<a name="line.193"></a>
+<span class="sourceLineNo">194</span><a name="line.194"></a>
+<span class="sourceLineNo">195</span>            if (_useContainerMoML) {<a name="line.195"></a>
+<span class="sourceLineNo">196</span>                // Open the file from storage, erase the buffer, then set<a name="line.196"></a>
+<span class="sourceLineNo">197</span>                // the current content from the MoML content of the<a name="line.197"></a>
+<span class="sourceLineNo">198</span>                // container<a name="line.198"></a>
+<span class="sourceLineNo">199</span>                String text = ((PtolemyEffigy) getContainer()).getModel()<a name="line.199"></a>
+<span class="sourceLineNo">200</span>                        .exportMoML();<a name="line.200"></a>
+<span class="sourceLineNo">201</span>                tmpFile = File.createTempFile("effigy", "");<a name="line.201"></a>
+<span class="sourceLineNo">202</span><a name="line.202"></a>
+<span class="sourceLineNo">203</span>                String tmpFilePathName = tmpFile.getAbsolutePath().replace('\\',<a name="line.203"></a>
+<span class="sourceLineNo">204</span>                        '/');<a name="line.204"></a>
+<span class="sourceLineNo">205</span>                FileWriter writer = null;<a name="line.205"></a>
+<span class="sourceLineNo">206</span><a name="line.206"></a>
+<span class="sourceLineNo">207</span>                try {<a name="line.207"></a>
+<span class="sourceLineNo">208</span>                    writer = new FileWriter(tmpFile);<a name="line.208"></a>
+<span class="sourceLineNo">209</span>                    writer.write(text);<a name="line.209"></a>
+<span class="sourceLineNo">210</span>                } finally {<a name="line.210"></a>
+<span class="sourceLineNo">211</span>                    if (writer != null) {<a name="line.211"></a>
+<span class="sourceLineNo">212</span>                        writer.close();<a name="line.212"></a>
+<span class="sourceLineNo">213</span>                    }<a name="line.213"></a>
+<span class="sourceLineNo">214</span>                }<a name="line.214"></a>
+<span class="sourceLineNo">215</span><a name="line.215"></a>
+<span class="sourceLineNo">216</span>                todo = "gnudoit (find-file (symbol-name '" + path + "))"<a name="line.216"></a>
+<span class="sourceLineNo">217</span>                        + "(setq buffer-read-only nil)" + "(erase-buffer)"<a name="line.217"></a>
+<span class="sourceLineNo">218</span>                        + "(insert-file-contents " + "    (symbol-name '"<a name="line.218"></a>
+<span class="sourceLineNo">219</span>                        + tmpFilePathName + "))" + "(set-buffer-modified-p nil)"<a name="line.219"></a>
+<span class="sourceLineNo">220</span>                        + "(setq buffer-read-only t)" + "(buffer-name)";<a name="line.220"></a>
+<span class="sourceLineNo">221</span>            } else {<a name="line.221"></a>
+<span class="sourceLineNo">222</span>                // Reading file content from storage<a name="line.222"></a>
+<span class="sourceLineNo">223</span>                todo = "gnudoit (find-file (symbol-name '" + path + "))"<a name="line.223"></a>
+<span class="sourceLineNo">224</span>                        + "(buffer-name)";<a name="line.224"></a>
+<span class="sourceLineNo">225</span>            }<a name="line.225"></a>
+<span class="sourceLineNo">226</span><a name="line.226"></a>
+<span class="sourceLineNo">227</span>            Process process = Runtime.getRuntime().exec(todo);<a name="line.227"></a>
+<span class="sourceLineNo">228</span><a name="line.228"></a>
+<span class="sourceLineNo">229</span>            // After many simplifcations, at this point, _bufferName is<a name="line.229"></a>
+<span class="sourceLineNo">230</span>            // not really needed anymore, but I'll keep its code as a<a name="line.230"></a>
+<span class="sourceLineNo">231</span>            // comment of how to read gnudoit results back from emacs<a name="line.231"></a>
+<span class="sourceLineNo">232</span>            // (An optimization would first query emacs for a buffer<a name="line.232"></a>
+<span class="sourceLineNo">233</span>            // named by _bufferName content and then simply switch to<a name="line.233"></a>
+<span class="sourceLineNo">234</span>            // that buffer as opposed to always re-creating it.)<a name="line.234"></a>
+<span class="sourceLineNo">235</span>            //- BufferedInputStream result =<a name="line.235"></a>
+<span class="sourceLineNo">236</span>            //-    new BufferedInputStream(process.getInputStream());<a name="line.236"></a>
+<span class="sourceLineNo">237</span>            process.waitFor();<a name="line.237"></a>
+<span class="sourceLineNo">238</span><a name="line.238"></a>
+<span class="sourceLineNo">239</span>            //- byte[] buffer = new byte[result.available()];<a name="line.239"></a>
+<span class="sourceLineNo">240</span>            //- result.read(buffer, 0, buffer.length);<a name="line.240"></a>
+<span class="sourceLineNo">241</span>            // Delete any linefeeds and carriage returns.<a name="line.241"></a>
+<span class="sourceLineNo">242</span>            //- int i = buffer.length -1;<a name="line.242"></a>
+<span class="sourceLineNo">243</span>            //- for (; buffer[i] == '\r' || buffer[i] == '\n'; i--);<a name="line.243"></a>
+<span class="sourceLineNo">244</span>            //- _bufferName = new String(buffer, 0, i + 1);<a name="line.244"></a>
+<span class="sourceLineNo">245</span>            _pathName = path;<a name="line.245"></a>
+<span class="sourceLineNo">246</span><a name="line.246"></a>
+<span class="sourceLineNo">247</span>            if (tmpFile != null) {<a name="line.247"></a>
+<span class="sourceLineNo">248</span>                if (!tmpFile.delete()) {<a name="line.248"></a>
+<span class="sourceLineNo">249</span>                    throw new InternalErrorException(<a name="line.249"></a>
+<span class="sourceLineNo">250</span>                            "Failed to delete \"" + tmpFile + "\"?");<a name="line.250"></a>
+<span class="sourceLineNo">251</span>                }<a name="line.251"></a>
+<span class="sourceLineNo">252</span>            }<a name="line.252"></a>
+<span class="sourceLineNo">253</span>        } catch (Throwable throwable) {<a name="line.253"></a>
+<span class="sourceLineNo">254</span>            throw new RuntimeException(getFullName(), throwable);<a name="line.254"></a>
+<span class="sourceLineNo">255</span>        }<a name="line.255"></a>
+<span class="sourceLineNo">256</span>    }<a name="line.256"></a>
+<span class="sourceLineNo">257</span><a name="line.257"></a>
+<span class="sourceLineNo">258</span>    ///////////////////////////////////////////////////////////////////<a name="line.258"></a>
+<span class="sourceLineNo">259</span>    ////                         private members                   ////<a name="line.259"></a>
+<span class="sourceLineNo">260</span>    private String _pathName;<a name="line.260"></a>
+<span class="sourceLineNo">261</span><a name="line.261"></a>
+<span class="sourceLineNo">262</span>    private boolean _useContainerMoML;<a name="line.262"></a>
+<span class="sourceLineNo">263</span>}<a name="line.263"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

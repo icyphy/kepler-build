@@ -1,0 +1,699 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../stylesheet.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>/*<a name="line.1"></a>
+<span class="sourceLineNo">002</span> * Copyright (c) 2004-2010 The Regents of the University of California.<a name="line.2"></a>
+<span class="sourceLineNo">003</span> * All rights reserved.<a name="line.3"></a>
+<span class="sourceLineNo">004</span> *<a name="line.4"></a>
+<span class="sourceLineNo">005</span> * '$Author: crawl $'<a name="line.5"></a>
+<span class="sourceLineNo">006</span> * '$Date: 2015-08-24 15:47:39 -0700 (Mon, 24 Aug 2015) $' <a name="line.6"></a>
+<span class="sourceLineNo">007</span> * '$Revision: 33633 $'<a name="line.7"></a>
+<span class="sourceLineNo">008</span> * <a name="line.8"></a>
+<span class="sourceLineNo">009</span> * Permission is hereby granted, without written agreement and without<a name="line.9"></a>
+<span class="sourceLineNo">010</span> * license or royalty fees, to use, copy, modify, and distribute this<a name="line.10"></a>
+<span class="sourceLineNo">011</span> * software and its documentation for any purpose, provided that the above<a name="line.11"></a>
+<span class="sourceLineNo">012</span> * copyright notice and the following two paragraphs appear in all copies<a name="line.12"></a>
+<span class="sourceLineNo">013</span> * of this software.<a name="line.13"></a>
+<span class="sourceLineNo">014</span> *<a name="line.14"></a>
+<span class="sourceLineNo">015</span> * IN NO EVENT SHALL THE UNIVERSITY OF CALIFORNIA BE LIABLE TO ANY PARTY<a name="line.15"></a>
+<span class="sourceLineNo">016</span> * FOR DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES<a name="line.16"></a>
+<span class="sourceLineNo">017</span> * ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION, EVEN IF<a name="line.17"></a>
+<span class="sourceLineNo">018</span> * THE UNIVERSITY OF CALIFORNIA HAS BEEN ADVISED OF THE POSSIBILITY OF<a name="line.18"></a>
+<span class="sourceLineNo">019</span> * SUCH DAMAGE.<a name="line.19"></a>
+<span class="sourceLineNo">020</span> *<a name="line.20"></a>
+<span class="sourceLineNo">021</span> * THE UNIVERSITY OF CALIFORNIA SPECIFICALLY DISCLAIMS ANY WARRANTIES,<a name="line.21"></a>
+<span class="sourceLineNo">022</span> * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF<a name="line.22"></a>
+<span class="sourceLineNo">023</span> * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE<a name="line.23"></a>
+<span class="sourceLineNo">024</span> * PROVIDED HEREUNDER IS ON AN "AS IS" BASIS, AND THE UNIVERSITY OF<a name="line.24"></a>
+<span class="sourceLineNo">025</span> * CALIFORNIA HAS NO OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT, UPDATES,<a name="line.25"></a>
+<span class="sourceLineNo">026</span> * ENHANCEMENTS, OR MODIFICATIONS.<a name="line.26"></a>
+<span class="sourceLineNo">027</span> *<a name="line.27"></a>
+<span class="sourceLineNo">028</span> */<a name="line.28"></a>
+<span class="sourceLineNo">029</span><a name="line.29"></a>
+<span class="sourceLineNo">030</span>package org.srb;<a name="line.30"></a>
+<span class="sourceLineNo">031</span><a name="line.31"></a>
+<span class="sourceLineNo">032</span>import java.util.StringTokenizer;<a name="line.32"></a>
+<span class="sourceLineNo">033</span>import java.util.Vector;<a name="line.33"></a>
+<span class="sourceLineNo">034</span><a name="line.34"></a>
+<span class="sourceLineNo">035</span>import edu.sdsc.grid.io.GeneralFile;<a name="line.35"></a>
+<span class="sourceLineNo">036</span>import edu.sdsc.grid.io.MetaDataCondition;<a name="line.36"></a>
+<span class="sourceLineNo">037</span>import edu.sdsc.grid.io.MetaDataRecordList;<a name="line.37"></a>
+<span class="sourceLineNo">038</span>import edu.sdsc.grid.io.MetaDataSelect;<a name="line.38"></a>
+<span class="sourceLineNo">039</span>import edu.sdsc.grid.io.MetaDataSet;<a name="line.39"></a>
+<span class="sourceLineNo">040</span>import edu.sdsc.grid.io.MetaDataTable;<a name="line.40"></a>
+<span class="sourceLineNo">041</span>import edu.sdsc.grid.io.local.LocalFile;<a name="line.41"></a>
+<span class="sourceLineNo">042</span>import edu.sdsc.grid.io.srb.SRBFile;<a name="line.42"></a>
+<span class="sourceLineNo">043</span>import edu.sdsc.grid.io.srb.SRBFileSystem;<a name="line.43"></a>
+<span class="sourceLineNo">044</span>import edu.sdsc.grid.io.srb.SRBMetaDataSet;<a name="line.44"></a>
+<span class="sourceLineNo">045</span>import ptolemy.actor.NoTokenException;<a name="line.45"></a>
+<span class="sourceLineNo">046</span>import ptolemy.actor.TypedAtomicActor;<a name="line.46"></a>
+<span class="sourceLineNo">047</span>import ptolemy.actor.TypedIOPort;<a name="line.47"></a>
+<span class="sourceLineNo">048</span>import ptolemy.data.ArrayToken;<a name="line.48"></a>
+<span class="sourceLineNo">049</span>import ptolemy.data.ObjectToken;<a name="line.49"></a>
+<span class="sourceLineNo">050</span>import ptolemy.data.StringToken;<a name="line.50"></a>
+<span class="sourceLineNo">051</span>import ptolemy.data.Token;<a name="line.51"></a>
+<span class="sourceLineNo">052</span>import ptolemy.data.type.ArrayType;<a name="line.52"></a>
+<span class="sourceLineNo">053</span>import ptolemy.data.type.BaseType;<a name="line.53"></a>
+<span class="sourceLineNo">054</span>import ptolemy.gui.GraphicalMessageHandler;<a name="line.54"></a>
+<span class="sourceLineNo">055</span>import ptolemy.kernel.CompositeEntity;<a name="line.55"></a>
+<span class="sourceLineNo">056</span>import ptolemy.kernel.util.Attribute;<a name="line.56"></a>
+<span class="sourceLineNo">057</span>import ptolemy.kernel.util.IllegalActionException;<a name="line.57"></a>
+<span class="sourceLineNo">058</span>import ptolemy.kernel.util.NameDuplicationException;<a name="line.58"></a>
+<span class="sourceLineNo">059</span><a name="line.59"></a>
+<span class="sourceLineNo">060</span>//////////////////////////////////////////////////////////////////////////<a name="line.60"></a>
+<span class="sourceLineNo">061</span>//// SRBQueryMD<a name="line.61"></a>
+<span class="sourceLineNo">062</span>/**<a name="line.62"></a>
+<span class="sourceLineNo">063</span> * &lt;p&gt;<a name="line.63"></a>
+<span class="sourceLineNo">064</span> * Query the metadata. Get all files satisfying the conditions. Queries the SRB<a name="line.64"></a>
+<span class="sourceLineNo">065</span> * metadata from a specific location with user defined conditions.<a name="line.65"></a>
+<span class="sourceLineNo">066</span> * &lt;/p&gt;<a name="line.66"></a>
+<span class="sourceLineNo">067</span> * &lt;p&gt;<a name="line.67"></a>
+<span class="sourceLineNo">068</span> * The conditions are generated as follows:<a name="line.68"></a>
+<span class="sourceLineNo">069</span> * &lt;/p&gt;<a name="line.69"></a>
+<span class="sourceLineNo">070</span> * &lt;p&gt;<a name="line.70"></a>
+<span class="sourceLineNo">071</span> * &lt;b&gt;SRBCreateQueryInterface&lt;/b&gt;: Creates an html interface for querying the<a name="line.71"></a>
+<span class="sourceLineNo">072</span> * SRB metadata. Will be replaced with a jsp page within a Kepler server.<a name="line.72"></a>
+<span class="sourceLineNo">073</span> * &lt;/p&gt;<a name="line.73"></a>
+<span class="sourceLineNo">074</span> * &lt;p&gt;<a name="line.74"></a>
+<span class="sourceLineNo">075</span> * <a name="line.75"></a>
+<span class="sourceLineNo">076</span> * &lt;b&gt;SRBCreateQueryConditions&lt;/b&gt;: Creates conditions for querying the SRB<a name="line.76"></a>
+<span class="sourceLineNo">077</span> * metadata from a user xml string conditions, returned by the BrowserUI actor.<a name="line.77"></a>
+<span class="sourceLineNo">078</span> * &lt;/p&gt;<a name="line.78"></a>
+<span class="sourceLineNo">079</span> * &lt;p&gt;<a name="line.79"></a>
+<span class="sourceLineNo">080</span> * The following actor expects as input a reference to the SRB file system. This<a name="line.80"></a>
+<span class="sourceLineNo">081</span> * reference connection is obtained via the SRBConnect Actor in Kepler. &lt;i&gt;See<a name="line.81"></a>
+<span class="sourceLineNo">082</span> * SRBConnect and its documentation.&lt;/i&gt;<a name="line.82"></a>
+<span class="sourceLineNo">083</span> * &lt;/p&gt;<a name="line.83"></a>
+<span class="sourceLineNo">084</span> * &lt;p&gt;<a name="line.84"></a>
+<span class="sourceLineNo">085</span> * The file reference system is created with a unique SRB user account and with<a name="line.85"></a>
+<span class="sourceLineNo">086</span> * this connection reference as input the SRBQueryMD actor is able to gain<a name="line.86"></a>
+<span class="sourceLineNo">087</span> * access to the SRB file space. Once an alive SRB file connection system has<a name="line.87"></a>
+<span class="sourceLineNo">088</span> * been established the actor gets the remote SRB file/directory and the<a name="line.88"></a>
+<span class="sourceLineNo">089</span> * appropriate metadata conditions. The SRB files are then queried with the<a name="line.89"></a>
+<span class="sourceLineNo">090</span> * metadata constraints via jargon API methods.<a name="line.90"></a>
+<span class="sourceLineNo">091</span> * &lt;/p&gt;<a name="line.91"></a>
+<span class="sourceLineNo">092</span> * &lt;p&gt;<a name="line.92"></a>
+<span class="sourceLineNo">093</span> * &lt;B&gt;Actor Input:&lt;/B&gt; Accepts a reference to the SRB files system, an SRB<a name="line.93"></a>
+<span class="sourceLineNo">094</span> * remote file/directory path and conditions.<a name="line.94"></a>
+<span class="sourceLineNo">095</span> * &lt;/p&gt;<a name="line.95"></a>
+<span class="sourceLineNo">096</span> * &lt;p&gt;<a name="line.96"></a>
+<span class="sourceLineNo">097</span> * There exist separate conditions format for metadatas for datasets,<a name="line.97"></a>
+<span class="sourceLineNo">098</span> * collections and pre-defined metadata.<a name="line.98"></a>
+<span class="sourceLineNo">099</span> * &lt;/p&gt;<a name="line.99"></a>
+<span class="sourceLineNo">100</span> * &lt;p&gt;<a name="line.100"></a>
+<span class="sourceLineNo">101</span> * The conditions for files and directories are specified as follows: { metadata<a name="line.101"></a>
+<span class="sourceLineNo">102</span> * for datasets, "|", metadata for collections, "|", predefined metadata}<a name="line.102"></a>
+<span class="sourceLineNo">103</span> * &lt;/p&gt;<a name="line.103"></a>
+<span class="sourceLineNo">104</span> * &lt;p&gt;<a name="line.104"></a>
+<span class="sourceLineNo">105</span> * E.g. {"a = 5", "b = 3", "|", "x = 8", "|", "owner = efrat"}<a name="line.105"></a>
+<span class="sourceLineNo">106</span> * &lt;/p&gt;<a name="line.106"></a>
+<span class="sourceLineNo">107</span> * &lt;p&gt;<a name="line.107"></a>
+<span class="sourceLineNo">108</span> * Straight slashes ("|") separate between the different metadata types. Both<a name="line.108"></a>
+<span class="sourceLineNo">109</span> * slashes are MANDATORY, even if no condition is specified!<a name="line.109"></a>
+<span class="sourceLineNo">110</span> * &lt;/p&gt;<a name="line.110"></a>
+<span class="sourceLineNo">111</span> * &lt;p&gt;<a name="line.111"></a>
+<span class="sourceLineNo">112</span> * The following operators apply: =, !=, not=, &lt;, lt, num_lt, &lt;=, le, num_le, &gt;,<a name="line.112"></a>
+<span class="sourceLineNo">113</span> * gt, num_gt, &gt;=, ge, num_ge, in, notin, not_in, between, num_between,<a name="line.113"></a>
+<span class="sourceLineNo">114</span> * notbetween, not_between, num_not_between, like, notlike, not_like, in,<a name="line.114"></a>
+<span class="sourceLineNo">115</span> * contains, notin, not_in, , not_contains sounds_like, sounds_not_like,<a name="line.115"></a>
+<span class="sourceLineNo">116</span> * sounds_not_like<a name="line.116"></a>
+<span class="sourceLineNo">117</span> * <a name="line.117"></a>
+<span class="sourceLineNo">118</span> * &lt;/p&gt;<a name="line.118"></a>
+<span class="sourceLineNo">119</span> * &lt;p&gt;<a name="line.119"></a>
+<span class="sourceLineNo">120</span> * &lt;B&gt;Actor Output:&lt;/B&gt; Returns an array of all the file paths satisfying the<a name="line.120"></a>
+<span class="sourceLineNo">121</span> * constraints.<a name="line.121"></a>
+<span class="sourceLineNo">122</span> * <a name="line.122"></a>
+<span class="sourceLineNo">123</span> * &lt;/p&gt;<a name="line.123"></a>
+<span class="sourceLineNo">124</span> * &lt;p&gt;<a name="line.124"></a>
+<span class="sourceLineNo">125</span> * The following actor accesses SRB file reference system and SRB file space<a name="line.125"></a>
+<span class="sourceLineNo">126</span> * with the SRB Jargon API provided. The JARGON is a pure API for developing<a name="line.126"></a>
+<span class="sourceLineNo">127</span> * programs with a data grid interface and I/O for SRB file systems.<a name="line.127"></a>
+<span class="sourceLineNo">128</span> * &lt;/p&gt;<a name="line.128"></a>
+<span class="sourceLineNo">129</span> * &lt;A href="http://www.sdsc.edu/srb"&gt;&lt;I&gt;Further information on SRB&lt;/I&gt; &lt;/A&gt;<a name="line.129"></a>
+<span class="sourceLineNo">130</span> * <a name="line.130"></a>
+<span class="sourceLineNo">131</span> * @author Efrat Jaeger<a name="line.131"></a>
+<span class="sourceLineNo">132</span> * @version $Id: SRBQueryMD.java 33633 2015-08-24 22:47:39Z crawl $<a name="line.132"></a>
+<span class="sourceLineNo">133</span> * @category.name srb<a name="line.133"></a>
+<span class="sourceLineNo">134</span> * @category.name put<a name="line.134"></a>
+<span class="sourceLineNo">135</span> */<a name="line.135"></a>
+<span class="sourceLineNo">136</span>public class SRBQueryMD extends TypedAtomicActor {<a name="line.136"></a>
+<span class="sourceLineNo">137</span><a name="line.137"></a>
+<span class="sourceLineNo">138</span>        /**<a name="line.138"></a>
+<span class="sourceLineNo">139</span>         * Construct a constant source with the given container and name. Create the<a name="line.139"></a>
+<span class="sourceLineNo">140</span>         * &lt;i&gt;value&lt;/i&gt; parameter, initialize its value to the default value of an<a name="line.140"></a>
+<span class="sourceLineNo">141</span>         * IntToken with value 1.<a name="line.141"></a>
+<span class="sourceLineNo">142</span>         * <a name="line.142"></a>
+<span class="sourceLineNo">143</span>         * @param container<a name="line.143"></a>
+<span class="sourceLineNo">144</span>         *            The container.<a name="line.144"></a>
+<span class="sourceLineNo">145</span>         * @param name<a name="line.145"></a>
+<span class="sourceLineNo">146</span>         *            The name of this actor.<a name="line.146"></a>
+<span class="sourceLineNo">147</span>         * @exception IllegalActionException<a name="line.147"></a>
+<span class="sourceLineNo">148</span>         *                If the entity cannot be contained by the proposed<a name="line.148"></a>
+<span class="sourceLineNo">149</span>         *                container.<a name="line.149"></a>
+<span class="sourceLineNo">150</span>         * @exception NameDuplicationException<a name="line.150"></a>
+<span class="sourceLineNo">151</span>         *                If the container already has an actor with this name.<a name="line.151"></a>
+<span class="sourceLineNo">152</span>         */<a name="line.152"></a>
+<span class="sourceLineNo">153</span>        public SRBQueryMD(CompositeEntity container, String name)<a name="line.153"></a>
+<span class="sourceLineNo">154</span>                        throws NameDuplicationException, IllegalActionException {<a name="line.154"></a>
+<span class="sourceLineNo">155</span>                super(container, name);<a name="line.155"></a>
+<span class="sourceLineNo">156</span><a name="line.156"></a>
+<span class="sourceLineNo">157</span>                SRBFileSystem = new TypedIOPort(this, "SRBFileSystem", true, false);<a name="line.157"></a>
+<span class="sourceLineNo">158</span>                SRBFileSystem.setTypeEquals(BaseType.GENERAL);<a name="line.158"></a>
+<span class="sourceLineNo">159</span>                new Attribute(SRBFileSystem, "_showName");<a name="line.159"></a>
+<span class="sourceLineNo">160</span><a name="line.160"></a>
+<span class="sourceLineNo">161</span>                srbFilePath = new TypedIOPort(this, "srbFilePath", true, false);<a name="line.161"></a>
+<span class="sourceLineNo">162</span>                srbFilePath.setTypeEquals(BaseType.STRING); // or should it be an array<a name="line.162"></a>
+<span class="sourceLineNo">163</span>                                                                                                        // of strings.<a name="line.163"></a>
+<span class="sourceLineNo">164</span>                new Attribute(srbFilePath, "_showName");<a name="line.164"></a>
+<span class="sourceLineNo">165</span><a name="line.165"></a>
+<span class="sourceLineNo">166</span>                conditions = new TypedIOPort(this, "conditions", true, false);<a name="line.166"></a>
+<span class="sourceLineNo">167</span>                conditions.setTypeEquals(new ArrayType(BaseType.STRING));<a name="line.167"></a>
+<span class="sourceLineNo">168</span>                new Attribute(conditions, "_showName");<a name="line.168"></a>
+<span class="sourceLineNo">169</span><a name="line.169"></a>
+<span class="sourceLineNo">170</span>                filePaths = new TypedIOPort(this, "filePaths", false, true);<a name="line.170"></a>
+<span class="sourceLineNo">171</span>                filePaths.setTypeEquals(new ArrayType(BaseType.STRING));<a name="line.171"></a>
+<span class="sourceLineNo">172</span>                new Attribute(filePaths, "_showName");<a name="line.172"></a>
+<span class="sourceLineNo">173</span><a name="line.173"></a>
+<span class="sourceLineNo">174</span>                _attachText("_iconDescription", "&lt;svg&gt;\n" + "&lt;rect x=\"0\" y=\"0\" "<a name="line.174"></a>
+<span class="sourceLineNo">175</span>                                + "width=\"150\" height=\"40\" " + "style=\"fill:white\"/&gt;\n"<a name="line.175"></a>
+<span class="sourceLineNo">176</span>                                + "&lt;text x=\"7\" y=\"30\""<a name="line.176"></a>
+<span class="sourceLineNo">177</span>                                + "style=\"font-size:12; fill:black; font-family:SansSerif\"&gt;"<a name="line.177"></a>
+<span class="sourceLineNo">178</span>                                + "SRB$&lt;/text&gt;\n" + "&lt;text x=\"41\" y=\"31\""<a name="line.178"></a>
+<span class="sourceLineNo">179</span>                                + "style=\"font-size:14; fill:blue; font-family:SansSerif\"&gt;"<a name="line.179"></a>
+<span class="sourceLineNo">180</span>                                + "Query MetaData&lt;/text&gt;\n" + "&lt;/svg&gt;\n");<a name="line.180"></a>
+<span class="sourceLineNo">181</span>        }<a name="line.181"></a>
+<span class="sourceLineNo">182</span><a name="line.182"></a>
+<span class="sourceLineNo">183</span>        /**<a name="line.183"></a>
+<span class="sourceLineNo">184</span>         * pointer to the SRB file system.<a name="line.184"></a>
+<span class="sourceLineNo">185</span>         */<a name="line.185"></a>
+<span class="sourceLineNo">186</span>        public TypedIOPort SRBFileSystem;<a name="line.186"></a>
+<span class="sourceLineNo">187</span><a name="line.187"></a>
+<span class="sourceLineNo">188</span>        /**<a name="line.188"></a>
+<span class="sourceLineNo">189</span>         * Collection path to begin querying from<a name="line.189"></a>
+<span class="sourceLineNo">190</span>         */<a name="line.190"></a>
+<span class="sourceLineNo">191</span>        public TypedIOPort srbFilePath;<a name="line.191"></a>
+<span class="sourceLineNo">192</span><a name="line.192"></a>
+<span class="sourceLineNo">193</span>        /**<a name="line.193"></a>
+<span class="sourceLineNo">194</span>         * {"dataset_att op val", "|","collection_att op val", "|",<a name="line.194"></a>
+<span class="sourceLineNo">195</span>         * "predefined_att op val"}<a name="line.195"></a>
+<span class="sourceLineNo">196</span>         * &lt;P&gt;<a name="line.196"></a>
+<span class="sourceLineNo">197</span>         * The conditions for files and directories are specified as follows:<a name="line.197"></a>
+<span class="sourceLineNo">198</span>         * Straight slashes ("|") separate between the different metadata types.<a name="line.198"></a>
+<span class="sourceLineNo">199</span>         * Both slashes are MANDATORY, even if no condition was specified!<a name="line.199"></a>
+<span class="sourceLineNo">200</span>         * <a name="line.200"></a>
+<span class="sourceLineNo">201</span>         * { metadata for datasets, "|", metadata for collections, "|", predefined<a name="line.201"></a>
+<span class="sourceLineNo">202</span>         * metadata} E.g. {"a = 5", "b &gt; 3", "|", "x &lt; 8", "|", "owner = efrat"}<a name="line.202"></a>
+<span class="sourceLineNo">203</span>         * &lt;P&gt;<a name="line.203"></a>
+<span class="sourceLineNo">204</span>         * The following operators apply: =, !=, not=, &lt;, lt, num_lt, &lt;=, le,<a name="line.204"></a>
+<span class="sourceLineNo">205</span>         * num_le, &gt;, gt, num_gt, &gt;=, ge, num_ge, in, notin, not_in, between,<a name="line.205"></a>
+<span class="sourceLineNo">206</span>         * num_between, notbetween, not_between, num_not_between, like, notlike,<a name="line.206"></a>
+<span class="sourceLineNo">207</span>         * not_like, in, contains, notin, not_in, , not_contains sounds_like,<a name="line.207"></a>
+<span class="sourceLineNo">208</span>         * sounds_not_like, sounds_not_like<a name="line.208"></a>
+<span class="sourceLineNo">209</span>         */<a name="line.209"></a>
+<span class="sourceLineNo">210</span>        public TypedIOPort conditions;<a name="line.210"></a>
+<span class="sourceLineNo">211</span><a name="line.211"></a>
+<span class="sourceLineNo">212</span>        /**<a name="line.212"></a>
+<span class="sourceLineNo">213</span>         * Matching files paths.<a name="line.213"></a>
+<span class="sourceLineNo">214</span>         */<a name="line.214"></a>
+<span class="sourceLineNo">215</span>        public TypedIOPort filePaths;<a name="line.215"></a>
+<span class="sourceLineNo">216</span><a name="line.216"></a>
+<span class="sourceLineNo">217</span>        // /////////////////////////////////////////////////////////////////<a name="line.217"></a>
+<span class="sourceLineNo">218</span>        // // public methods ////<a name="line.218"></a>
+<span class="sourceLineNo">219</span>        /**<a name="line.219"></a>
+<span class="sourceLineNo">220</span>         * Returns an array of all the file paths satisfying the constraints.<a name="line.220"></a>
+<span class="sourceLineNo">221</span>         * <a name="line.221"></a>
+<span class="sourceLineNo">222</span>         * The conditions for files and directories are specified as follows: {<a name="line.222"></a>
+<span class="sourceLineNo">223</span>         * metadata for datasets, "|", metadata for collections, "|", predefined<a name="line.223"></a>
+<span class="sourceLineNo">224</span>         * metadata} E.g. {"a = 5", "b = 3", "|", "x = 8", "|", "owner = efrat"}<a name="line.224"></a>
+<span class="sourceLineNo">225</span>         * <a name="line.225"></a>
+<span class="sourceLineNo">226</span>         * Straight slashes ("|") separate between the different metadata types.<a name="line.226"></a>
+<span class="sourceLineNo">227</span>         * Both slashes are MANDATORY, even if no condition is specified!<a name="line.227"></a>
+<span class="sourceLineNo">228</span>         * <a name="line.228"></a>
+<span class="sourceLineNo">229</span>         * The following operators apply: =, !=, not=, &lt;, lt, num_lt, &lt;=, le,<a name="line.229"></a>
+<span class="sourceLineNo">230</span>         * num_le, &gt;, gt, num_gt, &gt;=, ge, num_ge, in, notin, not_in, between,<a name="line.230"></a>
+<span class="sourceLineNo">231</span>         * num_between, notbetween, not_between, num_not_between, like, notlike,<a name="line.231"></a>
+<span class="sourceLineNo">232</span>         * not_like, in, contains, notin, not_in, , not_contains sounds_like,<a name="line.232"></a>
+<span class="sourceLineNo">233</span>         * sounds_not_like, sounds_not_like<a name="line.233"></a>
+<span class="sourceLineNo">234</span>         * <a name="line.234"></a>
+<span class="sourceLineNo">235</span>         * @exception IllegalActionException<a name="line.235"></a>
+<span class="sourceLineNo">236</span>         *                If it is thrown if the SRB file cannot be accessed or the<a name="line.236"></a>
+<span class="sourceLineNo">237</span>         *                current directory cannot be broadcasted.<a name="line.237"></a>
+<span class="sourceLineNo">238</span>         */<a name="line.238"></a>
+<span class="sourceLineNo">239</span>        public void fire() throws IllegalActionException {<a name="line.239"></a>
+<span class="sourceLineNo">240</span><a name="line.240"></a>
+<span class="sourceLineNo">241</span>                SRBFile srbFile;<a name="line.241"></a>
+<span class="sourceLineNo">242</span>                LocalFile localFile;<a name="line.242"></a>
+<span class="sourceLineNo">243</span>                String localFilePath;<a name="line.243"></a>
+<span class="sourceLineNo">244</span>                String _exitCode = "";<a name="line.244"></a>
+<span class="sourceLineNo">245</span><a name="line.245"></a>
+<span class="sourceLineNo">246</span>                try {<a name="line.246"></a>
+<span class="sourceLineNo">247</span>                        // make sure there is an alive connection.<a name="line.247"></a>
+<span class="sourceLineNo">248</span>                        try {<a name="line.248"></a>
+<span class="sourceLineNo">249</span>                                srbFileSystem.getHost();<a name="line.249"></a>
+<span class="sourceLineNo">250</span>                        } catch (Exception ex) { // connection was closed.<a name="line.250"></a>
+<span class="sourceLineNo">251</span>                                srbFileSystem = null;<a name="line.251"></a>
+<span class="sourceLineNo">252</span>                                ObjectToken SRBConOT = null;<a name="line.252"></a>
+<span class="sourceLineNo">253</span>                                try { // try to get a new connection in case the previous one<a name="line.253"></a>
+<span class="sourceLineNo">254</span>                                                // has terminated.<a name="line.254"></a>
+<span class="sourceLineNo">255</span>                                        SRBConOT = (ObjectToken) SRBFileSystem.get(0);<a name="line.255"></a>
+<span class="sourceLineNo">256</span>                                } catch (NoTokenException ntex) {<a name="line.256"></a>
+<span class="sourceLineNo">257</span>                                }<a name="line.257"></a>
+<span class="sourceLineNo">258</span>                                if (SRBConOT != null) {<a name="line.258"></a>
+<span class="sourceLineNo">259</span>                                        srbFileSystem = (SRBFileSystem) SRBConOT.getValue();<a name="line.259"></a>
+<span class="sourceLineNo">260</span>                                }<a name="line.260"></a>
+<span class="sourceLineNo">261</span>                        }<a name="line.261"></a>
+<span class="sourceLineNo">262</span>                        if (srbFileSystem == null) {<a name="line.262"></a>
+<span class="sourceLineNo">263</span>                                throw new IllegalActionException(this,<a name="line.263"></a>
+<span class="sourceLineNo">264</span>                                                "No SRB connection available in actor "<a name="line.264"></a>
+<span class="sourceLineNo">265</span>                                                                + this.getName() + ".");<a name="line.265"></a>
+<span class="sourceLineNo">266</span>                        }<a name="line.266"></a>
+<span class="sourceLineNo">267</span><a name="line.267"></a>
+<span class="sourceLineNo">268</span>                        String srbFileStr = ((StringToken) srbFilePath.get(0))<a name="line.268"></a>
+<span class="sourceLineNo">269</span>                                        .stringValue();<a name="line.269"></a>
+<span class="sourceLineNo">270</span>                        srbFile = new SRBFile(srbFileSystem, srbFileStr);<a name="line.270"></a>
+<span class="sourceLineNo">271</span><a name="line.271"></a>
+<span class="sourceLineNo">272</span>                        if (srbFile.exists()) {<a name="line.272"></a>
+<span class="sourceLineNo">273</span>                                Token[] conds = ((ArrayToken) conditions.get(0)).arrayValue();<a name="line.273"></a>
+<span class="sourceLineNo">274</span>                                int numConds = conds.length;<a name="line.274"></a>
+<span class="sourceLineNo">275</span>                                // String[][] definableMetaDataValues = new String[numConds][2];<a name="line.275"></a>
+<span class="sourceLineNo">276</span>                                // int operators[] = new int[numConds];<a name="line.276"></a>
+<span class="sourceLineNo">277</span><a name="line.277"></a>
+<span class="sourceLineNo">278</span>                                Vector conditionsVec = new Vector();<a name="line.278"></a>
+<span class="sourceLineNo">279</span>                                Vector conditionTableVec = new Vector();<a name="line.279"></a>
+<span class="sourceLineNo">280</span><a name="line.280"></a>
+<span class="sourceLineNo">281</span>                                int j = 0;<a name="line.281"></a>
+<span class="sourceLineNo">282</span><a name="line.282"></a>
+<span class="sourceLineNo">283</span>                                // ///////////////////////<a name="line.283"></a>
+<span class="sourceLineNo">284</span>                                // METADATA FOR DATASETS<a name="line.284"></a>
+<span class="sourceLineNo">285</span>                                // ///////////////////////<a name="line.285"></a>
+<span class="sourceLineNo">286</span>                                String condition = ((StringToken) conds[j++]).stringValue();<a name="line.286"></a>
+<span class="sourceLineNo">287</span>                                while (!condition.equals("|")) { // getting datasets metadata.<a name="line.287"></a>
+<span class="sourceLineNo">288</span>                                        conditionTableVec.add(condition);<a name="line.288"></a>
+<span class="sourceLineNo">289</span>                                        condition = ((StringToken) conds[j++]).stringValue();<a name="line.289"></a>
+<span class="sourceLineNo">290</span>                                }<a name="line.290"></a>
+<span class="sourceLineNo">291</span><a name="line.291"></a>
+<span class="sourceLineNo">292</span>                                MetaDataTable mdt = null;<a name="line.292"></a>
+<span class="sourceLineNo">293</span>                                // creating the metadata table for file conditions.<a name="line.293"></a>
+<span class="sourceLineNo">294</span>                                if (conditionTableVec.size() &gt; 0) {<a name="line.294"></a>
+<span class="sourceLineNo">295</span>                                        // creating an srb metadata table for the datasets<a name="line.295"></a>
+<span class="sourceLineNo">296</span>                                        // constraints.<a name="line.296"></a>
+<span class="sourceLineNo">297</span>                                        mdt = _createMDT(conditionTableVec);<a name="line.297"></a>
+<span class="sourceLineNo">298</span>                                        // creating an SRB metadata condition for datasets<a name="line.298"></a>
+<span class="sourceLineNo">299</span>                                        conditionsVec.add(MetaDataSet.newCondition(<a name="line.299"></a>
+<span class="sourceLineNo">300</span>                                                        SRBMetaDataSet.DEFINABLE_METADATA_FOR_FILES, mdt));<a name="line.300"></a>
+<span class="sourceLineNo">301</span>                                } else {<a name="line.301"></a>
+<span class="sourceLineNo">302</span>                                        _debug("no user defined metadata for files");<a name="line.302"></a>
+<span class="sourceLineNo">303</span>                                        System.out.println("no user defined metadata for files");<a name="line.303"></a>
+<span class="sourceLineNo">304</span>                                }<a name="line.304"></a>
+<span class="sourceLineNo">305</span><a name="line.305"></a>
+<span class="sourceLineNo">306</span>                                conditionTableVec.clear();<a name="line.306"></a>
+<span class="sourceLineNo">307</span><a name="line.307"></a>
+<span class="sourceLineNo">308</span>                                // //////////////////////////<a name="line.308"></a>
+<span class="sourceLineNo">309</span>                                // METADATA FOR COLLECTIONS<a name="line.309"></a>
+<span class="sourceLineNo">310</span>                                // //////////////////////////<a name="line.310"></a>
+<span class="sourceLineNo">311</span>                                condition = ((StringToken) conds[j++]).stringValue();<a name="line.311"></a>
+<span class="sourceLineNo">312</span>                                while (!condition.equals("|")) {<a name="line.312"></a>
+<span class="sourceLineNo">313</span>                                        conditionTableVec.add(condition);<a name="line.313"></a>
+<span class="sourceLineNo">314</span>                                        condition = ((StringToken) conds[j++]).stringValue();<a name="line.314"></a>
+<span class="sourceLineNo">315</span>                                }<a name="line.315"></a>
+<span class="sourceLineNo">316</span><a name="line.316"></a>
+<span class="sourceLineNo">317</span>                                // creating the metadata table for collection conditions.<a name="line.317"></a>
+<span class="sourceLineNo">318</span>                                if (conditionTableVec.size() &gt; 0) {<a name="line.318"></a>
+<span class="sourceLineNo">319</span>                                        // creating an srb metadata table for the collections<a name="line.319"></a>
+<span class="sourceLineNo">320</span>                                        // constraints.<a name="line.320"></a>
+<span class="sourceLineNo">321</span>                                        mdt = _createMDT(conditionTableVec);<a name="line.321"></a>
+<span class="sourceLineNo">322</span>                                        // creating an SRB metadata condition for collections<a name="line.322"></a>
+<span class="sourceLineNo">323</span>                                        conditionsVec.add(MetaDataSet.newCondition(<a name="line.323"></a>
+<span class="sourceLineNo">324</span>                                                        SRBMetaDataSet.DEFINABLE_METADATA_FOR_DIRECTORIES,<a name="line.324"></a>
+<span class="sourceLineNo">325</span>                                                        mdt));<a name="line.325"></a>
+<span class="sourceLineNo">326</span>                                } else {<a name="line.326"></a>
+<span class="sourceLineNo">327</span>                                        _debug("no user defined metadata for collections");<a name="line.327"></a>
+<span class="sourceLineNo">328</span>                                        System.out<a name="line.328"></a>
+<span class="sourceLineNo">329</span>                                                        .println("no user defined metadata for collections");<a name="line.329"></a>
+<span class="sourceLineNo">330</span>                                }<a name="line.330"></a>
+<span class="sourceLineNo">331</span><a name="line.331"></a>
+<span class="sourceLineNo">332</span>                                // /////////////////////<a name="line.332"></a>
+<span class="sourceLineNo">333</span>                                // PREDEFINED METADATA (the above is user defined metadata)<a name="line.333"></a>
+<span class="sourceLineNo">334</span>                                // /////////////////////<a name="line.334"></a>
+<span class="sourceLineNo">335</span>                                for (int i = j; i &lt; numConds; i++) {<a name="line.335"></a>
+<span class="sourceLineNo">336</span>                                        condition = ((StringToken) conds[i]).stringValue();<a name="line.336"></a>
+<span class="sourceLineNo">337</span>                                        StringTokenizer st = new StringTokenizer(condition);<a name="line.337"></a>
+<span class="sourceLineNo">338</span><a name="line.338"></a>
+<span class="sourceLineNo">339</span>                                        String att = _getAttribute(st.nextToken());<a name="line.339"></a>
+<span class="sourceLineNo">340</span>                                        if (att.equals(""))<a name="line.340"></a>
+<span class="sourceLineNo">341</span>                                                GraphicalMessageHandler<a name="line.341"></a>
+<span class="sourceLineNo">342</span>                                                                .error("query attribute is null");<a name="line.342"></a>
+<span class="sourceLineNo">343</span>                                        String opStr = st.nextToken();<a name="line.343"></a>
+<span class="sourceLineNo">344</span>                                        int op = _getOperator(opStr);<a name="line.344"></a>
+<span class="sourceLineNo">345</span>                                        if (op &lt;= MetaDataCondition.GREATER_OR_EQUAL) {<a name="line.345"></a>
+<span class="sourceLineNo">346</span>                                                // this is an equality term.<a name="line.346"></a>
+<span class="sourceLineNo">347</span>                                                String val = st.nextToken();<a name="line.347"></a>
+<span class="sourceLineNo">348</span>                                                conditionsVec.add(MetaDataSet<a name="line.348"></a>
+<span class="sourceLineNo">349</span>                                                                .newCondition(att, op, val));<a name="line.349"></a>
+<span class="sourceLineNo">350</span>                                        } else if (op &gt;= MetaDataCondition.IN<a name="line.350"></a>
+<span class="sourceLineNo">351</span>                                                        &amp;&amp; op &lt;= MetaDataCondition.NOT_IN) {<a name="line.351"></a>
+<span class="sourceLineNo">352</span>                                                Vector valuesVec = new Vector();<a name="line.352"></a>
+<span class="sourceLineNo">353</span>                                                while (st.hasMoreTokens()) {<a name="line.353"></a>
+<span class="sourceLineNo">354</span>                                                        String token = st.nextToken();<a name="line.354"></a>
+<span class="sourceLineNo">355</span>                                                        int commaInd = token.indexOf(",");<a name="line.355"></a>
+<span class="sourceLineNo">356</span>                                                        if (commaInd == -1) {<a name="line.356"></a>
+<span class="sourceLineNo">357</span>                                                                valuesVec.add(token);<a name="line.357"></a>
+<span class="sourceLineNo">358</span>                                                        } else {<a name="line.358"></a>
+<span class="sourceLineNo">359</span>                                                                while (commaInd != -1) {<a name="line.359"></a>
+<span class="sourceLineNo">360</span>                                                                        valuesVec.add(token.substring(0, commaInd));<a name="line.360"></a>
+<span class="sourceLineNo">361</span>                                                                        token = token.substring(commaInd);<a name="line.361"></a>
+<span class="sourceLineNo">362</span>                                                                        commaInd = token.indexOf(",");<a name="line.362"></a>
+<span class="sourceLineNo">363</span>                                                                }<a name="line.363"></a>
+<span class="sourceLineNo">364</span>                                                                valuesVec.add(token);<a name="line.364"></a>
+<span class="sourceLineNo">365</span>                                                        }<a name="line.365"></a>
+<span class="sourceLineNo">366</span><a name="line.366"></a>
+<span class="sourceLineNo">367</span>                                                }<a name="line.367"></a>
+<span class="sourceLineNo">368</span>                                                String[] values = new String[valuesVec.size()];<a name="line.368"></a>
+<span class="sourceLineNo">369</span>                                                valuesVec.toArray(values);<a name="line.369"></a>
+<span class="sourceLineNo">370</span>                                                conditionsVec.add(MetaDataSet.newCondition(att, op,<a name="line.370"></a>
+<span class="sourceLineNo">371</span>                                                                values));<a name="line.371"></a>
+<span class="sourceLineNo">372</span>                                                /*<a name="line.372"></a>
+<span class="sourceLineNo">373</span>                                                 * if (opStr.equals("in") || opStr.equals("not_in")) {<a name="line.373"></a>
+<span class="sourceLineNo">374</span>                                                 * // create an array of val } else { // this is<a name="line.374"></a>
+<span class="sourceLineNo">375</span>                                                 * contains. // create an array of val?? // create an<a name="line.375"></a>
+<span class="sourceLineNo">376</span>                                                 * array of att. }<a name="line.376"></a>
+<span class="sourceLineNo">377</span>                                                 */<a name="line.377"></a>
+<span class="sourceLineNo">378</span>                                        } else if (op == MetaDataCondition.BETWEEN<a name="line.378"></a>
+<span class="sourceLineNo">379</span>                                                        || op == MetaDataCondition.NOT_BETWEEN) {<a name="line.379"></a>
+<span class="sourceLineNo">380</span>                                                String val1 = st.nextToken();<a name="line.380"></a>
+<span class="sourceLineNo">381</span>                                                String val2 = st.nextToken();<a name="line.381"></a>
+<span class="sourceLineNo">382</span>                                                conditionsVec.add(MetaDataSet.newCondition(att, op,<a name="line.382"></a>
+<span class="sourceLineNo">383</span>                                                                val1, val2));<a name="line.383"></a>
+<span class="sourceLineNo">384</span>                                        } else if ((op &gt;= MetaDataCondition.LIKE &amp;&amp; op &lt;= MetaDataCondition.NOT_LIKE)<a name="line.384"></a>
+<span class="sourceLineNo">385</span>                                                        || (op &gt;= MetaDataCondition.SOUNDS_LIKE &amp;&amp; op &lt;= MetaDataCondition.SOUNDS_NOT_LIKE)) {<a name="line.385"></a>
+<span class="sourceLineNo">386</span>                                                String val = st.nextToken();<a name="line.386"></a>
+<span class="sourceLineNo">387</span>                                                conditionsVec.add(MetaDataSet<a name="line.387"></a>
+<span class="sourceLineNo">388</span>                                                                .newCondition(att, op, val));<a name="line.388"></a>
+<span class="sourceLineNo">389</span>                                        }<a name="line.389"></a>
+<span class="sourceLineNo">390</span>                                }<a name="line.390"></a>
+<span class="sourceLineNo">391</span>                                // query for the conditions and the select fields.<a name="line.391"></a>
+<span class="sourceLineNo">392</span><a name="line.392"></a>
+<span class="sourceLineNo">393</span>                                if (conditionsVec.size() == 0) {<a name="line.393"></a>
+<span class="sourceLineNo">394</span>                                        _debug("no conditions were specified");<a name="line.394"></a>
+<span class="sourceLineNo">395</span>                                        System.out.println("no conditions were specified");<a name="line.395"></a>
+<span class="sourceLineNo">396</span>                                }<a name="line.396"></a>
+<span class="sourceLineNo">397</span>                                MetaDataCondition mdconditions[] = new MetaDataCondition[conditionsVec<a name="line.397"></a>
+<span class="sourceLineNo">398</span>                                                .size()];<a name="line.398"></a>
+<span class="sourceLineNo">399</span>                                conditionsVec.toArray(mdconditions);<a name="line.399"></a>
+<span class="sourceLineNo">400</span><a name="line.400"></a>
+<span class="sourceLineNo">401</span>                                // The field selected in the query result.<a name="line.401"></a>
+<span class="sourceLineNo">402</span>                                String[] selectFieldNames = {<a name="line.402"></a>
+<span class="sourceLineNo">403</span>                                                SRBMetaDataSet.DEFINABLE_METADATA_FOR_DIRECTORIES,<a name="line.403"></a>
+<span class="sourceLineNo">404</span>                                                SRBMetaDataSet.DEFINABLE_METADATA_FOR_FILES };<a name="line.404"></a>
+<span class="sourceLineNo">405</span>                                MetaDataSelect selects[] = MetaDataSet<a name="line.405"></a>
+<span class="sourceLineNo">406</span>                                                .newSelection(selectFieldNames);<a name="line.406"></a>
+<span class="sourceLineNo">407</span><a name="line.407"></a>
+<span class="sourceLineNo">408</span>                                // Querying for files that satisfy the metadata constraints.<a name="line.408"></a>
+<span class="sourceLineNo">409</span>                                MetaDataRecordList[] rl = ((GeneralFile) srbFile).query(<a name="line.409"></a>
+<span class="sourceLineNo">410</span>                                                mdconditions, selects);<a name="line.410"></a>
+<span class="sourceLineNo">411</span>                                _sendQueryResults(rl);<a name="line.411"></a>
+<span class="sourceLineNo">412</span><a name="line.412"></a>
+<span class="sourceLineNo">413</span>                        } else<a name="line.413"></a>
+<span class="sourceLineNo">414</span>                                GraphicalMessageHandler.error(srbFile.getAbsolutePath()<a name="line.414"></a>
+<span class="sourceLineNo">415</span>                                                + "does not exist.");<a name="line.415"></a>
+<span class="sourceLineNo">416</span><a name="line.416"></a>
+<span class="sourceLineNo">417</span>                } catch (Exception ex) {<a name="line.417"></a>
+<span class="sourceLineNo">418</span>                        srbFileSystem = SRBUtil.closeConnection(srbFileSystem);<a name="line.418"></a>
+<span class="sourceLineNo">419</span>                        ex.printStackTrace();<a name="line.419"></a>
+<span class="sourceLineNo">420</span>                        throw new IllegalActionException(this, ex.getMessage()<a name="line.420"></a>
+<span class="sourceLineNo">421</span>                                        + ". in actor " + this.getName());<a name="line.421"></a>
+<span class="sourceLineNo">422</span>                }<a name="line.422"></a>
+<span class="sourceLineNo">423</span>        } // end of fire.<a name="line.423"></a>
+<span class="sourceLineNo">424</span><a name="line.424"></a>
+<span class="sourceLineNo">425</span>        /**<a name="line.425"></a>
+<span class="sourceLineNo">426</span>         * Initialize the srb file system to null.<a name="line.426"></a>
+<span class="sourceLineNo">427</span>         */<a name="line.427"></a>
+<span class="sourceLineNo">428</span>        public void initialize() throws IllegalActionException {<a name="line.428"></a>
+<span class="sourceLineNo">429</span>                super.initialize();<a name="line.429"></a>
+<span class="sourceLineNo">430</span>                srbFileSystem = null;<a name="line.430"></a>
+<span class="sourceLineNo">431</span>        }<a name="line.431"></a>
+<span class="sourceLineNo">432</span><a name="line.432"></a>
+<span class="sourceLineNo">433</span>        /**<a name="line.433"></a>
+<span class="sourceLineNo">434</span>         * Disconnect from SRB.<a name="line.434"></a>
+<span class="sourceLineNo">435</span>         */<a name="line.435"></a>
+<span class="sourceLineNo">436</span>        public void wrapup() {<a name="line.436"></a>
+<span class="sourceLineNo">437</span>                srbFileSystem = SRBUtil.closeConnection(srbFileSystem);<a name="line.437"></a>
+<span class="sourceLineNo">438</span>        }<a name="line.438"></a>
+<span class="sourceLineNo">439</span><a name="line.439"></a>
+<span class="sourceLineNo">440</span>        // /////////////////////////////////////////////////////////////////<a name="line.440"></a>
+<span class="sourceLineNo">441</span>        // // private methods ////<a name="line.441"></a>
+<span class="sourceLineNo">442</span><a name="line.442"></a>
+<span class="sourceLineNo">443</span>        /**<a name="line.443"></a>
+<span class="sourceLineNo">444</span>         * Create a metadata table of the user defined conditions.<a name="line.444"></a>
+<span class="sourceLineNo">445</span>         */<a name="line.445"></a>
+<span class="sourceLineNo">446</span>        private MetaDataTable _createMDT(Vector conds) {<a name="line.446"></a>
+<span class="sourceLineNo">447</span>                Vector ufmdVec = new Vector();<a name="line.447"></a>
+<span class="sourceLineNo">448</span>                Vector opVec = new Vector();<a name="line.448"></a>
+<span class="sourceLineNo">449</span>                String[] singleMD;<a name="line.449"></a>
+<span class="sourceLineNo">450</span>                for (int i = 0; i &lt; conds.size(); i++) {<a name="line.450"></a>
+<span class="sourceLineNo">451</span>                        StringTokenizer st = new StringTokenizer((String) conds.get(i));<a name="line.451"></a>
+<span class="sourceLineNo">452</span>                        String att = st.nextToken();<a name="line.452"></a>
+<span class="sourceLineNo">453</span>                        if (att.equals(""))<a name="line.453"></a>
+<span class="sourceLineNo">454</span>                                GraphicalMessageHandler.error("query attribute is null");<a name="line.454"></a>
+<span class="sourceLineNo">455</span>                        singleMD = new String[2];<a name="line.455"></a>
+<span class="sourceLineNo">456</span>                        singleMD[0] = att;<a name="line.456"></a>
+<span class="sourceLineNo">457</span>                        String opStr = st.nextToken();<a name="line.457"></a>
+<span class="sourceLineNo">458</span>                        int op = _getOperator(opStr);<a name="line.458"></a>
+<span class="sourceLineNo">459</span>                        if (op &lt;= MetaDataCondition.GREATER_OR_EQUAL) {<a name="line.459"></a>
+<span class="sourceLineNo">460</span>                                // this is an equality term.<a name="line.460"></a>
+<span class="sourceLineNo">461</span>                                opVec.add(new Integer(op));<a name="line.461"></a>
+<span class="sourceLineNo">462</span>                                String val = st.nextToken();<a name="line.462"></a>
+<span class="sourceLineNo">463</span>                                singleMD[1] = val;<a name="line.463"></a>
+<span class="sourceLineNo">464</span>                                ufmdVec.add(singleMD);<a name="line.464"></a>
+<span class="sourceLineNo">465</span>                        } else if (op &gt;= MetaDataCondition.IN<a name="line.465"></a>
+<span class="sourceLineNo">466</span>                                        &amp;&amp; op &lt;= MetaDataCondition.NOT_IN) {<a name="line.466"></a>
+<span class="sourceLineNo">467</span>                                opVec.add(new Integer(op));<a name="line.467"></a>
+<span class="sourceLineNo">468</span>                                String val = st.nextToken();<a name="line.468"></a>
+<span class="sourceLineNo">469</span>                                while (st.hasMoreTokens()) {<a name="line.469"></a>
+<span class="sourceLineNo">470</span>                                        val += "," + st.nextToken();<a name="line.470"></a>
+<span class="sourceLineNo">471</span>                                }<a name="line.471"></a>
+<span class="sourceLineNo">472</span>                                singleMD[1] = val;<a name="line.472"></a>
+<span class="sourceLineNo">473</span>                                ufmdVec.add(singleMD);<a name="line.473"></a>
+<span class="sourceLineNo">474</span>                                /*<a name="line.474"></a>
+<span class="sourceLineNo">475</span>                                 * if (opStr.equals("in") || opStr.equals("not_in")) { // create<a name="line.475"></a>
+<span class="sourceLineNo">476</span>                                 * an array of val } else { // this is contains. // create an<a name="line.476"></a>
+<span class="sourceLineNo">477</span>                                 * array of val?? // create an array of att. }<a name="line.477"></a>
+<span class="sourceLineNo">478</span>                                 */<a name="line.478"></a>
+<span class="sourceLineNo">479</span>                        } else if (op == MetaDataCondition.BETWEEN) {<a name="line.479"></a>
+<span class="sourceLineNo">480</span>                                opVec.add(new Integer(MetaDataCondition.GREATER_OR_EQUAL));<a name="line.480"></a>
+<span class="sourceLineNo">481</span>                                String val = st.nextToken();<a name="line.481"></a>
+<span class="sourceLineNo">482</span>                                singleMD[1] = val;<a name="line.482"></a>
+<span class="sourceLineNo">483</span>                                ufmdVec.add(singleMD);<a name="line.483"></a>
+<span class="sourceLineNo">484</span><a name="line.484"></a>
+<span class="sourceLineNo">485</span>                                singleMD = new String[2];<a name="line.485"></a>
+<span class="sourceLineNo">486</span>                                singleMD[0] = att;<a name="line.486"></a>
+<span class="sourceLineNo">487</span>                                opVec.add(new Integer(MetaDataCondition.LESS_OR_EQUAL));<a name="line.487"></a>
+<span class="sourceLineNo">488</span>                                val = st.nextToken();<a name="line.488"></a>
+<span class="sourceLineNo">489</span>                                singleMD[1] = val;<a name="line.489"></a>
+<span class="sourceLineNo">490</span>                                ufmdVec.add(singleMD);<a name="line.490"></a>
+<span class="sourceLineNo">491</span>                        } else if (op == MetaDataCondition.NOT_BETWEEN) {<a name="line.491"></a>
+<span class="sourceLineNo">492</span>                                opVec.add(new Integer(MetaDataCondition.LESS_THAN));<a name="line.492"></a>
+<span class="sourceLineNo">493</span>                                String val = st.nextToken();<a name="line.493"></a>
+<span class="sourceLineNo">494</span>                                singleMD[1] = val;<a name="line.494"></a>
+<span class="sourceLineNo">495</span>                                ufmdVec.add(singleMD);<a name="line.495"></a>
+<span class="sourceLineNo">496</span><a name="line.496"></a>
+<span class="sourceLineNo">497</span>                                opVec.add(new Integer(MetaDataCondition.GREATER_THAN));<a name="line.497"></a>
+<span class="sourceLineNo">498</span>                                val = st.nextToken();<a name="line.498"></a>
+<span class="sourceLineNo">499</span>                                singleMD[1] = val;<a name="line.499"></a>
+<span class="sourceLineNo">500</span>                                ufmdVec.add(singleMD);<a name="line.500"></a>
+<span class="sourceLineNo">501</span>                        } else if ((op &gt;= MetaDataCondition.LIKE &amp;&amp; op &lt;= MetaDataCondition.NOT_LIKE)<a name="line.501"></a>
+<span class="sourceLineNo">502</span>                                        || (op &gt;= MetaDataCondition.SOUNDS_LIKE &amp;&amp; op &lt;= MetaDataCondition.SOUNDS_NOT_LIKE)) {<a name="line.502"></a>
+<span class="sourceLineNo">503</span>                                opVec.add(new Integer(op));<a name="line.503"></a>
+<span class="sourceLineNo">504</span>                                String val = st.nextToken();<a name="line.504"></a>
+<span class="sourceLineNo">505</span>                                singleMD[1] = val;<a name="line.505"></a>
+<span class="sourceLineNo">506</span>                                ufmdVec.add(singleMD);<a name="line.506"></a>
+<span class="sourceLineNo">507</span>                        }<a name="line.507"></a>
+<span class="sourceLineNo">508</span>                }<a name="line.508"></a>
+<span class="sourceLineNo">509</span>                String[][] definableMetaData = new String[ufmdVec.size()][2];<a name="line.509"></a>
+<span class="sourceLineNo">510</span>                // for (int i=0; i&lt;ufmdVec.size(); i++) {<a name="line.510"></a>
+<span class="sourceLineNo">511</span>                // definableMetaData[i] = (String[])ufmdVec.get(i);<a name="line.511"></a>
+<span class="sourceLineNo">512</span>                // }<a name="line.512"></a>
+<span class="sourceLineNo">513</span>                ufmdVec.toArray(definableMetaData);<a name="line.513"></a>
+<span class="sourceLineNo">514</span>                int[] operators = new int[opVec.size()];<a name="line.514"></a>
+<span class="sourceLineNo">515</span>                for (int i = 0; i &lt; opVec.size(); i++) {<a name="line.515"></a>
+<span class="sourceLineNo">516</span>                        operators[i] = ((Integer) opVec.get(i)).intValue();<a name="line.516"></a>
+<span class="sourceLineNo">517</span>                }<a name="line.517"></a>
+<span class="sourceLineNo">518</span><a name="line.518"></a>
+<span class="sourceLineNo">519</span>                return new MetaDataTable(operators, definableMetaData);<a name="line.519"></a>
+<span class="sourceLineNo">520</span>        }<a name="line.520"></a>
+<span class="sourceLineNo">521</span><a name="line.521"></a>
+<span class="sourceLineNo">522</span>        /**<a name="line.522"></a>
+<span class="sourceLineNo">523</span>         * Get the desired attribute name for predefined attributes.<a name="line.523"></a>
+<span class="sourceLineNo">524</span>         * <a name="line.524"></a>
+<span class="sourceLineNo">525</span>         * @param att<a name="line.525"></a>
+<span class="sourceLineNo">526</span>         *       */<a name="line.526"></a>
+<span class="sourceLineNo">527</span>        private String _getAttribute(String att) {<a name="line.527"></a>
+<span class="sourceLineNo">528</span>                att = att.trim().toLowerCase();<a name="line.528"></a>
+<span class="sourceLineNo">529</span>                if (att.equals("annotation"))<a name="line.529"></a>
+<span class="sourceLineNo">530</span>                        return SRBMetaDataSet.FILE_ANNOTATION;<a name="line.530"></a>
+<span class="sourceLineNo">531</span>                if (att.equals("annotator"))<a name="line.531"></a>
+<span class="sourceLineNo">532</span>                        return SRBMetaDataSet.FILE_ANNOTATION_USERNAME;<a name="line.532"></a>
+<span class="sourceLineNo">533</span>                if (att.equals("owner"))<a name="line.533"></a>
+<span class="sourceLineNo">534</span>                        return SRBMetaDataSet.OWNER;<a name="line.534"></a>
+<span class="sourceLineNo">535</span>                if (att.equals("dataName"))<a name="line.535"></a>
+<span class="sourceLineNo">536</span>                        return SRBMetaDataSet.FILE_NAME;<a name="line.536"></a>
+<span class="sourceLineNo">537</span>                if (att.equals("collName"))<a name="line.537"></a>
+<span class="sourceLineNo">538</span>                        return SRBMetaDataSet.DIRECTORY_NAME;<a name="line.538"></a>
+<span class="sourceLineNo">539</span>                if (att.equals("dataType"))<a name="line.539"></a>
+<span class="sourceLineNo">540</span>                        return SRBMetaDataSet.FILE_TYPE_NAME;<a name="line.540"></a>
+<span class="sourceLineNo">541</span>                return "";<a name="line.541"></a>
+<span class="sourceLineNo">542</span>        }<a name="line.542"></a>
+<span class="sourceLineNo">543</span><a name="line.543"></a>
+<span class="sourceLineNo">544</span>        /**<a name="line.544"></a>
+<span class="sourceLineNo">545</span>         * Get the operator int representation for an operator string<a name="line.545"></a>
+<span class="sourceLineNo">546</span>         * <a name="line.546"></a>
+<span class="sourceLineNo">547</span>         * @param op<a name="line.547"></a>
+<span class="sourceLineNo">548</span>         *       */<a name="line.548"></a>
+<span class="sourceLineNo">549</span>        private int _getOperator(String op) {<a name="line.549"></a>
+<span class="sourceLineNo">550</span>                // currently only equality operators are supported.<a name="line.550"></a>
+<span class="sourceLineNo">551</span>                // if no operator is found assume it is equal.<a name="line.551"></a>
+<span class="sourceLineNo">552</span>                op = op.trim().toLowerCase();<a name="line.552"></a>
+<span class="sourceLineNo">553</span><a name="line.553"></a>
+<span class="sourceLineNo">554</span>                if (op.equals("="))<a name="line.554"></a>
+<span class="sourceLineNo">555</span>                        return MetaDataCondition.EQUAL;<a name="line.555"></a>
+<span class="sourceLineNo">556</span>                if (op.equals("!=") || op.equals("not="))<a name="line.556"></a>
+<span class="sourceLineNo">557</span>                        return MetaDataCondition.NOT_EQUAL;<a name="line.557"></a>
+<span class="sourceLineNo">558</span>                if (op.equals("&lt;") || op.equals("lt") || op.equals("num_lt"))<a name="line.558"></a>
+<span class="sourceLineNo">559</span>                        return MetaDataCondition.LESS_THAN;<a name="line.559"></a>
+<span class="sourceLineNo">560</span>                if (op.equals("&lt;=") || op.equals("le") || op.equals("num_le"))<a name="line.560"></a>
+<span class="sourceLineNo">561</span>                        return MetaDataCondition.LESS_OR_EQUAL;<a name="line.561"></a>
+<span class="sourceLineNo">562</span>                if (op.equals("&gt;") || op.equals("gt") || op.equals("num_gt"))<a name="line.562"></a>
+<span class="sourceLineNo">563</span>                        return MetaDataCondition.GREATER_THAN;<a name="line.563"></a>
+<span class="sourceLineNo">564</span>                if (op.equals("&gt;=") || op.equals("ge") || op.equals("num_ge"))<a name="line.564"></a>
+<span class="sourceLineNo">565</span>                        return MetaDataCondition.GREATER_OR_EQUAL;<a name="line.565"></a>
+<span class="sourceLineNo">566</span>                if (op.equals("in"))<a name="line.566"></a>
+<span class="sourceLineNo">567</span>                        return MetaDataCondition.IN;<a name="line.567"></a>
+<span class="sourceLineNo">568</span>                if (op.equals("notin") || op.equals("not_in"))<a name="line.568"></a>
+<span class="sourceLineNo">569</span>                        return MetaDataCondition.NOT_IN;<a name="line.569"></a>
+<span class="sourceLineNo">570</span>                if (op.equals("between") || op.equals("num_between"))<a name="line.570"></a>
+<span class="sourceLineNo">571</span>                        return MetaDataCondition.BETWEEN;<a name="line.571"></a>
+<span class="sourceLineNo">572</span>                if (op.equals("notbetween") || op.equals("not_between")<a name="line.572"></a>
+<span class="sourceLineNo">573</span>                                || op.equals("num_not_between"))<a name="line.573"></a>
+<span class="sourceLineNo">574</span>                        return MetaDataCondition.NOT_BETWEEN;<a name="line.574"></a>
+<span class="sourceLineNo">575</span>                if (op.equals("like"))<a name="line.575"></a>
+<span class="sourceLineNo">576</span>                        return MetaDataCondition.LIKE;<a name="line.576"></a>
+<span class="sourceLineNo">577</span>                if (op.equals("notlike") || op.equals("not_like"))<a name="line.577"></a>
+<span class="sourceLineNo">578</span>                        return MetaDataCondition.NOT_LIKE;<a name="line.578"></a>
+<span class="sourceLineNo">579</span>                if (op.equals("in") || op.equals("contains"))<a name="line.579"></a>
+<span class="sourceLineNo">580</span>                        return MetaDataCondition.IN;<a name="line.580"></a>
+<span class="sourceLineNo">581</span>                if (op.equals("notin") || op.equals("not_in")<a name="line.581"></a>
+<span class="sourceLineNo">582</span>                                || op.equals("not_contains"))<a name="line.582"></a>
+<span class="sourceLineNo">583</span>                        return MetaDataCondition.NOT_IN;<a name="line.583"></a>
+<span class="sourceLineNo">584</span>                if (op.equals("sounds_like"))<a name="line.584"></a>
+<span class="sourceLineNo">585</span>                        return MetaDataCondition.SOUNDS_LIKE;<a name="line.585"></a>
+<span class="sourceLineNo">586</span>                if (op.equals("sounds_not_like") || op.equals("sounds_not_like"))<a name="line.586"></a>
+<span class="sourceLineNo">587</span>                        return MetaDataCondition.SOUNDS_NOT_LIKE;<a name="line.587"></a>
+<span class="sourceLineNo">588</span>                System.out.println("operator " + op<a name="line.588"></a>
+<span class="sourceLineNo">589</span>                                + " is unsupported. Treated as equal.");<a name="line.589"></a>
+<span class="sourceLineNo">590</span>                return MetaDataCondition.EQUAL;<a name="line.590"></a>
+<span class="sourceLineNo">591</span>        }<a name="line.591"></a>
+<span class="sourceLineNo">592</span><a name="line.592"></a>
+<span class="sourceLineNo">593</span>        /**<a name="line.593"></a>
+<span class="sourceLineNo">594</span>         * broadcast the query results.<a name="line.594"></a>
+<span class="sourceLineNo">595</span>         * <a name="line.595"></a>
+<span class="sourceLineNo">596</span>         * @param rl<a name="line.596"></a>
+<span class="sourceLineNo">597</span>         * @throws IllegalActionException<a name="line.597"></a>
+<span class="sourceLineNo">598</span>         */<a name="line.598"></a>
+<span class="sourceLineNo">599</span>        private void _sendQueryResults(MetaDataRecordList[] rl)<a name="line.599"></a>
+<span class="sourceLineNo">600</span>                        throws IllegalActionException {<a name="line.600"></a>
+<span class="sourceLineNo">601</span>                if (rl != null &amp;&amp; rl.length &gt; 0) { // Nothing in the database matched<a name="line.601"></a>
+<span class="sourceLineNo">602</span>                                                                                        // the query<a name="line.602"></a>
+<span class="sourceLineNo">603</span>                        Token[] results = new Token[rl.length];<a name="line.603"></a>
+<span class="sourceLineNo">604</span>                        for (int i = 0; i &lt; rl.length; i++) {<a name="line.604"></a>
+<span class="sourceLineNo">605</span>                                int collInd = rl[i]<a name="line.605"></a>
+<span class="sourceLineNo">606</span>                                                .getFieldIndex(SRBMetaDataSet.DIRECTORY_NAME);<a name="line.606"></a>
+<span class="sourceLineNo">607</span>                                String fileName = rl[i].getStringValue(collInd);<a name="line.607"></a>
+<span class="sourceLineNo">608</span>                                int dataInd = rl[i].getFieldIndex(SRBMetaDataSet.FILE_NAME);<a name="line.608"></a>
+<span class="sourceLineNo">609</span>                                if (dataInd != -1) { // this is a file.<a name="line.609"></a>
+<span class="sourceLineNo">610</span>                                        fileName = fileName + "/" + rl[i].getStringValue(dataInd);<a name="line.610"></a>
+<span class="sourceLineNo">611</span>                                }<a name="line.611"></a>
+<span class="sourceLineNo">612</span>                                System.out.println(fileName);<a name="line.612"></a>
+<span class="sourceLineNo">613</span>                                results[i] = new StringToken(fileName);<a name="line.613"></a>
+<span class="sourceLineNo">614</span>                        }<a name="line.614"></a>
+<span class="sourceLineNo">615</span>                        filePaths.broadcast(new ArrayToken(results));<a name="line.615"></a>
+<span class="sourceLineNo">616</span>                }<a name="line.616"></a>
+<span class="sourceLineNo">617</span>        }<a name="line.617"></a>
+<span class="sourceLineNo">618</span><a name="line.618"></a>
+<span class="sourceLineNo">619</span>        // /////////////////////////////////////////////////////////////////<a name="line.619"></a>
+<span class="sourceLineNo">620</span>        // // private members ////<a name="line.620"></a>
+<span class="sourceLineNo">621</span><a name="line.621"></a>
+<span class="sourceLineNo">622</span>        /**<a name="line.622"></a>
+<span class="sourceLineNo">623</span>         * An srb file system variable.<a name="line.623"></a>
+<span class="sourceLineNo">624</span>         */<a name="line.624"></a>
+<span class="sourceLineNo">625</span>        private SRBFileSystem srbFileSystem = null;<a name="line.625"></a>
+<span class="sourceLineNo">626</span><a name="line.626"></a>
+<span class="sourceLineNo">627</span>}<a name="line.627"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

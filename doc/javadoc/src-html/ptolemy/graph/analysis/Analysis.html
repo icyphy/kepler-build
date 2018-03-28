@@ -1,0 +1,243 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../../stylesheet.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>/* A base class for analyses on graphs.<a name="line.1"></a>
+<span class="sourceLineNo">002</span><a name="line.2"></a>
+<span class="sourceLineNo">003</span> Copyright (c) 2002-2014 The University of Maryland. All rights reserved.<a name="line.3"></a>
+<span class="sourceLineNo">004</span> Permission is hereby granted, without written agreement and without<a name="line.4"></a>
+<span class="sourceLineNo">005</span> license or royalty fees, to use, copy, modify, and distribute this<a name="line.5"></a>
+<span class="sourceLineNo">006</span> software and its documentation for any purpose, provided that the above<a name="line.6"></a>
+<span class="sourceLineNo">007</span> copyright notice and the following two paragraphs appear in all copies<a name="line.7"></a>
+<span class="sourceLineNo">008</span> of this software.<a name="line.8"></a>
+<span class="sourceLineNo">009</span><a name="line.9"></a>
+<span class="sourceLineNo">010</span> IN NO EVENT SHALL THE UNIVERSITY OF MARYLAND BE LIABLE TO ANY PARTY<a name="line.10"></a>
+<span class="sourceLineNo">011</span> FOR DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES<a name="line.11"></a>
+<span class="sourceLineNo">012</span> ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION, EVEN IF<a name="line.12"></a>
+<span class="sourceLineNo">013</span> THE UNIVERSITY OF MARYLAND HAS BEEN ADVISED OF THE POSSIBILITY OF<a name="line.13"></a>
+<span class="sourceLineNo">014</span> SUCH DAMAGE.<a name="line.14"></a>
+<span class="sourceLineNo">015</span><a name="line.15"></a>
+<span class="sourceLineNo">016</span> THE UNIVERSITY OF MARYLAND SPECIFICALLY DISCLAIMS ANY WARRANTIES,<a name="line.16"></a>
+<span class="sourceLineNo">017</span> INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF<a name="line.17"></a>
+<span class="sourceLineNo">018</span> MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE<a name="line.18"></a>
+<span class="sourceLineNo">019</span> PROVIDED HEREUNDER IS ON AN "AS IS" BASIS, AND THE UNIVERSITY OF<a name="line.19"></a>
+<span class="sourceLineNo">020</span> MARYLAND HAS NO OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT, UPDATES,<a name="line.20"></a>
+<span class="sourceLineNo">021</span> ENHANCEMENTS, OR MODIFICATIONS.<a name="line.21"></a>
+<span class="sourceLineNo">022</span><a name="line.22"></a>
+<span class="sourceLineNo">023</span><a name="line.23"></a>
+<span class="sourceLineNo">024</span> */<a name="line.24"></a>
+<span class="sourceLineNo">025</span>package ptolemy.graph.analysis;<a name="line.25"></a>
+<span class="sourceLineNo">026</span><a name="line.26"></a>
+<span class="sourceLineNo">027</span>import ptolemy.graph.Graph;<a name="line.27"></a>
+<span class="sourceLineNo">028</span>import ptolemy.graph.analysis.analyzer.Analyzer;<a name="line.28"></a>
+<span class="sourceLineNo">029</span>import ptolemy.graph.analysis.analyzer.GraphAnalyzer;<a name="line.29"></a>
+<span class="sourceLineNo">030</span>import ptolemy.graph.analysis.strategy.CachedStrategy;<a name="line.30"></a>
+<span class="sourceLineNo">031</span><a name="line.31"></a>
+<span class="sourceLineNo">032</span>///////////////////////////////////////////////////////////////////<a name="line.32"></a>
+<span class="sourceLineNo">033</span>//// Analysis<a name="line.33"></a>
+<span class="sourceLineNo">034</span><a name="line.34"></a>
+<span class="sourceLineNo">035</span>/**<a name="line.35"></a>
+<span class="sourceLineNo">036</span> A base class for analyses on graphs.<a name="line.36"></a>
+<span class="sourceLineNo">037</span> &lt;p&gt;<a name="line.37"></a>
+<span class="sourceLineNo">038</span> The organization of the package follows:<a name="line.38"></a>
+<span class="sourceLineNo">039</span> &lt;p&gt;<a name="line.39"></a>
+<span class="sourceLineNo">040</span> Classes in ptolemy.graph.analysis consists of different wrappers in<a name="line.40"></a>
+<span class="sourceLineNo">041</span> which a client can plug a requested strategy/algorithm for an analysis.<a name="line.41"></a>
+<span class="sourceLineNo">042</span> Strategies for a given analysis implement the same interface defined<a name="line.42"></a>
+<span class="sourceLineNo">043</span> in ptolemy.graph.analysis.analyzer.<a name="line.43"></a>
+<span class="sourceLineNo">044</span> Therefore from now on we will use the name analyzer for all the strategies<a name="line.44"></a>
+<span class="sourceLineNo">045</span> that implement the same interface and therefore  solve the same problem.<a name="line.45"></a>
+<span class="sourceLineNo">046</span> Analysis classes access the plugged-in strategy class through these interfaces.<a name="line.46"></a>
+<span class="sourceLineNo">047</span> &lt;p&gt;<a name="line.47"></a>
+<span class="sourceLineNo">048</span> In the base class methods are provided in order to dynamically change the<a name="line.48"></a>
+<span class="sourceLineNo">049</span> analyzer of the current analysis and also to check if a given analyzer is<a name="line.49"></a>
+<span class="sourceLineNo">050</span> applicable to the given analysis.<a name="line.50"></a>
+<span class="sourceLineNo">051</span> &lt;p&gt;<a name="line.51"></a>
+<span class="sourceLineNo">052</span> Analyzers that can be used in these analyses are a specialized version of<a name="line.52"></a>
+<span class="sourceLineNo">053</span> analyzers called {@link ptolemy.graph.analysis.analyzer.GraphAnalyzer}.<a name="line.53"></a>
+<span class="sourceLineNo">054</span> &lt;p&gt;<a name="line.54"></a>
+<span class="sourceLineNo">055</span> Classes in ptolemy.graph.analysis.analyzer are the interfaces for<a name="line.55"></a>
+<span class="sourceLineNo">056</span> different strategies(algorithms) used for the analysis. The strategies classes<a name="line.56"></a>
+<span class="sourceLineNo">057</span> are defined in ptolemy.graph.analysis.strategy<a name="line.57"></a>
+<span class="sourceLineNo">058</span> &lt;p&gt;<a name="line.58"></a>
+<span class="sourceLineNo">059</span> In addition, the analysis classes provide default constructors which use<a name="line.59"></a>
+<span class="sourceLineNo">060</span> predefined strategies for those clients who do not want to deal with different<a name="line.60"></a>
+<span class="sourceLineNo">061</span> strategies.<a name="line.61"></a>
+<span class="sourceLineNo">062</span> Although this introduces some limitations imposed by the used strategy. The<a name="line.62"></a>
+<span class="sourceLineNo">063</span> documentation of such constructor will reflect the limitations, if any.<a name="line.63"></a>
+<span class="sourceLineNo">064</span> &lt;p&gt;<a name="line.64"></a>
+<span class="sourceLineNo">065</span> Finally, strategies can be instantiated and used independently. In this case<a name="line.65"></a>
+<span class="sourceLineNo">066</span> the client will lose the possibility of dynamically changing the analyzer for<a name="line.66"></a>
+<span class="sourceLineNo">067</span> the associated analysis, which would not exist at all, and there will be no<a name="line.67"></a>
+<span class="sourceLineNo">068</span> default constructor therefore the client need to be familiar with the strategy<a name="line.68"></a>
+<span class="sourceLineNo">069</span> that she/he is using.<a name="line.69"></a>
+<span class="sourceLineNo">070</span><a name="line.70"></a>
+<span class="sourceLineNo">071</span> @since Ptolemy II 2.0<a name="line.71"></a>
+<span class="sourceLineNo">072</span> @Pt.ProposedRating Red (shahrooz)<a name="line.72"></a>
+<span class="sourceLineNo">073</span> @Pt.AcceptedRating Red (ssb)<a name="line.73"></a>
+<span class="sourceLineNo">074</span> @author Shahrooz Shahparnia, Shuvra S. Bhattacharyya<a name="line.74"></a>
+<span class="sourceLineNo">075</span> @version $Id$<a name="line.75"></a>
+<span class="sourceLineNo">076</span> */<a name="line.76"></a>
+<span class="sourceLineNo">077</span>public class Analysis {<a name="line.77"></a>
+<span class="sourceLineNo">078</span>    /** Construct an analysis using a given analyzer.<a name="line.78"></a>
+<span class="sourceLineNo">079</span>     *<a name="line.79"></a>
+<span class="sourceLineNo">080</span>     *  @param analyzer The given analyzer.<a name="line.80"></a>
+<span class="sourceLineNo">081</span>     */<a name="line.81"></a>
+<span class="sourceLineNo">082</span>    public Analysis(GraphAnalyzer analyzer) {<a name="line.82"></a>
+<span class="sourceLineNo">083</span>        _analyzer = analyzer;<a name="line.83"></a>
+<span class="sourceLineNo">084</span><a name="line.84"></a>
+<span class="sourceLineNo">085</span>        // Maybe we may want to implement the Observer pattern instead of this.<a name="line.85"></a>
+<span class="sourceLineNo">086</span>        graph().addAnalysis(this);<a name="line.86"></a>
+<span class="sourceLineNo">087</span>    }<a name="line.87"></a>
+<span class="sourceLineNo">088</span><a name="line.88"></a>
+<span class="sourceLineNo">089</span>    ///////////////////////////////////////////////////////////////////<a name="line.89"></a>
+<span class="sourceLineNo">090</span>    ////                         public methods                    ////<a name="line.90"></a>
+<span class="sourceLineNo">091</span><a name="line.91"></a>
+<span class="sourceLineNo">092</span>    /** Return the analyzer associated with this analysis class.<a name="line.92"></a>
+<span class="sourceLineNo">093</span>     *<a name="line.93"></a>
+<span class="sourceLineNo">094</span>     *  @return Return the analyzer associated with this analysis class.<a name="line.94"></a>
+<span class="sourceLineNo">095</span>     */<a name="line.95"></a>
+<span class="sourceLineNo">096</span>    public GraphAnalyzer analyzer() {<a name="line.96"></a>
+<span class="sourceLineNo">097</span>        return _analyzer;<a name="line.97"></a>
+<span class="sourceLineNo">098</span>    }<a name="line.98"></a>
+<span class="sourceLineNo">099</span><a name="line.99"></a>
+<span class="sourceLineNo">100</span>    /** Change the analyzer associated with this analysis class to the given<a name="line.100"></a>
+<span class="sourceLineNo">101</span>     *  analyzer.<a name="line.101"></a>
+<span class="sourceLineNo">102</span>     *<a name="line.102"></a>
+<span class="sourceLineNo">103</span>     *  @param analyzer The given analyzer.<a name="line.103"></a>
+<span class="sourceLineNo">104</span>     *  @exception InvalidAnalyzerException If the analyzer is not a valid<a name="line.104"></a>
+<span class="sourceLineNo">105</span>     *  analyzer for this analysis.<a name="line.105"></a>
+<span class="sourceLineNo">106</span>     */<a name="line.106"></a>
+<span class="sourceLineNo">107</span>    public void changeAnalyzer(GraphAnalyzer analyzer) {<a name="line.107"></a>
+<span class="sourceLineNo">108</span>        if (validAnalyzerInterface(analyzer)) {<a name="line.108"></a>
+<span class="sourceLineNo">109</span>            if (analyzer instanceof CachedStrategy) {<a name="line.109"></a>
+<span class="sourceLineNo">110</span>                if (graph() == analyzer().graph()) {<a name="line.110"></a>
+<span class="sourceLineNo">111</span>                    ((CachedStrategy) analyzer)<a name="line.111"></a>
+<span class="sourceLineNo">112</span>                            .setCachedResult((CachedStrategy) _analyzer);<a name="line.112"></a>
+<span class="sourceLineNo">113</span>                }<a name="line.113"></a>
+<span class="sourceLineNo">114</span>            }<a name="line.114"></a>
+<span class="sourceLineNo">115</span><a name="line.115"></a>
+<span class="sourceLineNo">116</span>            _analyzer = analyzer;<a name="line.116"></a>
+<span class="sourceLineNo">117</span>        } else {<a name="line.117"></a>
+<span class="sourceLineNo">118</span>            throw new InvalidAnalyzerException(<a name="line.118"></a>
+<span class="sourceLineNo">119</span>                    "Invalid analyzer for the analysis:\n" + toString());<a name="line.119"></a>
+<span class="sourceLineNo">120</span>        }<a name="line.120"></a>
+<span class="sourceLineNo">121</span>    }<a name="line.121"></a>
+<span class="sourceLineNo">122</span><a name="line.122"></a>
+<span class="sourceLineNo">123</span>    /** The graph associated with the analysis. This association is made<a name="line.123"></a>
+<span class="sourceLineNo">124</span>     *  through the associated analyzer interface.<a name="line.124"></a>
+<span class="sourceLineNo">125</span>     *<a name="line.125"></a>
+<span class="sourceLineNo">126</span>     *  @return Return the graph under analysis.<a name="line.126"></a>
+<span class="sourceLineNo">127</span>     */<a name="line.127"></a>
+<span class="sourceLineNo">128</span>    public Graph graph() {<a name="line.128"></a>
+<span class="sourceLineNo">129</span>        return _analyzer.graph();<a name="line.129"></a>
+<span class="sourceLineNo">130</span>    }<a name="line.130"></a>
+<span class="sourceLineNo">131</span><a name="line.131"></a>
+<span class="sourceLineNo">132</span>    /** Return a description of the analysis and the associated analyzer.<a name="line.132"></a>
+<span class="sourceLineNo">133</span>     *  It should be overridden in derived classes to<a name="line.133"></a>
+<span class="sourceLineNo">134</span>     *  include details associated with the associated analysis/analyzer.<a name="line.134"></a>
+<span class="sourceLineNo">135</span>     *<a name="line.135"></a>
+<span class="sourceLineNo">136</span>     *  @return A description of the analysis and the associated analyzer.<a name="line.136"></a>
+<span class="sourceLineNo">137</span>     */<a name="line.137"></a>
+<span class="sourceLineNo">138</span>    @Override<a name="line.138"></a>
+<span class="sourceLineNo">139</span>    public String toString() {<a name="line.139"></a>
+<span class="sourceLineNo">140</span>        return "Analysis using the following analyzer:\n"<a name="line.140"></a>
+<span class="sourceLineNo">141</span>                + _analyzer.toString();<a name="line.141"></a>
+<span class="sourceLineNo">142</span>    }<a name="line.142"></a>
+<span class="sourceLineNo">143</span><a name="line.143"></a>
+<span class="sourceLineNo">144</span>    /** Return the validity of the associated analyzer. An analyzer is valid<a name="line.144"></a>
+<span class="sourceLineNo">145</span>     *  if the graph and the associated data is in a format suitable for the<a name="line.145"></a>
+<span class="sourceLineNo">146</span>     *  analyzer.<a name="line.146"></a>
+<span class="sourceLineNo">147</span>     *<a name="line.147"></a>
+<span class="sourceLineNo">148</span>     *  @return Return the validity of the associated analyzer.<a name="line.148"></a>
+<span class="sourceLineNo">149</span>     */<a name="line.149"></a>
+<span class="sourceLineNo">150</span>    public boolean valid() {<a name="line.150"></a>
+<span class="sourceLineNo">151</span>        return _analyzer.valid();<a name="line.151"></a>
+<span class="sourceLineNo">152</span>    }<a name="line.152"></a>
+<span class="sourceLineNo">153</span><a name="line.153"></a>
+<span class="sourceLineNo">154</span>    /** Check if a given analyzer is compatible with this analysis.<a name="line.154"></a>
+<span class="sourceLineNo">155</span>     *  In other words if it is possible to use it to compute the computation<a name="line.155"></a>
+<span class="sourceLineNo">156</span>     *  associated with this analysis.<a name="line.156"></a>
+<span class="sourceLineNo">157</span>     *  Derived classes should override this method to provide the valid type<a name="line.157"></a>
+<span class="sourceLineNo">158</span>     *  of analyzer that they need.<a name="line.158"></a>
+<span class="sourceLineNo">159</span>     *<a name="line.159"></a>
+<span class="sourceLineNo">160</span>     *  @param analyzer The given analyzer.<a name="line.160"></a>
+<span class="sourceLineNo">161</span>     *  @return True if the given analyzer is valid for this analysis.<a name="line.161"></a>
+<span class="sourceLineNo">162</span>     */<a name="line.162"></a>
+<span class="sourceLineNo">163</span>    public boolean validAnalyzerInterface(Analyzer analyzer) {<a name="line.163"></a>
+<span class="sourceLineNo">164</span>        return analyzer instanceof GraphAnalyzer;<a name="line.164"></a>
+<span class="sourceLineNo">165</span>    }<a name="line.165"></a>
+<span class="sourceLineNo">166</span><a name="line.166"></a>
+<span class="sourceLineNo">167</span>    ///////////////////////////////////////////////////////////////////<a name="line.167"></a>
+<span class="sourceLineNo">168</span>    ////                         private variables                 ////<a name="line.168"></a>
+<span class="sourceLineNo">169</span>    // The analyzer that is used in the computation of this analysis.<a name="line.169"></a>
+<span class="sourceLineNo">170</span>    private GraphAnalyzer _analyzer;<a name="line.170"></a>
+<span class="sourceLineNo">171</span>}<a name="line.171"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

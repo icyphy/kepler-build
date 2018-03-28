@@ -1,0 +1,179 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../../../../stylesheet.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>/* A simple application that demonstrates the use of SoundPlayback<a name="line.1"></a>
+<span class="sourceLineNo">002</span> by performing simple additive synthesis in real-time.<a name="line.2"></a>
+<span class="sourceLineNo">003</span><a name="line.3"></a>
+<span class="sourceLineNo">004</span> Copyright (c) 2000-2014 The Regents of the University of California.<a name="line.4"></a>
+<span class="sourceLineNo">005</span> All rights reserved.<a name="line.5"></a>
+<span class="sourceLineNo">006</span> Permission is hereby granted, without written agreement and without<a name="line.6"></a>
+<span class="sourceLineNo">007</span> license or royalty fees, to use, copy, modify, and distribute this<a name="line.7"></a>
+<span class="sourceLineNo">008</span> software and its documentation for any purpose, provided that the above<a name="line.8"></a>
+<span class="sourceLineNo">009</span> copyright notice and the following two paragraphs appear in all copies<a name="line.9"></a>
+<span class="sourceLineNo">010</span> of this software.<a name="line.10"></a>
+<span class="sourceLineNo">011</span><a name="line.11"></a>
+<span class="sourceLineNo">012</span> IN NO EVENT SHALL THE UNIVERSITY OF CALIFORNIA BE LIABLE TO ANY PARTY<a name="line.12"></a>
+<span class="sourceLineNo">013</span> FOR DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES<a name="line.13"></a>
+<span class="sourceLineNo">014</span> ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION, EVEN IF<a name="line.14"></a>
+<span class="sourceLineNo">015</span> THE UNIVERSITY OF CALIFORNIA HAS BEEN ADVISED OF THE POSSIBILITY OF<a name="line.15"></a>
+<span class="sourceLineNo">016</span> SUCH DAMAGE.<a name="line.16"></a>
+<span class="sourceLineNo">017</span><a name="line.17"></a>
+<span class="sourceLineNo">018</span> THE UNIVERSITY OF CALIFORNIA SPECIFICALLY DISCLAIMS ANY WARRANTIES,<a name="line.18"></a>
+<span class="sourceLineNo">019</span> INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF<a name="line.19"></a>
+<span class="sourceLineNo">020</span> MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE<a name="line.20"></a>
+<span class="sourceLineNo">021</span> PROVIDED HEREUNDER IS ON AN "AS IS" BASIS, AND THE UNIVERSITY OF<a name="line.21"></a>
+<span class="sourceLineNo">022</span> CALIFORNIA HAS NO OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT, UPDATES,<a name="line.22"></a>
+<span class="sourceLineNo">023</span> ENHANCEMENTS, OR MODIFICATIONS.<a name="line.23"></a>
+<span class="sourceLineNo">024</span><a name="line.24"></a>
+<span class="sourceLineNo">025</span> PT_COPYRIGHT_VERSION_2<a name="line.25"></a>
+<span class="sourceLineNo">026</span> COPYRIGHTENDKEY<a name="line.26"></a>
+<span class="sourceLineNo">027</span><a name="line.27"></a>
+<span class="sourceLineNo">028</span> */<a name="line.28"></a>
+<span class="sourceLineNo">029</span>package ptolemy.media.javasound.demo.Sines;<a name="line.29"></a>
+<span class="sourceLineNo">030</span><a name="line.30"></a>
+<span class="sourceLineNo">031</span>import ptolemy.media.javasound.SoundPlayback;<a name="line.31"></a>
+<span class="sourceLineNo">032</span><a name="line.32"></a>
+<span class="sourceLineNo">033</span>////////////////////////////////////////////////////<a name="line.33"></a>
+<span class="sourceLineNo">034</span><a name="line.34"></a>
+<span class="sourceLineNo">035</span>/** A simple application that demonstrates the use of SoundPlayback.<a name="line.35"></a>
+<span class="sourceLineNo">036</span> This application synthesizes and plays a simple harmonic<a name="line.36"></a>
+<span class="sourceLineNo">037</span> signal, using simple additive synthesis. The signal<a name="line.37"></a>
+<span class="sourceLineNo">038</span> is the some of a few harmonically related sinusoids.<a name="line.38"></a>
+<span class="sourceLineNo">039</span> @author Brian K. Vogel<a name="line.39"></a>
+<span class="sourceLineNo">040</span> @version $Id$<a name="line.40"></a>
+<span class="sourceLineNo">041</span> @since Ptolemy II 1.0<a name="line.41"></a>
+<span class="sourceLineNo">042</span> @Pt.ProposedRating Red (vogel)<a name="line.42"></a>
+<span class="sourceLineNo">043</span> @Pt.AcceptedRating Red (vogel)<a name="line.43"></a>
+<span class="sourceLineNo">044</span> */<a name="line.44"></a>
+<span class="sourceLineNo">045</span>public class Sines {<a name="line.45"></a>
+<span class="sourceLineNo">046</span>    /** Synthesize and play a simple harmonic signal using additive synthesis.<a name="line.46"></a>
+<span class="sourceLineNo">047</span>     *  @param args Not used.<a name="line.47"></a>
+<span class="sourceLineNo">048</span>     */<a name="line.48"></a>
+<span class="sourceLineNo">049</span>    public static void main(String[] args) {<a name="line.49"></a>
+<span class="sourceLineNo">050</span>        // The pitch of the signal to synthesize.<a name="line.50"></a>
+<span class="sourceLineNo">051</span>        double fundamental_Hz = 220;<a name="line.51"></a>
+<span class="sourceLineNo">052</span><a name="line.52"></a>
+<span class="sourceLineNo">053</span>        float sampleRate = 44100; // in Hz<a name="line.53"></a>
+<span class="sourceLineNo">054</span>        int sampleSizeInBits = 16;<a name="line.54"></a>
+<span class="sourceLineNo">055</span>        int channels = 2; // stereo.<a name="line.55"></a>
+<span class="sourceLineNo">056</span>        int outBufferSize = 4096; // Internal buffer size for playback.<a name="line.56"></a>
+<span class="sourceLineNo">057</span><a name="line.57"></a>
+<span class="sourceLineNo">058</span>        // Amount of data to read or write from/to the internal buffer<a name="line.58"></a>
+<span class="sourceLineNo">059</span>        // at a time. This should be set smaller than the internal buffer<a name="line.59"></a>
+<span class="sourceLineNo">060</span>        // size!<a name="line.60"></a>
+<span class="sourceLineNo">061</span>        int putSamplesSize = 25;<a name="line.61"></a>
+<span class="sourceLineNo">062</span><a name="line.62"></a>
+<span class="sourceLineNo">063</span>        // Construct a sound playback object that plays audio<a name="line.63"></a>
+<span class="sourceLineNo">064</span>        //through the computer's speaker.<a name="line.64"></a>
+<span class="sourceLineNo">065</span>        SoundPlayback soundPlayback = new SoundPlayback(sampleRate,<a name="line.65"></a>
+<span class="sourceLineNo">066</span>                sampleSizeInBits, channels, outBufferSize, putSamplesSize);<a name="line.66"></a>
+<span class="sourceLineNo">067</span><a name="line.67"></a>
+<span class="sourceLineNo">068</span>        // Initialize and begin playback.<a name="line.68"></a>
+<span class="sourceLineNo">069</span>        try {<a name="line.69"></a>
+<span class="sourceLineNo">070</span>            soundPlayback.startPlayback();<a name="line.70"></a>
+<span class="sourceLineNo">071</span>        } catch (Exception ex) {<a name="line.71"></a>
+<span class="sourceLineNo">072</span>            System.err.println(ex);<a name="line.72"></a>
+<span class="sourceLineNo">073</span>        }<a name="line.73"></a>
+<span class="sourceLineNo">074</span><a name="line.74"></a>
+<span class="sourceLineNo">075</span>        double[][] samplesArray = new double[channels][putSamplesSize];<a name="line.75"></a>
+<span class="sourceLineNo">076</span><a name="line.76"></a>
+<span class="sourceLineNo">077</span>        // keep track of time, used in calculating the sine wave values.<a name="line.77"></a>
+<span class="sourceLineNo">078</span>        double[] samples = new double[channels];<a name="line.78"></a>
+<span class="sourceLineNo">079</span><a name="line.79"></a>
+<span class="sourceLineNo">080</span>        try {<a name="line.80"></a>
+<span class="sourceLineNo">081</span>            // Loop forever.<a name="line.81"></a>
+<span class="sourceLineNo">082</span>            while (true) {<a name="line.82"></a>
+<span class="sourceLineNo">083</span>                for (int j = 0; j &lt; channels; j++) {<a name="line.83"></a>
+<span class="sourceLineNo">084</span>                    for (int i = 0; i &lt; putSamplesSize; i++) {<a name="line.84"></a>
+<span class="sourceLineNo">085</span>                        // Generate a harmonic signal.<a name="line.85"></a>
+<span class="sourceLineNo">086</span>                        samplesArray[j][i] = java.lang.Math.sin(fundamental_Hz<a name="line.86"></a>
+<span class="sourceLineNo">087</span>                                * 2 * java.lang.Math.PI * samples[j]) * 0.4<a name="line.87"></a>
+<span class="sourceLineNo">088</span>                                + java.lang.Math.sin(2 * fundamental_Hz * 2<a name="line.88"></a>
+<span class="sourceLineNo">089</span>                                        * java.lang.Math.PI * samples[j]) * 0.3<a name="line.89"></a>
+<span class="sourceLineNo">090</span>                                + java.lang.Math.sin(3 * fundamental_Hz * 2<a name="line.90"></a>
+<span class="sourceLineNo">091</span>                                        * java.lang.Math.PI * samples[j]) * 0.25<a name="line.91"></a>
+<span class="sourceLineNo">092</span>                                + java.lang.Math.sin(4 * fundamental_Hz * 2<a name="line.92"></a>
+<span class="sourceLineNo">093</span>                                        * java.lang.Math.PI * samples[j]) * 0.2;<a name="line.93"></a>
+<span class="sourceLineNo">094</span><a name="line.94"></a>
+<span class="sourceLineNo">095</span>                        // Increment time.<a name="line.95"></a>
+<span class="sourceLineNo">096</span>                        samples[j] = samples[j] + 1.0 / sampleRate;<a name="line.96"></a>
+<span class="sourceLineNo">097</span>                    }<a name="line.97"></a>
+<span class="sourceLineNo">098</span>                }<a name="line.98"></a>
+<span class="sourceLineNo">099</span><a name="line.99"></a>
+<span class="sourceLineNo">100</span>                // Play the processed audio samples.<a name="line.100"></a>
+<span class="sourceLineNo">101</span>                soundPlayback.putSamples(samplesArray);<a name="line.101"></a>
+<span class="sourceLineNo">102</span>            }<a name="line.102"></a>
+<span class="sourceLineNo">103</span>        } catch (Exception ex) {<a name="line.103"></a>
+<span class="sourceLineNo">104</span>            System.err.println(ex);<a name="line.104"></a>
+<span class="sourceLineNo">105</span>        }<a name="line.105"></a>
+<span class="sourceLineNo">106</span>    }<a name="line.106"></a>
+<span class="sourceLineNo">107</span>}<a name="line.107"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

@@ -1,0 +1,1079 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../stylesheet.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>/* An executable entity.<a name="line.1"></a>
+<span class="sourceLineNo">002</span><a name="line.2"></a>
+<span class="sourceLineNo">003</span> Copyright (c) 1997-2016 The Regents of the University of California.<a name="line.3"></a>
+<span class="sourceLineNo">004</span> All rights reserved.<a name="line.4"></a>
+<span class="sourceLineNo">005</span> Permission is hereby granted, without written agreement and without<a name="line.5"></a>
+<span class="sourceLineNo">006</span> license or royalty fees, to use, copy, modify, and distribute this<a name="line.6"></a>
+<span class="sourceLineNo">007</span> software and its documentation for any purpose, provided that the above<a name="line.7"></a>
+<span class="sourceLineNo">008</span> copyright notice and the following two paragraphs appear in all copies<a name="line.8"></a>
+<span class="sourceLineNo">009</span> of this software.<a name="line.9"></a>
+<span class="sourceLineNo">010</span><a name="line.10"></a>
+<span class="sourceLineNo">011</span> IN NO EVENT SHALL THE UNIVERSITY OF CALIFORNIA BE LIABLE TO ANY PARTY<a name="line.11"></a>
+<span class="sourceLineNo">012</span> FOR DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES<a name="line.12"></a>
+<span class="sourceLineNo">013</span> ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION, EVEN IF<a name="line.13"></a>
+<span class="sourceLineNo">014</span> THE UNIVERSITY OF CALIFORNIA HAS BEEN ADVISED OF THE POSSIBILITY OF<a name="line.14"></a>
+<span class="sourceLineNo">015</span> SUCH DAMAGE.<a name="line.15"></a>
+<span class="sourceLineNo">016</span><a name="line.16"></a>
+<span class="sourceLineNo">017</span> THE UNIVERSITY OF CALIFORNIA SPECIFICALLY DISCLAIMS ANY WARRANTIES,<a name="line.17"></a>
+<span class="sourceLineNo">018</span> INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF<a name="line.18"></a>
+<span class="sourceLineNo">019</span> MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE<a name="line.19"></a>
+<span class="sourceLineNo">020</span> PROVIDED HEREUNDER IS ON AN "AS IS" BASIS, AND THE UNIVERSITY OF<a name="line.20"></a>
+<span class="sourceLineNo">021</span> CALIFORNIA HAS NO OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT, UPDATES,<a name="line.21"></a>
+<span class="sourceLineNo">022</span> ENHANCEMENTS, OR MODIFICATIONS.<a name="line.22"></a>
+<span class="sourceLineNo">023</span><a name="line.23"></a>
+<span class="sourceLineNo">024</span> PT_COPYRIGHT_VERSION_2<a name="line.24"></a>
+<span class="sourceLineNo">025</span> COPYRIGHTENDKEY<a name="line.25"></a>
+<span class="sourceLineNo">026</span><a name="line.26"></a>
+<span class="sourceLineNo">027</span> */<a name="line.27"></a>
+<span class="sourceLineNo">028</span>package ptolemy.actor;<a name="line.28"></a>
+<span class="sourceLineNo">029</span><a name="line.29"></a>
+<span class="sourceLineNo">030</span>import java.util.ArrayList;<a name="line.30"></a>
+<span class="sourceLineNo">031</span>import java.util.Iterator;<a name="line.31"></a>
+<span class="sourceLineNo">032</span>import java.util.LinkedHashSet;<a name="line.32"></a>
+<span class="sourceLineNo">033</span>import java.util.LinkedList;<a name="line.33"></a>
+<span class="sourceLineNo">034</span>import java.util.List;<a name="line.34"></a>
+<span class="sourceLineNo">035</span>import java.util.Set;<a name="line.35"></a>
+<span class="sourceLineNo">036</span><a name="line.36"></a>
+<span class="sourceLineNo">037</span>import ptolemy.actor.util.BooleanDependency;<a name="line.37"></a>
+<span class="sourceLineNo">038</span>import ptolemy.actor.util.CausalityInterface;<a name="line.38"></a>
+<span class="sourceLineNo">039</span>import ptolemy.actor.util.DefaultCausalityInterface;<a name="line.39"></a>
+<span class="sourceLineNo">040</span>import ptolemy.actor.util.Dependency;<a name="line.40"></a>
+<span class="sourceLineNo">041</span>import ptolemy.kernel.ComponentEntity;<a name="line.41"></a>
+<span class="sourceLineNo">042</span>import ptolemy.kernel.CompositeEntity;<a name="line.42"></a>
+<span class="sourceLineNo">043</span>import ptolemy.kernel.Port;<a name="line.43"></a>
+<span class="sourceLineNo">044</span>import ptolemy.kernel.util.IllegalActionException;<a name="line.44"></a>
+<span class="sourceLineNo">045</span>import ptolemy.kernel.util.InternalErrorException;<a name="line.45"></a>
+<span class="sourceLineNo">046</span>import ptolemy.kernel.util.NameDuplicationException;<a name="line.46"></a>
+<span class="sourceLineNo">047</span>import ptolemy.kernel.util.Nameable;<a name="line.47"></a>
+<span class="sourceLineNo">048</span>import ptolemy.kernel.util.Workspace;<a name="line.48"></a>
+<span class="sourceLineNo">049</span><a name="line.49"></a>
+<span class="sourceLineNo">050</span>///////////////////////////////////////////////////////////////////<a name="line.50"></a>
+<span class="sourceLineNo">051</span>//// AtomicActor<a name="line.51"></a>
+<span class="sourceLineNo">052</span><a name="line.52"></a>
+<span class="sourceLineNo">053</span>/**<a name="line.53"></a>
+<span class="sourceLineNo">054</span> An AtomicActor is an executable entity that cannot itself contain<a name="line.54"></a>
+<span class="sourceLineNo">055</span> other actors. The Ports of AtomicActors are constrained to be IOPorts.<a name="line.55"></a>
+<span class="sourceLineNo">056</span> Derived classes may further constrain the ports by overriding the public<a name="line.56"></a>
+<span class="sourceLineNo">057</span> method newPort() to create a port of the appropriate subclass, and the<a name="line.57"></a>
+<span class="sourceLineNo">058</span> protected method _addPort() to throw an exception if its argument is a<a name="line.58"></a>
+<span class="sourceLineNo">059</span> port that is not of the appropriate subclass. In this base class, the<a name="line.59"></a>
+<span class="sourceLineNo">060</span> actor does nothing in the action methods (prefire, fire, ...).<a name="line.60"></a>
+<span class="sourceLineNo">061</span><a name="line.61"></a>
+<span class="sourceLineNo">062</span> @author Mudit Goel, Edward A. Lee, Lukito Muliadi, Steve Neuendorffer, Contributor: Daniel Crawl<a name="line.62"></a>
+<span class="sourceLineNo">063</span> @version $Id$<a name="line.63"></a>
+<span class="sourceLineNo">064</span> @since Ptolemy II 0.2<a name="line.64"></a>
+<span class="sourceLineNo">065</span> @Pt.ProposedRating Green (eal)<a name="line.65"></a>
+<span class="sourceLineNo">066</span> @Pt.AcceptedRating Green (neuendor)<a name="line.66"></a>
+<span class="sourceLineNo">067</span> @see ptolemy.actor.CompositeActor<a name="line.67"></a>
+<span class="sourceLineNo">068</span> @see ptolemy.actor.IOPort<a name="line.68"></a>
+<span class="sourceLineNo">069</span> */<a name="line.69"></a>
+<span class="sourceLineNo">070</span>public class AtomicActor&lt;T extends IOPort&gt; extends ComponentEntity&lt;T&gt;<a name="line.70"></a>
+<span class="sourceLineNo">071</span>        implements Actor, FiringsRecordable {<a name="line.71"></a>
+<span class="sourceLineNo">072</span>    /** Construct an actor in the default workspace with an empty string<a name="line.72"></a>
+<span class="sourceLineNo">073</span>     *  as its name. Increment the version number of the workspace.<a name="line.73"></a>
+<span class="sourceLineNo">074</span>     *  The object is added to the workspace directory.<a name="line.74"></a>
+<span class="sourceLineNo">075</span>     */<a name="line.75"></a>
+<span class="sourceLineNo">076</span>    public AtomicActor() {<a name="line.76"></a>
+<span class="sourceLineNo">077</span>        super();<a name="line.77"></a>
+<span class="sourceLineNo">078</span>    }<a name="line.78"></a>
+<span class="sourceLineNo">079</span><a name="line.79"></a>
+<span class="sourceLineNo">080</span>    /** Construct an actor in the specified workspace with an empty<a name="line.80"></a>
+<span class="sourceLineNo">081</span>     *  string as a name. You can then change the name with setName().<a name="line.81"></a>
+<span class="sourceLineNo">082</span>     *  If the workspace argument is null, then use the default workspace.<a name="line.82"></a>
+<span class="sourceLineNo">083</span>     *  The object is added to the workspace directory.<a name="line.83"></a>
+<span class="sourceLineNo">084</span>     *  Increment the version number of the workspace.<a name="line.84"></a>
+<span class="sourceLineNo">085</span>     *  @param workspace The workspace that will list this actor.<a name="line.85"></a>
+<span class="sourceLineNo">086</span>     */<a name="line.86"></a>
+<span class="sourceLineNo">087</span>    public AtomicActor(Workspace workspace) {<a name="line.87"></a>
+<span class="sourceLineNo">088</span>        super(workspace);<a name="line.88"></a>
+<span class="sourceLineNo">089</span>    }<a name="line.89"></a>
+<span class="sourceLineNo">090</span><a name="line.90"></a>
+<span class="sourceLineNo">091</span>    /** Create a new actor in the specified container with the specified<a name="line.91"></a>
+<span class="sourceLineNo">092</span>     *  name.  The name must be unique within the container or an exception<a name="line.92"></a>
+<span class="sourceLineNo">093</span>     *  is thrown. The container argument must not be null, or a<a name="line.93"></a>
+<span class="sourceLineNo">094</span>     *  NullPointerException will be thrown.<a name="line.94"></a>
+<span class="sourceLineNo">095</span>     *<a name="line.95"></a>
+<span class="sourceLineNo">096</span>     *  @param container The container.<a name="line.96"></a>
+<span class="sourceLineNo">097</span>     *  @param name The name of this actor within the container.<a name="line.97"></a>
+<span class="sourceLineNo">098</span>     *  @exception IllegalActionException If the entity cannot be contained<a name="line.98"></a>
+<span class="sourceLineNo">099</span>     *   by the proposed container (see the setContainer() method).<a name="line.99"></a>
+<span class="sourceLineNo">100</span>     *  @exception NameDuplicationException If the name coincides with<a name="line.100"></a>
+<span class="sourceLineNo">101</span>     *   an entity already in the container.<a name="line.101"></a>
+<span class="sourceLineNo">102</span>     */<a name="line.102"></a>
+<span class="sourceLineNo">103</span>    public AtomicActor(CompositeEntity container, String name)<a name="line.103"></a>
+<span class="sourceLineNo">104</span>            throws IllegalActionException, NameDuplicationException {<a name="line.104"></a>
+<span class="sourceLineNo">105</span>        super(container, name);<a name="line.105"></a>
+<span class="sourceLineNo">106</span>    }<a name="line.106"></a>
+<span class="sourceLineNo">107</span><a name="line.107"></a>
+<span class="sourceLineNo">108</span>    ///////////////////////////////////////////////////////////////////<a name="line.108"></a>
+<span class="sourceLineNo">109</span>    ////                         public methods                    ////<a name="line.109"></a>
+<span class="sourceLineNo">110</span><a name="line.110"></a>
+<span class="sourceLineNo">111</span>    /** Add the specified object to the set of objects whose<a name="line.111"></a>
+<span class="sourceLineNo">112</span>     *  preinitialize(), initialize(), and wrapup()<a name="line.112"></a>
+<span class="sourceLineNo">113</span>     *  methods should be invoked upon invocation of the corresponding<a name="line.113"></a>
+<span class="sourceLineNo">114</span>     *  methods of this object.<a name="line.114"></a>
+<span class="sourceLineNo">115</span>     *  @param initializable The object whose methods should be invoked.<a name="line.115"></a>
+<span class="sourceLineNo">116</span>     *  @see #removeInitializable(Initializable)<a name="line.116"></a>
+<span class="sourceLineNo">117</span>     *  @see ptolemy.actor.CompositeActor#addPiggyback(Executable)<a name="line.117"></a>
+<span class="sourceLineNo">118</span>     */<a name="line.118"></a>
+<span class="sourceLineNo">119</span>    @Override<a name="line.119"></a>
+<span class="sourceLineNo">120</span>    public void addInitializable(Initializable initializable) {<a name="line.120"></a>
+<span class="sourceLineNo">121</span>        if (_initializables == null) {<a name="line.121"></a>
+<span class="sourceLineNo">122</span>            _initializables = new LinkedHashSet&lt;Initializable&gt;();<a name="line.122"></a>
+<span class="sourceLineNo">123</span>        }<a name="line.123"></a>
+<span class="sourceLineNo">124</span>        _initializables.add(initializable);<a name="line.124"></a>
+<span class="sourceLineNo">125</span>    }<a name="line.125"></a>
+<span class="sourceLineNo">126</span><a name="line.126"></a>
+<span class="sourceLineNo">127</span>    /** Append a listener to the current set of actor firing listeners.<a name="line.127"></a>
+<span class="sourceLineNo">128</span>     *  If the listener is already in the set, it will not be added again.<a name="line.128"></a>
+<span class="sourceLineNo">129</span>     *  Note that this method is basically the same as addDebugListener<a name="line.129"></a>
+<span class="sourceLineNo">130</span>     *  in the class NamedObj.<a name="line.130"></a>
+<span class="sourceLineNo">131</span>     *  @param listener The listener to which to send actor firing messages.<a name="line.131"></a>
+<span class="sourceLineNo">132</span>     *  @see #removeActorFiringListener(ActorFiringListener)<a name="line.132"></a>
+<span class="sourceLineNo">133</span>     */<a name="line.133"></a>
+<span class="sourceLineNo">134</span>    @Override<a name="line.134"></a>
+<span class="sourceLineNo">135</span>    public void addActorFiringListener(ActorFiringListener listener) {<a name="line.135"></a>
+<span class="sourceLineNo">136</span>        // NOTE: This method needs to be synchronized to prevent two<a name="line.136"></a>
+<span class="sourceLineNo">137</span>        // threads from each creating a new _actorFiringListeners list.<a name="line.137"></a>
+<span class="sourceLineNo">138</span>        synchronized (this) {<a name="line.138"></a>
+<span class="sourceLineNo">139</span>            if (_actorFiringListeners == null) {<a name="line.139"></a>
+<span class="sourceLineNo">140</span>                _actorFiringListeners = new LinkedList&lt;ActorFiringListener&gt;();<a name="line.140"></a>
+<span class="sourceLineNo">141</span>            }<a name="line.141"></a>
+<span class="sourceLineNo">142</span>        }<a name="line.142"></a>
+<span class="sourceLineNo">143</span><a name="line.143"></a>
+<span class="sourceLineNo">144</span>        // NOTE: This has to be synchronized to prevent<a name="line.144"></a>
+<span class="sourceLineNo">145</span>        // concurrent modification exceptions.<a name="line.145"></a>
+<span class="sourceLineNo">146</span>        synchronized (_actorFiringListeners) {<a name="line.146"></a>
+<span class="sourceLineNo">147</span>            if (_actorFiringListeners.contains(listener)) {<a name="line.147"></a>
+<span class="sourceLineNo">148</span>                return;<a name="line.148"></a>
+<span class="sourceLineNo">149</span>            } else {<a name="line.149"></a>
+<span class="sourceLineNo">150</span>                _actorFiringListeners.add(listener);<a name="line.150"></a>
+<span class="sourceLineNo">151</span>            }<a name="line.151"></a>
+<span class="sourceLineNo">152</span><a name="line.152"></a>
+<span class="sourceLineNo">153</span>            _notifyingActorFiring = true;<a name="line.153"></a>
+<span class="sourceLineNo">154</span>        }<a name="line.154"></a>
+<span class="sourceLineNo">155</span>    }<a name="line.155"></a>
+<span class="sourceLineNo">156</span><a name="line.156"></a>
+<span class="sourceLineNo">157</span>    /** Clone this actor into the specified workspace. The new actor is<a name="line.157"></a>
+<span class="sourceLineNo">158</span>     *  &lt;i&gt;not&lt;/i&gt; added to the directory of that workspace (you must do this<a name="line.158"></a>
+<span class="sourceLineNo">159</span>     *  yourself if you want it there).<a name="line.159"></a>
+<span class="sourceLineNo">160</span>     *  The result is a new actor with the same ports as the original, but<a name="line.160"></a>
+<span class="sourceLineNo">161</span>     *  no connections and no container.  A container must be set before<a name="line.161"></a>
+<span class="sourceLineNo">162</span>     *  much can be done with this actor.<a name="line.162"></a>
+<span class="sourceLineNo">163</span>     *<a name="line.163"></a>
+<span class="sourceLineNo">164</span>     *  @param workspace The workspace for the cloned object.<a name="line.164"></a>
+<span class="sourceLineNo">165</span>     *  @exception CloneNotSupportedException If cloned ports cannot have<a name="line.165"></a>
+<span class="sourceLineNo">166</span>     *   as their container the cloned entity (this should not occur), or<a name="line.166"></a>
+<span class="sourceLineNo">167</span>     *   if one of the attributes cannot be cloned.<a name="line.167"></a>
+<span class="sourceLineNo">168</span>     *  @return A new ComponentEntity.<a name="line.168"></a>
+<span class="sourceLineNo">169</span>     */<a name="line.169"></a>
+<span class="sourceLineNo">170</span>    @Override<a name="line.170"></a>
+<span class="sourceLineNo">171</span>    public Object clone(Workspace workspace) throws CloneNotSupportedException {<a name="line.171"></a>
+<span class="sourceLineNo">172</span><a name="line.172"></a>
+<span class="sourceLineNo">173</span>        // When super.clone() is called below, attributes that are<a name="line.173"></a>
+<span class="sourceLineNo">174</span>        // contained in this actor are also cloned, which includes<a name="line.174"></a>
+<span class="sourceLineNo">175</span>        // calling methods on these attributes such as setContainer().<a name="line.175"></a>
+<span class="sourceLineNo">176</span>        // These methods may add themselves to the firing listeners<a name="line.176"></a>
+<span class="sourceLineNo">177</span>        // or initializables lists in the newObject clone, so we do<a name="line.177"></a>
+<span class="sourceLineNo">178</span>        // not want to clear these lists in newObject after super.clone().<a name="line.178"></a>
+<span class="sourceLineNo">179</span>        // Instead, save this instance's lists here and restore them after<a name="line.179"></a>
+<span class="sourceLineNo">180</span>        // call super.clone().<a name="line.180"></a>
+<span class="sourceLineNo">181</span>        LinkedList&lt;ActorFiringListener&gt; oldActorFiringListeners = _actorFiringListeners;<a name="line.181"></a>
+<span class="sourceLineNo">182</span>        _actorFiringListeners = null;<a name="line.182"></a>
+<span class="sourceLineNo">183</span>        Set&lt;Initializable&gt; oldInitializables = _initializables;<a name="line.183"></a>
+<span class="sourceLineNo">184</span>        _initializables = null;<a name="line.184"></a>
+<span class="sourceLineNo">185</span><a name="line.185"></a>
+<span class="sourceLineNo">186</span>        @SuppressWarnings("unchecked")<a name="line.186"></a>
+<span class="sourceLineNo">187</span>        AtomicActor&lt;T&gt; newObject = (AtomicActor&lt;T&gt;) super.clone(workspace);<a name="line.187"></a>
+<span class="sourceLineNo">188</span><a name="line.188"></a>
+<span class="sourceLineNo">189</span>        _initializables = oldInitializables;<a name="line.189"></a>
+<span class="sourceLineNo">190</span>        _actorFiringListeners = oldActorFiringListeners;<a name="line.190"></a>
+<span class="sourceLineNo">191</span><a name="line.191"></a>
+<span class="sourceLineNo">192</span>        // Reset to force reinitialization of cache.<a name="line.192"></a>
+<span class="sourceLineNo">193</span>        newObject._inputPortsVersion = -1;<a name="line.193"></a>
+<span class="sourceLineNo">194</span>        newObject._outputPortsVersion = -1;<a name="line.194"></a>
+<span class="sourceLineNo">195</span>        newObject._cachedInputPorts = null;<a name="line.195"></a>
+<span class="sourceLineNo">196</span>        newObject._cachedOutputPorts = null;<a name="line.196"></a>
+<span class="sourceLineNo">197</span>        newObject._causalityInterface = null;<a name="line.197"></a>
+<span class="sourceLineNo">198</span>        newObject._causalityInterfaceDirector = null;<a name="line.198"></a>
+<span class="sourceLineNo">199</span>        newObject._receiversVersion = -1L;<a name="line.199"></a>
+<span class="sourceLineNo">200</span>        return newObject;<a name="line.200"></a>
+<span class="sourceLineNo">201</span>    }<a name="line.201"></a>
+<span class="sourceLineNo">202</span><a name="line.202"></a>
+<span class="sourceLineNo">203</span>    /** Create new receivers if the port is<a name="line.203"></a>
+<span class="sourceLineNo">204</span>     *  an input port and there is a director.<a name="line.204"></a>
+<span class="sourceLineNo">205</span>     *  @param port The port that has connection changes.<a name="line.205"></a>
+<span class="sourceLineNo">206</span>     */<a name="line.206"></a>
+<span class="sourceLineNo">207</span>    @Override<a name="line.207"></a>
+<span class="sourceLineNo">208</span>    public void connectionsChanged(Port port) {<a name="line.208"></a>
+<span class="sourceLineNo">209</span>        if (_debugging) {<a name="line.209"></a>
+<span class="sourceLineNo">210</span>            _debug("Connections changed on port: " + port.getName());<a name="line.210"></a>
+<span class="sourceLineNo">211</span>        }<a name="line.211"></a>
+<span class="sourceLineNo">212</span><a name="line.212"></a>
+<span class="sourceLineNo">213</span>        if (port instanceof IOPort) {<a name="line.213"></a>
+<span class="sourceLineNo">214</span>            IOPort castPort = (IOPort) port;<a name="line.214"></a>
+<span class="sourceLineNo">215</span>            Manager manager = getManager();<a name="line.215"></a>
+<span class="sourceLineNo">216</span>            if (castPort.isInput() &amp;&amp; getDirector() != null &amp;&amp; manager != null<a name="line.216"></a>
+<span class="sourceLineNo">217</span>                    &amp;&amp; manager.getState() != Manager.IDLE<a name="line.217"></a>
+<span class="sourceLineNo">218</span>                    &amp;&amp; manager.getState() != Manager.INFERING_WIDTHS<a name="line.218"></a>
+<span class="sourceLineNo">219</span>                    &amp;&amp; manager.getState() != Manager.PREINITIALIZING) {<a name="line.219"></a>
+<span class="sourceLineNo">220</span>                try {<a name="line.220"></a>
+<span class="sourceLineNo">221</span>                    workspace().getWriteAccess();<a name="line.221"></a>
+<span class="sourceLineNo">222</span>                    castPort.createReceivers();<a name="line.222"></a>
+<span class="sourceLineNo">223</span>                } catch (IllegalActionException ex) {<a name="line.223"></a>
+<span class="sourceLineNo">224</span>                    // Should never happen.<a name="line.224"></a>
+<span class="sourceLineNo">225</span>                    throw new InternalErrorException(this, ex,<a name="line.225"></a>
+<span class="sourceLineNo">226</span>                            "Cannot create receivers on Port \""<a name="line.226"></a>
+<span class="sourceLineNo">227</span>                                    + port.getFullName() + "\".");<a name="line.227"></a>
+<span class="sourceLineNo">228</span>                } finally {<a name="line.228"></a>
+<span class="sourceLineNo">229</span>                    // Note that this does not increment the workspace version.<a name="line.229"></a>
+<span class="sourceLineNo">230</span>                    // We have not changed the structure of the model.<a name="line.230"></a>
+<span class="sourceLineNo">231</span>                    _workspace.doneTemporaryWriting();<a name="line.231"></a>
+<span class="sourceLineNo">232</span>                }<a name="line.232"></a>
+<span class="sourceLineNo">233</span>            }<a name="line.233"></a>
+<span class="sourceLineNo">234</span>        }<a name="line.234"></a>
+<span class="sourceLineNo">235</span>    }<a name="line.235"></a>
+<span class="sourceLineNo">236</span><a name="line.236"></a>
+<span class="sourceLineNo">237</span>    /** Create receivers for each input port.<a name="line.237"></a>
+<span class="sourceLineNo">238</span>     *  @exception IllegalActionException If any port throws it.<a name="line.238"></a>
+<span class="sourceLineNo">239</span>     */<a name="line.239"></a>
+<span class="sourceLineNo">240</span>    @Override<a name="line.240"></a>
+<span class="sourceLineNo">241</span>    public void createReceivers() throws IllegalActionException {<a name="line.241"></a>
+<span class="sourceLineNo">242</span>        if (workspace().getVersion() != _receiversVersion) {<a name="line.242"></a>
+<span class="sourceLineNo">243</span>            // NOTE:  Receivers are also getting created<a name="line.243"></a>
+<span class="sourceLineNo">244</span>            // in connectionChanged(). This to make sure that<a name="line.244"></a>
+<span class="sourceLineNo">245</span>            // the receivers are reset when the model changes while<a name="line.245"></a>
+<span class="sourceLineNo">246</span>            // running the model.<a name="line.246"></a>
+<span class="sourceLineNo">247</span><a name="line.247"></a>
+<span class="sourceLineNo">248</span>            Iterator&lt;?&gt; inputPorts = inputPortList().iterator();<a name="line.248"></a>
+<span class="sourceLineNo">249</span>            try {<a name="line.249"></a>
+<span class="sourceLineNo">250</span>                workspace().getWriteAccess();<a name="line.250"></a>
+<span class="sourceLineNo">251</span>                while (inputPorts.hasNext()) {<a name="line.251"></a>
+<span class="sourceLineNo">252</span>                    IOPort inputPort = (IOPort) inputPorts.next();<a name="line.252"></a>
+<span class="sourceLineNo">253</span>                    inputPort.createReceivers();<a name="line.253"></a>
+<span class="sourceLineNo">254</span>                }<a name="line.254"></a>
+<span class="sourceLineNo">255</span>                _receiversVersion = workspace().getVersion();<a name="line.255"></a>
+<span class="sourceLineNo">256</span>            } finally {<a name="line.256"></a>
+<span class="sourceLineNo">257</span>                // Note that this does not increment the workspace version.<a name="line.257"></a>
+<span class="sourceLineNo">258</span>                // We have not changed the structure of the model.<a name="line.258"></a>
+<span class="sourceLineNo">259</span>                workspace().doneTemporaryWriting();<a name="line.259"></a>
+<span class="sourceLineNo">260</span>            }<a name="line.260"></a>
+<span class="sourceLineNo">261</span>        }<a name="line.261"></a>
+<span class="sourceLineNo">262</span>    }<a name="line.262"></a>
+<span class="sourceLineNo">263</span><a name="line.263"></a>
+<span class="sourceLineNo">264</span>    /** Set the dependency between all output ports and all input<a name="line.264"></a>
+<span class="sourceLineNo">265</span>     *  ports of this actor. By default, each<a name="line.265"></a>
+<span class="sourceLineNo">266</span>     *  output port is assumed to have a dependency on all input<a name="line.266"></a>
+<span class="sourceLineNo">267</span>     *  ports. Since this is the assumed behavior, this method<a name="line.267"></a>
+<span class="sourceLineNo">268</span>     *  does nothing by default.<a name="line.268"></a>
+<span class="sourceLineNo">269</span>     *<a name="line.269"></a>
+<span class="sourceLineNo">270</span>     *  However, for subclasses such as {@link ptolemy.actor.lib.TimeDelay},<a name="line.270"></a>
+<span class="sourceLineNo">271</span>     *  where output ports depend on input ports with a time delay,<a name="line.271"></a>
+<span class="sourceLineNo">272</span>     *  this method should be overridden.<a name="line.272"></a>
+<span class="sourceLineNo">273</span>     *  Protected method _declareDelayDependency() should be used<a name="line.273"></a>
+<span class="sourceLineNo">274</span>     *  to declare dependency between input and output ports for<a name="line.274"></a>
+<span class="sourceLineNo">275</span>     *  this actor.<a name="line.275"></a>
+<span class="sourceLineNo">276</span>     *  @exception IllegalActionException Not thrown in this base<a name="line.276"></a>
+<span class="sourceLineNo">277</span>     *  class, derived classes should throw this exception if the<a name="line.277"></a>
+<span class="sourceLineNo">278</span>     *  delay dependency cannot be computed.<a name="line.278"></a>
+<span class="sourceLineNo">279</span>     *  @see #getCausalityInterface()<a name="line.279"></a>
+<span class="sourceLineNo">280</span>     *  @see #_declareDelayDependency(IOPort, IOPort, double)<a name="line.280"></a>
+<span class="sourceLineNo">281</span>     */<a name="line.281"></a>
+<span class="sourceLineNo">282</span>    public void declareDelayDependency() throws IllegalActionException {<a name="line.282"></a>
+<span class="sourceLineNo">283</span>    }<a name="line.283"></a>
+<span class="sourceLineNo">284</span><a name="line.284"></a>
+<span class="sourceLineNo">285</span>    /** Do nothing.  Derived classes override this method to define their<a name="line.285"></a>
+<span class="sourceLineNo">286</span>     *  primary run-time action.<a name="line.286"></a>
+<span class="sourceLineNo">287</span>     *<a name="line.287"></a>
+<span class="sourceLineNo">288</span>     *  @exception IllegalActionException Not thrown in this base class.<a name="line.288"></a>
+<span class="sourceLineNo">289</span>     */<a name="line.289"></a>
+<span class="sourceLineNo">290</span>    @Override<a name="line.290"></a>
+<span class="sourceLineNo">291</span>    public void fire() throws IllegalActionException {<a name="line.291"></a>
+<span class="sourceLineNo">292</span>        if (_debugging) {<a name="line.292"></a>
+<span class="sourceLineNo">293</span>            _debug("Called fire()");<a name="line.293"></a>
+<span class="sourceLineNo">294</span>        }<a name="line.294"></a>
+<span class="sourceLineNo">295</span>    }<a name="line.295"></a>
+<span class="sourceLineNo">296</span><a name="line.296"></a>
+<span class="sourceLineNo">297</span>    /** Return a causality interface for this actor. In this base class,<a name="line.297"></a>
+<span class="sourceLineNo">298</span>     *  we return an instance of {@link DefaultCausalityInterface}<a name="line.298"></a>
+<span class="sourceLineNo">299</span>     *  with the dependency type given by the director, or with a BooleanDependency<a name="line.299"></a>
+<span class="sourceLineNo">300</span>     *  if there is no director.<a name="line.300"></a>
+<span class="sourceLineNo">301</span>     *  This declares that all output ports of the actor depend on all input<a name="line.301"></a>
+<span class="sourceLineNo">302</span>     *  ports, unless the actor calls<a name="line.302"></a>
+<span class="sourceLineNo">303</span>     *  {@link #removeDependency(IOPort, IOPort)} or<a name="line.303"></a>
+<span class="sourceLineNo">304</span>     *  {@link #_declareDelayDependency(IOPort, IOPort, double)}.<a name="line.304"></a>
+<span class="sourceLineNo">305</span>     *  If this is called multiple times, the same object is returned each<a name="line.305"></a>
+<span class="sourceLineNo">306</span>     *  time unless the director has changed since the last call, in<a name="line.306"></a>
+<span class="sourceLineNo">307</span>     *  which case a new object is returned.<a name="line.307"></a>
+<span class="sourceLineNo">308</span>     *  @return A representation of the dependencies between input ports<a name="line.308"></a>
+<span class="sourceLineNo">309</span>     *   and output ports.<a name="line.309"></a>
+<span class="sourceLineNo">310</span>     * @exception IllegalActionException Thrown in subclasses if causality<a name="line.310"></a>
+<span class="sourceLineNo">311</span>     * interface cannot be computed.<a name="line.311"></a>
+<span class="sourceLineNo">312</span>     */<a name="line.312"></a>
+<span class="sourceLineNo">313</span>    @Override<a name="line.313"></a>
+<span class="sourceLineNo">314</span>    public CausalityInterface getCausalityInterface()<a name="line.314"></a>
+<span class="sourceLineNo">315</span>            throws IllegalActionException {<a name="line.315"></a>
+<span class="sourceLineNo">316</span>        Director director = getDirector();<a name="line.316"></a>
+<span class="sourceLineNo">317</span>        if (_causalityInterface != null<a name="line.317"></a>
+<span class="sourceLineNo">318</span>                &amp;&amp; _causalityInterfaceDirector == director) {<a name="line.318"></a>
+<span class="sourceLineNo">319</span>            return _causalityInterface;<a name="line.319"></a>
+<span class="sourceLineNo">320</span>        }<a name="line.320"></a>
+<span class="sourceLineNo">321</span>        Dependency defaultDependency = BooleanDependency.OTIMES_IDENTITY;<a name="line.321"></a>
+<span class="sourceLineNo">322</span>        if (director != null) {<a name="line.322"></a>
+<span class="sourceLineNo">323</span>            defaultDependency = director.defaultDependency();<a name="line.323"></a>
+<span class="sourceLineNo">324</span>        }<a name="line.324"></a>
+<span class="sourceLineNo">325</span>        _causalityInterface = new DefaultCausalityInterface(this,<a name="line.325"></a>
+<span class="sourceLineNo">326</span>                defaultDependency);<a name="line.326"></a>
+<span class="sourceLineNo">327</span>        _causalityInterfaceDirector = director;<a name="line.327"></a>
+<span class="sourceLineNo">328</span>        return _causalityInterface;<a name="line.328"></a>
+<span class="sourceLineNo">329</span>    }<a name="line.329"></a>
+<span class="sourceLineNo">330</span><a name="line.330"></a>
+<span class="sourceLineNo">331</span>    /** Return the director responsible for the execution of this actor.<a name="line.331"></a>
+<span class="sourceLineNo">332</span>     *  In this class, this is always the executive director.<a name="line.332"></a>
+<span class="sourceLineNo">333</span>     *  Return null if either there is no container or the container has no<a name="line.333"></a>
+<span class="sourceLineNo">334</span>     *  director.<a name="line.334"></a>
+<span class="sourceLineNo">335</span>     *  @return The director that invokes this actor.<a name="line.335"></a>
+<span class="sourceLineNo">336</span>     */<a name="line.336"></a>
+<span class="sourceLineNo">337</span>    @Override<a name="line.337"></a>
+<span class="sourceLineNo">338</span>    public Director getDirector() {<a name="line.338"></a>
+<span class="sourceLineNo">339</span>        Nameable container = getContainer();<a name="line.339"></a>
+<span class="sourceLineNo">340</span><a name="line.340"></a>
+<span class="sourceLineNo">341</span>        if (container instanceof Actor) {<a name="line.341"></a>
+<span class="sourceLineNo">342</span>            return ((Actor) container).getDirector();<a name="line.342"></a>
+<span class="sourceLineNo">343</span>        }<a name="line.343"></a>
+<span class="sourceLineNo">344</span><a name="line.344"></a>
+<span class="sourceLineNo">345</span>        return null;<a name="line.345"></a>
+<span class="sourceLineNo">346</span>    }<a name="line.346"></a>
+<span class="sourceLineNo">347</span><a name="line.347"></a>
+<span class="sourceLineNo">348</span>    /** Return the executive director (same as getDirector()).<a name="line.348"></a>
+<span class="sourceLineNo">349</span>     *  @return The executive director.<a name="line.349"></a>
+<span class="sourceLineNo">350</span>     */<a name="line.350"></a>
+<span class="sourceLineNo">351</span>    @Override<a name="line.351"></a>
+<span class="sourceLineNo">352</span>    public Director getExecutiveDirector() {<a name="line.352"></a>
+<span class="sourceLineNo">353</span>        return getDirector();<a name="line.353"></a>
+<span class="sourceLineNo">354</span>    }<a name="line.354"></a>
+<span class="sourceLineNo">355</span><a name="line.355"></a>
+<span class="sourceLineNo">356</span>    /** Return the Manager responsible for execution of this actor,<a name="line.356"></a>
+<span class="sourceLineNo">357</span>     *  if there is one. Otherwise, return null.<a name="line.357"></a>
+<span class="sourceLineNo">358</span>     *  @return The manager.<a name="line.358"></a>
+<span class="sourceLineNo">359</span>     */<a name="line.359"></a>
+<span class="sourceLineNo">360</span>    @Override<a name="line.360"></a>
+<span class="sourceLineNo">361</span>    public Manager getManager() {<a name="line.361"></a>
+<span class="sourceLineNo">362</span>        try {<a name="line.362"></a>
+<span class="sourceLineNo">363</span>            _workspace.getReadAccess();<a name="line.363"></a>
+<span class="sourceLineNo">364</span><a name="line.364"></a>
+<span class="sourceLineNo">365</span>            Nameable container = getContainer();<a name="line.365"></a>
+<span class="sourceLineNo">366</span><a name="line.366"></a>
+<span class="sourceLineNo">367</span>            if (container instanceof Actor) {<a name="line.367"></a>
+<span class="sourceLineNo">368</span>                return ((Actor) container).getManager();<a name="line.368"></a>
+<span class="sourceLineNo">369</span>            }<a name="line.369"></a>
+<span class="sourceLineNo">370</span><a name="line.370"></a>
+<span class="sourceLineNo">371</span>            return null;<a name="line.371"></a>
+<span class="sourceLineNo">372</span>        } finally {<a name="line.372"></a>
+<span class="sourceLineNo">373</span>            _workspace.doneReading();<a name="line.373"></a>
+<span class="sourceLineNo">374</span>        }<a name="line.374"></a>
+<span class="sourceLineNo">375</span>    }<a name="line.375"></a>
+<span class="sourceLineNo">376</span><a name="line.376"></a>
+<span class="sourceLineNo">377</span>    /** Initialize this actor.  Derived classes override this method<a name="line.377"></a>
+<span class="sourceLineNo">378</span>     *  to perform actions that should occur once at the beginning of<a name="line.378"></a>
+<span class="sourceLineNo">379</span>     *  an execution, but after type resolution.  Derived classes can<a name="line.379"></a>
+<span class="sourceLineNo">380</span>     *  produce output data and schedule events.<a name="line.380"></a>
+<span class="sourceLineNo">381</span>     *<a name="line.381"></a>
+<span class="sourceLineNo">382</span>     *  @exception IllegalActionException If a derived class throws it.<a name="line.382"></a>
+<span class="sourceLineNo">383</span>     */<a name="line.383"></a>
+<span class="sourceLineNo">384</span>    @Override<a name="line.384"></a>
+<span class="sourceLineNo">385</span>    public void initialize() throws IllegalActionException {<a name="line.385"></a>
+<span class="sourceLineNo">386</span>        if (_debugging) {<a name="line.386"></a>
+<span class="sourceLineNo">387</span>            _debug("Called initialize()");<a name="line.387"></a>
+<span class="sourceLineNo">388</span>        }<a name="line.388"></a>
+<span class="sourceLineNo">389</span>        // First invoke initializable methods.<a name="line.389"></a>
+<span class="sourceLineNo">390</span>        if (_initializables != null) {<a name="line.390"></a>
+<span class="sourceLineNo">391</span>            for (Initializable initializable : _initializables) {<a name="line.391"></a>
+<span class="sourceLineNo">392</span>                initializable.initialize();<a name="line.392"></a>
+<span class="sourceLineNo">393</span>            }<a name="line.393"></a>
+<span class="sourceLineNo">394</span>        }<a name="line.394"></a>
+<span class="sourceLineNo">395</span>    }<a name="line.395"></a>
+<span class="sourceLineNo">396</span><a name="line.396"></a>
+<span class="sourceLineNo">397</span>    /** List all the input ports.<a name="line.397"></a>
+<span class="sourceLineNo">398</span>     *  This method is read-synchronized on the workspace.<a name="line.398"></a>
+<span class="sourceLineNo">399</span>     *  @return A list of input IOPort objects.<a name="line.399"></a>
+<span class="sourceLineNo">400</span>     */<a name="line.400"></a>
+<span class="sourceLineNo">401</span>    @Override<a name="line.401"></a>
+<span class="sourceLineNo">402</span>    public List&lt;T&gt; inputPortList() {<a name="line.402"></a>
+<span class="sourceLineNo">403</span>        if (_inputPortsVersion != _workspace.getVersion()) {<a name="line.403"></a>
+<span class="sourceLineNo">404</span>            try {<a name="line.404"></a>
+<span class="sourceLineNo">405</span>                _workspace.getReadAccess();<a name="line.405"></a>
+<span class="sourceLineNo">406</span><a name="line.406"></a>
+<span class="sourceLineNo">407</span>                // Update the cache.<a name="line.407"></a>
+<span class="sourceLineNo">408</span>                List&lt;T&gt; inputPorts = new LinkedList&lt;T&gt;();<a name="line.408"></a>
+<span class="sourceLineNo">409</span>                Iterator&lt;T&gt; ports = portList().iterator();<a name="line.409"></a>
+<span class="sourceLineNo">410</span><a name="line.410"></a>
+<span class="sourceLineNo">411</span>                while (ports.hasNext()) {<a name="line.411"></a>
+<span class="sourceLineNo">412</span>                    T p = ports.next();<a name="line.412"></a>
+<span class="sourceLineNo">413</span><a name="line.413"></a>
+<span class="sourceLineNo">414</span>                    if (p.isInput()) {<a name="line.414"></a>
+<span class="sourceLineNo">415</span>                        inputPorts.add(p);<a name="line.415"></a>
+<span class="sourceLineNo">416</span>                    }<a name="line.416"></a>
+<span class="sourceLineNo">417</span>                }<a name="line.417"></a>
+<span class="sourceLineNo">418</span><a name="line.418"></a>
+<span class="sourceLineNo">419</span>                // Create an arrayList, since the cache will not be<a name="line.419"></a>
+<span class="sourceLineNo">420</span>                // modified.  This reduces memory usage.<a name="line.420"></a>
+<span class="sourceLineNo">421</span>                _cachedInputPorts = new ArrayList&lt;T&gt;(inputPorts);<a name="line.421"></a>
+<span class="sourceLineNo">422</span>                _inputPortsVersion = _workspace.getVersion();<a name="line.422"></a>
+<span class="sourceLineNo">423</span>            } finally {<a name="line.423"></a>
+<span class="sourceLineNo">424</span>                _workspace.doneReading();<a name="line.424"></a>
+<span class="sourceLineNo">425</span>            }<a name="line.425"></a>
+<span class="sourceLineNo">426</span>        }<a name="line.426"></a>
+<span class="sourceLineNo">427</span><a name="line.427"></a>
+<span class="sourceLineNo">428</span>        return _cachedInputPorts;<a name="line.428"></a>
+<span class="sourceLineNo">429</span>    }<a name="line.429"></a>
+<span class="sourceLineNo">430</span><a name="line.430"></a>
+<span class="sourceLineNo">431</span>    /** Return true. Most actors are written so that the prefire() and<a name="line.431"></a>
+<span class="sourceLineNo">432</span>     *  fire() methods do not change the state of the actor. Hence, for<a name="line.432"></a>
+<span class="sourceLineNo">433</span>     *  convenience, this base class by default returns true. An actor<a name="line.433"></a>
+<span class="sourceLineNo">434</span>     *  that does change state in prefire() or fire() must override<a name="line.434"></a>
+<span class="sourceLineNo">435</span>     *  this method to return false.<a name="line.435"></a>
+<span class="sourceLineNo">436</span>     *<a name="line.436"></a>
+<span class="sourceLineNo">437</span>     *  @return True.<a name="line.437"></a>
+<span class="sourceLineNo">438</span>     */<a name="line.438"></a>
+<span class="sourceLineNo">439</span>    @Override<a name="line.439"></a>
+<span class="sourceLineNo">440</span>    public boolean isFireFunctional() {<a name="line.440"></a>
+<span class="sourceLineNo">441</span>        return true;<a name="line.441"></a>
+<span class="sourceLineNo">442</span>    }<a name="line.442"></a>
+<span class="sourceLineNo">443</span><a name="line.443"></a>
+<span class="sourceLineNo">444</span>    /** Return true unless all input ports have non-empty default values.<a name="line.444"></a>
+<span class="sourceLineNo">445</span>     *  By default, most actors do not<a name="line.445"></a>
+<span class="sourceLineNo">446</span>     *  check their inputs to see whether they are known.  They assume<a name="line.446"></a>
+<span class="sourceLineNo">447</span>     *  they are known.<a name="line.447"></a>
+<span class="sourceLineNo">448</span>     *  Note that ParameterPort is not treated as having a default value<a name="line.448"></a>
+<span class="sourceLineNo">449</span>     *  because such ports might be used in a context where it is important<a name="line.449"></a>
+<span class="sourceLineNo">450</span>     *  to supply them with an input value.<a name="line.450"></a>
+<span class="sourceLineNo">451</span>     *  @return False if this actor does not need to be provided with<a name="line.451"></a>
+<span class="sourceLineNo">452</span>     *   inputs to fire.<a name="line.452"></a>
+<span class="sourceLineNo">453</span>     *  @exception IllegalActionException If the defaultValue expression<a name="line.453"></a>
+<span class="sourceLineNo">454</span>     *   cannot be evaluated for an input port.<a name="line.454"></a>
+<span class="sourceLineNo">455</span>     */<a name="line.455"></a>
+<span class="sourceLineNo">456</span>    @Override<a name="line.456"></a>
+<span class="sourceLineNo">457</span>    public boolean isStrict() throws IllegalActionException {<a name="line.457"></a>
+<span class="sourceLineNo">458</span>        for (IOPort port : inputPortList()) {<a name="line.458"></a>
+<span class="sourceLineNo">459</span>            if (port.defaultValue.getToken() == null) {<a name="line.459"></a>
+<span class="sourceLineNo">460</span>                // Found an input port with no default value.<a name="line.460"></a>
+<span class="sourceLineNo">461</span>                return true;<a name="line.461"></a>
+<span class="sourceLineNo">462</span>            }<a name="line.462"></a>
+<span class="sourceLineNo">463</span>        }<a name="line.463"></a>
+<span class="sourceLineNo">464</span>        // If all input ports have default values, then report<a name="line.464"></a>
+<span class="sourceLineNo">465</span>        // that this actor is non-strict.<a name="line.465"></a>
+<span class="sourceLineNo">466</span>        // NOTE: If the actor has no input ports at all, this<a name="line.466"></a>
+<span class="sourceLineNo">467</span>        // returns false, indicating the actor is non-strict.<a name="line.467"></a>
+<span class="sourceLineNo">468</span>        return false;<a name="line.468"></a>
+<span class="sourceLineNo">469</span>    }<a name="line.469"></a>
+<span class="sourceLineNo">470</span><a name="line.470"></a>
+<span class="sourceLineNo">471</span>    /** Invoke a specified number of iterations of the actor. An<a name="line.471"></a>
+<span class="sourceLineNo">472</span>     *  iteration is equivalent to invoking prefire(), fire(), and<a name="line.472"></a>
+<span class="sourceLineNo">473</span>     *  postfire(), in that order. In an iteration, if prefire()<a name="line.473"></a>
+<span class="sourceLineNo">474</span>     *  returns true, then fire() will be called once, followed by<a name="line.474"></a>
+<span class="sourceLineNo">475</span>     *  postfire(). Otherwise, if prefire() returns false, fire()<a name="line.475"></a>
+<span class="sourceLineNo">476</span>     *  and postfire() are not invoked, and this method returns<a name="line.476"></a>
+<span class="sourceLineNo">477</span>     *  NOT_READY. If postfire() returns false, then no more<a name="line.477"></a>
+<span class="sourceLineNo">478</span>     *  iterations are invoked, and this method returns STOP_ITERATING.<a name="line.478"></a>
+<span class="sourceLineNo">479</span>     *  Otherwise, it returns COMPLETED. If stop() is called while<a name="line.479"></a>
+<span class="sourceLineNo">480</span>     *  this is executing, then cease executing and return STOP_ITERATING.<a name="line.480"></a>
+<span class="sourceLineNo">481</span>     *  &lt;p&gt;<a name="line.481"></a>
+<span class="sourceLineNo">482</span>     *  This base class method actually invokes prefire(), fire(),<a name="line.482"></a>
+<span class="sourceLineNo">483</span>     *  and postfire(), as described above, but a derived class<a name="line.483"></a>
+<span class="sourceLineNo">484</span>     *  may override the method to execute more efficient code.<a name="line.484"></a>
+<span class="sourceLineNo">485</span>     *<a name="line.485"></a>
+<span class="sourceLineNo">486</span>     *  @param count The number of iterations to perform.<a name="line.486"></a>
+<span class="sourceLineNo">487</span>     *  @return NOT_READY, STOP_ITERATING, or COMPLETED.<a name="line.487"></a>
+<span class="sourceLineNo">488</span>     *  @exception IllegalActionException If iterating is not<a name="line.488"></a>
+<span class="sourceLineNo">489</span>     *   permitted, or if prefire(), fire(), or postfire() throw it.<a name="line.489"></a>
+<span class="sourceLineNo">490</span>     */<a name="line.490"></a>
+<span class="sourceLineNo">491</span>    @Override<a name="line.491"></a>
+<span class="sourceLineNo">492</span>    public int iterate(int count) throws IllegalActionException {<a name="line.492"></a>
+<span class="sourceLineNo">493</span>        if (_debugging) {<a name="line.493"></a>
+<span class="sourceLineNo">494</span>            _debug("Called iterate(" + count + ")");<a name="line.494"></a>
+<span class="sourceLineNo">495</span>        }<a name="line.495"></a>
+<span class="sourceLineNo">496</span><a name="line.496"></a>
+<span class="sourceLineNo">497</span>        int n = 0;<a name="line.497"></a>
+<span class="sourceLineNo">498</span><a name="line.498"></a>
+<span class="sourceLineNo">499</span>        try {<a name="line.499"></a>
+<span class="sourceLineNo">500</span>            while (n++ &lt; count &amp;&amp; !_stopRequested) {<a name="line.500"></a>
+<span class="sourceLineNo">501</span>                if (_notifyingActorFiring) {<a name="line.501"></a>
+<span class="sourceLineNo">502</span>                    _actorFiring(FiringEvent.BEFORE_PREFIRE, n);<a name="line.502"></a>
+<span class="sourceLineNo">503</span>                }<a name="line.503"></a>
+<span class="sourceLineNo">504</span><a name="line.504"></a>
+<span class="sourceLineNo">505</span>                if (prefire()) {<a name="line.505"></a>
+<span class="sourceLineNo">506</span><a name="line.506"></a>
+<span class="sourceLineNo">507</span>                    if (_notifyingActorFiring) {<a name="line.507"></a>
+<span class="sourceLineNo">508</span>                        _actorFiring(FiringEvent.AFTER_PREFIRE, n);<a name="line.508"></a>
+<span class="sourceLineNo">509</span>                        _actorFiring(FiringEvent.BEFORE_FIRE, n);<a name="line.509"></a>
+<span class="sourceLineNo">510</span>                    }<a name="line.510"></a>
+<span class="sourceLineNo">511</span><a name="line.511"></a>
+<span class="sourceLineNo">512</span>                    fire();<a name="line.512"></a>
+<span class="sourceLineNo">513</span>                    if (_notifyingActorFiring) {<a name="line.513"></a>
+<span class="sourceLineNo">514</span>                        _actorFiring(FiringEvent.AFTER_FIRE, n);<a name="line.514"></a>
+<span class="sourceLineNo">515</span>                        _actorFiring(FiringEvent.BEFORE_POSTFIRE, n);<a name="line.515"></a>
+<span class="sourceLineNo">516</span>                    }<a name="line.516"></a>
+<span class="sourceLineNo">517</span><a name="line.517"></a>
+<span class="sourceLineNo">518</span>                    boolean pfire = postfire();<a name="line.518"></a>
+<span class="sourceLineNo">519</span><a name="line.519"></a>
+<span class="sourceLineNo">520</span>                    if (_notifyingActorFiring) {<a name="line.520"></a>
+<span class="sourceLineNo">521</span>                        _actorFiring(FiringEvent.AFTER_POSTFIRE, n);<a name="line.521"></a>
+<span class="sourceLineNo">522</span>                    }<a name="line.522"></a>
+<span class="sourceLineNo">523</span><a name="line.523"></a>
+<span class="sourceLineNo">524</span>                    if (!pfire) {<a name="line.524"></a>
+<span class="sourceLineNo">525</span>                        return Executable.STOP_ITERATING;<a name="line.525"></a>
+<span class="sourceLineNo">526</span>                    }<a name="line.526"></a>
+<span class="sourceLineNo">527</span><a name="line.527"></a>
+<span class="sourceLineNo">528</span>                } else {<a name="line.528"></a>
+<span class="sourceLineNo">529</span><a name="line.529"></a>
+<span class="sourceLineNo">530</span>                    if (_notifyingActorFiring) {<a name="line.530"></a>
+<span class="sourceLineNo">531</span>                        _actorFiring(FiringEvent.AFTER_PREFIRE, n);<a name="line.531"></a>
+<span class="sourceLineNo">532</span>                    }<a name="line.532"></a>
+<span class="sourceLineNo">533</span>                    return Executable.NOT_READY;<a name="line.533"></a>
+<span class="sourceLineNo">534</span>                }<a name="line.534"></a>
+<span class="sourceLineNo">535</span>            }<a name="line.535"></a>
+<span class="sourceLineNo">536</span><a name="line.536"></a>
+<span class="sourceLineNo">537</span>            if (_stopRequested) {<a name="line.537"></a>
+<span class="sourceLineNo">538</span>                return Executable.STOP_ITERATING;<a name="line.538"></a>
+<span class="sourceLineNo">539</span>            } else {<a name="line.539"></a>
+<span class="sourceLineNo">540</span>                return Executable.COMPLETED;<a name="line.540"></a>
+<span class="sourceLineNo">541</span>            }<a name="line.541"></a>
+<span class="sourceLineNo">542</span>        } catch (IllegalActionException ex) {<a name="line.542"></a>
+<span class="sourceLineNo">543</span>            // When fire() calls certain Token methods such as<a name="line.543"></a>
+<span class="sourceLineNo">544</span>            // add() or multiply() and the method throws an<a name="line.544"></a>
+<span class="sourceLineNo">545</span>            // exception, the exception will not include the<a name="line.545"></a>
+<span class="sourceLineNo">546</span>            // associated Nameable.  So, we catch exceptions<a name="line.546"></a>
+<span class="sourceLineNo">547</span>            // here and if the associated Nameable is null,<a name="line.547"></a>
+<span class="sourceLineNo">548</span>            // we rethrow with this as the Nameable.<a name="line.548"></a>
+<span class="sourceLineNo">549</span><a name="line.549"></a>
+<span class="sourceLineNo">550</span>            if (ex.getNameable1() == null) {<a name="line.550"></a>
+<span class="sourceLineNo">551</span>                throw new IllegalActionException(this, ex, ex.getMessage());<a name="line.551"></a>
+<span class="sourceLineNo">552</span>            } else {<a name="line.552"></a>
+<span class="sourceLineNo">553</span>                throw ex;<a name="line.553"></a>
+<span class="sourceLineNo">554</span>            }<a name="line.554"></a>
+<span class="sourceLineNo">555</span><a name="line.555"></a>
+<span class="sourceLineNo">556</span>        }<a name="line.556"></a>
+<span class="sourceLineNo">557</span><a name="line.557"></a>
+<span class="sourceLineNo">558</span>    }<a name="line.558"></a>
+<span class="sourceLineNo">559</span><a name="line.559"></a>
+<span class="sourceLineNo">560</span>    /** Create a new IOPort with the specified name.<a name="line.560"></a>
+<span class="sourceLineNo">561</span>     *  The container of the port is set to this actor.<a name="line.561"></a>
+<span class="sourceLineNo">562</span>     *  This method is write-synchronized on the workspace.<a name="line.562"></a>
+<span class="sourceLineNo">563</span>     *  Normally this method is not called directly by actor code.<a name="line.563"></a>
+<span class="sourceLineNo">564</span>     *  Instead, a change request should be queued with the director.<a name="line.564"></a>
+<span class="sourceLineNo">565</span>     *<a name="line.565"></a>
+<span class="sourceLineNo">566</span>     *  @param name The name for the new port.<a name="line.566"></a>
+<span class="sourceLineNo">567</span>     *  @return The new port.<a name="line.567"></a>
+<span class="sourceLineNo">568</span>     *  @exception NameDuplicationException If this actor already has a port<a name="line.568"></a>
+<span class="sourceLineNo">569</span>     *   with the specified name.<a name="line.569"></a>
+<span class="sourceLineNo">570</span>     *  @see ptolemy.kernel.util.Workspace#getWriteAccess()<a name="line.570"></a>
+<span class="sourceLineNo">571</span>     */<a name="line.571"></a>
+<span class="sourceLineNo">572</span>    @Override<a name="line.572"></a>
+<span class="sourceLineNo">573</span>    public Port newPort(String name) throws NameDuplicationException {<a name="line.573"></a>
+<span class="sourceLineNo">574</span>        try {<a name="line.574"></a>
+<span class="sourceLineNo">575</span>            _workspace.getWriteAccess();<a name="line.575"></a>
+<span class="sourceLineNo">576</span><a name="line.576"></a>
+<span class="sourceLineNo">577</span>            IOPort port = new IOPort(this, name);<a name="line.577"></a>
+<span class="sourceLineNo">578</span>            return port;<a name="line.578"></a>
+<span class="sourceLineNo">579</span>        } catch (IllegalActionException ex) {<a name="line.579"></a>
+<span class="sourceLineNo">580</span>            // This exception should not occur, so we throw a runtime<a name="line.580"></a>
+<span class="sourceLineNo">581</span>            // exception.<a name="line.581"></a>
+<span class="sourceLineNo">582</span>            throw new InternalErrorException(this, ex, null);<a name="line.582"></a>
+<span class="sourceLineNo">583</span>        } finally {<a name="line.583"></a>
+<span class="sourceLineNo">584</span>            _workspace.doneWriting();<a name="line.584"></a>
+<span class="sourceLineNo">585</span>        }<a name="line.585"></a>
+<span class="sourceLineNo">586</span>    }<a name="line.586"></a>
+<span class="sourceLineNo">587</span><a name="line.587"></a>
+<span class="sourceLineNo">588</span>    /** Return a new receiver of a type compatible with the director.<a name="line.588"></a>
+<span class="sourceLineNo">589</span>     *  Derived classes may further specialize this to return a receiver<a name="line.589"></a>
+<span class="sourceLineNo">590</span>     *  specialized to the particular actor.<a name="line.590"></a>
+<span class="sourceLineNo">591</span>     *<a name="line.591"></a>
+<span class="sourceLineNo">592</span>     *  @exception IllegalActionException If there is no director.<a name="line.592"></a>
+<span class="sourceLineNo">593</span>     *  @return A new object implementing the Receiver interface.<a name="line.593"></a>
+<span class="sourceLineNo">594</span>     */<a name="line.594"></a>
+<span class="sourceLineNo">595</span>    @Override<a name="line.595"></a>
+<span class="sourceLineNo">596</span>    public Receiver newReceiver() throws IllegalActionException {<a name="line.596"></a>
+<span class="sourceLineNo">597</span>        Director director = getDirector();<a name="line.597"></a>
+<span class="sourceLineNo">598</span><a name="line.598"></a>
+<span class="sourceLineNo">599</span>        if (director == null) {<a name="line.599"></a>
+<span class="sourceLineNo">600</span>            throw new IllegalActionException(this,<a name="line.600"></a>
+<span class="sourceLineNo">601</span>                    "Cannot create a receiver without a director.");<a name="line.601"></a>
+<span class="sourceLineNo">602</span>        }<a name="line.602"></a>
+<span class="sourceLineNo">603</span><a name="line.603"></a>
+<span class="sourceLineNo">604</span>        return director.newReceiver();<a name="line.604"></a>
+<span class="sourceLineNo">605</span>    }<a name="line.605"></a>
+<span class="sourceLineNo">606</span><a name="line.606"></a>
+<span class="sourceLineNo">607</span>    /** List the output ports.<a name="line.607"></a>
+<span class="sourceLineNo">608</span>     *  This method is read-synchronized on the workspace.<a name="line.608"></a>
+<span class="sourceLineNo">609</span>     *  @return A list of output IOPort objects.<a name="line.609"></a>
+<span class="sourceLineNo">610</span>     */<a name="line.610"></a>
+<span class="sourceLineNo">611</span>    @Override<a name="line.611"></a>
+<span class="sourceLineNo">612</span>    public List&lt;T&gt; outputPortList() {<a name="line.612"></a>
+<span class="sourceLineNo">613</span>        if (_outputPortsVersion != _workspace.getVersion()) {<a name="line.613"></a>
+<span class="sourceLineNo">614</span>            try {<a name="line.614"></a>
+<span class="sourceLineNo">615</span>                _workspace.getReadAccess();<a name="line.615"></a>
+<span class="sourceLineNo">616</span><a name="line.616"></a>
+<span class="sourceLineNo">617</span>                List&lt;T&gt; outputPorts = new LinkedList&lt;T&gt;();<a name="line.617"></a>
+<span class="sourceLineNo">618</span>                Iterator&lt;T&gt; ports = portList().iterator();<a name="line.618"></a>
+<span class="sourceLineNo">619</span><a name="line.619"></a>
+<span class="sourceLineNo">620</span>                while (ports.hasNext()) {<a name="line.620"></a>
+<span class="sourceLineNo">621</span>                    T p = ports.next();<a name="line.621"></a>
+<span class="sourceLineNo">622</span><a name="line.622"></a>
+<span class="sourceLineNo">623</span>                    if (p.isOutput()) {<a name="line.623"></a>
+<span class="sourceLineNo">624</span>                        outputPorts.add(p);<a name="line.624"></a>
+<span class="sourceLineNo">625</span>                    }<a name="line.625"></a>
+<span class="sourceLineNo">626</span>                }<a name="line.626"></a>
+<span class="sourceLineNo">627</span><a name="line.627"></a>
+<span class="sourceLineNo">628</span>                // Create an arrayList, since the cache will not be<a name="line.628"></a>
+<span class="sourceLineNo">629</span>                // modified.  This reduces memory usage.<a name="line.629"></a>
+<span class="sourceLineNo">630</span>                _cachedOutputPorts = new ArrayList&lt;T&gt;(outputPorts);<a name="line.630"></a>
+<span class="sourceLineNo">631</span>                _outputPortsVersion = _workspace.getVersion();<a name="line.631"></a>
+<span class="sourceLineNo">632</span>            } finally {<a name="line.632"></a>
+<span class="sourceLineNo">633</span>                _workspace.doneReading();<a name="line.633"></a>
+<span class="sourceLineNo">634</span>            }<a name="line.634"></a>
+<span class="sourceLineNo">635</span>        }<a name="line.635"></a>
+<span class="sourceLineNo">636</span><a name="line.636"></a>
+<span class="sourceLineNo">637</span>        return _cachedOutputPorts;<a name="line.637"></a>
+<span class="sourceLineNo">638</span>    }<a name="line.638"></a>
+<span class="sourceLineNo">639</span><a name="line.639"></a>
+<span class="sourceLineNo">640</span>    /** Return true, unless stop() has been called, in which case,<a name="line.640"></a>
+<span class="sourceLineNo">641</span>     *  return false.  Derived classes override this method to define<a name="line.641"></a>
+<span class="sourceLineNo">642</span>     *  operations to be performed at the end of every iteration of<a name="line.642"></a>
+<span class="sourceLineNo">643</span>     *  its execution, after one invocation of the prefire() method<a name="line.643"></a>
+<span class="sourceLineNo">644</span>     *  and any number of invocations of the fire() method.<a name="line.644"></a>
+<span class="sourceLineNo">645</span>     *  This method typically wraps up an iteration, which may<a name="line.645"></a>
+<span class="sourceLineNo">646</span>     *  involve updating local state.  In derived classes,<a name="line.646"></a>
+<span class="sourceLineNo">647</span>     *  this method returns false to indicate that this actor should not<a name="line.647"></a>
+<span class="sourceLineNo">648</span>     *  be fired again.<a name="line.648"></a>
+<span class="sourceLineNo">649</span>     *<a name="line.649"></a>
+<span class="sourceLineNo">650</span>     *  @return True if execution can continue into the next iteration.<a name="line.650"></a>
+<span class="sourceLineNo">651</span>     *  @exception IllegalActionException Not thrown in this base class.<a name="line.651"></a>
+<span class="sourceLineNo">652</span>     */<a name="line.652"></a>
+<span class="sourceLineNo">653</span>    @Override<a name="line.653"></a>
+<span class="sourceLineNo">654</span>    public boolean postfire() throws IllegalActionException {<a name="line.654"></a>
+<span class="sourceLineNo">655</span>        if (_debugging) {<a name="line.655"></a>
+<span class="sourceLineNo">656</span>            _debug("Called postfire()");<a name="line.656"></a>
+<span class="sourceLineNo">657</span>        }<a name="line.657"></a>
+<span class="sourceLineNo">658</span><a name="line.658"></a>
+<span class="sourceLineNo">659</span>        return !_stopRequested;<a name="line.659"></a>
+<span class="sourceLineNo">660</span>    }<a name="line.660"></a>
+<span class="sourceLineNo">661</span><a name="line.661"></a>
+<span class="sourceLineNo">662</span>    /** Return true. Derived classes override this method to define<a name="line.662"></a>
+<span class="sourceLineNo">663</span>     *  operations to be performed at the beginning of every iteration<a name="line.663"></a>
+<span class="sourceLineNo">664</span>     *  of its execution, prior the invocation of the fire() method.<a name="line.664"></a>
+<span class="sourceLineNo">665</span>     *  Derived classes may also use it to check preconditions for an<a name="line.665"></a>
+<span class="sourceLineNo">666</span>     *  iteration, if there are any.<a name="line.666"></a>
+<span class="sourceLineNo">667</span>     *<a name="line.667"></a>
+<span class="sourceLineNo">668</span>     *  @return True if this actor is ready for firing, false otherwise.<a name="line.668"></a>
+<span class="sourceLineNo">669</span>     *  @exception IllegalActionException Not thrown in this base class.<a name="line.669"></a>
+<span class="sourceLineNo">670</span>     */<a name="line.670"></a>
+<span class="sourceLineNo">671</span>    @Override<a name="line.671"></a>
+<span class="sourceLineNo">672</span>    public boolean prefire() throws IllegalActionException {<a name="line.672"></a>
+<span class="sourceLineNo">673</span>        if (_debugging) {<a name="line.673"></a>
+<span class="sourceLineNo">674</span>            _debug("Called prefire()");<a name="line.674"></a>
+<span class="sourceLineNo">675</span>        }<a name="line.675"></a>
+<span class="sourceLineNo">676</span><a name="line.676"></a>
+<span class="sourceLineNo">677</span>        return true;<a name="line.677"></a>
+<span class="sourceLineNo">678</span>    }<a name="line.678"></a>
+<span class="sourceLineNo">679</span><a name="line.679"></a>
+<span class="sourceLineNo">680</span>    /** Create receivers and declare delay dependencies. Derived classes<a name="line.680"></a>
+<span class="sourceLineNo">681</span>     *  can override this method to perform additional initialization<a name="line.681"></a>
+<span class="sourceLineNo">682</span>     *  functions, but they should call this base class methods or<a name="line.682"></a>
+<span class="sourceLineNo">683</span>     *  create the receivers themselves.<a name="line.683"></a>
+<span class="sourceLineNo">684</span>     *  This method gets executed exactly once prior to any other<a name="line.684"></a>
+<span class="sourceLineNo">685</span>     *  action methods.  It cannot produce output data since type<a name="line.685"></a>
+<span class="sourceLineNo">686</span>     *  resolution is typically not yet done. It also gets invoked<a name="line.686"></a>
+<span class="sourceLineNo">687</span>     *  prior to any static scheduling that might occur in the domain,<a name="line.687"></a>
+<span class="sourceLineNo">688</span>     *  so it can change scheduling information.<a name="line.688"></a>
+<span class="sourceLineNo">689</span>     *  @exception IllegalActionException Not thrown in this base class.<a name="line.689"></a>
+<span class="sourceLineNo">690</span>     */<a name="line.690"></a>
+<span class="sourceLineNo">691</span>    @Override<a name="line.691"></a>
+<span class="sourceLineNo">692</span>    public void preinitialize() throws IllegalActionException {<a name="line.692"></a>
+<span class="sourceLineNo">693</span>        if (_debugging) {<a name="line.693"></a>
+<span class="sourceLineNo">694</span>            _debug("Called preinitialize()");<a name="line.694"></a>
+<span class="sourceLineNo">695</span>        }<a name="line.695"></a>
+<span class="sourceLineNo">696</span><a name="line.696"></a>
+<span class="sourceLineNo">697</span>        _stopRequested = false;<a name="line.697"></a>
+<span class="sourceLineNo">698</span><a name="line.698"></a>
+<span class="sourceLineNo">699</span>        // For backward compatibility, in case there are actors<a name="line.699"></a>
+<span class="sourceLineNo">700</span>        // that override pruneDependencies() to alter their<a name="line.700"></a>
+<span class="sourceLineNo">701</span>        // causality interface, call it here.<a name="line.701"></a>
+<span class="sourceLineNo">702</span>        pruneDependencies();<a name="line.702"></a>
+<span class="sourceLineNo">703</span><a name="line.703"></a>
+<span class="sourceLineNo">704</span>        // Declare dependency for this actor. For actors such as<a name="line.704"></a>
+<span class="sourceLineNo">705</span>        // TimeDelay, the delay dependency between input and output<a name="line.705"></a>
+<span class="sourceLineNo">706</span>        // ports are declared.<a name="line.706"></a>
+<span class="sourceLineNo">707</span>        declareDelayDependency();<a name="line.707"></a>
+<span class="sourceLineNo">708</span><a name="line.708"></a>
+<span class="sourceLineNo">709</span>        // First invoke initializable methods.<a name="line.709"></a>
+<span class="sourceLineNo">710</span>        if (_initializables != null) {<a name="line.710"></a>
+<span class="sourceLineNo">711</span>            for (Initializable initializable : _initializables) {<a name="line.711"></a>
+<span class="sourceLineNo">712</span>                initializable.preinitialize();<a name="line.712"></a>
+<span class="sourceLineNo">713</span>            }<a name="line.713"></a>
+<span class="sourceLineNo">714</span>        }<a name="line.714"></a>
+<span class="sourceLineNo">715</span>    }<a name="line.715"></a>
+<span class="sourceLineNo">716</span><a name="line.716"></a>
+<span class="sourceLineNo">717</span>    /** Prune the dependency declarations, which by default state<a name="line.717"></a>
+<span class="sourceLineNo">718</span>     *  that each output port depends on all input ports in a firing.<a name="line.718"></a>
+<span class="sourceLineNo">719</span>     *  This base class does no pruning, but subclasses that have<a name="line.719"></a>
+<span class="sourceLineNo">720</span>     *  output ports that do not depend on input ports should override<a name="line.720"></a>
+<span class="sourceLineNo">721</span>     *  this method to prune the dependencies.  To declare that an<a name="line.721"></a>
+<span class="sourceLineNo">722</span>     *  output port does not depend on an input port, subclasses<a name="line.722"></a>
+<span class="sourceLineNo">723</span>     *  can call removeDependency(input, output) rather than implementing<a name="line.723"></a>
+<span class="sourceLineNo">724</span>     *  a specialized {@link CausalityInterface}, at least for the simple<a name="line.724"></a>
+<span class="sourceLineNo">725</span>     *  cases where output ports do not depend at all on input ports.<a name="line.725"></a>
+<span class="sourceLineNo">726</span>     *  @exception IllegalActionException Thrown by subclasses if causality interface<a name="line.726"></a>
+<span class="sourceLineNo">727</span>     *  cannot be computed.<a name="line.727"></a>
+<span class="sourceLineNo">728</span>     *  @see #removeDependency(IOPort, IOPort)<a name="line.728"></a>
+<span class="sourceLineNo">729</span>     *  @see #getCausalityInterface()<a name="line.729"></a>
+<span class="sourceLineNo">730</span>     *  @deprecated There is no need to override this method anymore.<a name="line.730"></a>
+<span class="sourceLineNo">731</span>     *   Just call removeDependency() in preinitialize().<a name="line.731"></a>
+<span class="sourceLineNo">732</span>     */<a name="line.732"></a>
+<span class="sourceLineNo">733</span>    @Deprecated<a name="line.733"></a>
+<span class="sourceLineNo">734</span>    public void pruneDependencies() throws IllegalActionException {<a name="line.734"></a>
+<span class="sourceLineNo">735</span>    }<a name="line.735"></a>
+<span class="sourceLineNo">736</span><a name="line.736"></a>
+<span class="sourceLineNo">737</span>    /** Record a firing event.<a name="line.737"></a>
+<span class="sourceLineNo">738</span>     *  @param type The firing event to be recorded.<a name="line.738"></a>
+<span class="sourceLineNo">739</span>     */<a name="line.739"></a>
+<span class="sourceLineNo">740</span>    @Override<a name="line.740"></a>
+<span class="sourceLineNo">741</span>    public void recordFiring(FiringEvent.FiringEventType type) {<a name="line.741"></a>
+<span class="sourceLineNo">742</span>        _actorFiring(new FiringEvent(null, this, type));<a name="line.742"></a>
+<span class="sourceLineNo">743</span>    }<a name="line.743"></a>
+<span class="sourceLineNo">744</span><a name="line.744"></a>
+<span class="sourceLineNo">745</span>    /** Unregister an actor firing listener.  If the specified listener has not<a name="line.745"></a>
+<span class="sourceLineNo">746</span>     *  been previously registered, then do nothing.  Note that this method<a name="line.746"></a>
+<span class="sourceLineNo">747</span>     *  is basically the same as removeDebugListener in the class NamedObj.<a name="line.747"></a>
+<span class="sourceLineNo">748</span>     *  @param listener The listener to remove from the list of listeners<a name="line.748"></a>
+<span class="sourceLineNo">749</span>     *   to which actor firing messages are sent.<a name="line.749"></a>
+<span class="sourceLineNo">750</span>     *  @see #addActorFiringListener(ActorFiringListener)<a name="line.750"></a>
+<span class="sourceLineNo">751</span>     */<a name="line.751"></a>
+<span class="sourceLineNo">752</span>    @Override<a name="line.752"></a>
+<span class="sourceLineNo">753</span>    public void removeActorFiringListener(ActorFiringListener listener) {<a name="line.753"></a>
+<span class="sourceLineNo">754</span>        if (_actorFiringListeners == null) {<a name="line.754"></a>
+<span class="sourceLineNo">755</span>            return;<a name="line.755"></a>
+<span class="sourceLineNo">756</span>        }<a name="line.756"></a>
+<span class="sourceLineNo">757</span><a name="line.757"></a>
+<span class="sourceLineNo">758</span>        // NOTE: This has to be synchronized to prevent<a name="line.758"></a>
+<span class="sourceLineNo">759</span>        // concurrent modification exceptions.<a name="line.759"></a>
+<span class="sourceLineNo">760</span>        synchronized (_actorFiringListeners) {<a name="line.760"></a>
+<span class="sourceLineNo">761</span>            _actorFiringListeners.remove(listener);<a name="line.761"></a>
+<span class="sourceLineNo">762</span><a name="line.762"></a>
+<span class="sourceLineNo">763</span>            if (_actorFiringListeners.size() == 0) {<a name="line.763"></a>
+<span class="sourceLineNo">764</span>                _notifyingActorFiring = false;<a name="line.764"></a>
+<span class="sourceLineNo">765</span>            }<a name="line.765"></a>
+<span class="sourceLineNo">766</span><a name="line.766"></a>
+<span class="sourceLineNo">767</span>            return;<a name="line.767"></a>
+<span class="sourceLineNo">768</span>        }<a name="line.768"></a>
+<span class="sourceLineNo">769</span>    }<a name="line.769"></a>
+<span class="sourceLineNo">770</span><a name="line.770"></a>
+<span class="sourceLineNo">771</span>    /** Remove the dependency that the specified output port has,<a name="line.771"></a>
+<span class="sourceLineNo">772</span>     *  by default, on the specified input port. By default, each<a name="line.772"></a>
+<span class="sourceLineNo">773</span>     *  output port is assumed to have a dependency on all input<a name="line.773"></a>
+<span class="sourceLineNo">774</span>     *  ports. Subclasses can call this method in preinitialize()<a name="line.774"></a>
+<span class="sourceLineNo">775</span>     *  instead of implementing a custom {@link CausalityInterface}<a name="line.775"></a>
+<span class="sourceLineNo">776</span>     *  for the simple cases where output ports do not depend<a name="line.776"></a>
+<span class="sourceLineNo">777</span>     *  at all on certain input ports.<a name="line.777"></a>
+<span class="sourceLineNo">778</span>     *  There should be one such call for each<a name="line.778"></a>
+<span class="sourceLineNo">779</span>     *  input, output pair that does not have a dependency.<a name="line.779"></a>
+<span class="sourceLineNo">780</span>     *  @param input The input port.<a name="line.780"></a>
+<span class="sourceLineNo">781</span>     *  @param output The output port that does not depend on the<a name="line.781"></a>
+<span class="sourceLineNo">782</span>     *   input port.<a name="line.782"></a>
+<span class="sourceLineNo">783</span>     *  @exception IllegalActionException If causality interface<a name="line.783"></a>
+<span class="sourceLineNo">784</span>     *  cannot be computed.<a name="line.784"></a>
+<span class="sourceLineNo">785</span>     *  @see #getCausalityInterface()<a name="line.785"></a>
+<span class="sourceLineNo">786</span>     */<a name="line.786"></a>
+<span class="sourceLineNo">787</span>    public void removeDependency(IOPort input, IOPort output)<a name="line.787"></a>
+<span class="sourceLineNo">788</span>            throws IllegalActionException {<a name="line.788"></a>
+<span class="sourceLineNo">789</span>        CausalityInterface causality = getCausalityInterface();<a name="line.789"></a>
+<span class="sourceLineNo">790</span>        causality.removeDependency(input, output);<a name="line.790"></a>
+<span class="sourceLineNo">791</span>    }<a name="line.791"></a>
+<span class="sourceLineNo">792</span><a name="line.792"></a>
+<span class="sourceLineNo">793</span>    /** Remove the specified object from the list of objects whose<a name="line.793"></a>
+<span class="sourceLineNo">794</span>     *  preinitialize(), initialize(), and wrapup()<a name="line.794"></a>
+<span class="sourceLineNo">795</span>     *  methods should be invoked upon invocation of the corresponding<a name="line.795"></a>
+<span class="sourceLineNo">796</span>     *  methods of this object. If the specified object is not<a name="line.796"></a>
+<span class="sourceLineNo">797</span>     *  on the list, do nothing.<a name="line.797"></a>
+<span class="sourceLineNo">798</span>     *  @param initializable The object whose methods should no longer be invoked.<a name="line.798"></a>
+<span class="sourceLineNo">799</span>     *  @see #addInitializable(Initializable)<a name="line.799"></a>
+<span class="sourceLineNo">800</span>     *  @see ptolemy.actor.CompositeActor#removePiggyback(Executable)<a name="line.800"></a>
+<span class="sourceLineNo">801</span>     */<a name="line.801"></a>
+<span class="sourceLineNo">802</span>    @Override<a name="line.802"></a>
+<span class="sourceLineNo">803</span>    public void removeInitializable(Initializable initializable) {<a name="line.803"></a>
+<span class="sourceLineNo">804</span>        if (_initializables != null) {<a name="line.804"></a>
+<span class="sourceLineNo">805</span>            _initializables.remove(initializable);<a name="line.805"></a>
+<span class="sourceLineNo">806</span>            if (_initializables.size() == 0) {<a name="line.806"></a>
+<span class="sourceLineNo">807</span>                _initializables = null;<a name="line.807"></a>
+<span class="sourceLineNo">808</span>            }<a name="line.808"></a>
+<span class="sourceLineNo">809</span>        }<a name="line.809"></a>
+<span class="sourceLineNo">810</span>    }<a name="line.810"></a>
+<span class="sourceLineNo">811</span><a name="line.811"></a>
+<span class="sourceLineNo">812</span>    /** Override the base class to invalidate the schedule and<a name="line.812"></a>
+<span class="sourceLineNo">813</span>     *  resolved types of the director.<a name="line.813"></a>
+<span class="sourceLineNo">814</span>     *  @param container The proposed container.<a name="line.814"></a>
+<span class="sourceLineNo">815</span>     *  @exception IllegalActionException If the action would result in a<a name="line.815"></a>
+<span class="sourceLineNo">816</span>     *   recursive containment structure, or if<a name="line.816"></a>
+<span class="sourceLineNo">817</span>     *   this entity and container are not in the same workspace.<a name="line.817"></a>
+<span class="sourceLineNo">818</span>     *  @exception NameDuplicationException If the container already has<a name="line.818"></a>
+<span class="sourceLineNo">819</span>     *   an entity with the name of this entity.<a name="line.819"></a>
+<span class="sourceLineNo">820</span>     */<a name="line.820"></a>
+<span class="sourceLineNo">821</span>    @Override<a name="line.821"></a>
+<span class="sourceLineNo">822</span>    public void setContainer(CompositeEntity container)<a name="line.822"></a>
+<span class="sourceLineNo">823</span>            throws IllegalActionException, NameDuplicationException {<a name="line.823"></a>
+<span class="sourceLineNo">824</span>        // Invalidate the schedule and type resolution of the old director.<a name="line.824"></a>
+<span class="sourceLineNo">825</span>        Director oldDirector = getDirector();<a name="line.825"></a>
+<span class="sourceLineNo">826</span><a name="line.826"></a>
+<span class="sourceLineNo">827</span>        if (oldDirector != null) {<a name="line.827"></a>
+<span class="sourceLineNo">828</span>            oldDirector.invalidateSchedule();<a name="line.828"></a>
+<span class="sourceLineNo">829</span>            oldDirector.invalidateResolvedTypes();<a name="line.829"></a>
+<span class="sourceLineNo">830</span>        }<a name="line.830"></a>
+<span class="sourceLineNo">831</span><a name="line.831"></a>
+<span class="sourceLineNo">832</span>        super.setContainer(container);<a name="line.832"></a>
+<span class="sourceLineNo">833</span><a name="line.833"></a>
+<span class="sourceLineNo">834</span>        Director director = getDirector();<a name="line.834"></a>
+<span class="sourceLineNo">835</span><a name="line.835"></a>
+<span class="sourceLineNo">836</span>        // Invalidate the schedule and type resolution of the new director.<a name="line.836"></a>
+<span class="sourceLineNo">837</span>        if (director != null) {<a name="line.837"></a>
+<span class="sourceLineNo">838</span>            director.invalidateSchedule();<a name="line.838"></a>
+<span class="sourceLineNo">839</span>            director.invalidateResolvedTypes();<a name="line.839"></a>
+<span class="sourceLineNo">840</span>        }<a name="line.840"></a>
+<span class="sourceLineNo">841</span>    }<a name="line.841"></a>
+<span class="sourceLineNo">842</span><a name="line.842"></a>
+<span class="sourceLineNo">843</span>    /** Request that execution of the current iteration stop as soon<a name="line.843"></a>
+<span class="sourceLineNo">844</span>     *  as possible.  In this base class, we set a flag indicating that<a name="line.844"></a>
+<span class="sourceLineNo">845</span>     *  this request has been made (the protected variable _stopRequested).<a name="line.845"></a>
+<span class="sourceLineNo">846</span>     *  Most atomic actors have bounded fire() methods,<a name="line.846"></a>
+<span class="sourceLineNo">847</span>     *  so they can simply ignore this.  Atomic actors with unbounded<a name="line.847"></a>
+<span class="sourceLineNo">848</span>     *  fire() methods should react by saving their state<a name="line.848"></a>
+<span class="sourceLineNo">849</span>     *  and returning from the fire() method at the next convenient<a name="line.849"></a>
+<span class="sourceLineNo">850</span>     *  point.<a name="line.850"></a>
+<span class="sourceLineNo">851</span>     */<a name="line.851"></a>
+<span class="sourceLineNo">852</span>    @Override<a name="line.852"></a>
+<span class="sourceLineNo">853</span>    public void stop() {<a name="line.853"></a>
+<span class="sourceLineNo">854</span>        _stopRequested = true;<a name="line.854"></a>
+<span class="sourceLineNo">855</span><a name="line.855"></a>
+<span class="sourceLineNo">856</span>        if (_debugging) {<a name="line.856"></a>
+<span class="sourceLineNo">857</span>            _debug("Called stop()");<a name="line.857"></a>
+<span class="sourceLineNo">858</span>        }<a name="line.858"></a>
+<span class="sourceLineNo">859</span>    }<a name="line.859"></a>
+<span class="sourceLineNo">860</span><a name="line.860"></a>
+<span class="sourceLineNo">861</span>    /** Request that execution of the current iteration complete.<a name="line.861"></a>
+<span class="sourceLineNo">862</span>     *  Most atomic actors have bounded fire() methods, so they<a name="line.862"></a>
+<span class="sourceLineNo">863</span>     *  can simply ignore this.  Atomic actors with unbounded fire()<a name="line.863"></a>
+<span class="sourceLineNo">864</span>     *  methods should override this method to save their state and<a name="line.864"></a>
+<span class="sourceLineNo">865</span>     *  return from the fire() method at the next convenient point.<a name="line.865"></a>
+<span class="sourceLineNo">866</span>     *  In this base class, do nothing.<a name="line.866"></a>
+<span class="sourceLineNo">867</span>     */<a name="line.867"></a>
+<span class="sourceLineNo">868</span>    @Override<a name="line.868"></a>
+<span class="sourceLineNo">869</span>    public void stopFire() {<a name="line.869"></a>
+<span class="sourceLineNo">870</span>        if (_debugging) {<a name="line.870"></a>
+<span class="sourceLineNo">871</span>            _debug("Called stopFire()");<a name="line.871"></a>
+<span class="sourceLineNo">872</span>        }<a name="line.872"></a>
+<span class="sourceLineNo">873</span>    }<a name="line.873"></a>
+<span class="sourceLineNo">874</span><a name="line.874"></a>
+<span class="sourceLineNo">875</span>    /** Terminate execution immediately.  In this base class, call stop().<a name="line.875"></a>
+<span class="sourceLineNo">876</span>     *  Derived classes may wish to do something more aggressive, such<a name="line.876"></a>
+<span class="sourceLineNo">877</span>     *  as terminating any threads they have started.<a name="line.877"></a>
+<span class="sourceLineNo">878</span>     */<a name="line.878"></a>
+<span class="sourceLineNo">879</span>    @Override<a name="line.879"></a>
+<span class="sourceLineNo">880</span>    public void terminate() {<a name="line.880"></a>
+<span class="sourceLineNo">881</span>        if (_debugging) {<a name="line.881"></a>
+<span class="sourceLineNo">882</span>            _debug("Called terminate()");<a name="line.882"></a>
+<span class="sourceLineNo">883</span>        }<a name="line.883"></a>
+<span class="sourceLineNo">884</span><a name="line.884"></a>
+<span class="sourceLineNo">885</span>        stop();<a name="line.885"></a>
+<span class="sourceLineNo">886</span>    }<a name="line.886"></a>
+<span class="sourceLineNo">887</span><a name="line.887"></a>
+<span class="sourceLineNo">888</span>    /** Do nothing except invoke the wrapup() methods of any<a name="line.888"></a>
+<span class="sourceLineNo">889</span>     *  objects that have been registered with addInitializable().<a name="line.889"></a>
+<span class="sourceLineNo">890</span>     *  Derived classes override this method to define<a name="line.890"></a>
+<span class="sourceLineNo">891</span>     *  operations to be performed exactly once at the end of a complete<a name="line.891"></a>
+<span class="sourceLineNo">892</span>     *  execution of an application.  It typically closes<a name="line.892"></a>
+<span class="sourceLineNo">893</span>     *  files, displays final results, etc.<a name="line.893"></a>
+<span class="sourceLineNo">894</span>     *<a name="line.894"></a>
+<span class="sourceLineNo">895</span>     *  @exception IllegalActionException Not thrown in this base class.<a name="line.895"></a>
+<span class="sourceLineNo">896</span>     */<a name="line.896"></a>
+<span class="sourceLineNo">897</span>    @Override<a name="line.897"></a>
+<span class="sourceLineNo">898</span>    public void wrapup() throws IllegalActionException {<a name="line.898"></a>
+<span class="sourceLineNo">899</span>        if (_debugging) {<a name="line.899"></a>
+<span class="sourceLineNo">900</span>            _debug("Called wrapup()");<a name="line.900"></a>
+<span class="sourceLineNo">901</span>        }<a name="line.901"></a>
+<span class="sourceLineNo">902</span>        // Invoke initializable methods.<a name="line.902"></a>
+<span class="sourceLineNo">903</span>        if (_initializables != null) {<a name="line.903"></a>
+<span class="sourceLineNo">904</span>            for (Initializable initializable : _initializables) {<a name="line.904"></a>
+<span class="sourceLineNo">905</span>                initializable.wrapup();<a name="line.905"></a>
+<span class="sourceLineNo">906</span>            }<a name="line.906"></a>
+<span class="sourceLineNo">907</span>        }<a name="line.907"></a>
+<span class="sourceLineNo">908</span>    }<a name="line.908"></a>
+<span class="sourceLineNo">909</span><a name="line.909"></a>
+<span class="sourceLineNo">910</span>    ///////////////////////////////////////////////////////////////////<a name="line.910"></a>
+<span class="sourceLineNo">911</span>    ////                         protected methods                 ////<a name="line.911"></a>
+<span class="sourceLineNo">912</span><a name="line.912"></a>
+<span class="sourceLineNo">913</span>    /** Send an actor firing event to all actor firing listeners that<a name="line.913"></a>
+<span class="sourceLineNo">914</span>     *  have registered with this actor.<a name="line.914"></a>
+<span class="sourceLineNo">915</span>     *  @param event The event.<a name="line.915"></a>
+<span class="sourceLineNo">916</span>     */<a name="line.916"></a>
+<span class="sourceLineNo">917</span>    protected final void _actorFiring(FiringEvent event) {<a name="line.917"></a>
+<span class="sourceLineNo">918</span>        if (_notifyingActorFiring) {<a name="line.918"></a>
+<span class="sourceLineNo">919</span>            Iterator&lt;ActorFiringListener&gt; listeners = _actorFiringListeners<a name="line.919"></a>
+<span class="sourceLineNo">920</span>                    .iterator();<a name="line.920"></a>
+<span class="sourceLineNo">921</span><a name="line.921"></a>
+<span class="sourceLineNo">922</span>            while (listeners.hasNext()) {<a name="line.922"></a>
+<span class="sourceLineNo">923</span>                listeners.next().firingEvent(event);<a name="line.923"></a>
+<span class="sourceLineNo">924</span>            }<a name="line.924"></a>
+<span class="sourceLineNo">925</span>        }<a name="line.925"></a>
+<span class="sourceLineNo">926</span>    }<a name="line.926"></a>
+<span class="sourceLineNo">927</span><a name="line.927"></a>
+<span class="sourceLineNo">928</span>    /** Send an actor firing event type to all actor firing listeners that<a name="line.928"></a>
+<span class="sourceLineNo">929</span>     *  have registered with this actor.<a name="line.929"></a>
+<span class="sourceLineNo">930</span>     *  @param type The type.<a name="line.930"></a>
+<span class="sourceLineNo">931</span>     *  @param multiplicity The multiplicity of the firing, that is,<a name="line.931"></a>
+<span class="sourceLineNo">932</span>     *  the number of times the firing will occur or has occurred.<a name="line.932"></a>
+<span class="sourceLineNo">933</span>     */<a name="line.933"></a>
+<span class="sourceLineNo">934</span>    protected final void _actorFiring(FiringEvent.FiringEventType type,<a name="line.934"></a>
+<span class="sourceLineNo">935</span>            int multiplicity) {<a name="line.935"></a>
+<span class="sourceLineNo">936</span>        _actorFiring(new FiringEvent(null, this, type, multiplicity));<a name="line.936"></a>
+<span class="sourceLineNo">937</span>    }<a name="line.937"></a>
+<span class="sourceLineNo">938</span><a name="line.938"></a>
+<span class="sourceLineNo">939</span>    /** Set the dependency between the input and output port to<a name="line.939"></a>
+<span class="sourceLineNo">940</span>     *  represent a time delay with the specified value.<a name="line.940"></a>
+<span class="sourceLineNo">941</span>     *  Subclasses can call this method<a name="line.941"></a>
+<span class="sourceLineNo">942</span>     *  instead of implementing a custom {@link CausalityInterface}<a name="line.942"></a>
+<span class="sourceLineNo">943</span>     *  for the cases where output ports depend on input ports with<a name="line.943"></a>
+<span class="sourceLineNo">944</span>     *  a time delay.<a name="line.944"></a>
+<span class="sourceLineNo">945</span>     *  If the time delay is 0.0, this method nonetheless<a name="line.945"></a>
+<span class="sourceLineNo">946</span>     *  assumes that the output port does not (immediately) depend on<a name="line.946"></a>
+<span class="sourceLineNo">947</span>     *  the input port (this amounts to a superdense time delay of<a name="line.947"></a>
+<span class="sourceLineNo">948</span>     *  (0.0, 1)). There should be one such call for each<a name="line.948"></a>
+<span class="sourceLineNo">949</span>     *  input, output pair that does not have a dependency.<a name="line.949"></a>
+<span class="sourceLineNo">950</span>     *  @param input The input port.<a name="line.950"></a>
+<span class="sourceLineNo">951</span>     *  @param output The output port with a time delay dependency on the<a name="line.951"></a>
+<span class="sourceLineNo">952</span>     *   input port.<a name="line.952"></a>
+<span class="sourceLineNo">953</span>     *  @param timeDelay The time delay.<a name="line.953"></a>
+<span class="sourceLineNo">954</span>     *  @exception IllegalActionException If causality interface<a name="line.954"></a>
+<span class="sourceLineNo">955</span>     *  cannot be computed.<a name="line.955"></a>
+<span class="sourceLineNo">956</span>     *  @see #getCausalityInterface()<a name="line.956"></a>
+<span class="sourceLineNo">957</span>     */<a name="line.957"></a>
+<span class="sourceLineNo">958</span>    protected void _declareDelayDependency(IOPort input, IOPort output,<a name="line.958"></a>
+<span class="sourceLineNo">959</span>            double timeDelay) throws IllegalActionException {<a name="line.959"></a>
+<span class="sourceLineNo">960</span>        CausalityInterface causality = getCausalityInterface();<a name="line.960"></a>
+<span class="sourceLineNo">961</span>        if (timeDelay == 0.0) {<a name="line.961"></a>
+<span class="sourceLineNo">962</span>            causality.declareDelayDependency(input, output, 0.0, 1);<a name="line.962"></a>
+<span class="sourceLineNo">963</span>        } else {<a name="line.963"></a>
+<span class="sourceLineNo">964</span>            causality.declareDelayDependency(input, output, timeDelay, 0);<a name="line.964"></a>
+<span class="sourceLineNo">965</span>        }<a name="line.965"></a>
+<span class="sourceLineNo">966</span>    }<a name="line.966"></a>
+<span class="sourceLineNo">967</span><a name="line.967"></a>
+<span class="sourceLineNo">968</span>    ///////////////////////////////////////////////////////////////////<a name="line.968"></a>
+<span class="sourceLineNo">969</span>    ////                         protected variables               ////<a name="line.969"></a>
+<span class="sourceLineNo">970</span><a name="line.970"></a>
+<span class="sourceLineNo">971</span>    /** The list of ActorFiringListeners registered with this object.<a name="line.971"></a>
+<span class="sourceLineNo">972</span>     *  NOTE: Because of the way we synchronize on this object, it should<a name="line.972"></a>
+<span class="sourceLineNo">973</span>     *  never be reset to null after the first list is created.<a name="line.973"></a>
+<span class="sourceLineNo">974</span>     */<a name="line.974"></a>
+<span class="sourceLineNo">975</span>    protected LinkedList&lt;ActorFiringListener&gt; _actorFiringListeners = null;<a name="line.975"></a>
+<span class="sourceLineNo">976</span><a name="line.976"></a>
+<span class="sourceLineNo">977</span>    /** List of objects whose (pre)initialize() and wrapup() methods<a name="line.977"></a>
+<span class="sourceLineNo">978</span>     *  should be slaved to these.<a name="line.978"></a>
+<span class="sourceLineNo">979</span>     */<a name="line.979"></a>
+<span class="sourceLineNo">980</span>    protected transient Set&lt;Initializable&gt; _initializables;<a name="line.980"></a>
+<span class="sourceLineNo">981</span><a name="line.981"></a>
+<span class="sourceLineNo">982</span>    /** Flag that is true if there are actor firing listeners. */<a name="line.982"></a>
+<span class="sourceLineNo">983</span>    protected boolean _notifyingActorFiring = false;<a name="line.983"></a>
+<span class="sourceLineNo">984</span><a name="line.984"></a>
+<span class="sourceLineNo">985</span>    /** Indicator that a stop has been requested by a call to stop(). */<a name="line.985"></a>
+<span class="sourceLineNo">986</span>    protected boolean _stopRequested = false;<a name="line.986"></a>
+<span class="sourceLineNo">987</span><a name="line.987"></a>
+<span class="sourceLineNo">988</span>    ///////////////////////////////////////////////////////////////////<a name="line.988"></a>
+<span class="sourceLineNo">989</span>    ////                         private variables                 ////<a name="line.989"></a>
+<span class="sourceLineNo">990</span>    // Cached lists of input and output ports.<a name="line.990"></a>
+<span class="sourceLineNo">991</span>    private transient long _inputPortsVersion = -1;<a name="line.991"></a>
+<span class="sourceLineNo">992</span><a name="line.992"></a>
+<span class="sourceLineNo">993</span>    private transient List&lt;T&gt; _cachedInputPorts;<a name="line.993"></a>
+<span class="sourceLineNo">994</span><a name="line.994"></a>
+<span class="sourceLineNo">995</span>    private transient long _outputPortsVersion = -1;<a name="line.995"></a>
+<span class="sourceLineNo">996</span><a name="line.996"></a>
+<span class="sourceLineNo">997</span>    private transient List&lt;T&gt; _cachedOutputPorts;<a name="line.997"></a>
+<span class="sourceLineNo">998</span><a name="line.998"></a>
+<span class="sourceLineNo">999</span>    /** The causality interface, if it has been created. */<a name="line.999"></a>
+<span class="sourceLineNo">1000</span>    private CausalityInterface _causalityInterface;<a name="line.1000"></a>
+<span class="sourceLineNo">1001</span><a name="line.1001"></a>
+<span class="sourceLineNo">1002</span>    /** The director for which the causality interface was created. */<a name="line.1002"></a>
+<span class="sourceLineNo">1003</span>    private Director _causalityInterfaceDirector;<a name="line.1003"></a>
+<span class="sourceLineNo">1004</span><a name="line.1004"></a>
+<span class="sourceLineNo">1005</span>    /** Record of the workspace version the last time receivers were created. */<a name="line.1005"></a>
+<span class="sourceLineNo">1006</span>    private long _receiversVersion = -1;<a name="line.1006"></a>
+<span class="sourceLineNo">1007</span>}<a name="line.1007"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

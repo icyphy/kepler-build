@@ -1,0 +1,251 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../../stylesheet.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>/*<a name="line.1"></a>
+<span class="sourceLineNo">002</span> * Copyright (c) 2004-2010 The Regents of the University of California.<a name="line.2"></a>
+<span class="sourceLineNo">003</span> * All rights reserved.<a name="line.3"></a>
+<span class="sourceLineNo">004</span> *<a name="line.4"></a>
+<span class="sourceLineNo">005</span> * '$Author: welker $'<a name="line.5"></a>
+<span class="sourceLineNo">006</span> * '$Date: 2010-05-05 22:21:26 -0700 (Wed, 05 May 2010) $' <a name="line.6"></a>
+<span class="sourceLineNo">007</span> * '$Revision: 24234 $'<a name="line.7"></a>
+<span class="sourceLineNo">008</span> * <a name="line.8"></a>
+<span class="sourceLineNo">009</span> * Permission is hereby granted, without written agreement and without<a name="line.9"></a>
+<span class="sourceLineNo">010</span> * license or royalty fees, to use, copy, modify, and distribute this<a name="line.10"></a>
+<span class="sourceLineNo">011</span> * software and its documentation for any purpose, provided that the above<a name="line.11"></a>
+<span class="sourceLineNo">012</span> * copyright notice and the following two paragraphs appear in all copies<a name="line.12"></a>
+<span class="sourceLineNo">013</span> * of this software.<a name="line.13"></a>
+<span class="sourceLineNo">014</span> *<a name="line.14"></a>
+<span class="sourceLineNo">015</span> * IN NO EVENT SHALL THE UNIVERSITY OF CALIFORNIA BE LIABLE TO ANY PARTY<a name="line.15"></a>
+<span class="sourceLineNo">016</span> * FOR DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES<a name="line.16"></a>
+<span class="sourceLineNo">017</span> * ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION, EVEN IF<a name="line.17"></a>
+<span class="sourceLineNo">018</span> * THE UNIVERSITY OF CALIFORNIA HAS BEEN ADVISED OF THE POSSIBILITY OF<a name="line.18"></a>
+<span class="sourceLineNo">019</span> * SUCH DAMAGE.<a name="line.19"></a>
+<span class="sourceLineNo">020</span> *<a name="line.20"></a>
+<span class="sourceLineNo">021</span> * THE UNIVERSITY OF CALIFORNIA SPECIFICALLY DISCLAIMS ANY WARRANTIES,<a name="line.21"></a>
+<span class="sourceLineNo">022</span> * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF<a name="line.22"></a>
+<span class="sourceLineNo">023</span> * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE<a name="line.23"></a>
+<span class="sourceLineNo">024</span> * PROVIDED HEREUNDER IS ON AN "AS IS" BASIS, AND THE UNIVERSITY OF<a name="line.24"></a>
+<span class="sourceLineNo">025</span> * CALIFORNIA HAS NO OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT, UPDATES,<a name="line.25"></a>
+<span class="sourceLineNo">026</span> * ENHANCEMENTS, OR MODIFICATIONS.<a name="line.26"></a>
+<span class="sourceLineNo">027</span> *<a name="line.27"></a>
+<span class="sourceLineNo">028</span> */<a name="line.28"></a>
+<span class="sourceLineNo">029</span><a name="line.29"></a>
+<span class="sourceLineNo">030</span>package org.cipres.kepler;<a name="line.30"></a>
+<span class="sourceLineNo">031</span><a name="line.31"></a>
+<span class="sourceLineNo">032</span>import org.cipres.kepler.registry.ActorInfo;<a name="line.32"></a>
+<span class="sourceLineNo">033</span>import org.cipres.kepler.registry.CipresKeplerRegistry;<a name="line.33"></a>
+<span class="sourceLineNo">034</span>import org.cipres.kepler.registry.Globals;<a name="line.34"></a>
+<span class="sourceLineNo">035</span><a name="line.35"></a>
+<span class="sourceLineNo">036</span>import ptolemy.actor.TypedIOPort;<a name="line.36"></a>
+<span class="sourceLineNo">037</span>import ptolemy.data.StringToken;<a name="line.37"></a>
+<span class="sourceLineNo">038</span>import ptolemy.data.type.BaseType;<a name="line.38"></a>
+<span class="sourceLineNo">039</span>import ptolemy.kernel.CompositeEntity;<a name="line.39"></a>
+<span class="sourceLineNo">040</span>import ptolemy.kernel.util.IllegalActionException;<a name="line.40"></a>
+<span class="sourceLineNo">041</span>import ptolemy.kernel.util.NameDuplicationException;<a name="line.41"></a>
+<span class="sourceLineNo">042</span><a name="line.42"></a>
+<span class="sourceLineNo">043</span>//////////////////////////////////////////////////////////////////////////<a name="line.43"></a>
+<span class="sourceLineNo">044</span>////AlignmentEditor_Seaview<a name="line.44"></a>
+<span class="sourceLineNo">045</span>/**<a name="line.45"></a>
+<span class="sourceLineNo">046</span> * Given an alignment, the AlignmentEditor_Seaview actor displays the alignment<a name="line.46"></a>
+<span class="sourceLineNo">047</span> * in the seaview window and facititates the user to edit the alignment. Note1:<a name="line.47"></a>
+<span class="sourceLineNo">048</span> * since Seaview is an application running as another process with GUI, the<a name="line.48"></a>
+<span class="sourceLineNo">049</span> * actor cannot monitor the execution of Seaview. Thus the actor cannot know<a name="line.49"></a>
+<span class="sourceLineNo">050</span> * when the user finishes the work and closes the Seaview window. Note2: Here we<a name="line.50"></a>
+<span class="sourceLineNo">051</span> * assume the user will save the output file with the same name as the input<a name="line.51"></a>
+<span class="sourceLineNo">052</span> * file. We will change it to let the user input the output file name in the<a name="line.52"></a>
+<span class="sourceLineNo">053</span> * future.<a name="line.53"></a>
+<span class="sourceLineNo">054</span> * <a name="line.54"></a>
+<span class="sourceLineNo">055</span> * @author Zhijie Guan, Alex Borchers<a name="line.55"></a>
+<span class="sourceLineNo">056</span> * @version $Id: AlignmentEditor_Seaview.java 24234 2010-05-06 05:21:26Z welker $<a name="line.56"></a>
+<span class="sourceLineNo">057</span> */<a name="line.57"></a>
+<span class="sourceLineNo">058</span><a name="line.58"></a>
+<span class="sourceLineNo">059</span>public class AlignmentEditor_Seaview extends JRunCIPRes {<a name="line.59"></a>
+<span class="sourceLineNo">060</span><a name="line.60"></a>
+<span class="sourceLineNo">061</span>        /**<a name="line.61"></a>
+<span class="sourceLineNo">062</span>         * Construct a AlignmentEditor_Seaview actor with the given container and<a name="line.62"></a>
+<span class="sourceLineNo">063</span>         * name.<a name="line.63"></a>
+<span class="sourceLineNo">064</span>         * <a name="line.64"></a>
+<span class="sourceLineNo">065</span>         * @param container<a name="line.65"></a>
+<span class="sourceLineNo">066</span>         *            The container.<a name="line.66"></a>
+<span class="sourceLineNo">067</span>         * @param name<a name="line.67"></a>
+<span class="sourceLineNo">068</span>         *            The name of this actor.<a name="line.68"></a>
+<span class="sourceLineNo">069</span>         * @exception IllegalActionException<a name="line.69"></a>
+<span class="sourceLineNo">070</span>         *                If the entity cannot be contained by the proposed<a name="line.70"></a>
+<span class="sourceLineNo">071</span>         *                container.<a name="line.71"></a>
+<span class="sourceLineNo">072</span>         * @exception NameDuplicationException<a name="line.72"></a>
+<span class="sourceLineNo">073</span>         *                If the container already has an actor with this name.<a name="line.73"></a>
+<span class="sourceLineNo">074</span>         */<a name="line.74"></a>
+<span class="sourceLineNo">075</span><a name="line.75"></a>
+<span class="sourceLineNo">076</span>        public AlignmentEditor_Seaview(CompositeEntity container, String name)<a name="line.76"></a>
+<span class="sourceLineNo">077</span>                        throws NameDuplicationException, IllegalActionException {<a name="line.77"></a>
+<span class="sourceLineNo">078</span>                super(container, name);<a name="line.78"></a>
+<span class="sourceLineNo">079</span><a name="line.79"></a>
+<span class="sourceLineNo">080</span>                // get the information of Seaview application<a name="line.80"></a>
+<span class="sourceLineNo">081</span>                CipresKeplerRegistry registry = Globals.getInstance().getRegistry();<a name="line.81"></a>
+<span class="sourceLineNo">082</span>                _seaviewActor = registry.getActor("AlignmentEditor_Seaview");<a name="line.82"></a>
+<span class="sourceLineNo">083</span><a name="line.83"></a>
+<span class="sourceLineNo">084</span>                // SeaView has different invocation methods in different OSs<a name="line.84"></a>
+<span class="sourceLineNo">085</span>                // In Mac, SeaView runs by "open -a Seaview.app input_file_name"<a name="line.85"></a>
+<span class="sourceLineNo">086</span>                // In all the other OS, SeaView runs by "Seaview input_file_name"<a name="line.86"></a>
+<span class="sourceLineNo">087</span>                if (System.getProperty("os.name").startsWith("Mac")) {<a name="line.87"></a>
+<span class="sourceLineNo">088</span>                        command.setToken(new StringToken("open -a "<a name="line.88"></a>
+<span class="sourceLineNo">089</span>                                        + _seaviewActor.getAppPathForOS()));<a name="line.89"></a>
+<span class="sourceLineNo">090</span>                } else {<a name="line.90"></a>
+<span class="sourceLineNo">091</span>                        command.setToken(new StringToken(_seaviewActor.getAppPathForOS()));<a name="line.91"></a>
+<span class="sourceLineNo">092</span>                }<a name="line.92"></a>
+<span class="sourceLineNo">093</span><a name="line.93"></a>
+<span class="sourceLineNo">094</span>                // set the standard output file<a name="line.94"></a>
+<span class="sourceLineNo">095</span>                outputFile.setToken(new StringToken(registry.getDefaultStdOutDir()<a name="line.95"></a>
+<span class="sourceLineNo">096</span>                                + "SeaviewOut.log"));<a name="line.96"></a>
+<span class="sourceLineNo">097</span><a name="line.97"></a>
+<span class="sourceLineNo">098</span>                // set the stardard error file<a name="line.98"></a>
+<span class="sourceLineNo">099</span>                errorFile.setToken(new StringToken(registry.getDefaultStdOutDir()<a name="line.99"></a>
+<span class="sourceLineNo">100</span>                                + "SeaviewError.log"));<a name="line.100"></a>
+<span class="sourceLineNo">101</span><a name="line.101"></a>
+<span class="sourceLineNo">102</span>                // set the working directory<a name="line.102"></a>
+<span class="sourceLineNo">103</span>                workingDirectory.setToken(new StringToken(_seaviewActor<a name="line.103"></a>
+<span class="sourceLineNo">104</span>                                .getWorkingDirecotry()));<a name="line.104"></a>
+<span class="sourceLineNo">105</span><a name="line.105"></a>
+<span class="sourceLineNo">106</span>                // initialize the port for getting in the input file name<a name="line.106"></a>
+<span class="sourceLineNo">107</span>                inputFileName = new TypedIOPort(this, "inputFileName", true, false);<a name="line.107"></a>
+<span class="sourceLineNo">108</span>                inputFileName.setDisplayName("Input File Name");<a name="line.108"></a>
+<span class="sourceLineNo">109</span>                inputFileName.setTypeEquals(BaseType.STRING);<a name="line.109"></a>
+<span class="sourceLineNo">110</span><a name="line.110"></a>
+<span class="sourceLineNo">111</span>                // initialize the port for sending out the output file name<a name="line.111"></a>
+<span class="sourceLineNo">112</span>                outputFileName = new TypedIOPort(this, "outputFileName", false, true);<a name="line.112"></a>
+<span class="sourceLineNo">113</span>                outputFileName.setDisplayName("Output File Name");<a name="line.113"></a>
+<span class="sourceLineNo">114</span>                outputFileName.setTypeEquals(BaseType.STRING);<a name="line.114"></a>
+<span class="sourceLineNo">115</span><a name="line.115"></a>
+<span class="sourceLineNo">116</span>        }<a name="line.116"></a>
+<span class="sourceLineNo">117</span><a name="line.117"></a>
+<span class="sourceLineNo">118</span>        // /////////////////////////////////////////////////////////////////<a name="line.118"></a>
+<span class="sourceLineNo">119</span>        // // ports and parameters ////<a name="line.119"></a>
+<span class="sourceLineNo">120</span><a name="line.120"></a>
+<span class="sourceLineNo">121</span>        /**<a name="line.121"></a>
+<span class="sourceLineNo">122</span>         * The input file name is transferred into the actor through this port. The<a name="line.122"></a>
+<span class="sourceLineNo">123</span>         * input file contains the alignment for reviewing and editing.<a name="line.123"></a>
+<span class="sourceLineNo">124</span>         */<a name="line.124"></a>
+<span class="sourceLineNo">125</span>        public TypedIOPort inputFileName;<a name="line.125"></a>
+<span class="sourceLineNo">126</span><a name="line.126"></a>
+<span class="sourceLineNo">127</span>        /**<a name="line.127"></a>
+<span class="sourceLineNo">128</span>         * The output file name is sent out throught this port. The output file<a name="line.128"></a>
+<span class="sourceLineNo">129</span>         * contains the edited alignment.<a name="line.129"></a>
+<span class="sourceLineNo">130</span>         */<a name="line.130"></a>
+<span class="sourceLineNo">131</span>        public TypedIOPort outputFileName;<a name="line.131"></a>
+<span class="sourceLineNo">132</span><a name="line.132"></a>
+<span class="sourceLineNo">133</span>        // /////////////////////////////////////////////////////////////////<a name="line.133"></a>
+<span class="sourceLineNo">134</span>        // // functional variables ////<a name="line.134"></a>
+<span class="sourceLineNo">135</span><a name="line.135"></a>
+<span class="sourceLineNo">136</span>        // /////////////////////////////////////////////////////////////////<a name="line.136"></a>
+<span class="sourceLineNo">137</span>        // // public methods ////<a name="line.137"></a>
+<span class="sourceLineNo">138</span><a name="line.138"></a>
+<span class="sourceLineNo">139</span>        /**<a name="line.139"></a>
+<span class="sourceLineNo">140</span>         * Run seaview for alignment reviw and manipulation.<a name="line.140"></a>
+<span class="sourceLineNo">141</span>         * <a name="line.141"></a>
+<span class="sourceLineNo">142</span>         * @exception IllegalActionException<a name="line.142"></a>
+<span class="sourceLineNo">143</span>         *                If it is thrown by the send() method sending out the<a name="line.143"></a>
+<span class="sourceLineNo">144</span>         *                token.<a name="line.144"></a>
+<span class="sourceLineNo">145</span>         */<a name="line.145"></a>
+<span class="sourceLineNo">146</span>        public void fire() throws IllegalActionException {<a name="line.146"></a>
+<span class="sourceLineNo">147</span><a name="line.147"></a>
+<span class="sourceLineNo">148</span>                // get the input file name and send it to JRun object as the command<a name="line.148"></a>
+<span class="sourceLineNo">149</span>                // argument<a name="line.149"></a>
+<span class="sourceLineNo">150</span>                StringToken inputFileNameToken = (StringToken) inputFileName.get(0);<a name="line.150"></a>
+<span class="sourceLineNo">151</span>                arguments.setToken(inputFileNameToken);<a name="line.151"></a>
+<span class="sourceLineNo">152</span><a name="line.152"></a>
+<span class="sourceLineNo">153</span>                super.fire();<a name="line.153"></a>
+<span class="sourceLineNo">154</span><a name="line.154"></a>
+<span class="sourceLineNo">155</span>                // the output file name must be the same as the input file name<a name="line.155"></a>
+<span class="sourceLineNo">156</span>                // currently we don't support the function that an user can save the<a name="line.156"></a>
+<span class="sourceLineNo">157</span>                // result to another file<a name="line.157"></a>
+<span class="sourceLineNo">158</span>                outputFileName.send(0, inputFileNameToken);<a name="line.158"></a>
+<span class="sourceLineNo">159</span>        }<a name="line.159"></a>
+<span class="sourceLineNo">160</span><a name="line.160"></a>
+<span class="sourceLineNo">161</span>        /**<a name="line.161"></a>
+<span class="sourceLineNo">162</span>         * Post fire the actor. Return false to indicated that the process has<a name="line.162"></a>
+<span class="sourceLineNo">163</span>         * finished. If it returns true, the process will continue indefinitely.<a name="line.163"></a>
+<span class="sourceLineNo">164</span>         */<a name="line.164"></a>
+<span class="sourceLineNo">165</span>        // Note here we want to let this actor be able to run multiple times to view<a name="line.165"></a>
+<span class="sourceLineNo">166</span>        // and edit<a name="line.166"></a>
+<span class="sourceLineNo">167</span>        // multiple different alignments.<a name="line.167"></a>
+<span class="sourceLineNo">168</span>        /*<a name="line.168"></a>
+<span class="sourceLineNo">169</span>         * public boolean postfire() { return false; }<a name="line.169"></a>
+<span class="sourceLineNo">170</span>         */<a name="line.170"></a>
+<span class="sourceLineNo">171</span><a name="line.171"></a>
+<span class="sourceLineNo">172</span>        /**<a name="line.172"></a>
+<span class="sourceLineNo">173</span>         * private variables This is the ActorInfo object which comes from the<a name="line.173"></a>
+<span class="sourceLineNo">174</span>         * Cipres-kepler registry and records all the appliation information for<a name="line.174"></a>
+<span class="sourceLineNo">175</span>         * Seaview.<a name="line.175"></a>
+<span class="sourceLineNo">176</span>         */<a name="line.176"></a>
+<span class="sourceLineNo">177</span>        private ActorInfo _seaviewActor;<a name="line.177"></a>
+<span class="sourceLineNo">178</span><a name="line.178"></a>
+<span class="sourceLineNo">179</span>}<a name="line.179"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

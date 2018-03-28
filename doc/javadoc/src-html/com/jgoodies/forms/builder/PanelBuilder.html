@@ -1,0 +1,654 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../../../stylesheet.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>/*<a name="line.1"></a>
+<span class="sourceLineNo">002</span> * Copyright (c) 2002-2007 JGoodies Karsten Lentzsch. All Rights Reserved.<a name="line.2"></a>
+<span class="sourceLineNo">003</span> *<a name="line.3"></a>
+<span class="sourceLineNo">004</span> * Redistribution and use in source and binary forms, with or without<a name="line.4"></a>
+<span class="sourceLineNo">005</span> * modification, are permitted provided that the following conditions are met:<a name="line.5"></a>
+<span class="sourceLineNo">006</span> *<a name="line.6"></a>
+<span class="sourceLineNo">007</span> *  o Redistributions of source code must retain the above copyright notice,<a name="line.7"></a>
+<span class="sourceLineNo">008</span> *    this list of conditions and the following disclaimer.<a name="line.8"></a>
+<span class="sourceLineNo">009</span> *<a name="line.9"></a>
+<span class="sourceLineNo">010</span> *  o Redistributions in binary form must reproduce the above copyright notice,<a name="line.10"></a>
+<span class="sourceLineNo">011</span> *    this list of conditions and the following disclaimer in the documentation<a name="line.11"></a>
+<span class="sourceLineNo">012</span> *    and/or other materials provided with the distribution.<a name="line.12"></a>
+<span class="sourceLineNo">013</span> *<a name="line.13"></a>
+<span class="sourceLineNo">014</span> *  o Neither the name of JGoodies Karsten Lentzsch nor the names of<a name="line.14"></a>
+<span class="sourceLineNo">015</span> *    its contributors may be used to endorse or promote products derived<a name="line.15"></a>
+<span class="sourceLineNo">016</span> *    from this software without specific prior written permission.<a name="line.16"></a>
+<span class="sourceLineNo">017</span> *<a name="line.17"></a>
+<span class="sourceLineNo">018</span> * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"<a name="line.18"></a>
+<span class="sourceLineNo">019</span> * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,<a name="line.19"></a>
+<span class="sourceLineNo">020</span> * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR<a name="line.20"></a>
+<span class="sourceLineNo">021</span> * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR<a name="line.21"></a>
+<span class="sourceLineNo">022</span> * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,<a name="line.22"></a>
+<span class="sourceLineNo">023</span> * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,<a name="line.23"></a>
+<span class="sourceLineNo">024</span> * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;<a name="line.24"></a>
+<span class="sourceLineNo">025</span> * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,<a name="line.25"></a>
+<span class="sourceLineNo">026</span> * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE<a name="line.26"></a>
+<span class="sourceLineNo">027</span> * OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,<a name="line.27"></a>
+<span class="sourceLineNo">028</span> * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.<a name="line.28"></a>
+<span class="sourceLineNo">029</span> */<a name="line.29"></a>
+<span class="sourceLineNo">030</span><a name="line.30"></a>
+<span class="sourceLineNo">031</span>package com.jgoodies.forms.builder;<a name="line.31"></a>
+<span class="sourceLineNo">032</span><a name="line.32"></a>
+<span class="sourceLineNo">033</span>import java.awt.Component;<a name="line.33"></a>
+<span class="sourceLineNo">034</span><a name="line.34"></a>
+<span class="sourceLineNo">035</span>import javax.swing.JComponent;<a name="line.35"></a>
+<span class="sourceLineNo">036</span>import javax.swing.JLabel;<a name="line.36"></a>
+<span class="sourceLineNo">037</span>import javax.swing.JPanel;<a name="line.37"></a>
+<span class="sourceLineNo">038</span>import javax.swing.SwingConstants;<a name="line.38"></a>
+<span class="sourceLineNo">039</span>import javax.swing.border.Border;<a name="line.39"></a>
+<span class="sourceLineNo">040</span><a name="line.40"></a>
+<span class="sourceLineNo">041</span>import com.jgoodies.forms.factories.Borders;<a name="line.41"></a>
+<span class="sourceLineNo">042</span>import com.jgoodies.forms.factories.ComponentFactory;<a name="line.42"></a>
+<span class="sourceLineNo">043</span>import com.jgoodies.forms.factories.DefaultComponentFactory;<a name="line.43"></a>
+<span class="sourceLineNo">044</span>import com.jgoodies.forms.layout.CellConstraints;<a name="line.44"></a>
+<span class="sourceLineNo">045</span>import com.jgoodies.forms.layout.FormLayout;<a name="line.45"></a>
+<span class="sourceLineNo">046</span><a name="line.46"></a>
+<span class="sourceLineNo">047</span>/**<a name="line.47"></a>
+<span class="sourceLineNo">048</span> * An general purpose panel builder that uses the {@link FormLayout}<a name="line.48"></a>
+<span class="sourceLineNo">049</span> * to lay out &lt;code&gt;JPanel&lt;/code&gt;s. It provides convenience methods<a name="line.49"></a>
+<span class="sourceLineNo">050</span> * to set a default border and to add labels, titles and titled separators.&lt;p&gt;<a name="line.50"></a>
+<span class="sourceLineNo">051</span> *<a name="line.51"></a>
+<span class="sourceLineNo">052</span> * The PanelBuilder is the working horse for layouts when more specialized<a name="line.52"></a>
+<span class="sourceLineNo">053</span> * builders like the {@link ButtonBarBuilder} or {@link DefaultFormBuilder}<a name="line.53"></a>
+<span class="sourceLineNo">054</span> * are inappropriate.&lt;p&gt;<a name="line.54"></a>
+<span class="sourceLineNo">055</span> *<a name="line.55"></a>
+<span class="sourceLineNo">056</span> * The Forms tutorial includes several examples that present and compare<a name="line.56"></a>
+<span class="sourceLineNo">057</span> * different style to build with the PanelBuilder: static row numbers<a name="line.57"></a>
+<span class="sourceLineNo">058</span> * vs. row variable, explicit CellConstraints vs. builder cursor,<a name="line.58"></a>
+<span class="sourceLineNo">059</span> * static rows vs. dynamically added rows. Also, you may check out the<a name="line.59"></a>
+<span class="sourceLineNo">060</span> * Tips &amp;amp; Tricks section of the Forms HTML documentation.&lt;p&gt;<a name="line.60"></a>
+<span class="sourceLineNo">061</span> *<a name="line.61"></a>
+<span class="sourceLineNo">062</span> * The text arguments passed to the methods &lt;code&gt;#addLabel&lt;/code&gt;,<a name="line.62"></a>
+<span class="sourceLineNo">063</span> * &lt;code&gt;#addTitle&lt;/code&gt;, and &lt;code&gt;#addSeparator&lt;/code&gt; can contain<a name="line.63"></a>
+<span class="sourceLineNo">064</span> * an optional mnemonic marker. The mnemonic and mnemonic index<a name="line.64"></a>
+<span class="sourceLineNo">065</span> * are indicated by a single ampersand (&lt;tt&gt;&amp;amp;&lt;/tt&gt;). For example<a name="line.65"></a>
+<span class="sourceLineNo">066</span> * &lt;tt&gt;&amp;quot;&amp;amp;Save&amp;quot;&lt;/tt&gt;, or &lt;tt&gt;&amp;quot;Save&amp;nbsp;&amp;amp;as&amp;quot;&lt;/tt&gt;.<a name="line.66"></a>
+<span class="sourceLineNo">067</span> * To use the ampersand itself duplicate it, for example<a name="line.67"></a>
+<span class="sourceLineNo">068</span> * &lt;tt&gt;&amp;quot;Look&amp;amp;&amp;amp;Feel&amp;quot;&lt;/tt&gt;.&lt;p&gt;<a name="line.68"></a>
+<span class="sourceLineNo">069</span> *<a name="line.69"></a>
+<span class="sourceLineNo">070</span> * &lt;strong&gt;Example:&lt;/strong&gt;&lt;br&gt;<a name="line.70"></a>
+<span class="sourceLineNo">071</span> * This example creates a panel with 3 columns and 3 rows.<a name="line.71"></a>
+<span class="sourceLineNo">072</span> * &lt;pre&gt;<a name="line.72"></a>
+<span class="sourceLineNo">073</span> * FormLayout layout = new FormLayout(<a name="line.73"></a>
+<span class="sourceLineNo">074</span> *      "right:pref, 6dlu, 50dlu, 4dlu, default",  // columns<a name="line.74"></a>
+<span class="sourceLineNo">075</span> *      "pref, 3dlu, pref, 3dlu, pref");           // rows<a name="line.75"></a>
+<span class="sourceLineNo">076</span> *<a name="line.76"></a>
+<span class="sourceLineNo">077</span> * PanelBuilder builder = new PanelBuilder(layout);<a name="line.77"></a>
+<span class="sourceLineNo">078</span> * CellConstraints cc = new CellConstraints();<a name="line.78"></a>
+<span class="sourceLineNo">079</span> * builder.addLabel("&amp;amp;Title",      cc.xy  (1, 1));<a name="line.79"></a>
+<span class="sourceLineNo">080</span> * builder.add(new JTextField(),   cc.xywh(3, 1, 3, 1));<a name="line.80"></a>
+<span class="sourceLineNo">081</span> * builder.addLabel("&amp;amp;Price",      cc.xy  (1, 3));<a name="line.81"></a>
+<span class="sourceLineNo">082</span> * builder.add(new JTextField(),   cc.xy  (3, 3));<a name="line.82"></a>
+<span class="sourceLineNo">083</span> * builder.addLabel("&amp;amp;Author",     cc.xy  (1, 5));<a name="line.83"></a>
+<span class="sourceLineNo">084</span> * builder.add(new JTextField(),   cc.xy  (3, 5));<a name="line.84"></a>
+<span class="sourceLineNo">085</span> * builder.add(new JButton("..."), cc.xy  (5, 5));<a name="line.85"></a>
+<span class="sourceLineNo">086</span> * return builder.getPanel();<a name="line.86"></a>
+<span class="sourceLineNo">087</span> * &lt;/pre&gt;<a name="line.87"></a>
+<span class="sourceLineNo">088</span> *<a name="line.88"></a>
+<span class="sourceLineNo">089</span> * @author  Karsten Lentzsch<a name="line.89"></a>
+<span class="sourceLineNo">090</span> * @version $Revision$<a name="line.90"></a>
+<span class="sourceLineNo">091</span> *<a name="line.91"></a>
+<span class="sourceLineNo">092</span> * @see        com.jgoodies.forms.factories.ComponentFactory<a name="line.92"></a>
+<span class="sourceLineNo">093</span> * @see     I15dPanelBuilder<a name="line.93"></a>
+<span class="sourceLineNo">094</span> * @see     DefaultFormBuilder<a name="line.94"></a>
+<span class="sourceLineNo">095</span> */<a name="line.95"></a>
+<span class="sourceLineNo">096</span>public class PanelBuilder extends AbstractFormBuilder {<a name="line.96"></a>
+<span class="sourceLineNo">097</span><a name="line.97"></a>
+<span class="sourceLineNo">098</span>    /**<a name="line.98"></a>
+<span class="sourceLineNo">099</span>     * Refers to a factory that is used to create labels,<a name="line.99"></a>
+<span class="sourceLineNo">100</span>     * titles and paragraph separators.<a name="line.100"></a>
+<span class="sourceLineNo">101</span>     */<a name="line.101"></a>
+<span class="sourceLineNo">102</span>    private ComponentFactory componentFactory;<a name="line.102"></a>
+<span class="sourceLineNo">103</span><a name="line.103"></a>
+<span class="sourceLineNo">104</span>    // Instance Creation ****************************************************<a name="line.104"></a>
+<span class="sourceLineNo">105</span><a name="line.105"></a>
+<span class="sourceLineNo">106</span>    /**<a name="line.106"></a>
+<span class="sourceLineNo">107</span>     * Constructs an instance of &lt;code&gt;PanelBuilder&lt;/code&gt; for the given<a name="line.107"></a>
+<span class="sourceLineNo">108</span>     * layout. Uses an instance of &lt;code&gt;JPanel&lt;/code&gt; as layout container<a name="line.108"></a>
+<span class="sourceLineNo">109</span>     * with the given layout as layout manager.<a name="line.109"></a>
+<span class="sourceLineNo">110</span>     *<a name="line.110"></a>
+<span class="sourceLineNo">111</span>     * @param layout  the FormLayout to use<a name="line.111"></a>
+<span class="sourceLineNo">112</span>     */<a name="line.112"></a>
+<span class="sourceLineNo">113</span>    public PanelBuilder(FormLayout layout) {<a name="line.113"></a>
+<span class="sourceLineNo">114</span>        this(layout, new JPanel(null));<a name="line.114"></a>
+<span class="sourceLineNo">115</span>    }<a name="line.115"></a>
+<span class="sourceLineNo">116</span><a name="line.116"></a>
+<span class="sourceLineNo">117</span>    /**<a name="line.117"></a>
+<span class="sourceLineNo">118</span>     * Constructs an instance of &lt;code&gt;PanelBuilder&lt;/code&gt; for the given<a name="line.118"></a>
+<span class="sourceLineNo">119</span>     * FormLayout and layout container.<a name="line.119"></a>
+<span class="sourceLineNo">120</span>     *<a name="line.120"></a>
+<span class="sourceLineNo">121</span>     * @param layout  the FormLayout to use<a name="line.121"></a>
+<span class="sourceLineNo">122</span>     * @param panel   the layout container to build on<a name="line.122"></a>
+<span class="sourceLineNo">123</span>     */<a name="line.123"></a>
+<span class="sourceLineNo">124</span>    public PanelBuilder(FormLayout layout, JPanel panel) {<a name="line.124"></a>
+<span class="sourceLineNo">125</span>        super(layout, panel);<a name="line.125"></a>
+<span class="sourceLineNo">126</span>    }<a name="line.126"></a>
+<span class="sourceLineNo">127</span><a name="line.127"></a>
+<span class="sourceLineNo">128</span>    /**<a name="line.128"></a>
+<span class="sourceLineNo">129</span>     * Constructs an instance of &lt;code&gt;PanelBuilder&lt;/code&gt; for the given<a name="line.129"></a>
+<span class="sourceLineNo">130</span>     * panel and layout.<a name="line.130"></a>
+<span class="sourceLineNo">131</span>     *<a name="line.131"></a>
+<span class="sourceLineNo">132</span>     * @param panel   the layout container to build on<a name="line.132"></a>
+<span class="sourceLineNo">133</span>     * @param layout  the form layout to use<a name="line.133"></a>
+<span class="sourceLineNo">134</span>     *<a name="line.134"></a>
+<span class="sourceLineNo">135</span>     * @deprecated Replaced by {@link #PanelBuilder(FormLayout, JPanel)}.<a name="line.135"></a>
+<span class="sourceLineNo">136</span>     */<a name="line.136"></a>
+<span class="sourceLineNo">137</span>    @Deprecated<a name="line.137"></a>
+<span class="sourceLineNo">138</span>    public PanelBuilder(JPanel panel, FormLayout layout) {<a name="line.138"></a>
+<span class="sourceLineNo">139</span>        super(layout, panel);<a name="line.139"></a>
+<span class="sourceLineNo">140</span>    }<a name="line.140"></a>
+<span class="sourceLineNo">141</span><a name="line.141"></a>
+<span class="sourceLineNo">142</span>    // Accessors ************************************************************<a name="line.142"></a>
+<span class="sourceLineNo">143</span><a name="line.143"></a>
+<span class="sourceLineNo">144</span>    /**<a name="line.144"></a>
+<span class="sourceLineNo">145</span>     * Returns the panel used to build the form.<a name="line.145"></a>
+<span class="sourceLineNo">146</span>     *<a name="line.146"></a>
+<span class="sourceLineNo">147</span>     * @return the panel used by this builder to build the form<a name="line.147"></a>
+<span class="sourceLineNo">148</span>     */<a name="line.148"></a>
+<span class="sourceLineNo">149</span>    public final JPanel getPanel() {<a name="line.149"></a>
+<span class="sourceLineNo">150</span>        return (JPanel) getContainer();<a name="line.150"></a>
+<span class="sourceLineNo">151</span>    }<a name="line.151"></a>
+<span class="sourceLineNo">152</span><a name="line.152"></a>
+<span class="sourceLineNo">153</span>    // Borders **************************************************************<a name="line.153"></a>
+<span class="sourceLineNo">154</span><a name="line.154"></a>
+<span class="sourceLineNo">155</span>    /**<a name="line.155"></a>
+<span class="sourceLineNo">156</span>     * Sets the panel's border.<a name="line.156"></a>
+<span class="sourceLineNo">157</span>     *<a name="line.157"></a>
+<span class="sourceLineNo">158</span>     * @param border        the border to set<a name="line.158"></a>
+<span class="sourceLineNo">159</span>     */<a name="line.159"></a>
+<span class="sourceLineNo">160</span>    public final void setBorder(Border border) {<a name="line.160"></a>
+<span class="sourceLineNo">161</span>        getPanel().setBorder(border);<a name="line.161"></a>
+<span class="sourceLineNo">162</span>    }<a name="line.162"></a>
+<span class="sourceLineNo">163</span><a name="line.163"></a>
+<span class="sourceLineNo">164</span>    /**<a name="line.164"></a>
+<span class="sourceLineNo">165</span>     * Sets the default dialog border.<a name="line.165"></a>
+<span class="sourceLineNo">166</span>     *<a name="line.166"></a>
+<span class="sourceLineNo">167</span>     * @see Borders<a name="line.167"></a>
+<span class="sourceLineNo">168</span>     */<a name="line.168"></a>
+<span class="sourceLineNo">169</span>    public final void setDefaultDialogBorder() {<a name="line.169"></a>
+<span class="sourceLineNo">170</span>        setBorder(Borders.DIALOG_BORDER);<a name="line.170"></a>
+<span class="sourceLineNo">171</span>    }<a name="line.171"></a>
+<span class="sourceLineNo">172</span><a name="line.172"></a>
+<span class="sourceLineNo">173</span>    // Adding Labels **********************************************************<a name="line.173"></a>
+<span class="sourceLineNo">174</span><a name="line.174"></a>
+<span class="sourceLineNo">175</span>    /**<a name="line.175"></a>
+<span class="sourceLineNo">176</span>     * Adds a textual label to the form using the default constraints.<a name="line.176"></a>
+<span class="sourceLineNo">177</span>     *<a name="line.177"></a>
+<span class="sourceLineNo">178</span>     * &lt;pre&gt;<a name="line.178"></a>
+<span class="sourceLineNo">179</span>     * addLabel("Name");       // No Mnemonic<a name="line.179"></a>
+<span class="sourceLineNo">180</span>     * addLabel("N&amp;amp;ame");      // Mnemonic is 'a'<a name="line.180"></a>
+<span class="sourceLineNo">181</span>     * addLabel("Save &amp;amp;as");   // Mnemonic is the second 'a'<a name="line.181"></a>
+<span class="sourceLineNo">182</span>     * addLabel("Look&amp;amp;&amp;amp;Feel"); // No mnemonic, text is "look&amp;amp;feel"<a name="line.182"></a>
+<span class="sourceLineNo">183</span>     * &lt;/pre&gt;<a name="line.183"></a>
+<span class="sourceLineNo">184</span>     *<a name="line.184"></a>
+<span class="sourceLineNo">185</span>     * @param textWithMnemonic   the label's text -<a name="line.185"></a>
+<span class="sourceLineNo">186</span>     *     may contain an ampersand (&lt;tt&gt;&amp;amp;&lt;/tt&gt;) to mark a mnemonic<a name="line.186"></a>
+<span class="sourceLineNo">187</span>     * @return the new label<a name="line.187"></a>
+<span class="sourceLineNo">188</span>     *<a name="line.188"></a>
+<span class="sourceLineNo">189</span>     * @see ComponentFactory<a name="line.189"></a>
+<span class="sourceLineNo">190</span>     */<a name="line.190"></a>
+<span class="sourceLineNo">191</span>    public final JLabel addLabel(String textWithMnemonic) {<a name="line.191"></a>
+<span class="sourceLineNo">192</span>        return addLabel(textWithMnemonic, cellConstraints());<a name="line.192"></a>
+<span class="sourceLineNo">193</span>    }<a name="line.193"></a>
+<span class="sourceLineNo">194</span><a name="line.194"></a>
+<span class="sourceLineNo">195</span>    /**<a name="line.195"></a>
+<span class="sourceLineNo">196</span>     * Adds a textual label to the form using the specified constraints.<a name="line.196"></a>
+<span class="sourceLineNo">197</span>     *<a name="line.197"></a>
+<span class="sourceLineNo">198</span>     * &lt;pre&gt;<a name="line.198"></a>
+<span class="sourceLineNo">199</span>     * addLabel("Name",       cc.xy(1, 1)); // No Mnemonic<a name="line.199"></a>
+<span class="sourceLineNo">200</span>     * addLabel("N&amp;amp;ame",      cc.xy(1, 1)); // Mnemonic is 'a'<a name="line.200"></a>
+<span class="sourceLineNo">201</span>     * addLabel("Save &amp;amp;as",   cc.xy(1, 1)); // Mnemonic is the second 'a'<a name="line.201"></a>
+<span class="sourceLineNo">202</span>     * addLabel("Look&amp;amp;&amp;amp;Feel", cc.xy(1, 1)); // No mnemonic, text is "look&amp;amp;feel"<a name="line.202"></a>
+<span class="sourceLineNo">203</span>     * &lt;/pre&gt;<a name="line.203"></a>
+<span class="sourceLineNo">204</span>     *<a name="line.204"></a>
+<span class="sourceLineNo">205</span>     * @param textWithMnemonic  the label's text -<a name="line.205"></a>
+<span class="sourceLineNo">206</span>     *     may contain an ampersand (&lt;tt&gt;&amp;amp;&lt;/tt&gt;) to mark a mnemonic<a name="line.206"></a>
+<span class="sourceLineNo">207</span>     * @param constraints       the label's cell constraints<a name="line.207"></a>
+<span class="sourceLineNo">208</span>     * @return the new label<a name="line.208"></a>
+<span class="sourceLineNo">209</span>     *<a name="line.209"></a>
+<span class="sourceLineNo">210</span>     * @see ComponentFactory<a name="line.210"></a>
+<span class="sourceLineNo">211</span>     */<a name="line.211"></a>
+<span class="sourceLineNo">212</span>    public final JLabel addLabel(String textWithMnemonic,<a name="line.212"></a>
+<span class="sourceLineNo">213</span>            CellConstraints constraints) {<a name="line.213"></a>
+<span class="sourceLineNo">214</span>        JLabel label = getComponentFactory().createLabel(textWithMnemonic);<a name="line.214"></a>
+<span class="sourceLineNo">215</span>        add(label, constraints);<a name="line.215"></a>
+<span class="sourceLineNo">216</span>        return label;<a name="line.216"></a>
+<span class="sourceLineNo">217</span>    }<a name="line.217"></a>
+<span class="sourceLineNo">218</span><a name="line.218"></a>
+<span class="sourceLineNo">219</span>    /**<a name="line.219"></a>
+<span class="sourceLineNo">220</span>     * Adds a textual label to the form using the specified constraints.<a name="line.220"></a>
+<span class="sourceLineNo">221</span>     *<a name="line.221"></a>
+<span class="sourceLineNo">222</span>     * &lt;pre&gt;<a name="line.222"></a>
+<span class="sourceLineNo">223</span>     * addLabel("Name",       "1, 1"); // No Mnemonic<a name="line.223"></a>
+<span class="sourceLineNo">224</span>     * addLabel("N&amp;amp;ame",      "1, 1"); // Mnemonic is 'a'<a name="line.224"></a>
+<span class="sourceLineNo">225</span>     * addLabel("Save &amp;amp;as",   "1, 1"); // Mnemonic is the second 'a'<a name="line.225"></a>
+<span class="sourceLineNo">226</span>     * addLabel("Look&amp;amp;&amp;amp;Feel", "1, 1"); // No mnemonic, text is "look&amp;amp;feel"<a name="line.226"></a>
+<span class="sourceLineNo">227</span>     * &lt;/pre&gt;<a name="line.227"></a>
+<span class="sourceLineNo">228</span>     *<a name="line.228"></a>
+<span class="sourceLineNo">229</span>     * @param textWithMnemonic    the label's text -<a name="line.229"></a>
+<span class="sourceLineNo">230</span>     *     may contain an ampersand (&lt;tt&gt;&amp;amp;&lt;/tt&gt;) to mark a mnemonic<a name="line.230"></a>
+<span class="sourceLineNo">231</span>     * @param encodedConstraints  a string representation for the constraints<a name="line.231"></a>
+<span class="sourceLineNo">232</span>     * @return the new label<a name="line.232"></a>
+<span class="sourceLineNo">233</span>     *<a name="line.233"></a>
+<span class="sourceLineNo">234</span>     * @see ComponentFactory<a name="line.234"></a>
+<span class="sourceLineNo">235</span>     */<a name="line.235"></a>
+<span class="sourceLineNo">236</span>    public final JLabel addLabel(String textWithMnemonic,<a name="line.236"></a>
+<span class="sourceLineNo">237</span>            String encodedConstraints) {<a name="line.237"></a>
+<span class="sourceLineNo">238</span>        return addLabel(textWithMnemonic,<a name="line.238"></a>
+<span class="sourceLineNo">239</span>                new CellConstraints(encodedConstraints));<a name="line.239"></a>
+<span class="sourceLineNo">240</span>    }<a name="line.240"></a>
+<span class="sourceLineNo">241</span><a name="line.241"></a>
+<span class="sourceLineNo">242</span>    // Adding Label with related Component ************************************<a name="line.242"></a>
+<span class="sourceLineNo">243</span><a name="line.243"></a>
+<span class="sourceLineNo">244</span>    /**<a name="line.244"></a>
+<span class="sourceLineNo">245</span>     * Adds a label and component to the panel using the given cell constraints.<a name="line.245"></a>
+<span class="sourceLineNo">246</span>     * Sets the given label as &lt;i&gt;the&lt;/i&gt; component label using<a name="line.246"></a>
+<span class="sourceLineNo">247</span>     * {@link JLabel#setLabelFor(java.awt.Component)}.<a name="line.247"></a>
+<span class="sourceLineNo">248</span>     *<a name="line.248"></a>
+<span class="sourceLineNo">249</span>     * &lt;p&gt;&lt;strong&gt;Note:&lt;/strong&gt; The {@link CellConstraints} objects for the label<a name="line.249"></a>
+<span class="sourceLineNo">250</span>     * and the component must be different. Cell constraints are implicitly<a name="line.250"></a>
+<span class="sourceLineNo">251</span>     * cloned by the &lt;code&gt;FormLayout&lt;/code&gt; when added to the container.<a name="line.251"></a>
+<span class="sourceLineNo">252</span>     * However, in this case you may be tempted to reuse a<a name="line.252"></a>
+<span class="sourceLineNo">253</span>     * &lt;code&gt;CellConstraints&lt;/code&gt; object in the same way as with many other<a name="line.253"></a>
+<span class="sourceLineNo">254</span>     * builder methods that require a single &lt;code&gt;CellConstraints&lt;/code&gt;<a name="line.254"></a>
+<span class="sourceLineNo">255</span>     * parameter.<a name="line.255"></a>
+<span class="sourceLineNo">256</span>     * The pitfall is that the methods &lt;code&gt;CellConstraints.xy*(...)&lt;/code&gt;<a name="line.256"></a>
+<span class="sourceLineNo">257</span>     * just set the coordinates but do &lt;em&gt;not&lt;/em&gt; create a new instance.<a name="line.257"></a>
+<span class="sourceLineNo">258</span>     * And so the second invocation of &lt;code&gt;xy*(...)&lt;/code&gt; overrides<a name="line.258"></a>
+<span class="sourceLineNo">259</span>     * the settings performed in the first invocation before the object<a name="line.259"></a>
+<span class="sourceLineNo">260</span>     * is cloned by the &lt;code&gt;FormLayout&lt;/code&gt;.&lt;/p&gt;<a name="line.260"></a>
+<span class="sourceLineNo">261</span>     *<a name="line.261"></a>
+<span class="sourceLineNo">262</span>     * &lt;p&gt;&lt;strong&gt;Wrong:&lt;/strong&gt;&lt;/p&gt;<a name="line.262"></a>
+<span class="sourceLineNo">263</span>     * &lt;pre&gt;<a name="line.263"></a>
+<span class="sourceLineNo">264</span>     * CellConstraints cc = new CellConstraints();<a name="line.264"></a>
+<span class="sourceLineNo">265</span>     * builder.add(<a name="line.265"></a>
+<span class="sourceLineNo">266</span>     *     nameLabel,<a name="line.266"></a>
+<span class="sourceLineNo">267</span>     *     cc.xy(1, 7),         // will be modified by the code below<a name="line.267"></a>
+<span class="sourceLineNo">268</span>     *     nameField,<a name="line.268"></a>
+<span class="sourceLineNo">269</span>     *     cc.xy(3, 7)          // sets the single instance to (3, 7)<a name="line.269"></a>
+<span class="sourceLineNo">270</span>     * );<a name="line.270"></a>
+<span class="sourceLineNo">271</span>     * &lt;/pre&gt;<a name="line.271"></a>
+<span class="sourceLineNo">272</span>     * &lt;p&gt;&lt;strong&gt;Correct:&lt;/strong&gt;&lt;/p&gt;<a name="line.272"></a>
+<span class="sourceLineNo">273</span>     * &lt;pre&gt;<a name="line.273"></a>
+<span class="sourceLineNo">274</span>     * // Using a single CellConstraints instance and cloning<a name="line.274"></a>
+<span class="sourceLineNo">275</span>     * CellConstraints cc = new CellConstraints();<a name="line.275"></a>
+<span class="sourceLineNo">276</span>     * builder.add(<a name="line.276"></a>
+<span class="sourceLineNo">277</span>     *     nameLabel,<a name="line.277"></a>
+<span class="sourceLineNo">278</span>     *     (CellConstraints) cc.xy(1, 7).clone(), // cloned before the next modification<a name="line.278"></a>
+<span class="sourceLineNo">279</span>     *     nameField,<a name="line.279"></a>
+<span class="sourceLineNo">280</span>     *     cc.xy(3, 7)                            // sets this instance to (3, 7)<a name="line.280"></a>
+<span class="sourceLineNo">281</span>     * );<a name="line.281"></a>
+<span class="sourceLineNo">282</span>     *<a name="line.282"></a>
+<span class="sourceLineNo">283</span>     * // Using two CellConstraints instances<a name="line.283"></a>
+<span class="sourceLineNo">284</span>     * CellConstraints cc1 = new CellConstraints();<a name="line.284"></a>
+<span class="sourceLineNo">285</span>     * CellConstraints cc2 = new CellConstraints();<a name="line.285"></a>
+<span class="sourceLineNo">286</span>     * builder.add(<a name="line.286"></a>
+<span class="sourceLineNo">287</span>     *     nameLabel,<a name="line.287"></a>
+<span class="sourceLineNo">288</span>     *     cc1.xy(1, 7),       // sets instance 1 to (1, 7)<a name="line.288"></a>
+<span class="sourceLineNo">289</span>     *     nameField,<a name="line.289"></a>
+<span class="sourceLineNo">290</span>     *     cc2.xy(3, 7)        // sets instance 2 to (3, 7)<a name="line.290"></a>
+<span class="sourceLineNo">291</span>     * );<a name="line.291"></a>
+<span class="sourceLineNo">292</span>     * &lt;/pre&gt;<a name="line.292"></a>
+<span class="sourceLineNo">293</span>     *<a name="line.293"></a>
+<span class="sourceLineNo">294</span>     * @param label                 the label to add<a name="line.294"></a>
+<span class="sourceLineNo">295</span>     * @param labelConstraints      the label's cell constraints<a name="line.295"></a>
+<span class="sourceLineNo">296</span>     * @param component             the component to add<a name="line.296"></a>
+<span class="sourceLineNo">297</span>     * @param componentConstraints  the component's cell constraints<a name="line.297"></a>
+<span class="sourceLineNo">298</span>     * @return the added label<a name="line.298"></a>
+<span class="sourceLineNo">299</span>     * @exception IllegalArgumentException if the same cell constraints instance<a name="line.299"></a>
+<span class="sourceLineNo">300</span>     *     is used for the label and the component<a name="line.300"></a>
+<span class="sourceLineNo">301</span>     *<a name="line.301"></a>
+<span class="sourceLineNo">302</span>     * @see JLabel#setLabelFor(java.awt.Component)<a name="line.302"></a>
+<span class="sourceLineNo">303</span>     * @see DefaultFormBuilder<a name="line.303"></a>
+<span class="sourceLineNo">304</span>     */<a name="line.304"></a>
+<span class="sourceLineNo">305</span>    public final JLabel add(JLabel label, CellConstraints labelConstraints,<a name="line.305"></a>
+<span class="sourceLineNo">306</span>            Component component, CellConstraints componentConstraints) {<a name="line.306"></a>
+<span class="sourceLineNo">307</span>        if (labelConstraints == componentConstraints) {<a name="line.307"></a>
+<span class="sourceLineNo">308</span>            throw new IllegalArgumentException(<a name="line.308"></a>
+<span class="sourceLineNo">309</span>                    "You must provide two CellConstraints instances, "<a name="line.309"></a>
+<span class="sourceLineNo">310</span>                            + "one for the label and one for the component.\n"<a name="line.310"></a>
+<span class="sourceLineNo">311</span>                            + "Consider using #clone(). See the JavaDocs for details.");<a name="line.311"></a>
+<span class="sourceLineNo">312</span>        }<a name="line.312"></a>
+<span class="sourceLineNo">313</span><a name="line.313"></a>
+<span class="sourceLineNo">314</span>        add(label, labelConstraints);<a name="line.314"></a>
+<span class="sourceLineNo">315</span>        add(component, componentConstraints);<a name="line.315"></a>
+<span class="sourceLineNo">316</span>        label.setLabelFor(component);<a name="line.316"></a>
+<span class="sourceLineNo">317</span>        return label;<a name="line.317"></a>
+<span class="sourceLineNo">318</span>    }<a name="line.318"></a>
+<span class="sourceLineNo">319</span><a name="line.319"></a>
+<span class="sourceLineNo">320</span>    /**<a name="line.320"></a>
+<span class="sourceLineNo">321</span>     * Adds a label and component to the panel using the given cell constraints.<a name="line.321"></a>
+<span class="sourceLineNo">322</span>     * Sets the given label as &lt;i&gt;the&lt;/i&gt; component label using<a name="line.322"></a>
+<span class="sourceLineNo">323</span>     * {@link JLabel#setLabelFor(java.awt.Component)}.&lt;p&gt;<a name="line.323"></a>
+<span class="sourceLineNo">324</span>     *<a name="line.324"></a>
+<span class="sourceLineNo">325</span>     * &lt;strong&gt;Note:&lt;/strong&gt; The {@link CellConstraints} objects for the label<a name="line.325"></a>
+<span class="sourceLineNo">326</span>     * and the component must be different. Cell constraints are implicitly<a name="line.326"></a>
+<span class="sourceLineNo">327</span>     * cloned by the &lt;code&gt;FormLayout&lt;/code&gt; when added to the container.<a name="line.327"></a>
+<span class="sourceLineNo">328</span>     * However, in this case you may be tempted to reuse a<a name="line.328"></a>
+<span class="sourceLineNo">329</span>     * &lt;code&gt;CellConstraints&lt;/code&gt; object in the same way as with many other<a name="line.329"></a>
+<span class="sourceLineNo">330</span>     * builder methods that require a single &lt;code&gt;CellConstraints&lt;/code&gt;<a name="line.330"></a>
+<span class="sourceLineNo">331</span>     * parameter.<a name="line.331"></a>
+<span class="sourceLineNo">332</span>     * The pitfall is that the methods &lt;code&gt;CellConstraints.xy*(...)&lt;/code&gt;<a name="line.332"></a>
+<span class="sourceLineNo">333</span>     * just set the coordinates but do &lt;em&gt;not&lt;/em&gt; create a new instance.<a name="line.333"></a>
+<span class="sourceLineNo">334</span>     * And so the second invocation of &lt;code&gt;xy*(...)&lt;/code&gt; overrides<a name="line.334"></a>
+<span class="sourceLineNo">335</span>     * the settings performed in the first invocation before the object<a name="line.335"></a>
+<span class="sourceLineNo">336</span>     * is cloned by the &lt;code&gt;FormLayout&lt;/code&gt;.&lt;p&gt;<a name="line.336"></a>
+<span class="sourceLineNo">337</span>     *<a name="line.337"></a>
+<span class="sourceLineNo">338</span>     * &lt;strong&gt;Wrong:&lt;/strong&gt;&lt;pre&gt;<a name="line.338"></a>
+<span class="sourceLineNo">339</span>     * builder.addLabel(<a name="line.339"></a>
+<span class="sourceLineNo">340</span>     *     "&amp;amp;Name:",            // Mnemonic is 'N'<a name="line.340"></a>
+<span class="sourceLineNo">341</span>     *     cc.xy(1, 7),         // will be modified by the code below<a name="line.341"></a>
+<span class="sourceLineNo">342</span>     *     nameField,<a name="line.342"></a>
+<span class="sourceLineNo">343</span>     *     cc.xy(3, 7)          // sets the single instance to (3, 7)<a name="line.343"></a>
+<span class="sourceLineNo">344</span>     * );<a name="line.344"></a>
+<span class="sourceLineNo">345</span>     * &lt;/pre&gt;<a name="line.345"></a>
+<span class="sourceLineNo">346</span>     * &lt;strong&gt;Correct:&lt;/strong&gt;&lt;pre&gt;<a name="line.346"></a>
+<span class="sourceLineNo">347</span>     * // Using a single CellConstraints instance and cloning<a name="line.347"></a>
+<span class="sourceLineNo">348</span>     * CellConstraints cc = new CellConstraints();<a name="line.348"></a>
+<span class="sourceLineNo">349</span>     * builder.addLabel(<a name="line.349"></a>
+<span class="sourceLineNo">350</span>     *     "&amp;amp;Name:",<a name="line.350"></a>
+<span class="sourceLineNo">351</span>     *     (CellConstraints) cc.xy(1, 7).clone(), // cloned before the next modification<a name="line.351"></a>
+<span class="sourceLineNo">352</span>     *     nameField,<a name="line.352"></a>
+<span class="sourceLineNo">353</span>     *     cc.xy(3, 7)                            // sets this instance to (3, 7)<a name="line.353"></a>
+<span class="sourceLineNo">354</span>     * );<a name="line.354"></a>
+<span class="sourceLineNo">355</span>     *<a name="line.355"></a>
+<span class="sourceLineNo">356</span>     * // Using two CellConstraints instances<a name="line.356"></a>
+<span class="sourceLineNo">357</span>     * CellConstraints cc1 = new CellConstraints();<a name="line.357"></a>
+<span class="sourceLineNo">358</span>     * CellConstraints cc2 = new CellConstraints();<a name="line.358"></a>
+<span class="sourceLineNo">359</span>     * builder.addLabel(<a name="line.359"></a>
+<span class="sourceLineNo">360</span>     *     "&amp;amp;Name:",           // Mnemonic is 'N'<a name="line.360"></a>
+<span class="sourceLineNo">361</span>     *     cc1.xy(1, 7),       // sets instance 1 to (1, 7)<a name="line.361"></a>
+<span class="sourceLineNo">362</span>     *     nameField,<a name="line.362"></a>
+<span class="sourceLineNo">363</span>     *     cc2.xy(3, 7)        // sets instance 2 to (3, 7)<a name="line.363"></a>
+<span class="sourceLineNo">364</span>     * );<a name="line.364"></a>
+<span class="sourceLineNo">365</span>     * &lt;/pre&gt;<a name="line.365"></a>
+<span class="sourceLineNo">366</span>     *<a name="line.366"></a>
+<span class="sourceLineNo">367</span>     * @param textWithMnemonic      the label's text -<a name="line.367"></a>
+<span class="sourceLineNo">368</span>     *     may contain an ampersand (&lt;tt&gt;&amp;amp;&lt;/tt&gt;) to mark a mnemonic<a name="line.368"></a>
+<span class="sourceLineNo">369</span>     * @param labelConstraints      the label's cell constraints<a name="line.369"></a>
+<span class="sourceLineNo">370</span>     * @param component             the component to add<a name="line.370"></a>
+<span class="sourceLineNo">371</span>     * @param componentConstraints  the component's cell constraints<a name="line.371"></a>
+<span class="sourceLineNo">372</span>     * @return the added label<a name="line.372"></a>
+<span class="sourceLineNo">373</span>     * @exception IllegalArgumentException if the same cell constraints instance<a name="line.373"></a>
+<span class="sourceLineNo">374</span>     *     is used for the label and the component<a name="line.374"></a>
+<span class="sourceLineNo">375</span>     *<a name="line.375"></a>
+<span class="sourceLineNo">376</span>     * @see JLabel#setLabelFor(java.awt.Component)<a name="line.376"></a>
+<span class="sourceLineNo">377</span>     * @see ComponentFactory<a name="line.377"></a>
+<span class="sourceLineNo">378</span>     * @see DefaultFormBuilder<a name="line.378"></a>
+<span class="sourceLineNo">379</span>     */<a name="line.379"></a>
+<span class="sourceLineNo">380</span>    public final JLabel addLabel(String textWithMnemonic,<a name="line.380"></a>
+<span class="sourceLineNo">381</span>            CellConstraints labelConstraints, Component component,<a name="line.381"></a>
+<span class="sourceLineNo">382</span>            CellConstraints componentConstraints) {<a name="line.382"></a>
+<span class="sourceLineNo">383</span><a name="line.383"></a>
+<span class="sourceLineNo">384</span>        if (labelConstraints == componentConstraints) {<a name="line.384"></a>
+<span class="sourceLineNo">385</span>            throw new IllegalArgumentException(<a name="line.385"></a>
+<span class="sourceLineNo">386</span>                    "You must provide two CellConstraints instances, "<a name="line.386"></a>
+<span class="sourceLineNo">387</span>                            + "one for the label and one for the component.\n"<a name="line.387"></a>
+<span class="sourceLineNo">388</span>                            + "Consider using #clone(). See the JavaDocs for details.");<a name="line.388"></a>
+<span class="sourceLineNo">389</span>        }<a name="line.389"></a>
+<span class="sourceLineNo">390</span><a name="line.390"></a>
+<span class="sourceLineNo">391</span>        JLabel label = addLabel(textWithMnemonic, labelConstraints);<a name="line.391"></a>
+<span class="sourceLineNo">392</span>        add(component, componentConstraints);<a name="line.392"></a>
+<span class="sourceLineNo">393</span>        label.setLabelFor(component);<a name="line.393"></a>
+<span class="sourceLineNo">394</span>        return label;<a name="line.394"></a>
+<span class="sourceLineNo">395</span>    }<a name="line.395"></a>
+<span class="sourceLineNo">396</span><a name="line.396"></a>
+<span class="sourceLineNo">397</span>    // Adding Titles ----------------------------------------------------------<a name="line.397"></a>
+<span class="sourceLineNo">398</span><a name="line.398"></a>
+<span class="sourceLineNo">399</span>    /**<a name="line.399"></a>
+<span class="sourceLineNo">400</span>     * Adds a title label to the form using the default constraints.<a name="line.400"></a>
+<span class="sourceLineNo">401</span>     *<a name="line.401"></a>
+<span class="sourceLineNo">402</span>     * &lt;pre&gt;<a name="line.402"></a>
+<span class="sourceLineNo">403</span>     * addTitle("Name");       // No mnemonic<a name="line.403"></a>
+<span class="sourceLineNo">404</span>     * addTitle("N&amp;amp;ame");      // Mnemonic is 'a'<a name="line.404"></a>
+<span class="sourceLineNo">405</span>     * addTitle("Save &amp;amp;as");   // Mnemonic is the second 'a'<a name="line.405"></a>
+<span class="sourceLineNo">406</span>     * addTitle("Look&amp;amp;&amp;amp;Feel"); // No mnemonic, text is Look&amp;amp;Feel<a name="line.406"></a>
+<span class="sourceLineNo">407</span>     * &lt;/pre&gt;<a name="line.407"></a>
+<span class="sourceLineNo">408</span>     *<a name="line.408"></a>
+<span class="sourceLineNo">409</span>     * @param textWithMnemonic   the title label's text -<a name="line.409"></a>
+<span class="sourceLineNo">410</span>     *     may contain an ampersand (&lt;tt&gt;&amp;amp;&lt;/tt&gt;) to mark a mnemonic<a name="line.410"></a>
+<span class="sourceLineNo">411</span>     * @return the added title label<a name="line.411"></a>
+<span class="sourceLineNo">412</span>     *<a name="line.412"></a>
+<span class="sourceLineNo">413</span>     * @see ComponentFactory<a name="line.413"></a>
+<span class="sourceLineNo">414</span>     */<a name="line.414"></a>
+<span class="sourceLineNo">415</span>    public final JLabel addTitle(String textWithMnemonic) {<a name="line.415"></a>
+<span class="sourceLineNo">416</span>        return addTitle(textWithMnemonic, cellConstraints());<a name="line.416"></a>
+<span class="sourceLineNo">417</span>    }<a name="line.417"></a>
+<span class="sourceLineNo">418</span><a name="line.418"></a>
+<span class="sourceLineNo">419</span>    /**<a name="line.419"></a>
+<span class="sourceLineNo">420</span>     * Adds a title label to the form using the specified constraints.<a name="line.420"></a>
+<span class="sourceLineNo">421</span>     *<a name="line.421"></a>
+<span class="sourceLineNo">422</span>     * &lt;pre&gt;<a name="line.422"></a>
+<span class="sourceLineNo">423</span>     * addTitle("Name",       cc.xy(1, 1)); // No mnemonic<a name="line.423"></a>
+<span class="sourceLineNo">424</span>     * addTitle("N&amp;amp;ame",      cc.xy(1, 1)); // Mnemonic is 'a'<a name="line.424"></a>
+<span class="sourceLineNo">425</span>     * addTitle("Save &amp;amp;as",   cc.xy(1, 1)); // Mnemonic is the second 'a'<a name="line.425"></a>
+<span class="sourceLineNo">426</span>     * addTitle("Look&amp;amp;&amp;amp;Feel", cc.xy(1, 1)); // No mnemonic, text is Look&amp;amp;Feel<a name="line.426"></a>
+<span class="sourceLineNo">427</span>     * &lt;/pre&gt;<a name="line.427"></a>
+<span class="sourceLineNo">428</span>     *<a name="line.428"></a>
+<span class="sourceLineNo">429</span>     * @param textWithMnemonic   the title label's text -<a name="line.429"></a>
+<span class="sourceLineNo">430</span>     *     may contain an ampersand (&lt;tt&gt;&amp;amp;&lt;/tt&gt;) to mark a mnemonic<a name="line.430"></a>
+<span class="sourceLineNo">431</span>     * @param constraints        the separator's cell constraints<a name="line.431"></a>
+<span class="sourceLineNo">432</span>     * @return the added title label<a name="line.432"></a>
+<span class="sourceLineNo">433</span>     *<a name="line.433"></a>
+<span class="sourceLineNo">434</span>     * @see ComponentFactory<a name="line.434"></a>
+<span class="sourceLineNo">435</span>     */<a name="line.435"></a>
+<span class="sourceLineNo">436</span>    public final JLabel addTitle(String textWithMnemonic,<a name="line.436"></a>
+<span class="sourceLineNo">437</span>            CellConstraints constraints) {<a name="line.437"></a>
+<span class="sourceLineNo">438</span>        JLabel titleLabel = getComponentFactory().createTitle(textWithMnemonic);<a name="line.438"></a>
+<span class="sourceLineNo">439</span>        add(titleLabel, constraints);<a name="line.439"></a>
+<span class="sourceLineNo">440</span>        return titleLabel;<a name="line.440"></a>
+<span class="sourceLineNo">441</span>    }<a name="line.441"></a>
+<span class="sourceLineNo">442</span><a name="line.442"></a>
+<span class="sourceLineNo">443</span>    /**<a name="line.443"></a>
+<span class="sourceLineNo">444</span>     * Adds a title label to the form using the specified constraints.<a name="line.444"></a>
+<span class="sourceLineNo">445</span>     *<a name="line.445"></a>
+<span class="sourceLineNo">446</span>     * &lt;pre&gt;<a name="line.446"></a>
+<span class="sourceLineNo">447</span>     * addTitle("Name",       "1, 1"); // No mnemonic<a name="line.447"></a>
+<span class="sourceLineNo">448</span>     * addTitle("N&amp;amp;ame",      "1, 1"); // Mnemonic is 'a'<a name="line.448"></a>
+<span class="sourceLineNo">449</span>     * addTitle("Save &amp;amp;as",   "1, 1"); // Mnemonic is the second 'a'<a name="line.449"></a>
+<span class="sourceLineNo">450</span>     * addTitle("Look&amp;amp;&amp;amp;Feel", "1, 1"); // No mnemonic, text is Look&amp;amp;Feel<a name="line.450"></a>
+<span class="sourceLineNo">451</span>     * &lt;/pre&gt;<a name="line.451"></a>
+<span class="sourceLineNo">452</span>     *<a name="line.452"></a>
+<span class="sourceLineNo">453</span>     * @param textWithMnemonic   the title label's text -<a name="line.453"></a>
+<span class="sourceLineNo">454</span>     *     may contain an ampersand (&lt;tt&gt;&amp;amp;&lt;/tt&gt;) to mark a mnemonic<a name="line.454"></a>
+<span class="sourceLineNo">455</span>     * @param encodedConstraints  a string representation for the constraints<a name="line.455"></a>
+<span class="sourceLineNo">456</span>     * @return the added title label<a name="line.456"></a>
+<span class="sourceLineNo">457</span>     *<a name="line.457"></a>
+<span class="sourceLineNo">458</span>     * @see ComponentFactory<a name="line.458"></a>
+<span class="sourceLineNo">459</span>     */<a name="line.459"></a>
+<span class="sourceLineNo">460</span>    public final JLabel addTitle(String textWithMnemonic,<a name="line.460"></a>
+<span class="sourceLineNo">461</span>            String encodedConstraints) {<a name="line.461"></a>
+<span class="sourceLineNo">462</span>        return addTitle(textWithMnemonic,<a name="line.462"></a>
+<span class="sourceLineNo">463</span>                new CellConstraints(encodedConstraints));<a name="line.463"></a>
+<span class="sourceLineNo">464</span>    }<a name="line.464"></a>
+<span class="sourceLineNo">465</span><a name="line.465"></a>
+<span class="sourceLineNo">466</span>    // Adding Separators ------------------------------------------------------<a name="line.466"></a>
+<span class="sourceLineNo">467</span><a name="line.467"></a>
+<span class="sourceLineNo">468</span>    /**<a name="line.468"></a>
+<span class="sourceLineNo">469</span>     * Adds a titled separator to the form that spans all columns.<a name="line.469"></a>
+<span class="sourceLineNo">470</span>     *<a name="line.470"></a>
+<span class="sourceLineNo">471</span>     * &lt;pre&gt;<a name="line.471"></a>
+<span class="sourceLineNo">472</span>     * addSeparator("Name");       // No Mnemonic<a name="line.472"></a>
+<span class="sourceLineNo">473</span>     * addSeparator("N&amp;amp;ame");      // Mnemonic is 'a'<a name="line.473"></a>
+<span class="sourceLineNo">474</span>     * addSeparator("Save &amp;amp;as");   // Mnemonic is the second 'a'<a name="line.474"></a>
+<span class="sourceLineNo">475</span>     * addSeparator("Look&amp;amp;&amp;amp;Feel"); // No mnemonic, text is "look&amp;amp;feel"<a name="line.475"></a>
+<span class="sourceLineNo">476</span>     * &lt;/pre&gt;<a name="line.476"></a>
+<span class="sourceLineNo">477</span>     *<a name="line.477"></a>
+<span class="sourceLineNo">478</span>     * @param textWithMnemonic   the separator label's text -<a name="line.478"></a>
+<span class="sourceLineNo">479</span>     *     may contain an ampersand (&lt;tt&gt;&amp;amp;&lt;/tt&gt;) to mark a mnemonic<a name="line.479"></a>
+<span class="sourceLineNo">480</span>     * @return the added separator<a name="line.480"></a>
+<span class="sourceLineNo">481</span>     */<a name="line.481"></a>
+<span class="sourceLineNo">482</span>    public final JComponent addSeparator(String textWithMnemonic) {<a name="line.482"></a>
+<span class="sourceLineNo">483</span>        return addSeparator(textWithMnemonic, getLayout().getColumnCount());<a name="line.483"></a>
+<span class="sourceLineNo">484</span>    }<a name="line.484"></a>
+<span class="sourceLineNo">485</span><a name="line.485"></a>
+<span class="sourceLineNo">486</span>    /**<a name="line.486"></a>
+<span class="sourceLineNo">487</span>     * Adds a titled separator to the form using the specified constraints.<a name="line.487"></a>
+<span class="sourceLineNo">488</span>     *<a name="line.488"></a>
+<span class="sourceLineNo">489</span>     * &lt;pre&gt;<a name="line.489"></a>
+<span class="sourceLineNo">490</span>     * addSeparator("Name",       cc.xy(1, 1)); // No Mnemonic<a name="line.490"></a>
+<span class="sourceLineNo">491</span>     * addSeparator("N&amp;amp;ame",      cc.xy(1, 1)); // Mnemonic is 'a'<a name="line.491"></a>
+<span class="sourceLineNo">492</span>     * addSeparator("Save &amp;amp;as",   cc.xy(1, 1)); // Mnemonic is the second 'a'<a name="line.492"></a>
+<span class="sourceLineNo">493</span>     * addSeparator("Look&amp;amp;&amp;amp;Feel", cc.xy(1, 1)); // No mnemonic, text is "look&amp;amp;feel"<a name="line.493"></a>
+<span class="sourceLineNo">494</span>     * &lt;/pre&gt;<a name="line.494"></a>
+<span class="sourceLineNo">495</span>     *<a name="line.495"></a>
+<span class="sourceLineNo">496</span>     * @param textWithMnemonic   the separator label's text -<a name="line.496"></a>
+<span class="sourceLineNo">497</span>     *     may contain an ampersand (&lt;tt&gt;&amp;amp;&lt;/tt&gt;) to mark a mnemonic<a name="line.497"></a>
+<span class="sourceLineNo">498</span>     * @param constraints  the separator's cell constraints<a name="line.498"></a>
+<span class="sourceLineNo">499</span>     * @return the added separator<a name="line.499"></a>
+<span class="sourceLineNo">500</span>     */<a name="line.500"></a>
+<span class="sourceLineNo">501</span>    public final JComponent addSeparator(String textWithMnemonic,<a name="line.501"></a>
+<span class="sourceLineNo">502</span>            CellConstraints constraints) {<a name="line.502"></a>
+<span class="sourceLineNo">503</span>        int titleAlignment = isLeftToRight() ? SwingConstants.LEFT<a name="line.503"></a>
+<span class="sourceLineNo">504</span>                : SwingConstants.RIGHT;<a name="line.504"></a>
+<span class="sourceLineNo">505</span>        JComponent titledSeparator = getComponentFactory()<a name="line.505"></a>
+<span class="sourceLineNo">506</span>                .createSeparator(textWithMnemonic, titleAlignment);<a name="line.506"></a>
+<span class="sourceLineNo">507</span>        add(titledSeparator, constraints);<a name="line.507"></a>
+<span class="sourceLineNo">508</span>        return titledSeparator;<a name="line.508"></a>
+<span class="sourceLineNo">509</span>    }<a name="line.509"></a>
+<span class="sourceLineNo">510</span><a name="line.510"></a>
+<span class="sourceLineNo">511</span>    /**<a name="line.511"></a>
+<span class="sourceLineNo">512</span>     * Adds a titled separator to the form using the specified constraints.<a name="line.512"></a>
+<span class="sourceLineNo">513</span>     *<a name="line.513"></a>
+<span class="sourceLineNo">514</span>     * &lt;pre&gt;<a name="line.514"></a>
+<span class="sourceLineNo">515</span>     * addSeparator("Name",       "1, 1"); // No Mnemonic<a name="line.515"></a>
+<span class="sourceLineNo">516</span>     * addSeparator("N&amp;amp;ame",      "1, 1"); // Mnemonic is 'a'<a name="line.516"></a>
+<span class="sourceLineNo">517</span>     * addSeparator("Save &amp;amp;as",   "1, 1"); // Mnemonic is the second 'a'<a name="line.517"></a>
+<span class="sourceLineNo">518</span>     * addSeparator("Look&amp;amp;&amp;amp;Feel", "1, 1"); // No mnemonic, text is "look&amp;amp;feel"<a name="line.518"></a>
+<span class="sourceLineNo">519</span>     * &lt;/pre&gt;<a name="line.519"></a>
+<span class="sourceLineNo">520</span>     *<a name="line.520"></a>
+<span class="sourceLineNo">521</span>     * @param textWithMnemonic   the separator label's text -<a name="line.521"></a>
+<span class="sourceLineNo">522</span>     *     may contain an ampersand (&lt;tt&gt;&amp;amp;&lt;/tt&gt;) to mark a mnemonic<a name="line.522"></a>
+<span class="sourceLineNo">523</span>     * @param encodedConstraints  a string representation for the constraints<a name="line.523"></a>
+<span class="sourceLineNo">524</span>     * @return the added separator<a name="line.524"></a>
+<span class="sourceLineNo">525</span>     */<a name="line.525"></a>
+<span class="sourceLineNo">526</span>    public final JComponent addSeparator(String textWithMnemonic,<a name="line.526"></a>
+<span class="sourceLineNo">527</span>            String encodedConstraints) {<a name="line.527"></a>
+<span class="sourceLineNo">528</span>        return addSeparator(textWithMnemonic,<a name="line.528"></a>
+<span class="sourceLineNo">529</span>                new CellConstraints(encodedConstraints));<a name="line.529"></a>
+<span class="sourceLineNo">530</span>    }<a name="line.530"></a>
+<span class="sourceLineNo">531</span><a name="line.531"></a>
+<span class="sourceLineNo">532</span>    /**<a name="line.532"></a>
+<span class="sourceLineNo">533</span>     * Adds a titled separator to the form that spans the specified columns.<a name="line.533"></a>
+<span class="sourceLineNo">534</span>     *<a name="line.534"></a>
+<span class="sourceLineNo">535</span>     * &lt;pre&gt;<a name="line.535"></a>
+<span class="sourceLineNo">536</span>     * addSeparator("Name",       3); // No Mnemonic<a name="line.536"></a>
+<span class="sourceLineNo">537</span>     * addSeparator("N&amp;amp;ame",      3); // Mnemonic is 'a'<a name="line.537"></a>
+<span class="sourceLineNo">538</span>     * addSeparator("Save &amp;amp;as",   3); // Mnemonic is the second 'a'<a name="line.538"></a>
+<span class="sourceLineNo">539</span>     * addSeparator("Look&amp;amp;&amp;amp;Feel", 3); // No mnemonic, text is "look&amp;amp;feel"<a name="line.539"></a>
+<span class="sourceLineNo">540</span>     * &lt;/pre&gt;<a name="line.540"></a>
+<span class="sourceLineNo">541</span>     *<a name="line.541"></a>
+<span class="sourceLineNo">542</span>     * @param textWithMnemonic   the separator label's text -<a name="line.542"></a>
+<span class="sourceLineNo">543</span>     *     may contain an ampersand (&lt;tt&gt;&amp;amp;&lt;/tt&gt;) to mark a mnemonic<a name="line.543"></a>
+<span class="sourceLineNo">544</span>     * @param columnSpan        the number of columns the separator spans<a name="line.544"></a>
+<span class="sourceLineNo">545</span>     * @return the added separator<a name="line.545"></a>
+<span class="sourceLineNo">546</span>     */<a name="line.546"></a>
+<span class="sourceLineNo">547</span>    public final JComponent addSeparator(String textWithMnemonic,<a name="line.547"></a>
+<span class="sourceLineNo">548</span>            int columnSpan) {<a name="line.548"></a>
+<span class="sourceLineNo">549</span>        return addSeparator(textWithMnemonic,<a name="line.549"></a>
+<span class="sourceLineNo">550</span>                createLeftAdjustedConstraints(columnSpan));<a name="line.550"></a>
+<span class="sourceLineNo">551</span>    }<a name="line.551"></a>
+<span class="sourceLineNo">552</span><a name="line.552"></a>
+<span class="sourceLineNo">553</span>    // Accessing the ComponentFactory *****************************************<a name="line.553"></a>
+<span class="sourceLineNo">554</span><a name="line.554"></a>
+<span class="sourceLineNo">555</span>    /**<a name="line.555"></a>
+<span class="sourceLineNo">556</span>     * Returns the builder's component factory. If no factory<a name="line.556"></a>
+<span class="sourceLineNo">557</span>     * has been set before, it is lazily initialized using with an instance of<a name="line.557"></a>
+<span class="sourceLineNo">558</span>     * {@link com.jgoodies.forms.factories.DefaultComponentFactory}.<a name="line.558"></a>
+<span class="sourceLineNo">559</span>     *<a name="line.559"></a>
+<span class="sourceLineNo">560</span>     * @return the component factory<a name="line.560"></a>
+<span class="sourceLineNo">561</span>     *<a name="line.561"></a>
+<span class="sourceLineNo">562</span>     * @see #setComponentFactory(ComponentFactory)<a name="line.562"></a>
+<span class="sourceLineNo">563</span>     */<a name="line.563"></a>
+<span class="sourceLineNo">564</span>    public final ComponentFactory getComponentFactory() {<a name="line.564"></a>
+<span class="sourceLineNo">565</span>        if (componentFactory == null) {<a name="line.565"></a>
+<span class="sourceLineNo">566</span>            componentFactory = DefaultComponentFactory.getInstance();<a name="line.566"></a>
+<span class="sourceLineNo">567</span>        }<a name="line.567"></a>
+<span class="sourceLineNo">568</span>        return componentFactory;<a name="line.568"></a>
+<span class="sourceLineNo">569</span>    }<a name="line.569"></a>
+<span class="sourceLineNo">570</span><a name="line.570"></a>
+<span class="sourceLineNo">571</span>    /**<a name="line.571"></a>
+<span class="sourceLineNo">572</span>     * Sets a new component factory.<a name="line.572"></a>
+<span class="sourceLineNo">573</span>     *<a name="line.573"></a>
+<span class="sourceLineNo">574</span>     * @param newFactory   the component factory to be set<a name="line.574"></a>
+<span class="sourceLineNo">575</span>     *<a name="line.575"></a>
+<span class="sourceLineNo">576</span>     * @see #getComponentFactory()<a name="line.576"></a>
+<span class="sourceLineNo">577</span>     */<a name="line.577"></a>
+<span class="sourceLineNo">578</span>    public final void setComponentFactory(ComponentFactory newFactory) {<a name="line.578"></a>
+<span class="sourceLineNo">579</span>        componentFactory = newFactory;<a name="line.579"></a>
+<span class="sourceLineNo">580</span>    }<a name="line.580"></a>
+<span class="sourceLineNo">581</span><a name="line.581"></a>
+<span class="sourceLineNo">582</span>}<a name="line.582"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

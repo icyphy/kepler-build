@@ -1,0 +1,436 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../../stylesheet.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>/** Default preferences definition for Vergil. */<a name="line.1"></a>
+<span class="sourceLineNo">002</span><a name="line.2"></a>
+<span class="sourceLineNo">003</span>/*<a name="line.3"></a>
+<span class="sourceLineNo">004</span> Copyright (c) 2006-2014 The Regents of the University of California.<a name="line.4"></a>
+<span class="sourceLineNo">005</span> All rights reserved.<a name="line.5"></a>
+<span class="sourceLineNo">006</span><a name="line.6"></a>
+<span class="sourceLineNo">007</span> Permission is hereby granted, without written agreement and without<a name="line.7"></a>
+<span class="sourceLineNo">008</span> license or royalty fees, to use, copy, modify, and distribute this<a name="line.8"></a>
+<span class="sourceLineNo">009</span> software and its documentation for any purpose, provided that the above<a name="line.9"></a>
+<span class="sourceLineNo">010</span> copyright notice and the following two paragraphs appear in all copies<a name="line.10"></a>
+<span class="sourceLineNo">011</span> of this software.<a name="line.11"></a>
+<span class="sourceLineNo">012</span><a name="line.12"></a>
+<span class="sourceLineNo">013</span> IN NO EVENT SHALL THE UNIVERSITY OF CALIFORNIA BE LIABLE TO ANY PARTY<a name="line.13"></a>
+<span class="sourceLineNo">014</span> FOR DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES<a name="line.14"></a>
+<span class="sourceLineNo">015</span> ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION, EVEN IF<a name="line.15"></a>
+<span class="sourceLineNo">016</span> THE UNIVERSITY OF CALIFORNIA HAS BEEN ADVISED OF THE POSSIBILITY OF<a name="line.16"></a>
+<span class="sourceLineNo">017</span> SUCH DAMAGE.<a name="line.17"></a>
+<span class="sourceLineNo">018</span><a name="line.18"></a>
+<span class="sourceLineNo">019</span> THE UNIVERSITY OF CALIFORNIA SPECIFICALLY DISCLAIMS ANY WARRANTIES,<a name="line.19"></a>
+<span class="sourceLineNo">020</span> INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF<a name="line.20"></a>
+<span class="sourceLineNo">021</span> MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE<a name="line.21"></a>
+<span class="sourceLineNo">022</span> PROVIDED HEREUNDER IS ON AN "AS IS" BASIS, AND THE UNIVERSITY OF<a name="line.22"></a>
+<span class="sourceLineNo">023</span> CALIFORNIA HAS NO OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT, UPDATES,<a name="line.23"></a>
+<span class="sourceLineNo">024</span> ENHANCEMENTS, OR MODIFICATIONS.<a name="line.24"></a>
+<span class="sourceLineNo">025</span> */<a name="line.25"></a>
+<span class="sourceLineNo">026</span><a name="line.26"></a>
+<span class="sourceLineNo">027</span>package ptolemy.actor.gui;<a name="line.27"></a>
+<span class="sourceLineNo">028</span><a name="line.28"></a>
+<span class="sourceLineNo">029</span>import java.io.File;<a name="line.29"></a>
+<span class="sourceLineNo">030</span>import java.io.FileWriter;<a name="line.30"></a>
+<span class="sourceLineNo">031</span>import java.io.IOException;<a name="line.31"></a>
+<span class="sourceLineNo">032</span>import java.net.MalformedURLException;<a name="line.32"></a>
+<span class="sourceLineNo">033</span>import java.net.URL;<a name="line.33"></a>
+<span class="sourceLineNo">034</span>import java.util.Iterator;<a name="line.34"></a>
+<span class="sourceLineNo">035</span><a name="line.35"></a>
+<span class="sourceLineNo">036</span>import ptolemy.data.BooleanToken;<a name="line.36"></a>
+<span class="sourceLineNo">037</span>import ptolemy.data.Token;<a name="line.37"></a>
+<span class="sourceLineNo">038</span>import ptolemy.data.expr.Constants;<a name="line.38"></a>
+<span class="sourceLineNo">039</span>import ptolemy.data.expr.ModelScope;<a name="line.39"></a>
+<span class="sourceLineNo">040</span>import ptolemy.data.expr.Parameter;<a name="line.40"></a>
+<span class="sourceLineNo">041</span>import ptolemy.data.expr.ScopeExtendingAttribute;<a name="line.41"></a>
+<span class="sourceLineNo">042</span>import ptolemy.data.expr.SingletonParameter;<a name="line.42"></a>
+<span class="sourceLineNo">043</span>import ptolemy.data.expr.StringParameter;<a name="line.43"></a>
+<span class="sourceLineNo">044</span>import ptolemy.data.expr.Variable;<a name="line.44"></a>
+<span class="sourceLineNo">045</span>import ptolemy.data.type.BaseType;<a name="line.45"></a>
+<span class="sourceLineNo">046</span>import ptolemy.kernel.util.Attribute;<a name="line.46"></a>
+<span class="sourceLineNo">047</span>import ptolemy.kernel.util.IllegalActionException;<a name="line.47"></a>
+<span class="sourceLineNo">048</span>import ptolemy.kernel.util.NameDuplicationException;<a name="line.48"></a>
+<span class="sourceLineNo">049</span>import ptolemy.kernel.util.NamedObj;<a name="line.49"></a>
+<span class="sourceLineNo">050</span>import ptolemy.kernel.util.Settable;<a name="line.50"></a>
+<span class="sourceLineNo">051</span>import ptolemy.moml.MoMLParser;<a name="line.51"></a>
+<span class="sourceLineNo">052</span>import ptolemy.util.StringUtilities;<a name="line.52"></a>
+<span class="sourceLineNo">053</span><a name="line.53"></a>
+<span class="sourceLineNo">054</span>///////////////////////////////////////////////////////////////////<a name="line.54"></a>
+<span class="sourceLineNo">055</span>//// PtolemyPreferences<a name="line.55"></a>
+<span class="sourceLineNo">056</span><a name="line.56"></a>
+<span class="sourceLineNo">057</span>/**<a name="line.57"></a>
+<span class="sourceLineNo">058</span> * Default preferences definition for Vergil. This is defined as a class rather<a name="line.58"></a>
+<span class="sourceLineNo">059</span> * than in MoML so that the inheritance mechanism prevents exported MoML for<a name="line.59"></a>
+<span class="sourceLineNo">060</span> * every model from duplicating this information.<a name="line.60"></a>
+<span class="sourceLineNo">061</span> *<a name="line.61"></a>
+<span class="sourceLineNo">062</span> * @author Edward A. Lee, Contributor: Bert Rodiers<a name="line.62"></a>
+<span class="sourceLineNo">063</span> * @version $Id$<a name="line.63"></a>
+<span class="sourceLineNo">064</span> @since Ptolemy II 5.2<a name="line.64"></a>
+<span class="sourceLineNo">065</span> * @Pt.ProposedRating Yellow (eal)<a name="line.65"></a>
+<span class="sourceLineNo">066</span> * @Pt.AcceptedRating Red (cxh)<a name="line.66"></a>
+<span class="sourceLineNo">067</span> */<a name="line.67"></a>
+<span class="sourceLineNo">068</span>public class PtolemyPreferences extends ScopeExtendingAttribute {<a name="line.68"></a>
+<span class="sourceLineNo">069</span>    /** Construct an instance of the preferences attribute.<a name="line.69"></a>
+<span class="sourceLineNo">070</span>     *  @param container The container.<a name="line.70"></a>
+<span class="sourceLineNo">071</span>     *  @param name The name.<a name="line.71"></a>
+<span class="sourceLineNo">072</span>     *  @exception IllegalActionException If the attribute is not of an<a name="line.72"></a>
+<span class="sourceLineNo">073</span>     *   acceptable class for the container, or if the name contains a period.<a name="line.73"></a>
+<span class="sourceLineNo">074</span>     *  @exception NameDuplicationException If the name coincides with<a name="line.74"></a>
+<span class="sourceLineNo">075</span>     *   an attribute already in the container.<a name="line.75"></a>
+<span class="sourceLineNo">076</span>     */<a name="line.76"></a>
+<span class="sourceLineNo">077</span>    public PtolemyPreferences(NamedObj container, String name)<a name="line.77"></a>
+<span class="sourceLineNo">078</span>            throws IllegalActionException, NameDuplicationException {<a name="line.78"></a>
+<span class="sourceLineNo">079</span>        super(container, name);<a name="line.79"></a>
+<span class="sourceLineNo">080</span><a name="line.80"></a>
+<span class="sourceLineNo">081</span>        // Give the default values for all the preferences.<a name="line.81"></a>
+<span class="sourceLineNo">082</span>        // Names start with underscores by convention to minimize<a name="line.82"></a>
+<span class="sourceLineNo">083</span>        // the probability of conflict with model-specific parameters.<a name="line.83"></a>
+<span class="sourceLineNo">084</span>        // Note that the default values here should conform with the<a name="line.84"></a>
+<span class="sourceLineNo">085</span>        // defaults used in the code where these preferences are checked,<a name="line.85"></a>
+<span class="sourceLineNo">086</span>        // if there are any.  It's a good idea to provide them in<a name="line.86"></a>
+<span class="sourceLineNo">087</span>        // case setAsDefault() is never called.<a name="line.87"></a>
+<span class="sourceLineNo">088</span>        Parameter relationSize = new Parameter(this, "_relationSize");<a name="line.88"></a>
+<span class="sourceLineNo">089</span>        relationSize.setTypeEquals(BaseType.DOUBLE);<a name="line.89"></a>
+<span class="sourceLineNo">090</span>        relationSize.setExpression("12.0");<a name="line.90"></a>
+<span class="sourceLineNo">091</span>        relationSize.setDisplayName("Relation size");<a name="line.91"></a>
+<span class="sourceLineNo">092</span><a name="line.92"></a>
+<span class="sourceLineNo">093</span>        Parameter portSize = new Parameter(this, "_portSize");<a name="line.93"></a>
+<span class="sourceLineNo">094</span>        portSize.setTypeEquals(BaseType.DOUBLE);<a name="line.94"></a>
+<span class="sourceLineNo">095</span>        portSize.setExpression("4.0");<a name="line.95"></a>
+<span class="sourceLineNo">096</span>        portSize.setDisplayName("Port size");<a name="line.96"></a>
+<span class="sourceLineNo">097</span><a name="line.97"></a>
+<span class="sourceLineNo">098</span>        Parameter linkBendRadius = new Parameter(this, "_linkBendRadius");<a name="line.98"></a>
+<span class="sourceLineNo">099</span>        linkBendRadius.setTypeEquals(BaseType.DOUBLE);<a name="line.99"></a>
+<span class="sourceLineNo">100</span>        linkBendRadius.setExpression("20.0");<a name="line.100"></a>
+<span class="sourceLineNo">101</span>        linkBendRadius.setDisplayName("Link bend radius");<a name="line.101"></a>
+<span class="sourceLineNo">102</span><a name="line.102"></a>
+<span class="sourceLineNo">103</span>        backgroundColor = new ColorAttribute(this, "backgroundColor");<a name="line.103"></a>
+<span class="sourceLineNo">104</span>        backgroundColor.setExpression("{0.9, 0.9, 0.9, 1.0}");<a name="line.104"></a>
+<span class="sourceLineNo">105</span>        backgroundColor.setDisplayName("Background Color");<a name="line.105"></a>
+<span class="sourceLineNo">106</span><a name="line.106"></a>
+<span class="sourceLineNo">107</span>        StringParameter showParameters = new StringParameter(this,<a name="line.107"></a>
+<span class="sourceLineNo">108</span>                "_showParameters");<a name="line.108"></a>
+<span class="sourceLineNo">109</span>        showParameters.addChoice("None");<a name="line.109"></a>
+<span class="sourceLineNo">110</span>        showParameters.addChoice("Overridden parameters only");<a name="line.110"></a>
+<span class="sourceLineNo">111</span>        showParameters.addChoice("All");<a name="line.111"></a>
+<span class="sourceLineNo">112</span>        showParameters.setExpression("None");<a name="line.112"></a>
+<span class="sourceLineNo">113</span>        showParameters.setDisplayName("Show parameters");<a name="line.113"></a>
+<span class="sourceLineNo">114</span><a name="line.114"></a>
+<span class="sourceLineNo">115</span>        Parameter checkWidthConsistencyAtMultiports = new Parameter(this,<a name="line.115"></a>
+<span class="sourceLineNo">116</span>                "_checkWidthConsistencyAtMultiports");<a name="line.116"></a>
+<span class="sourceLineNo">117</span>        checkWidthConsistencyAtMultiports.setTypeEquals(BaseType.BOOLEAN);<a name="line.117"></a>
+<span class="sourceLineNo">118</span>        checkWidthConsistencyAtMultiports.setExpression("true");<a name="line.118"></a>
+<span class="sourceLineNo">119</span>        checkWidthConsistencyAtMultiports<a name="line.119"></a>
+<span class="sourceLineNo">120</span>                .setDisplayName("Check width consistency at multiports");<a name="line.120"></a>
+<span class="sourceLineNo">121</span><a name="line.121"></a>
+<span class="sourceLineNo">122</span>        Parameter checkWidthConstraints = new Parameter(this,<a name="line.122"></a>
+<span class="sourceLineNo">123</span>                "_checkWidthConstraints");<a name="line.123"></a>
+<span class="sourceLineNo">124</span>        checkWidthConstraints.setTypeEquals(BaseType.BOOLEAN);<a name="line.124"></a>
+<span class="sourceLineNo">125</span>        checkWidthConstraints.setExpression("true");<a name="line.125"></a>
+<span class="sourceLineNo">126</span>        checkWidthConstraints.setDisplayName("Check width constraints");<a name="line.126"></a>
+<span class="sourceLineNo">127</span><a name="line.127"></a>
+<span class="sourceLineNo">128</span>        Parameter defaultInferredWidthTo1 = new Parameter(this,<a name="line.128"></a>
+<span class="sourceLineNo">129</span>                "_defaultInferredWidthTo1");<a name="line.129"></a>
+<span class="sourceLineNo">130</span>        defaultInferredWidthTo1.setTypeEquals(BaseType.BOOLEAN);<a name="line.130"></a>
+<span class="sourceLineNo">131</span>        defaultInferredWidthTo1.setExpression("false");<a name="line.131"></a>
+<span class="sourceLineNo">132</span>        defaultInferredWidthTo1.setDisplayName("Default inferred width to 1");<a name="line.132"></a>
+<span class="sourceLineNo">133</span><a name="line.133"></a>
+<span class="sourceLineNo">134</span>        // The icon.<a name="line.134"></a>
+<span class="sourceLineNo">135</span>        _attachText("_iconDescription", "&lt;svg&gt;\n" + "&lt;rect x=\"-60\" y=\"-10\" "<a name="line.135"></a>
+<span class="sourceLineNo">136</span>                + "width=\"120\" height=\"20\" " + "style=\"fill:#00FFFF\"/&gt;\n"<a name="line.136"></a>
+<span class="sourceLineNo">137</span>                + "&lt;text x=\"-55\" y=\"5\" "<a name="line.137"></a>
+<span class="sourceLineNo">138</span>                + "style=\"font-size:14; font-family:SansSerif; fill:blue\"&gt;\n"<a name="line.138"></a>
+<span class="sourceLineNo">139</span>                + "LocalPreferences\n" + "&lt;/text&gt;\n" + "&lt;/svg&gt;\n");<a name="line.139"></a>
+<span class="sourceLineNo">140</span>        // Hide the name.<a name="line.140"></a>
+<span class="sourceLineNo">141</span>        SingletonParameter hideName = new SingletonParameter(this, "_hideName");<a name="line.141"></a>
+<span class="sourceLineNo">142</span>        hideName.setToken(BooleanToken.TRUE);<a name="line.142"></a>
+<span class="sourceLineNo">143</span>        hideName.setVisibility(Settable.EXPERT);<a name="line.143"></a>
+<span class="sourceLineNo">144</span>    }<a name="line.144"></a>
+<span class="sourceLineNo">145</span><a name="line.145"></a>
+<span class="sourceLineNo">146</span>    ///////////////////////////////////////////////////////////////////<a name="line.146"></a>
+<span class="sourceLineNo">147</span>    ////                       public parameters                   ////<a name="line.147"></a>
+<span class="sourceLineNo">148</span><a name="line.148"></a>
+<span class="sourceLineNo">149</span>    /** The background color. */<a name="line.149"></a>
+<span class="sourceLineNo">150</span>    public ColorAttribute backgroundColor;<a name="line.150"></a>
+<span class="sourceLineNo">151</span><a name="line.151"></a>
+<span class="sourceLineNo">152</span>    ///////////////////////////////////////////////////////////////////<a name="line.152"></a>
+<span class="sourceLineNo">153</span>    ////                         public methods                    ////<a name="line.153"></a>
+<span class="sourceLineNo">154</span><a name="line.154"></a>
+<span class="sourceLineNo">155</span>    /** Get the PtolemyPreferences within the specified configuration.<a name="line.155"></a>
+<span class="sourceLineNo">156</span>     *  @param configuration  The configuration in which to search for<a name="line.156"></a>
+<span class="sourceLineNo">157</span>     *  {@link #PREFERENCES_WITHIN_CONFIGURATION}<a name="line.157"></a>
+<span class="sourceLineNo">158</span>     *  @return The associated PtolemyPreferences or null if not found.<a name="line.158"></a>
+<span class="sourceLineNo">159</span>     *  @exception IllegalActionException If there is a problem getting the<a name="line.159"></a>
+<span class="sourceLineNo">160</span>     *  {@link #PREFERENCES_WITHIN_CONFIGURATION} attribute.<a name="line.160"></a>
+<span class="sourceLineNo">161</span>     */<a name="line.161"></a>
+<span class="sourceLineNo">162</span>    public static PtolemyPreferences getPtolemyPreferencesWithinConfiguration(<a name="line.162"></a>
+<span class="sourceLineNo">163</span>            Configuration configuration) throws IllegalActionException {<a name="line.163"></a>
+<span class="sourceLineNo">164</span>        PtolemyPreferences preferences = null;<a name="line.164"></a>
+<span class="sourceLineNo">165</span><a name="line.165"></a>
+<span class="sourceLineNo">166</span>        try {<a name="line.166"></a>
+<span class="sourceLineNo">167</span>            preferences = (PtolemyPreferences) configuration.getAttribute(<a name="line.167"></a>
+<span class="sourceLineNo">168</span>                    PtolemyPreferences.PREFERENCES_WITHIN_CONFIGURATION,<a name="line.168"></a>
+<span class="sourceLineNo">169</span>                    PtolemyPreferences.class);<a name="line.169"></a>
+<span class="sourceLineNo">170</span>        } catch (IllegalActionException ex) {<a name="line.170"></a>
+<span class="sourceLineNo">171</span>            return null;<a name="line.171"></a>
+<span class="sourceLineNo">172</span>        }<a name="line.172"></a>
+<span class="sourceLineNo">173</span>        return preferences;<a name="line.173"></a>
+<span class="sourceLineNo">174</span>    }<a name="line.174"></a>
+<span class="sourceLineNo">175</span><a name="line.175"></a>
+<span class="sourceLineNo">176</span>    /** Check to see whether a preference of the specified name is<a name="line.176"></a>
+<span class="sourceLineNo">177</span>     *  defined in the specified context, and if it is, return its value.<a name="line.177"></a>
+<span class="sourceLineNo">178</span>     *  Note that if there is an error in the expression for the preference,<a name="line.178"></a>
+<span class="sourceLineNo">179</span>     *  then this method will return null and report the error to standard out.<a name="line.179"></a>
+<span class="sourceLineNo">180</span>     *  This is done because we assume the error will normally be caught<a name="line.180"></a>
+<span class="sourceLineNo">181</span>     *  before this method is called.<a name="line.181"></a>
+<span class="sourceLineNo">182</span>     *  @param context The context for the preference.<a name="line.182"></a>
+<span class="sourceLineNo">183</span>     *  @param preferenceName The name of the preference.<a name="line.183"></a>
+<span class="sourceLineNo">184</span>     *  @return The value of the preference, or null if it is not set.<a name="line.184"></a>
+<span class="sourceLineNo">185</span>     */<a name="line.185"></a>
+<span class="sourceLineNo">186</span>    public static Token preferenceValue(NamedObj context,<a name="line.186"></a>
+<span class="sourceLineNo">187</span>            String preferenceName) {<a name="line.187"></a>
+<span class="sourceLineNo">188</span>        return ModelScope.preferenceValue(context, preferenceName);<a name="line.188"></a>
+<span class="sourceLineNo">189</span>    }<a name="line.189"></a>
+<span class="sourceLineNo">190</span><a name="line.190"></a>
+<span class="sourceLineNo">191</span>    /** Check to see whether a preference of the specified name is<a name="line.191"></a>
+<span class="sourceLineNo">192</span>     *  defined in the container of the specified context, either directly<a name="line.192"></a>
+<span class="sourceLineNo">193</span>     *  or within an instance of PtolemyPreferences, or<a name="line.193"></a>
+<span class="sourceLineNo">194</span>     *  globally, and if it is, return it's value. Do not look any higher<a name="line.194"></a>
+<span class="sourceLineNo">195</span>     *  in the hierarchy.<a name="line.195"></a>
+<span class="sourceLineNo">196</span>     *  Note that if there is an error in the expression for the preference,<a name="line.196"></a>
+<span class="sourceLineNo">197</span>     *  then this method will return null and report the error to standard out.<a name="line.197"></a>
+<span class="sourceLineNo">198</span>     *  This is done because we assume the error will normally be caught<a name="line.198"></a>
+<span class="sourceLineNo">199</span>     *  before this method is called.<a name="line.199"></a>
+<span class="sourceLineNo">200</span>     *  @param context The context for the preference.<a name="line.200"></a>
+<span class="sourceLineNo">201</span>     *  @param preferenceName The name of the preference.<a name="line.201"></a>
+<span class="sourceLineNo">202</span>     *  @return The value of the preference, or null if it is not set.<a name="line.202"></a>
+<span class="sourceLineNo">203</span>     */<a name="line.203"></a>
+<span class="sourceLineNo">204</span>    public static Token preferenceValueLocal(NamedObj context,<a name="line.204"></a>
+<span class="sourceLineNo">205</span>            String preferenceName) {<a name="line.205"></a>
+<span class="sourceLineNo">206</span>        try {<a name="line.206"></a>
+<span class="sourceLineNo">207</span>            NamedObj container = context.getContainer();<a name="line.207"></a>
+<span class="sourceLineNo">208</span>            if (container != null) {<a name="line.208"></a>
+<span class="sourceLineNo">209</span>                Attribute attribute = container.getAttribute(preferenceName);<a name="line.209"></a>
+<span class="sourceLineNo">210</span>                if (attribute instanceof Variable) {<a name="line.210"></a>
+<span class="sourceLineNo">211</span>                    return ((Variable) attribute).getToken();<a name="line.211"></a>
+<span class="sourceLineNo">212</span>                }<a name="line.212"></a>
+<span class="sourceLineNo">213</span>                Iterator&lt;?&gt; preferences = container<a name="line.213"></a>
+<span class="sourceLineNo">214</span>                        .attributeList(PtolemyPreferences.class).iterator();<a name="line.214"></a>
+<span class="sourceLineNo">215</span>                while (preferences.hasNext()) {<a name="line.215"></a>
+<span class="sourceLineNo">216</span>                    PtolemyPreferences preference = (PtolemyPreferences) preferences<a name="line.216"></a>
+<span class="sourceLineNo">217</span>                            .next();<a name="line.217"></a>
+<span class="sourceLineNo">218</span>                    attribute = preference.getAttribute(preferenceName);<a name="line.218"></a>
+<span class="sourceLineNo">219</span>                    if (attribute instanceof Variable) {<a name="line.219"></a>
+<span class="sourceLineNo">220</span>                        return ((Variable) attribute).getToken();<a name="line.220"></a>
+<span class="sourceLineNo">221</span>                    }<a name="line.221"></a>
+<span class="sourceLineNo">222</span>                }<a name="line.222"></a>
+<span class="sourceLineNo">223</span>            }<a name="line.223"></a>
+<span class="sourceLineNo">224</span>        } catch (IllegalActionException ex) {<a name="line.224"></a>
+<span class="sourceLineNo">225</span>            System.out.println("Warning: Invalid preference: " + ex);<a name="line.225"></a>
+<span class="sourceLineNo">226</span>        }<a name="line.226"></a>
+<span class="sourceLineNo">227</span>        // If no scoped variable is found, try for a defined constant.<a name="line.227"></a>
+<span class="sourceLineNo">228</span>        return Constants.get(preferenceName);<a name="line.228"></a>
+<span class="sourceLineNo">229</span>    }<a name="line.229"></a>
+<span class="sourceLineNo">230</span><a name="line.230"></a>
+<span class="sourceLineNo">231</span>    /** Save the preference values in this instance to the user<a name="line.231"></a>
+<span class="sourceLineNo">232</span>     *  preferences file.<a name="line.232"></a>
+<span class="sourceLineNo">233</span>     *  @exception IOException If an error occurs writing the file.<a name="line.233"></a>
+<span class="sourceLineNo">234</span>     */<a name="line.234"></a>
+<span class="sourceLineNo">235</span>    public void save() throws IOException {<a name="line.235"></a>
+<span class="sourceLineNo">236</span>        String libraryName = StringUtilities.preferencesDirectory()<a name="line.236"></a>
+<span class="sourceLineNo">237</span>                + PREFERENCES_FILE_NAME;<a name="line.237"></a>
+<span class="sourceLineNo">238</span>        File file = new File(libraryName);<a name="line.238"></a>
+<span class="sourceLineNo">239</span>        FileWriter writer = null;<a name="line.239"></a>
+<span class="sourceLineNo">240</span>        try {<a name="line.240"></a>
+<span class="sourceLineNo">241</span>            writer = new FileWriter(file);<a name="line.241"></a>
+<span class="sourceLineNo">242</span>            exportMoML(writer);<a name="line.242"></a>
+<span class="sourceLineNo">243</span>        } finally {<a name="line.243"></a>
+<span class="sourceLineNo">244</span>            if (writer != null) {<a name="line.244"></a>
+<span class="sourceLineNo">245</span>                try {<a name="line.245"></a>
+<span class="sourceLineNo">246</span>                    writer.close();<a name="line.246"></a>
+<span class="sourceLineNo">247</span>                } catch (IOException ex) {<a name="line.247"></a>
+<span class="sourceLineNo">248</span>                    System.out.println(<a name="line.248"></a>
+<span class="sourceLineNo">249</span>                            "Failed to close \"" + libraryName + "\": " + ex);<a name="line.249"></a>
+<span class="sourceLineNo">250</span><a name="line.250"></a>
+<span class="sourceLineNo">251</span>                }<a name="line.251"></a>
+<span class="sourceLineNo">252</span>            }<a name="line.252"></a>
+<span class="sourceLineNo">253</span>        }<a name="line.253"></a>
+<span class="sourceLineNo">254</span>    }<a name="line.254"></a>
+<span class="sourceLineNo">255</span><a name="line.255"></a>
+<span class="sourceLineNo">256</span>    /** Set the values in this instance of PtolemyPreferences to be<a name="line.256"></a>
+<span class="sourceLineNo">257</span>     *  the default values by creating entries in the Constants class<a name="line.257"></a>
+<span class="sourceLineNo">258</span>     *  so that these values are accessible to any expression.<a name="line.258"></a>
+<span class="sourceLineNo">259</span>     *  @exception IllegalActionException If any expression for<a name="line.259"></a>
+<span class="sourceLineNo">260</span>     *   a preference cannot be evaluated.<a name="line.260"></a>
+<span class="sourceLineNo">261</span>     */<a name="line.261"></a>
+<span class="sourceLineNo">262</span>    public void setAsDefault() throws IllegalActionException {<a name="line.262"></a>
+<span class="sourceLineNo">263</span>        // Make the current global variables conform with any<a name="line.263"></a>
+<span class="sourceLineNo">264</span>        // overridden preference values.<a name="line.264"></a>
+<span class="sourceLineNo">265</span>        Iterator&lt;?&gt; parameters = attributeList(Variable.class).iterator();<a name="line.265"></a>
+<span class="sourceLineNo">266</span><a name="line.266"></a>
+<span class="sourceLineNo">267</span>        while (parameters.hasNext()) {<a name="line.267"></a>
+<span class="sourceLineNo">268</span>            Variable parameter = (Variable) parameters.next();<a name="line.268"></a>
+<span class="sourceLineNo">269</span>            Token token = parameter.getToken();<a name="line.269"></a>
+<span class="sourceLineNo">270</span>            Constants.add(parameter.getName(), token);<a name="line.270"></a>
+<span class="sourceLineNo">271</span>        }<a name="line.271"></a>
+<span class="sourceLineNo">272</span>    }<a name="line.272"></a>
+<span class="sourceLineNo">273</span><a name="line.273"></a>
+<span class="sourceLineNo">274</span>    /** Look for a default preferences object within the<a name="line.274"></a>
+<span class="sourceLineNo">275</span>     *  specified configuration, and set it as the default<a name="line.275"></a>
+<span class="sourceLineNo">276</span>     *  preferences. Then look for a user preferences file,<a name="line.276"></a>
+<span class="sourceLineNo">277</span>     *  and override the default preferences with the contents<a name="line.277"></a>
+<span class="sourceLineNo">278</span>     *  of that file. This method prints warning messages<a name="line.278"></a>
+<span class="sourceLineNo">279</span>     *  on standard out if there are problems with the<a name="line.279"></a>
+<span class="sourceLineNo">280</span>     *  preferences.<a name="line.280"></a>
+<span class="sourceLineNo">281</span>     *  @param configuration The specified configuration.<a name="line.281"></a>
+<span class="sourceLineNo">282</span>     */<a name="line.282"></a>
+<span class="sourceLineNo">283</span>    public static void setDefaultPreferences(Configuration configuration) {<a name="line.283"></a>
+<span class="sourceLineNo">284</span>        PtolemyPreferences preferences = null;<a name="line.284"></a>
+<span class="sourceLineNo">285</span>        try {<a name="line.285"></a>
+<span class="sourceLineNo">286</span>            preferences = getPtolemyPreferencesWithinConfiguration(<a name="line.286"></a>
+<span class="sourceLineNo">287</span>                    configuration);<a name="line.287"></a>
+<span class="sourceLineNo">288</span>        } catch (IllegalActionException ex) {<a name="line.288"></a>
+<span class="sourceLineNo">289</span>            System.out.println("Warning: Problem with preferences attribute "<a name="line.289"></a>
+<span class="sourceLineNo">290</span>                    + "in the configuration: " + ex.getMessage());<a name="line.290"></a>
+<span class="sourceLineNo">291</span><a name="line.291"></a>
+<span class="sourceLineNo">292</span>            // Can't do anything further.<a name="line.292"></a>
+<span class="sourceLineNo">293</span>            return;<a name="line.293"></a>
+<span class="sourceLineNo">294</span>        }<a name="line.294"></a>
+<span class="sourceLineNo">295</span><a name="line.295"></a>
+<span class="sourceLineNo">296</span>        if (preferences == null) {<a name="line.296"></a>
+<span class="sourceLineNo">297</span>            // No preferences found in the configuration at<a name="line.297"></a>
+<span class="sourceLineNo">298</span>            // location "actor library.Utilities.LocalPreferences"<a name="line.298"></a>
+<span class="sourceLineNo">299</span>            return;<a name="line.299"></a>
+<span class="sourceLineNo">300</span>        }<a name="line.300"></a>
+<span class="sourceLineNo">301</span><a name="line.301"></a>
+<span class="sourceLineNo">302</span>        // Now override with the user file, if present.<a name="line.302"></a>
+<span class="sourceLineNo">303</span>        String libraryName = null;<a name="line.303"></a>
+<span class="sourceLineNo">304</span><a name="line.304"></a>
+<span class="sourceLineNo">305</span>        try {<a name="line.305"></a>
+<span class="sourceLineNo">306</span>            libraryName = StringUtilities.preferencesDirectory()<a name="line.306"></a>
+<span class="sourceLineNo">307</span>                    + PREFERENCES_FILE_NAME;<a name="line.307"></a>
+<span class="sourceLineNo">308</span>        } catch (Exception ex) {<a name="line.308"></a>
+<span class="sourceLineNo">309</span>            System.out.println("Warning: Failed to get the preferences "<a name="line.309"></a>
+<span class="sourceLineNo">310</span>                    + "directory (-sandbox always causes this): "<a name="line.310"></a>
+<span class="sourceLineNo">311</span>                    + ex.getMessage());<a name="line.311"></a>
+<span class="sourceLineNo">312</span><a name="line.312"></a>
+<span class="sourceLineNo">313</span>            // Can't do anything further.<a name="line.313"></a>
+<span class="sourceLineNo">314</span>            return;<a name="line.314"></a>
+<span class="sourceLineNo">315</span>        }<a name="line.315"></a>
+<span class="sourceLineNo">316</span><a name="line.316"></a>
+<span class="sourceLineNo">317</span>        File file = new File(libraryName);<a name="line.317"></a>
+<span class="sourceLineNo">318</span><a name="line.318"></a>
+<span class="sourceLineNo">319</span>        if (file.isFile() &amp;&amp; file.canRead()) {<a name="line.319"></a>
+<span class="sourceLineNo">320</span>            // If we have a jar URL, convert spaces to %20<a name="line.320"></a>
+<span class="sourceLineNo">321</span>            URL fileURL;<a name="line.321"></a>
+<span class="sourceLineNo">322</span><a name="line.322"></a>
+<span class="sourceLineNo">323</span>            try {<a name="line.323"></a>
+<span class="sourceLineNo">324</span>                fileURL = JNLPUtilities<a name="line.324"></a>
+<span class="sourceLineNo">325</span>                        .canonicalizeJarURL(file.toURI().toURL());<a name="line.325"></a>
+<span class="sourceLineNo">326</span>            } catch (MalformedURLException ex) {<a name="line.326"></a>
+<span class="sourceLineNo">327</span>                // This should not occur.<a name="line.327"></a>
+<span class="sourceLineNo">328</span>                System.err.println("Malformed preferences URL: " + ex);<a name="line.328"></a>
+<span class="sourceLineNo">329</span>                return;<a name="line.329"></a>
+<span class="sourceLineNo">330</span>            }<a name="line.330"></a>
+<span class="sourceLineNo">331</span><a name="line.331"></a>
+<span class="sourceLineNo">332</span>            MoMLParser parser = new MoMLParser(preferences.workspace());<a name="line.332"></a>
+<span class="sourceLineNo">333</span>            parser.setContext(preferences.getContainer());<a name="line.333"></a>
+<span class="sourceLineNo">334</span><a name="line.334"></a>
+<span class="sourceLineNo">335</span>            // Set the ErrorHandler so that if we have<a name="line.335"></a>
+<span class="sourceLineNo">336</span>            // compatibility problems between devel and production<a name="line.336"></a>
+<span class="sourceLineNo">337</span>            // versions, we can skip that element.<a name="line.337"></a>
+<span class="sourceLineNo">338</span>            // MoMLParser.setErrorHandler(new VergilErrorHandler());<a name="line.338"></a>
+<span class="sourceLineNo">339</span><a name="line.339"></a>
+<span class="sourceLineNo">340</span>            try {<a name="line.340"></a>
+<span class="sourceLineNo">341</span>                parser.parse(fileURL, fileURL);<a name="line.341"></a>
+<span class="sourceLineNo">342</span>            } catch (Exception ex) {<a name="line.342"></a>
+<span class="sourceLineNo">343</span>                System.out<a name="line.343"></a>
+<span class="sourceLineNo">344</span>                        .println("Failed to read user preferences file: " + ex);<a name="line.344"></a>
+<span class="sourceLineNo">345</span>            }<a name="line.345"></a>
+<span class="sourceLineNo">346</span>        }<a name="line.346"></a>
+<span class="sourceLineNo">347</span><a name="line.347"></a>
+<span class="sourceLineNo">348</span>        try {<a name="line.348"></a>
+<span class="sourceLineNo">349</span>            preferences.setAsDefault();<a name="line.349"></a>
+<span class="sourceLineNo">350</span>        } catch (IllegalActionException ex) {<a name="line.350"></a>
+<span class="sourceLineNo">351</span>            System.out.println("Warning: Problem with preferences value: "<a name="line.351"></a>
+<span class="sourceLineNo">352</span>                    + ex.getMessage());<a name="line.352"></a>
+<span class="sourceLineNo">353</span>        }<a name="line.353"></a>
+<span class="sourceLineNo">354</span>    }<a name="line.354"></a>
+<span class="sourceLineNo">355</span><a name="line.355"></a>
+<span class="sourceLineNo">356</span>    ///////////////////////////////////////////////////////////////////<a name="line.356"></a>
+<span class="sourceLineNo">357</span>    ////                         public variables                  ////<a name="line.357"></a>
+<span class="sourceLineNo">358</span><a name="line.358"></a>
+<span class="sourceLineNo">359</span>    /** The file name where user-defined preferences are stored. */<a name="line.359"></a>
+<span class="sourceLineNo">360</span>    public static final String PREFERENCES_FILE_NAME = "PtolemyPreferences.xml";<a name="line.360"></a>
+<span class="sourceLineNo">361</span><a name="line.361"></a>
+<span class="sourceLineNo">362</span>    /** The location with the configuration of the preferences attribute. */<a name="line.362"></a>
+<span class="sourceLineNo">363</span>    public static final String PREFERENCES_WITHIN_CONFIGURATION = "actor library.Utilities.LocalPreferences";<a name="line.363"></a>
+<span class="sourceLineNo">364</span>}<a name="line.364"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

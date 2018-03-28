@@ -1,0 +1,916 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../../../stylesheet.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>/* Viterbi Decoder.<a name="line.1"></a>
+<span class="sourceLineNo">002</span><a name="line.2"></a>
+<span class="sourceLineNo">003</span> Copyright (c) 2003-2014 The Regents of the University of California.<a name="line.3"></a>
+<span class="sourceLineNo">004</span> All rights reserved.<a name="line.4"></a>
+<span class="sourceLineNo">005</span> Permission is hereby granted, without written agreement and without<a name="line.5"></a>
+<span class="sourceLineNo">006</span> license or royalty fees, to use, copy, modify, and distribute this<a name="line.6"></a>
+<span class="sourceLineNo">007</span> software and its documentation for any purpose, provided that the above<a name="line.7"></a>
+<span class="sourceLineNo">008</span> copyright notice and the following two paragraphs appear in all copies<a name="line.8"></a>
+<span class="sourceLineNo">009</span> of this software.<a name="line.9"></a>
+<span class="sourceLineNo">010</span><a name="line.10"></a>
+<span class="sourceLineNo">011</span> IN NO EVENT SHALL THE UNIVERSITY OF CALIFORNIA BE LIABLE TO ANY PARTY<a name="line.11"></a>
+<span class="sourceLineNo">012</span> FOR DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES<a name="line.12"></a>
+<span class="sourceLineNo">013</span> ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION, EVEN IF<a name="line.13"></a>
+<span class="sourceLineNo">014</span> THE UNIVERSITY OF CALIFORNIA HAS BEEN ADVISED OF THE POSSIBILITY OF<a name="line.14"></a>
+<span class="sourceLineNo">015</span> SUCH DAMAGE.<a name="line.15"></a>
+<span class="sourceLineNo">016</span><a name="line.16"></a>
+<span class="sourceLineNo">017</span> THE UNIVERSITY OF CALIFORNIA SPECIFICALLY DISCLAIMS ANY WARRANTIES,<a name="line.17"></a>
+<span class="sourceLineNo">018</span> INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF<a name="line.18"></a>
+<span class="sourceLineNo">019</span> MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE<a name="line.19"></a>
+<span class="sourceLineNo">020</span> PROVIDED HEREUNDER IS ON AN "AS IS" BASIS, AND THE UNIVERSITY OF<a name="line.20"></a>
+<span class="sourceLineNo">021</span> CALIFORNIA HAS NO OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT, UPDATES,<a name="line.21"></a>
+<span class="sourceLineNo">022</span> ENHANCEMENTS, OR MODIFICATIONS.<a name="line.22"></a>
+<span class="sourceLineNo">023</span><a name="line.23"></a>
+<span class="sourceLineNo">024</span> PT_COPYRIGHT_VERSION_2<a name="line.24"></a>
+<span class="sourceLineNo">025</span> COPYRIGHTENDKEY<a name="line.25"></a>
+<span class="sourceLineNo">026</span><a name="line.26"></a>
+<span class="sourceLineNo">027</span> */<a name="line.27"></a>
+<span class="sourceLineNo">028</span>package ptolemy.actor.lib.comm;<a name="line.28"></a>
+<span class="sourceLineNo">029</span><a name="line.29"></a>
+<span class="sourceLineNo">030</span>import ptolemy.actor.TypeAttribute;<a name="line.30"></a>
+<span class="sourceLineNo">031</span>import ptolemy.actor.lib.Transformer;<a name="line.31"></a>
+<span class="sourceLineNo">032</span>import ptolemy.data.ArrayToken;<a name="line.32"></a>
+<span class="sourceLineNo">033</span>import ptolemy.data.BooleanToken;<a name="line.33"></a>
+<span class="sourceLineNo">034</span>import ptolemy.data.ComplexToken;<a name="line.34"></a>
+<span class="sourceLineNo">035</span>import ptolemy.data.DoubleToken;<a name="line.35"></a>
+<span class="sourceLineNo">036</span>import ptolemy.data.IntToken;<a name="line.36"></a>
+<span class="sourceLineNo">037</span>import ptolemy.data.Token;<a name="line.37"></a>
+<span class="sourceLineNo">038</span>import ptolemy.data.expr.Parameter;<a name="line.38"></a>
+<span class="sourceLineNo">039</span>import ptolemy.data.type.ArrayType;<a name="line.39"></a>
+<span class="sourceLineNo">040</span>import ptolemy.data.type.BaseType;<a name="line.40"></a>
+<span class="sourceLineNo">041</span>import ptolemy.kernel.CompositeEntity;<a name="line.41"></a>
+<span class="sourceLineNo">042</span>import ptolemy.kernel.util.Attribute;<a name="line.42"></a>
+<span class="sourceLineNo">043</span>import ptolemy.kernel.util.IllegalActionException;<a name="line.43"></a>
+<span class="sourceLineNo">044</span>import ptolemy.kernel.util.NameDuplicationException;<a name="line.44"></a>
+<span class="sourceLineNo">045</span>import ptolemy.kernel.util.Settable;<a name="line.45"></a>
+<span class="sourceLineNo">046</span>import ptolemy.kernel.util.Workspace;<a name="line.46"></a>
+<span class="sourceLineNo">047</span>import ptolemy.math.Complex;<a name="line.47"></a>
+<span class="sourceLineNo">048</span><a name="line.48"></a>
+<span class="sourceLineNo">049</span>///////////////////////////////////////////////////////////////////<a name="line.49"></a>
+<span class="sourceLineNo">050</span>//// ViterbiDecoder<a name="line.50"></a>
+<span class="sourceLineNo">051</span><a name="line.51"></a>
+<span class="sourceLineNo">052</span>/**<a name="line.52"></a>
+<span class="sourceLineNo">053</span> The Viterbi algorithm is an optimal way to decode convolutional and<a name="line.53"></a>
+<span class="sourceLineNo">054</span> trellis codes. The code is specified jointly by the &lt;i&gt;uncodedRate&lt;/i&gt;<a name="line.54"></a>
+<span class="sourceLineNo">055</span> and &lt;i&gt;polynomialArray&lt;/i&gt; parameters.  To get a &lt;i&gt;k&lt;/i&gt;/&lt;i&gt;n&lt;/i&gt;<a name="line.55"></a>
+<span class="sourceLineNo">056</span> code, set &lt;i&gt;uncodedRate&lt;/i&gt; to &lt;i&gt;k&lt;/i&gt; and give &lt;i&gt;n&lt;/i&gt; integers<a name="line.56"></a>
+<span class="sourceLineNo">057</span> in &lt;i&gt;polynomialArray&lt;/i&gt;.  See ConvolutionalCoder for details about<a name="line.57"></a>
+<span class="sourceLineNo">058</span> the meaning of these parameters. On each firing, this actor will<a name="line.58"></a>
+<span class="sourceLineNo">059</span> read &lt;i&gt;n&lt;/i&gt; inputs and produce &lt;i&gt;k&lt;/i&gt; outputs.<a name="line.59"></a>
+<span class="sourceLineNo">060</span> &lt;p&gt;<a name="line.60"></a>
+<span class="sourceLineNo">061</span> The decoder finds the most likely data sequence given noisy inputs<a name="line.61"></a>
+<span class="sourceLineNo">062</span> by searching all possibilities and computing the distance<a name="line.62"></a>
+<span class="sourceLineNo">063</span> between the codewords they produce and the observed noisy data.<a name="line.63"></a>
+<span class="sourceLineNo">064</span> The sequence yielding the minimum distance is the decoded output.<a name="line.64"></a>
+<span class="sourceLineNo">065</span> &lt;p&gt;<a name="line.65"></a>
+<span class="sourceLineNo">066</span> There are two choices offered in this actor to compute the distance.<a name="line.66"></a>
+<span class="sourceLineNo">067</span> If it the parameter &lt;i&gt;softDecoding&lt;/i&gt; is set to be false, the input<a name="line.67"></a>
+<span class="sourceLineNo">068</span> port will accept boolean tokens and compute the Hamming distance.<a name="line.68"></a>
+<span class="sourceLineNo">069</span> If the parameter &lt;i&gt;softDecoding&lt;/i&gt; is set to be true, the input port<a name="line.69"></a>
+<span class="sourceLineNo">070</span> will accept double tokens and compute the Euclidean distance.<a name="line.70"></a>
+<span class="sourceLineNo">071</span> The parameter &lt;i&gt;constellation&lt;/i&gt; should be a double array of length 2.<a name="line.71"></a>
+<span class="sourceLineNo">072</span> The first element specifies the amplitude of "false" input. The second<a name="line.72"></a>
+<span class="sourceLineNo">073</span> element specifies the amplitude of "true" input.  At this time,<a name="line.73"></a>
+<span class="sourceLineNo">074</span> this actor can only handle binary antipodal constellations, but<a name="line.74"></a>
+<span class="sourceLineNo">075</span> we expect to generalize this.<a name="line.75"></a>
+<span class="sourceLineNo">076</span> &lt;p&gt;<a name="line.76"></a>
+<span class="sourceLineNo">077</span> Soft decoding has lower probability of decoding error than hard decoding.<a name="line.77"></a>
+<span class="sourceLineNo">078</span> But distance computation for hard decoding is easier, since it is based<a name="line.78"></a>
+<span class="sourceLineNo">079</span> on bit operations. Moreover, hard decoding can be used when there is no<a name="line.79"></a>
+<span class="sourceLineNo">080</span> direct observation of the noisy data, but only observations of a bit<a name="line.80"></a>
+<span class="sourceLineNo">081</span> sequence that may have errors in it.  With hard decoding, this<a name="line.81"></a>
+<span class="sourceLineNo">082</span> actor serves the role of correcting errors.  With soft decoding, it<a name="line.82"></a>
+<span class="sourceLineNo">083</span> serves the role of reducing the likelyhood of errors.<a name="line.83"></a>
+<span class="sourceLineNo">084</span> &lt;p&gt;<a name="line.84"></a>
+<span class="sourceLineNo">085</span> There is some delay between the reading of input data and the<a name="line.85"></a>
+<span class="sourceLineNo">086</span> production of decoded output data.  That delay, which is called<a name="line.86"></a>
+<span class="sourceLineNo">087</span> the &lt;i&gt;trace-back depth&lt;/i&gt; or &lt;i&gt;truncation depth&lt;/i&gt; of the<a name="line.87"></a>
+<span class="sourceLineNo">088</span> decoder, is controlled by the<a name="line.88"></a>
+<span class="sourceLineNo">089</span> &lt;i&gt;delay&lt;/i&gt; parameter, which is required to be a positive integer.<a name="line.89"></a>
+<span class="sourceLineNo">090</span> On the first &lt;i&gt;delay&lt;/i&gt; firings of this actor, the outputs will<a name="line.90"></a>
+<span class="sourceLineNo">091</span> be &lt;i&gt;false&lt;/i&gt;.  On each firing, the number of outputs produced<a name="line.91"></a>
+<span class="sourceLineNo">092</span> is &lt;i&gt;uncodedRate&lt;/i&gt;, so the output will have a prefix of<a name="line.92"></a>
+<span class="sourceLineNo">093</span> &lt;i&gt;delay&lt;/i&gt;*&lt;i&gt;uncodedRate&lt;/i&gt; false-valued tokens before any<a name="line.93"></a>
+<span class="sourceLineNo">094</span> decoded bits are produced.  Larger values of &lt;i&gt;delay&lt;/i&gt; generally<a name="line.94"></a>
+<span class="sourceLineNo">095</span> reduce the probability of error.  A good rule of thumb is to set<a name="line.95"></a>
+<span class="sourceLineNo">096</span> &lt;i&gt;delay&lt;/i&gt; to five times the highest order of all polynomials, provided<a name="line.96"></a>
+<span class="sourceLineNo">097</span> that the convolutional code is a one that has good distance properties.<a name="line.97"></a>
+<span class="sourceLineNo">098</span> &lt;p&gt;<a name="line.98"></a>
+<span class="sourceLineNo">099</span> For more information on convolutional codes and Viterbi decoder,<a name="line.99"></a>
+<span class="sourceLineNo">100</span> see the ConvolutionalCoder actor and<a name="line.100"></a>
+<span class="sourceLineNo">101</span> Proakis, &lt;i&gt;Digital Communications&lt;/i&gt;, Fourth Edition, McGraw-Hill,<a name="line.101"></a>
+<span class="sourceLineNo">102</span> 2001, pp. 471-477 and pp. 482-485,<a name="line.102"></a>
+<span class="sourceLineNo">103</span> or Barry, Lee and Messerschmitt, &lt;i&gt;Digital Communication&lt;/i&gt;, Third Edition,<a name="line.103"></a>
+<span class="sourceLineNo">104</span> Kluwer, 2004.<a name="line.104"></a>
+<span class="sourceLineNo">105</span> &lt;p&gt;<a name="line.105"></a>
+<span class="sourceLineNo">106</span> @author Ye Zhou, contributor: Edward A. Lee<a name="line.106"></a>
+<span class="sourceLineNo">107</span> @version $Id$<a name="line.107"></a>
+<span class="sourceLineNo">108</span> @since Ptolemy II 3.0<a name="line.108"></a>
+<span class="sourceLineNo">109</span> @Pt.ProposedRating Yellow (eal)<a name="line.109"></a>
+<span class="sourceLineNo">110</span> @Pt.AcceptedRating Red (cxh)<a name="line.110"></a>
+<span class="sourceLineNo">111</span> */<a name="line.111"></a>
+<span class="sourceLineNo">112</span>public class ViterbiDecoder extends Transformer {<a name="line.112"></a>
+<span class="sourceLineNo">113</span>    /** Construct an actor with the given container and name.<a name="line.113"></a>
+<span class="sourceLineNo">114</span>     *  The output and trigger ports are also constructed.<a name="line.114"></a>
+<span class="sourceLineNo">115</span>     *  @param container The container.<a name="line.115"></a>
+<span class="sourceLineNo">116</span>     *  @param name The name of this actor.<a name="line.116"></a>
+<span class="sourceLineNo">117</span>     *  @exception IllegalActionException If the entity cannot be contained<a name="line.117"></a>
+<span class="sourceLineNo">118</span>     *   by the proposed container.<a name="line.118"></a>
+<span class="sourceLineNo">119</span>     *  @exception NameDuplicationException If the container already has an<a name="line.119"></a>
+<span class="sourceLineNo">120</span>     *   actor with this name.<a name="line.120"></a>
+<span class="sourceLineNo">121</span>     */<a name="line.121"></a>
+<span class="sourceLineNo">122</span>    public ViterbiDecoder(CompositeEntity container, String name)<a name="line.122"></a>
+<span class="sourceLineNo">123</span>            throws NameDuplicationException, IllegalActionException {<a name="line.123"></a>
+<span class="sourceLineNo">124</span>        super(container, name);<a name="line.124"></a>
+<span class="sourceLineNo">125</span><a name="line.125"></a>
+<span class="sourceLineNo">126</span>        uncodedRate = new Parameter(this, "uncodedRate");<a name="line.126"></a>
+<span class="sourceLineNo">127</span>        uncodedRate.setTypeEquals(BaseType.INT);<a name="line.127"></a>
+<span class="sourceLineNo">128</span>        uncodedRate.setExpression("1");<a name="line.128"></a>
+<span class="sourceLineNo">129</span><a name="line.129"></a>
+<span class="sourceLineNo">130</span>        polynomialArray = new Parameter(this, "polynomialArray");<a name="line.130"></a>
+<span class="sourceLineNo">131</span>        polynomialArray.setTypeEquals(new ArrayType(BaseType.INT));<a name="line.131"></a>
+<span class="sourceLineNo">132</span>        polynomialArray.setExpression("{05, 07}");<a name="line.132"></a>
+<span class="sourceLineNo">133</span><a name="line.133"></a>
+<span class="sourceLineNo">134</span>        delay = new Parameter(this, "delay");<a name="line.134"></a>
+<span class="sourceLineNo">135</span>        delay.setTypeEquals(BaseType.INT);<a name="line.135"></a>
+<span class="sourceLineNo">136</span>        delay.setExpression("10");<a name="line.136"></a>
+<span class="sourceLineNo">137</span><a name="line.137"></a>
+<span class="sourceLineNo">138</span>        softDecoding = new Parameter(this, "softDecoding");<a name="line.138"></a>
+<span class="sourceLineNo">139</span>        softDecoding.setExpression("false");<a name="line.139"></a>
+<span class="sourceLineNo">140</span>        softDecoding.setTypeEquals(BaseType.BOOLEAN);<a name="line.140"></a>
+<span class="sourceLineNo">141</span><a name="line.141"></a>
+<span class="sourceLineNo">142</span>        trellisDecoding = new Parameter(this, "trellisDecoding");<a name="line.142"></a>
+<span class="sourceLineNo">143</span>        trellisDecoding.setExpression("false");<a name="line.143"></a>
+<span class="sourceLineNo">144</span>        trellisDecoding.setTypeEquals(BaseType.BOOLEAN);<a name="line.144"></a>
+<span class="sourceLineNo">145</span>        trellisDecoding.setVisibility(Settable.NONE);<a name="line.145"></a>
+<span class="sourceLineNo">146</span><a name="line.146"></a>
+<span class="sourceLineNo">147</span>        constellation = new Parameter(this, "constellation");<a name="line.147"></a>
+<span class="sourceLineNo">148</span>        constellation.setTypeEquals(new ArrayType(BaseType.DOUBLE));<a name="line.148"></a>
+<span class="sourceLineNo">149</span>        constellation.setExpression("{-1.0, 1.0}");<a name="line.149"></a>
+<span class="sourceLineNo">150</span><a name="line.150"></a>
+<span class="sourceLineNo">151</span>        //mode = new StringAttribute(this, "mode");<a name="line.151"></a>
+<span class="sourceLineNo">152</span>        //mode.setExpression("Hard Decoding");<a name="line.152"></a>
+<span class="sourceLineNo">153</span>        //mode.setVisibility(Settable.NONE);<a name="line.153"></a>
+<span class="sourceLineNo">154</span>        // Declare data types, consumption rate and production rate.<a name="line.154"></a>
+<span class="sourceLineNo">155</span>        _type = new ptolemy.actor.TypeAttribute(input, "inputType");<a name="line.155"></a>
+<span class="sourceLineNo">156</span>        _type.setExpression("boolean");<a name="line.156"></a>
+<span class="sourceLineNo">157</span>        _inputRate = new Parameter(input, "tokenConsumptionRate");<a name="line.157"></a>
+<span class="sourceLineNo">158</span>        _inputRate.setExpression("1");<a name="line.158"></a>
+<span class="sourceLineNo">159</span>        output.setTypeEquals(BaseType.BOOLEAN);<a name="line.159"></a>
+<span class="sourceLineNo">160</span>        _outputRate = new Parameter(output, "tokenProductionRate");<a name="line.160"></a>
+<span class="sourceLineNo">161</span>        _outputRate.setExpression("1");<a name="line.161"></a>
+<span class="sourceLineNo">162</span>    }<a name="line.162"></a>
+<span class="sourceLineNo">163</span><a name="line.163"></a>
+<span class="sourceLineNo">164</span>    ///////////////////////////////////////////////////////////////////<a name="line.164"></a>
+<span class="sourceLineNo">165</span>    ////                     ports and parameters                  ////<a name="line.165"></a>
+<span class="sourceLineNo">166</span><a name="line.166"></a>
+<span class="sourceLineNo">167</span>    /** An array of integers defining polynomials with<a name="line.167"></a>
+<span class="sourceLineNo">168</span>     *  binary coefficients. The coefficients indicate the presence (1)<a name="line.168"></a>
+<span class="sourceLineNo">169</span>     *  or absence (0) of a tap in the shift register. Each element<a name="line.169"></a>
+<span class="sourceLineNo">170</span>     *  of this array parameter should be a positive integer.<a name="line.170"></a>
+<span class="sourceLineNo">171</span>     *  The default value is {05, 07}.<a name="line.171"></a>
+<span class="sourceLineNo">172</span>     */<a name="line.172"></a>
+<span class="sourceLineNo">173</span>    public Parameter polynomialArray;<a name="line.173"></a>
+<span class="sourceLineNo">174</span><a name="line.174"></a>
+<span class="sourceLineNo">175</span>    /** Integer defining the number of bits produced at the output<a name="line.175"></a>
+<span class="sourceLineNo">176</span>     *  in each firing. It should be a positive integer. Its<a name="line.176"></a>
+<span class="sourceLineNo">177</span>     *  default value is 1.<a name="line.177"></a>
+<span class="sourceLineNo">178</span>     */<a name="line.178"></a>
+<span class="sourceLineNo">179</span>    public Parameter uncodedRate;<a name="line.179"></a>
+<span class="sourceLineNo">180</span><a name="line.180"></a>
+<span class="sourceLineNo">181</span>    /** Integer defining the trace back depth of the viterbi decoder.<a name="line.181"></a>
+<span class="sourceLineNo">182</span>     *  It should be a positive integer. Its default value is the<a name="line.182"></a>
+<span class="sourceLineNo">183</span>     *  integer 10.<a name="line.183"></a>
+<span class="sourceLineNo">184</span>     */<a name="line.184"></a>
+<span class="sourceLineNo">185</span>    public Parameter delay;<a name="line.185"></a>
+<span class="sourceLineNo">186</span><a name="line.186"></a>
+<span class="sourceLineNo">187</span>    /** Boolean defining the decoding mode. If it is true, the decoder<a name="line.187"></a>
+<span class="sourceLineNo">188</span>     *  will do soft decoding, and the input data type will be double;<a name="line.188"></a>
+<span class="sourceLineNo">189</span>     *  otherwise it will do hard decoding, and the input data type will<a name="line.189"></a>
+<span class="sourceLineNo">190</span>     *  be boolean. The default value is false.<a name="line.190"></a>
+<span class="sourceLineNo">191</span>     */<a name="line.191"></a>
+<span class="sourceLineNo">192</span>    public Parameter softDecoding;<a name="line.192"></a>
+<span class="sourceLineNo">193</span><a name="line.193"></a>
+<span class="sourceLineNo">194</span>    /** Boolean defining whether the decoder will do trellis decoding.<a name="line.194"></a>
+<span class="sourceLineNo">195</span>     *  If it is true, the input data and constellation type will be<a name="line.195"></a>
+<span class="sourceLineNo">196</span>     *  complex; otherwise, they follow the constraints set by<a name="line.196"></a>
+<span class="sourceLineNo">197</span>     *  &lt;i&gt;softDecoding&lt;/i&gt;. This parameter is always set to "false"<a name="line.197"></a>
+<span class="sourceLineNo">198</span>     *  in ViterbiDecoder. It will always be set to "true" in<a name="line.198"></a>
+<span class="sourceLineNo">199</span>     *  TrellisDecoder subclass.<a name="line.199"></a>
+<span class="sourceLineNo">200</span>     */<a name="line.200"></a>
+<span class="sourceLineNo">201</span>    public Parameter trellisDecoding;<a name="line.201"></a>
+<span class="sourceLineNo">202</span><a name="line.202"></a>
+<span class="sourceLineNo">203</span>    /** The constellation for soft decoding.  Inputs are expected to be<a name="line.203"></a>
+<span class="sourceLineNo">204</span>     *  symbols from this constellation with added noise.<a name="line.204"></a>
+<span class="sourceLineNo">205</span>     *  This parameter should be a double array of length 2. The first<a name="line.205"></a>
+<span class="sourceLineNo">206</span>     *  element defines the amplitude of "false" input. The second element<a name="line.206"></a>
+<span class="sourceLineNo">207</span>     *  defines the amplitude of "true" input.<a name="line.207"></a>
+<span class="sourceLineNo">208</span>     */<a name="line.208"></a>
+<span class="sourceLineNo">209</span>    public Parameter constellation;<a name="line.209"></a>
+<span class="sourceLineNo">210</span><a name="line.210"></a>
+<span class="sourceLineNo">211</span>    //public StringAttribute mode;<a name="line.211"></a>
+<span class="sourceLineNo">212</span>    ///////////////////////////////////////////////////////////////////<a name="line.212"></a>
+<span class="sourceLineNo">213</span>    ////                         public methods                    ////<a name="line.213"></a>
+<span class="sourceLineNo">214</span><a name="line.214"></a>
+<span class="sourceLineNo">215</span>    /** If the attribute being changed is &lt;i&gt;softDecoding&lt;/i&gt; or<a name="line.215"></a>
+<span class="sourceLineNo">216</span>     *  &lt;i&gt;trellisDecoding&lt;/i&gt;, set input port and constellation<a name="line.216"></a>
+<span class="sourceLineNo">217</span>     *  type to be complex if &lt;i&gt;trellisDecoding&lt;/i&gt; is true; else<a name="line.217"></a>
+<span class="sourceLineNo">218</span>     *  if &lt;i&gt;softDecoding&lt;/i&gt; is true, set them to double type;<a name="line.218"></a>
+<span class="sourceLineNo">219</span>     *  otherwise set the input port to type boolean.<a name="line.219"></a>
+<span class="sourceLineNo">220</span>     *  If the attribute being changed is &lt;i&gt;uncodedRate&lt;/i&gt; or<a name="line.220"></a>
+<span class="sourceLineNo">221</span>     *  &lt;i&gt;delay&lt;/i&gt; then verify it is a positive integer; if it is<a name="line.221"></a>
+<span class="sourceLineNo">222</span>     *  &lt;i&gt;polynomialArray&lt;/i&gt;, then verify that each of its elements<a name="line.222"></a>
+<span class="sourceLineNo">223</span>     *  is a positive integer.<a name="line.223"></a>
+<span class="sourceLineNo">224</span>     *  @param attribute The attribute that changed.<a name="line.224"></a>
+<span class="sourceLineNo">225</span>     *  @exception IllegalActionException If &lt;i&gt;uncodedRate&lt;/i&gt;,<a name="line.225"></a>
+<span class="sourceLineNo">226</span>     *  or &lt;i&gt;delay&lt;/i&gt; is non-positive, or any element of<a name="line.226"></a>
+<span class="sourceLineNo">227</span>     *  &lt;i&gt;polynomialArray&lt;/i&gt; is non-positive.<a name="line.227"></a>
+<span class="sourceLineNo">228</span>     */<a name="line.228"></a>
+<span class="sourceLineNo">229</span>    @Override<a name="line.229"></a>
+<span class="sourceLineNo">230</span>    public void attributeChanged(Attribute attribute)<a name="line.230"></a>
+<span class="sourceLineNo">231</span>            throws IllegalActionException {<a name="line.231"></a>
+<span class="sourceLineNo">232</span>        /*if (attribute == mode) {<a name="line.232"></a>
+<span class="sourceLineNo">233</span>         String modeName = mode.getExpression();<a name="line.233"></a>
+<span class="sourceLineNo">234</span>         if (modeName.equals("Hard Decoding")) {<a name="line.234"></a>
+<span class="sourceLineNo">235</span>         //_mode = _HARD;<a name="line.235"></a>
+<span class="sourceLineNo">236</span>         //_type.setExpression("boolean");<a name="line.236"></a>
+<span class="sourceLineNo">237</span>         } else if (modeName.equals("Soft Decoding")) {<a name="line.237"></a>
+<span class="sourceLineNo">238</span>         //_mode = _SOFT;<a name="line.238"></a>
+<span class="sourceLineNo">239</span>         //_type.setExpression("double");<a name="line.239"></a>
+<span class="sourceLineNo">240</span>         //constellation.setTypeEquals(new ArrayType(BaseType.DOUBLE));<a name="line.240"></a>
+<span class="sourceLineNo">241</span>         } else if (modeName.equals("Trellis Decoding")) {<a name="line.241"></a>
+<span class="sourceLineNo">242</span>         //_mode = _TRELLIS;<a name="line.242"></a>
+<span class="sourceLineNo">243</span>         //_type.setExpression("complex");<a name="line.243"></a>
+<span class="sourceLineNo">244</span>         //constellation.setTypeEquals(new ArrayType(BaseType.COMPLEX));<a name="line.244"></a>
+<span class="sourceLineNo">245</span>         }<a name="line.245"></a>
+<span class="sourceLineNo">246</span>         else {<a name="line.246"></a>
+<span class="sourceLineNo">247</span>         throw new IllegalActionException(this,<a name="line.247"></a>
+<span class="sourceLineNo">248</span>         "Unrecognized interpolation type: " + modeName);<a name="line.248"></a>
+<span class="sourceLineNo">249</span>         }<a name="line.249"></a>
+<span class="sourceLineNo">250</span>         } else */<a name="line.250"></a>
+<span class="sourceLineNo">251</span>        if (attribute == softDecoding || attribute == trellisDecoding) {<a name="line.251"></a>
+<span class="sourceLineNo">252</span>            _trellisMode = ((BooleanToken) trellisDecoding.getToken())<a name="line.252"></a>
+<span class="sourceLineNo">253</span>                    .booleanValue();<a name="line.253"></a>
+<span class="sourceLineNo">254</span>            _softMode = ((BooleanToken) softDecoding.getToken()).booleanValue();<a name="line.254"></a>
+<span class="sourceLineNo">255</span><a name="line.255"></a>
+<span class="sourceLineNo">256</span>            // Set different input port types for soft and hard decoding.<a name="line.256"></a>
+<span class="sourceLineNo">257</span>            if (_trellisMode) {<a name="line.257"></a>
+<span class="sourceLineNo">258</span>                _mode = _TRELLIS;<a name="line.258"></a>
+<span class="sourceLineNo">259</span>                _type.setExpression("complex");<a name="line.259"></a>
+<span class="sourceLineNo">260</span>                constellation.setTypeEquals(new ArrayType(BaseType.COMPLEX));<a name="line.260"></a>
+<span class="sourceLineNo">261</span>            } else if (_softMode) {<a name="line.261"></a>
+<span class="sourceLineNo">262</span>                _mode = _SOFT;<a name="line.262"></a>
+<span class="sourceLineNo">263</span>                _type.setExpression("double");<a name="line.263"></a>
+<span class="sourceLineNo">264</span>                constellation.setTypeEquals(new ArrayType(BaseType.DOUBLE));<a name="line.264"></a>
+<span class="sourceLineNo">265</span>            } else {<a name="line.265"></a>
+<span class="sourceLineNo">266</span>                _mode = _HARD;<a name="line.266"></a>
+<span class="sourceLineNo">267</span>                _type.setExpression("boolean");<a name="line.267"></a>
+<span class="sourceLineNo">268</span>            }<a name="line.268"></a>
+<span class="sourceLineNo">269</span>        } else if (attribute == uncodedRate) {<a name="line.269"></a>
+<span class="sourceLineNo">270</span>            _inputNumber = ((IntToken) uncodedRate.getToken()).intValue();<a name="line.270"></a>
+<span class="sourceLineNo">271</span><a name="line.271"></a>
+<span class="sourceLineNo">272</span>            if (_inputNumber &lt; 1) {<a name="line.272"></a>
+<span class="sourceLineNo">273</span>                throw new IllegalActionException(this,<a name="line.273"></a>
+<span class="sourceLineNo">274</span>                        "inputLength must be non-negative.");<a name="line.274"></a>
+<span class="sourceLineNo">275</span>            }<a name="line.275"></a>
+<span class="sourceLineNo">276</span><a name="line.276"></a>
+<span class="sourceLineNo">277</span>            // Set a flag indicating the private variable<a name="line.277"></a>
+<span class="sourceLineNo">278</span>            // _inputNumber is invalid, but do not compute<a name="line.278"></a>
+<span class="sourceLineNo">279</span>            // the value until all parameters have been set.<a name="line.279"></a>
+<span class="sourceLineNo">280</span>            _inputNumberInvalid = true;<a name="line.280"></a>
+<span class="sourceLineNo">281</span><a name="line.281"></a>
+<span class="sourceLineNo">282</span>            // Set the input consumption rate.<a name="line.282"></a>
+<span class="sourceLineNo">283</span>            _outputRate.setToken(new IntToken(_inputNumber));<a name="line.283"></a>
+<span class="sourceLineNo">284</span>        } else if (attribute == delay) {<a name="line.284"></a>
+<span class="sourceLineNo">285</span>            _depth = ((IntToken) delay.getToken()).intValue();<a name="line.285"></a>
+<span class="sourceLineNo">286</span><a name="line.286"></a>
+<span class="sourceLineNo">287</span>            if (_depth &lt; 1) {<a name="line.287"></a>
+<span class="sourceLineNo">288</span>                throw new IllegalActionException(this,<a name="line.288"></a>
+<span class="sourceLineNo">289</span>                        "Delay must be a positive integer.");<a name="line.289"></a>
+<span class="sourceLineNo">290</span>            }<a name="line.290"></a>
+<span class="sourceLineNo">291</span><a name="line.291"></a>
+<span class="sourceLineNo">292</span>            _depthInvalid = true;<a name="line.292"></a>
+<span class="sourceLineNo">293</span>        } else if (attribute == polynomialArray) {<a name="line.293"></a>
+<span class="sourceLineNo">294</span>            ArrayToken maskToken = (ArrayToken) polynomialArray.getToken();<a name="line.294"></a>
+<span class="sourceLineNo">295</span>            _maskNumber = maskToken.length();<a name="line.295"></a>
+<span class="sourceLineNo">296</span>            _mask = new int[_maskNumber];<a name="line.296"></a>
+<span class="sourceLineNo">297</span>            _maxPolyValue = 0;<a name="line.297"></a>
+<span class="sourceLineNo">298</span><a name="line.298"></a>
+<span class="sourceLineNo">299</span>            for (int i = 0; i &lt; _maskNumber; i++) {<a name="line.299"></a>
+<span class="sourceLineNo">300</span>                _mask[i] = ((IntToken) maskToken.getElement(i)).intValue();<a name="line.300"></a>
+<span class="sourceLineNo">301</span><a name="line.301"></a>
+<span class="sourceLineNo">302</span>                if (_mask[i] &lt;= 0) {<a name="line.302"></a>
+<span class="sourceLineNo">303</span>                    throw new IllegalActionException(this,<a name="line.303"></a>
+<span class="sourceLineNo">304</span>                            "Polynomial is required to be strictly positive.");<a name="line.304"></a>
+<span class="sourceLineNo">305</span>                }<a name="line.305"></a>
+<span class="sourceLineNo">306</span><a name="line.306"></a>
+<span class="sourceLineNo">307</span>                // Find maximum value in integer of all polynomials.<a name="line.307"></a>
+<span class="sourceLineNo">308</span>                if (_mask[i] &gt; _maxPolyValue) {<a name="line.308"></a>
+<span class="sourceLineNo">309</span>                    _maxPolyValue = _mask[i];<a name="line.309"></a>
+<span class="sourceLineNo">310</span>                }<a name="line.310"></a>
+<span class="sourceLineNo">311</span>            }<a name="line.311"></a>
+<span class="sourceLineNo">312</span><a name="line.312"></a>
+<span class="sourceLineNo">313</span>            _inputNumberInvalid = true;<a name="line.313"></a>
+<span class="sourceLineNo">314</span><a name="line.314"></a>
+<span class="sourceLineNo">315</span>            // Set the output production rate.<a name="line.315"></a>
+<span class="sourceLineNo">316</span>            boolean trellisMode = ((BooleanToken) trellisDecoding.getToken())<a name="line.316"></a>
+<span class="sourceLineNo">317</span>                    .booleanValue();<a name="line.317"></a>
+<span class="sourceLineNo">318</span><a name="line.318"></a>
+<span class="sourceLineNo">319</span>            if (trellisMode) {<a name="line.319"></a>
+<span class="sourceLineNo">320</span>                _inputRate.setToken(new IntToken(1));<a name="line.320"></a>
+<span class="sourceLineNo">321</span>            } else {<a name="line.321"></a>
+<span class="sourceLineNo">322</span>                _inputRate.setToken(new IntToken(_maskNumber));<a name="line.322"></a>
+<span class="sourceLineNo">323</span>            }<a name="line.323"></a>
+<span class="sourceLineNo">324</span>        } else {<a name="line.324"></a>
+<span class="sourceLineNo">325</span>            super.attributeChanged(attribute);<a name="line.325"></a>
+<span class="sourceLineNo">326</span>        }<a name="line.326"></a>
+<span class="sourceLineNo">327</span>    }<a name="line.327"></a>
+<span class="sourceLineNo">328</span><a name="line.328"></a>
+<span class="sourceLineNo">329</span>    /** Clone the actor into the specified workspace.<a name="line.329"></a>
+<span class="sourceLineNo">330</span>     *  @param workspace The workspace for the new object.<a name="line.330"></a>
+<span class="sourceLineNo">331</span>     *  @return A new actor.<a name="line.331"></a>
+<span class="sourceLineNo">332</span>     *  @exception CloneNotSupportedException If a derived class contains<a name="line.332"></a>
+<span class="sourceLineNo">333</span>     *   an attribute that cannot be cloned.<a name="line.333"></a>
+<span class="sourceLineNo">334</span>     */<a name="line.334"></a>
+<span class="sourceLineNo">335</span>    @Override<a name="line.335"></a>
+<span class="sourceLineNo">336</span>    public Object clone(Workspace workspace) throws CloneNotSupportedException {<a name="line.336"></a>
+<span class="sourceLineNo">337</span>        ViterbiDecoder newObject = (ViterbiDecoder) super.clone(workspace);<a name="line.337"></a>
+<span class="sourceLineNo">338</span><a name="line.338"></a>
+<span class="sourceLineNo">339</span>        newObject._inputRate = (Parameter) newObject.input<a name="line.339"></a>
+<span class="sourceLineNo">340</span>                .getAttribute("tokenConsumptionRate");<a name="line.340"></a>
+<span class="sourceLineNo">341</span>        newObject._mask = new int[newObject._maskNumber];<a name="line.341"></a>
+<span class="sourceLineNo">342</span>        newObject._outputRate = (Parameter) newObject.output<a name="line.342"></a>
+<span class="sourceLineNo">343</span>                .getAttribute("tokenProductionRate");<a name="line.343"></a>
+<span class="sourceLineNo">344</span>        newObject._type = (TypeAttribute) newObject.input<a name="line.344"></a>
+<span class="sourceLineNo">345</span>                .getAttribute("inputType");<a name="line.345"></a>
+<span class="sourceLineNo">346</span>        return newObject;<a name="line.346"></a>
+<span class="sourceLineNo">347</span>    }<a name="line.347"></a>
+<span class="sourceLineNo">348</span><a name="line.348"></a>
+<span class="sourceLineNo">349</span>    /** Read &lt;i&gt;n&lt;/i&gt; inputs and produce &lt;i&gt;k&lt;/i&gt; outputs, where &lt;i&gt;n&lt;/i&gt;<a name="line.349"></a>
+<span class="sourceLineNo">350</span>     *  is the number of integers in &lt;i&gt;polynomialArray&lt;/i&gt; and &lt;i&gt;k&lt;/i&gt;<a name="line.350"></a>
+<span class="sourceLineNo">351</span>     *  is the value of the &lt;i&gt;uncodedRate&lt;/i&gt; parameter.  The outputs<a name="line.351"></a>
+<span class="sourceLineNo">352</span>     *  are a decoded bit sequence, with a prefix of &lt;i&gt;false&lt;/i&gt;-valued<a name="line.352"></a>
+<span class="sourceLineNo">353</span>     *  tokens produced on the first &lt;i&gt;delay&lt;/i&gt; firings.  The number<a name="line.353"></a>
+<span class="sourceLineNo">354</span>     *  of leading &lt;i&gt;false&lt;/i&gt; outputs, therefore, is<a name="line.354"></a>
+<span class="sourceLineNo">355</span>     *  &lt;i&gt;delay&lt;/i&gt;*&lt;i&gt;uncodedRate&lt;/i&gt;.<a name="line.355"></a>
+<span class="sourceLineNo">356</span>     *  To decode, the actor searches iteratively of all possible<a name="line.356"></a>
+<span class="sourceLineNo">357</span>     *  input sequence and find the one that has the minimum distance<a name="line.357"></a>
+<span class="sourceLineNo">358</span>     *  to the observed inputs.<a name="line.358"></a>
+<span class="sourceLineNo">359</span>     */<a name="line.359"></a>
+<span class="sourceLineNo">360</span>    @Override<a name="line.360"></a>
+<span class="sourceLineNo">361</span>    public void fire() throws IllegalActionException {<a name="line.361"></a>
+<span class="sourceLineNo">362</span>        super.fire();<a name="line.362"></a>
+<span class="sourceLineNo">363</span>        //boolean trellisMode =<a name="line.363"></a>
+<span class="sourceLineNo">364</span>        //    ((BooleanToken)trellisDecoding.getToken()).booleanValue();<a name="line.364"></a>
+<span class="sourceLineNo">365</span>        int constellationOrder;<a name="line.365"></a>
+<span class="sourceLineNo">366</span>        int inputRate;<a name="line.366"></a>
+<span class="sourceLineNo">367</span><a name="line.367"></a>
+<span class="sourceLineNo">368</span>        if (_mode == _TRELLIS) {<a name="line.368"></a>
+<span class="sourceLineNo">369</span>            constellationOrder = _maskNumber;<a name="line.369"></a>
+<span class="sourceLineNo">370</span>            inputRate = 1;<a name="line.370"></a>
+<span class="sourceLineNo">371</span>        } else {<a name="line.371"></a>
+<span class="sourceLineNo">372</span>            constellationOrder = 1;<a name="line.372"></a>
+<span class="sourceLineNo">373</span>            inputRate = _maskNumber;<a name="line.373"></a>
+<span class="sourceLineNo">374</span>        }<a name="line.374"></a>
+<span class="sourceLineNo">375</span><a name="line.375"></a>
+<span class="sourceLineNo">376</span>        if (_mode == _TRELLIS) {<a name="line.376"></a>
+<span class="sourceLineNo">377</span>            _constellation = new Complex[1 &lt;&lt; constellationOrder];<a name="line.377"></a>
+<span class="sourceLineNo">378</span><a name="line.378"></a>
+<span class="sourceLineNo">379</span>            ArrayToken ampToken = (ArrayToken) constellation.getToken();<a name="line.379"></a>
+<span class="sourceLineNo">380</span><a name="line.380"></a>
+<span class="sourceLineNo">381</span>            if (ampToken.length() != 1 &lt;&lt; constellationOrder) {<a name="line.381"></a>
+<span class="sourceLineNo">382</span>                throw new IllegalActionException(this,<a name="line.382"></a>
+<span class="sourceLineNo">383</span>                        "Invalid amplitudes for soft decoding!");<a name="line.383"></a>
+<span class="sourceLineNo">384</span>            }<a name="line.384"></a>
+<span class="sourceLineNo">385</span><a name="line.385"></a>
+<span class="sourceLineNo">386</span>            for (int i = 0; i &lt; ampToken.length(); i++) {<a name="line.386"></a>
+<span class="sourceLineNo">387</span>                _constellation[i] = ((ComplexToken) ampToken.getElement(i))<a name="line.387"></a>
+<span class="sourceLineNo">388</span>                        .complexValue();<a name="line.388"></a>
+<span class="sourceLineNo">389</span>            }<a name="line.389"></a>
+<span class="sourceLineNo">390</span>        } else if (_mode == _SOFT) {<a name="line.390"></a>
+<span class="sourceLineNo">391</span>            ArrayToken ampToken = (ArrayToken) constellation.getToken();<a name="line.391"></a>
+<span class="sourceLineNo">392</span><a name="line.392"></a>
+<span class="sourceLineNo">393</span>            if (ampToken.length() != 1 &lt;&lt; constellationOrder) {<a name="line.393"></a>
+<span class="sourceLineNo">394</span>                throw new IllegalActionException(this,<a name="line.394"></a>
+<span class="sourceLineNo">395</span>                        "Invalid amplitudes for soft decoding!");<a name="line.395"></a>
+<span class="sourceLineNo">396</span>            }<a name="line.396"></a>
+<span class="sourceLineNo">397</span><a name="line.397"></a>
+<span class="sourceLineNo">398</span>            _falseAmp = ((DoubleToken) ampToken.getElement(0)).doubleValue();<a name="line.398"></a>
+<span class="sourceLineNo">399</span>            _trueAmp = ((DoubleToken) ampToken.getElement(1)).doubleValue();<a name="line.399"></a>
+<span class="sourceLineNo">400</span>        }<a name="line.400"></a>
+<span class="sourceLineNo">401</span><a name="line.401"></a>
+<span class="sourceLineNo">402</span>        // If the private variable _inputNumberInvalid is true, verify<a name="line.402"></a>
+<span class="sourceLineNo">403</span>        // the validity of the parameters. If they are valid, compute<a name="line.403"></a>
+<span class="sourceLineNo">404</span>        // the state-transition table of this convolutional code, which<a name="line.404"></a>
+<span class="sourceLineNo">405</span>        // is stored in a 3-D array _truthTable[][][].<a name="line.405"></a>
+<span class="sourceLineNo">406</span>        if (_inputNumberInvalid) {<a name="line.406"></a>
+<span class="sourceLineNo">407</span>            if (_inputNumber &gt;= _maskNumber) {<a name="line.407"></a>
+<span class="sourceLineNo">408</span>                throw new IllegalActionException(this,<a name="line.408"></a>
+<span class="sourceLineNo">409</span>                        "Output rate should be larger than input rate.");<a name="line.409"></a>
+<span class="sourceLineNo">410</span>            }<a name="line.410"></a>
+<span class="sourceLineNo">411</span><a name="line.411"></a>
+<span class="sourceLineNo">412</span>            //Comput the length of shift register.<a name="line.412"></a>
+<span class="sourceLineNo">413</span>            _shiftRegLength = 0;<a name="line.413"></a>
+<span class="sourceLineNo">414</span><a name="line.414"></a>
+<span class="sourceLineNo">415</span>            int regLength = 1;<a name="line.415"></a>
+<span class="sourceLineNo">416</span><a name="line.416"></a>
+<span class="sourceLineNo">417</span>            while (regLength &lt;= _maxPolyValue) {<a name="line.417"></a>
+<span class="sourceLineNo">418</span>                //regLength = regLength &lt;&lt; _inputNumber;<a name="line.418"></a>
+<span class="sourceLineNo">419</span>                //_shiftRegLength = _shiftRegLength + _inputNumber;<a name="line.419"></a>
+<span class="sourceLineNo">420</span>                regLength = regLength &lt;&lt; 1;<a name="line.420"></a>
+<span class="sourceLineNo">421</span>                _shiftRegLength++;<a name="line.421"></a>
+<span class="sourceLineNo">422</span>            }<a name="line.422"></a>
+<span class="sourceLineNo">423</span><a name="line.423"></a>
+<span class="sourceLineNo">424</span>            if (_inputNumber &gt;= _shiftRegLength) {<a name="line.424"></a>
+<span class="sourceLineNo">425</span>                throw new IllegalActionException(this,<a name="line.425"></a>
+<span class="sourceLineNo">426</span>                        "The highest order of all polynomials is "<a name="line.426"></a>
+<span class="sourceLineNo">427</span>                                + "still too low.");<a name="line.427"></a>
+<span class="sourceLineNo">428</span>            }<a name="line.428"></a>
+<span class="sourceLineNo">429</span><a name="line.429"></a>
+<span class="sourceLineNo">430</span>            _inputNumberInvalid = false;<a name="line.430"></a>
+<span class="sourceLineNo">431</span><a name="line.431"></a>
+<span class="sourceLineNo">432</span>            // Compute the necessary dimensions for the truth table and<a name="line.432"></a>
+<span class="sourceLineNo">433</span>            // the length of buffers used to store possible input sequence.<a name="line.433"></a>
+<span class="sourceLineNo">434</span>            _rowNum = 1 &lt;&lt; _shiftRegLength - _inputNumber;<a name="line.434"></a>
+<span class="sourceLineNo">435</span>            _colNum = 1 &lt;&lt; _inputNumber;<a name="line.435"></a>
+<span class="sourceLineNo">436</span>            _truthTable = new int[_rowNum][_colNum][3];<a name="line.436"></a>
+<span class="sourceLineNo">437</span>            _distance = new double[_rowNum];<a name="line.437"></a>
+<span class="sourceLineNo">438</span>            _tempDistance = new double[_rowNum];<a name="line.438"></a>
+<span class="sourceLineNo">439</span><a name="line.439"></a>
+<span class="sourceLineNo">440</span>            // Initialize the truth table and the buffer.<a name="line.440"></a>
+<span class="sourceLineNo">441</span>            for (int i = 0; i &lt; _rowNum; i++) {<a name="line.441"></a>
+<span class="sourceLineNo">442</span>                _distance[i] = 0;<a name="line.442"></a>
+<span class="sourceLineNo">443</span>                _tempDistance[i] = 0;<a name="line.443"></a>
+<span class="sourceLineNo">444</span>            }<a name="line.444"></a>
+<span class="sourceLineNo">445</span><a name="line.445"></a>
+<span class="sourceLineNo">446</span>            int inputMask = (1 &lt;&lt; _inputNumber) - 1;<a name="line.446"></a>
+<span class="sourceLineNo">447</span><a name="line.447"></a>
+<span class="sourceLineNo">448</span>            // Compute the truth table.<a name="line.448"></a>
+<span class="sourceLineNo">449</span>            // _truthTable[m][n][1:3] has the following meanings:<a name="line.449"></a>
+<span class="sourceLineNo">450</span>            // "m" is the possible current state of the shift register.<a name="line.450"></a>
+<span class="sourceLineNo">451</span>            // It has 2&lt;sup&gt;k&lt;/sup&gt; possible previous states, where "k"<a name="line.451"></a>
+<span class="sourceLineNo">452</span>            // is the &lt;i&gt;uncodedRate&lt;/i&gt;.<a name="line.452"></a>
+<span class="sourceLineNo">453</span>            // Hence _truthTable[m][n][1:3] stores the truth values for<a name="line.453"></a>
+<span class="sourceLineNo">454</span>            // the n-th possible previous state for state "m".<a name="line.454"></a>
+<span class="sourceLineNo">455</span>            // _truthTable[m][n][1] is the "value" of the previous<a name="line.455"></a>
+<span class="sourceLineNo">456</span>            // shift register's states.<a name="line.456"></a>
+<span class="sourceLineNo">457</span>            // _truthTable[m][n][2] is the corresponding input block.<a name="line.457"></a>
+<span class="sourceLineNo">458</span>            // _truthTable[m][n][0] is the corresponding codewords<a name="line.458"></a>
+<span class="sourceLineNo">459</span>            // produced from the encoder.<a name="line.459"></a>
+<span class="sourceLineNo">460</span>            for (int state = 0; state &lt; _rowNum; state++) {<a name="line.460"></a>
+<span class="sourceLineNo">461</span>                for (int head = 0; head &lt; _colNum; head++) {<a name="line.461"></a>
+<span class="sourceLineNo">462</span>                    int reg = head &lt;&lt; _shiftRegLength - _inputNumber;<a name="line.462"></a>
+<span class="sourceLineNo">463</span>                    reg = reg + state;<a name="line.463"></a>
+<span class="sourceLineNo">464</span><a name="line.464"></a>
+<span class="sourceLineNo">465</span>                    int[] parity = _calculateParity(_mask, _maskNumber, reg);<a name="line.465"></a>
+<span class="sourceLineNo">466</span>                    int outValue = 0;<a name="line.466"></a>
+<span class="sourceLineNo">467</span><a name="line.467"></a>
+<span class="sourceLineNo">468</span>                    // store the output values as an integer<a name="line.468"></a>
+<span class="sourceLineNo">469</span>                    // in the order of yn...y1y0<a name="line.469"></a>
+<span class="sourceLineNo">470</span>                    for (int i = _maskNumber - 1; i &gt;= 0; i--) {<a name="line.470"></a>
+<span class="sourceLineNo">471</span>                        outValue = outValue &lt;&lt; 1;<a name="line.471"></a>
+<span class="sourceLineNo">472</span>                        outValue = outValue + parity[i];<a name="line.472"></a>
+<span class="sourceLineNo">473</span>                    }<a name="line.473"></a>
+<span class="sourceLineNo">474</span><a name="line.474"></a>
+<span class="sourceLineNo">475</span>                    _truthTable[state][head][0] = outValue;<a name="line.475"></a>
+<span class="sourceLineNo">476</span><a name="line.476"></a>
+<span class="sourceLineNo">477</span>                    int oldState = reg &gt;&gt; _inputNumber;<a name="line.477"></a>
+<span class="sourceLineNo">478</span>                    _truthTable[state][head][1] = oldState;<a name="line.478"></a>
+<span class="sourceLineNo">479</span><a name="line.479"></a>
+<span class="sourceLineNo">480</span>                    int input = reg &amp; inputMask;<a name="line.480"></a>
+<span class="sourceLineNo">481</span>                    _truthTable[state][head][2] = input;<a name="line.481"></a>
+<span class="sourceLineNo">482</span>                }<a name="line.482"></a>
+<span class="sourceLineNo">483</span>            }<a name="line.483"></a>
+<span class="sourceLineNo">484</span>        }<a name="line.484"></a>
+<span class="sourceLineNo">485</span><a name="line.485"></a>
+<span class="sourceLineNo">486</span>        if (_depthInvalid) {<a name="line.486"></a>
+<span class="sourceLineNo">487</span>            _path = new int[_rowNum][_depth + 1];<a name="line.487"></a>
+<span class="sourceLineNo">488</span>            _tempPath = new int[_rowNum][_depth + 1];<a name="line.488"></a>
+<span class="sourceLineNo">489</span><a name="line.489"></a>
+<span class="sourceLineNo">490</span>            for (int i = 0; i &lt; _rowNum; i++) {<a name="line.490"></a>
+<span class="sourceLineNo">491</span>                for (int j = 0; j &lt; _depth; j++) {<a name="line.491"></a>
+<span class="sourceLineNo">492</span>                    _path[i][j] = 0;<a name="line.492"></a>
+<span class="sourceLineNo">493</span>                    _tempPath[i][j] = 0;<a name="line.493"></a>
+<span class="sourceLineNo">494</span>                }<a name="line.494"></a>
+<span class="sourceLineNo">495</span>            }<a name="line.495"></a>
+<span class="sourceLineNo">496</span><a name="line.496"></a>
+<span class="sourceLineNo">497</span>            _depthInvalid = false;<a name="line.497"></a>
+<span class="sourceLineNo">498</span>        }<a name="line.498"></a>
+<span class="sourceLineNo">499</span><a name="line.499"></a>
+<span class="sourceLineNo">500</span>        // Read from the input port.<a name="line.500"></a>
+<span class="sourceLineNo">501</span>        Token[] inputToken = input.get(0, inputRate);<a name="line.501"></a>
+<span class="sourceLineNo">502</span><a name="line.502"></a>
+<span class="sourceLineNo">503</span>        // Search the optimal path (minimum distance) for each state.<a name="line.503"></a>
+<span class="sourceLineNo">504</span>        for (int state = 0; state &lt; _rowNum; state++) {<a name="line.504"></a>
+<span class="sourceLineNo">505</span>            double minDistance = 0;<a name="line.505"></a>
+<span class="sourceLineNo">506</span>            int minInput = 0;<a name="line.506"></a>
+<span class="sourceLineNo">507</span>            int minState = 0;<a name="line.507"></a>
+<span class="sourceLineNo">508</span><a name="line.508"></a>
+<span class="sourceLineNo">509</span>            for (int colIndex = 0; colIndex &lt; _colNum; colIndex++) {<a name="line.509"></a>
+<span class="sourceLineNo">510</span>                // Compute the distance for each possible path to "state".<a name="line.510"></a>
+<span class="sourceLineNo">511</span>                double d = 0.0;<a name="line.511"></a>
+<span class="sourceLineNo">512</span><a name="line.512"></a>
+<span class="sourceLineNo">513</span>                if (_mode == _TRELLIS) {<a name="line.513"></a>
+<span class="sourceLineNo">514</span>                    Complex y = ((ComplexToken) inputToken[0]).complexValue();<a name="line.514"></a>
+<span class="sourceLineNo">515</span>                    d = _computeTrellisDistance(y, _constellation,<a name="line.515"></a>
+<span class="sourceLineNo">516</span>                            _truthTable[state][colIndex][0]);<a name="line.516"></a>
+<span class="sourceLineNo">517</span>                } else if (_mode == _SOFT) {<a name="line.517"></a>
+<span class="sourceLineNo">518</span>                    double[] y = new double[inputRate];<a name="line.518"></a>
+<span class="sourceLineNo">519</span><a name="line.519"></a>
+<span class="sourceLineNo">520</span>                    for (int i = 0; i &lt; inputRate; i++) {<a name="line.520"></a>
+<span class="sourceLineNo">521</span>                        y[i] = ((DoubleToken) inputToken[i]).doubleValue();<a name="line.521"></a>
+<span class="sourceLineNo">522</span>                    }<a name="line.522"></a>
+<span class="sourceLineNo">523</span><a name="line.523"></a>
+<span class="sourceLineNo">524</span>                    d = _computeSoftDistance(y, _falseAmp, _trueAmp,<a name="line.524"></a>
+<span class="sourceLineNo">525</span>                            _truthTable[state][colIndex][0], inputRate);<a name="line.525"></a>
+<span class="sourceLineNo">526</span>                } else {<a name="line.526"></a>
+<span class="sourceLineNo">527</span>                    boolean[] y = new boolean[_maskNumber];<a name="line.527"></a>
+<span class="sourceLineNo">528</span><a name="line.528"></a>
+<span class="sourceLineNo">529</span>                    for (int i = 0; i &lt; _maskNumber; i++) {<a name="line.529"></a>
+<span class="sourceLineNo">530</span>                        y[i] = ((BooleanToken) inputToken[i]).booleanValue();<a name="line.530"></a>
+<span class="sourceLineNo">531</span>                    }<a name="line.531"></a>
+<span class="sourceLineNo">532</span><a name="line.532"></a>
+<span class="sourceLineNo">533</span>                    d = _computeHardDistance(y, _truthTable[state][colIndex][0],<a name="line.533"></a>
+<span class="sourceLineNo">534</span>                            _maskNumber);<a name="line.534"></a>
+<span class="sourceLineNo">535</span>                }<a name="line.535"></a>
+<span class="sourceLineNo">536</span><a name="line.536"></a>
+<span class="sourceLineNo">537</span>                // The previous state for that possibility.<a name="line.537"></a>
+<span class="sourceLineNo">538</span>                int oldState = _truthTable[state][colIndex][1];<a name="line.538"></a>
+<span class="sourceLineNo">539</span>                d = _tempDistance[oldState] + d;<a name="line.539"></a>
+<span class="sourceLineNo">540</span><a name="line.540"></a>
+<span class="sourceLineNo">541</span>                // Find the minimum distance and corresponding previous<a name="line.541"></a>
+<span class="sourceLineNo">542</span>                // state for each possible current state of the shift register.<a name="line.542"></a>
+<span class="sourceLineNo">543</span>                if (colIndex == 0 || d &lt; minDistance) {<a name="line.543"></a>
+<span class="sourceLineNo">544</span>                    minDistance = d;<a name="line.544"></a>
+<span class="sourceLineNo">545</span>                    minState = oldState;<a name="line.545"></a>
+<span class="sourceLineNo">546</span>                    minInput = _truthTable[state][colIndex][2];<a name="line.546"></a>
+<span class="sourceLineNo">547</span>                }<a name="line.547"></a>
+<span class="sourceLineNo">548</span>            }<a name="line.548"></a>
+<span class="sourceLineNo">549</span><a name="line.549"></a>
+<span class="sourceLineNo">550</span>            // update the buffers for minimum distance and its<a name="line.550"></a>
+<span class="sourceLineNo">551</span>            // corresponding possible input sequence.<a name="line.551"></a>
+<span class="sourceLineNo">552</span>            _distance[state] = minDistance;<a name="line.552"></a>
+<span class="sourceLineNo">553</span><a name="line.553"></a>
+<span class="sourceLineNo">554</span>            for (int i = 0; i &lt; _flag; i++) {<a name="line.554"></a>
+<span class="sourceLineNo">555</span>                _path[state][i] = _tempPath[minState][i];<a name="line.555"></a>
+<span class="sourceLineNo">556</span>            }<a name="line.556"></a>
+<span class="sourceLineNo">557</span><a name="line.557"></a>
+<span class="sourceLineNo">558</span>            _path[state][_flag] = minInput;<a name="line.558"></a>
+<span class="sourceLineNo">559</span>        }<a name="line.559"></a>
+<span class="sourceLineNo">560</span><a name="line.560"></a>
+<span class="sourceLineNo">561</span>        // Send all-false tokens for the first "D" firings.<a name="line.561"></a>
+<span class="sourceLineNo">562</span>        // If the waiting time has reached "D", the decoder starts to send<a name="line.562"></a>
+<span class="sourceLineNo">563</span>        // the decoded bits to the output port.<a name="line.563"></a>
+<span class="sourceLineNo">564</span>        if (_flag &lt; _depth) {<a name="line.564"></a>
+<span class="sourceLineNo">565</span>            BooleanToken[] initialOutput = new BooleanToken[_inputNumber];<a name="line.565"></a>
+<span class="sourceLineNo">566</span><a name="line.566"></a>
+<span class="sourceLineNo">567</span>            for (int i = 0; i &lt; _inputNumber; i++) {<a name="line.567"></a>
+<span class="sourceLineNo">568</span>                initialOutput[i] = BooleanToken.FALSE;<a name="line.568"></a>
+<span class="sourceLineNo">569</span>            }<a name="line.569"></a>
+<span class="sourceLineNo">570</span><a name="line.570"></a>
+<span class="sourceLineNo">571</span>            output.broadcast(initialOutput, _inputNumber);<a name="line.571"></a>
+<span class="sourceLineNo">572</span>        } else {<a name="line.572"></a>
+<span class="sourceLineNo">573</span>            // make a "final" decision among minimum distances of all states.<a name="line.573"></a>
+<span class="sourceLineNo">574</span>            double minD = 0;<a name="line.574"></a>
+<span class="sourceLineNo">575</span>            int minIndex = 0;<a name="line.575"></a>
+<span class="sourceLineNo">576</span><a name="line.576"></a>
+<span class="sourceLineNo">577</span>            for (int state = 0; state &lt; _rowNum; state++) {<a name="line.577"></a>
+<span class="sourceLineNo">578</span>                if (state == 0 || _distance[state] &lt; minD) {<a name="line.578"></a>
+<span class="sourceLineNo">579</span>                    minD = _distance[state];<a name="line.579"></a>
+<span class="sourceLineNo">580</span>                    minIndex = state;<a name="line.580"></a>
+<span class="sourceLineNo">581</span>                }<a name="line.581"></a>
+<span class="sourceLineNo">582</span>            }<a name="line.582"></a>
+<span class="sourceLineNo">583</span><a name="line.583"></a>
+<span class="sourceLineNo">584</span>            // Cast the decoding result into booleans and<a name="line.584"></a>
+<span class="sourceLineNo">585</span>            // send them in sequence to the output.<a name="line.585"></a>
+<span class="sourceLineNo">586</span>            BooleanToken[] decoded = new BooleanToken[_inputNumber];<a name="line.586"></a>
+<span class="sourceLineNo">587</span>            decoded = _convertToBit(_path[minIndex][0], _inputNumber);<a name="line.587"></a>
+<span class="sourceLineNo">588</span>            output.broadcast(decoded, _inputNumber);<a name="line.588"></a>
+<span class="sourceLineNo">589</span><a name="line.589"></a>
+<span class="sourceLineNo">590</span>            // Discard those datum in the buffers which have already<a name="line.590"></a>
+<span class="sourceLineNo">591</span>            // been made a "final" decision on. Move the rest datum<a name="line.591"></a>
+<span class="sourceLineNo">592</span>            // to the front of the buffers.<a name="line.592"></a>
+<span class="sourceLineNo">593</span>            for (int state = 0; state &lt; _rowNum; state++) {<a name="line.593"></a>
+<span class="sourceLineNo">594</span>                for (int i = 0; i &lt; _flag; i++) {<a name="line.594"></a>
+<span class="sourceLineNo">595</span>                    _path[state][i] = _path[state][i + 1];<a name="line.595"></a>
+<span class="sourceLineNo">596</span>                }<a name="line.596"></a>
+<span class="sourceLineNo">597</span>            }<a name="line.597"></a>
+<span class="sourceLineNo">598</span><a name="line.598"></a>
+<span class="sourceLineNo">599</span>            _flag = _flag - 1;<a name="line.599"></a>
+<span class="sourceLineNo">600</span>        }<a name="line.600"></a>
+<span class="sourceLineNo">601</span><a name="line.601"></a>
+<span class="sourceLineNo">602</span>        _flag = _flag + 1;<a name="line.602"></a>
+<span class="sourceLineNo">603</span>    }<a name="line.603"></a>
+<span class="sourceLineNo">604</span><a name="line.604"></a>
+<span class="sourceLineNo">605</span>    /** Initialize the actor.<a name="line.605"></a>
+<span class="sourceLineNo">606</span>     *  @exception IllegalActionException If the parent class throws it.<a name="line.606"></a>
+<span class="sourceLineNo">607</span>     */<a name="line.607"></a>
+<span class="sourceLineNo">608</span>    @Override<a name="line.608"></a>
+<span class="sourceLineNo">609</span>    public void initialize() throws IllegalActionException {<a name="line.609"></a>
+<span class="sourceLineNo">610</span>        super.initialize();<a name="line.610"></a>
+<span class="sourceLineNo">611</span>        _inputNumberInvalid = true;<a name="line.611"></a>
+<span class="sourceLineNo">612</span>        _flag = 0;<a name="line.612"></a>
+<span class="sourceLineNo">613</span>    }<a name="line.613"></a>
+<span class="sourceLineNo">614</span><a name="line.614"></a>
+<span class="sourceLineNo">615</span>    /** Record the datum in buffers into their temporary versions.<a name="line.615"></a>
+<span class="sourceLineNo">616</span>     *  @exception IllegalActionException If the base class throws it<a name="line.616"></a>
+<span class="sourceLineNo">617</span>     */<a name="line.617"></a>
+<span class="sourceLineNo">618</span>    @Override<a name="line.618"></a>
+<span class="sourceLineNo">619</span>    public boolean postfire() throws IllegalActionException {<a name="line.619"></a>
+<span class="sourceLineNo">620</span>        // Copy datum in buffers to their temp versions.<a name="line.620"></a>
+<span class="sourceLineNo">621</span>        for (int i = 0; i &lt; _rowNum; i++) {<a name="line.621"></a>
+<span class="sourceLineNo">622</span>            _tempDistance[i] = _distance[i];<a name="line.622"></a>
+<span class="sourceLineNo">623</span><a name="line.623"></a>
+<span class="sourceLineNo">624</span>            for (int j = 0; j &lt; _flag; j++) {<a name="line.624"></a>
+<span class="sourceLineNo">625</span>                _tempPath[i][j] = _path[i][j];<a name="line.625"></a>
+<span class="sourceLineNo">626</span>            }<a name="line.626"></a>
+<span class="sourceLineNo">627</span>        }<a name="line.627"></a>
+<span class="sourceLineNo">628</span><a name="line.628"></a>
+<span class="sourceLineNo">629</span>        return super.postfire();<a name="line.629"></a>
+<span class="sourceLineNo">630</span>    }<a name="line.630"></a>
+<span class="sourceLineNo">631</span><a name="line.631"></a>
+<span class="sourceLineNo">632</span>    ///////////////////////////////////////////////////////////////////<a name="line.632"></a>
+<span class="sourceLineNo">633</span>    ////                         private methods                   ////<a name="line.633"></a>
+<span class="sourceLineNo">634</span><a name="line.634"></a>
+<span class="sourceLineNo">635</span>    /** Calculate the parity given by the polynomial and the<a name="line.635"></a>
+<span class="sourceLineNo">636</span>     *  state of shift register.<a name="line.636"></a>
+<span class="sourceLineNo">637</span>     *  @param mask Polynomial.<a name="line.637"></a>
+<span class="sourceLineNo">638</span>     *  @param maskNumber Number of polynomials.<a name="line.638"></a>
+<span class="sourceLineNo">639</span>     *  @param reg State of shift register.<a name="line.639"></a>
+<span class="sourceLineNo">640</span>     *  @return Parity.<a name="line.640"></a>
+<span class="sourceLineNo">641</span>     */<a name="line.641"></a>
+<span class="sourceLineNo">642</span>    private int[] _calculateParity(int[] mask, int maskNumber, int reg) {<a name="line.642"></a>
+<span class="sourceLineNo">643</span>        int[] parity = new int[maskNumber];<a name="line.643"></a>
+<span class="sourceLineNo">644</span><a name="line.644"></a>
+<span class="sourceLineNo">645</span>        for (int i = 0; i &lt; maskNumber; i++) {<a name="line.645"></a>
+<span class="sourceLineNo">646</span>            int masked = mask[i] &amp; reg;<a name="line.646"></a>
+<span class="sourceLineNo">647</span><a name="line.647"></a>
+<span class="sourceLineNo">648</span>            // Find the parity of the "masked".<a name="line.648"></a>
+<span class="sourceLineNo">649</span>            parity[i] = 0;<a name="line.649"></a>
+<span class="sourceLineNo">650</span><a name="line.650"></a>
+<span class="sourceLineNo">651</span>            // Calculate the parity of the masked word.<a name="line.651"></a>
+<span class="sourceLineNo">652</span>            while (masked &gt; 0) {<a name="line.652"></a>
+<span class="sourceLineNo">653</span>                parity[i] = parity[i] ^ masked &amp; 1;<a name="line.653"></a>
+<span class="sourceLineNo">654</span>                masked = masked &gt;&gt; 1;<a name="line.654"></a>
+<span class="sourceLineNo">655</span>            }<a name="line.655"></a>
+<span class="sourceLineNo">656</span>        }<a name="line.656"></a>
+<span class="sourceLineNo">657</span><a name="line.657"></a>
+<span class="sourceLineNo">658</span>        return parity;<a name="line.658"></a>
+<span class="sourceLineNo">659</span>    }<a name="line.659"></a>
+<span class="sourceLineNo">660</span><a name="line.660"></a>
+<span class="sourceLineNo">661</span>    /** Compute the Hamming distance given by the datum received from<a name="line.661"></a>
+<span class="sourceLineNo">662</span>     *  the input port and the value in the truthTable.<a name="line.662"></a>
+<span class="sourceLineNo">663</span>     *  @param y Array of the booleans received from the input port.<a name="line.663"></a>
+<span class="sourceLineNo">664</span>     *  @param truthValue integer representing the truth value<a name="line.664"></a>
+<span class="sourceLineNo">665</span>     *  from the truth table.<a name="line.665"></a>
+<span class="sourceLineNo">666</span>     *  @param maskNum The length of "y" and "truthValue".<a name="line.666"></a>
+<span class="sourceLineNo">667</span>     *  @return The distance.<a name="line.667"></a>
+<span class="sourceLineNo">668</span>     */<a name="line.668"></a>
+<span class="sourceLineNo">669</span>    private int _computeHardDistance(boolean[] y, int truthValue, int maskNum) {<a name="line.669"></a>
+<span class="sourceLineNo">670</span>        int hammingDistance = 0;<a name="line.670"></a>
+<span class="sourceLineNo">671</span><a name="line.671"></a>
+<span class="sourceLineNo">672</span>        for (int i = 0; i &lt; maskNum; i++) {<a name="line.672"></a>
+<span class="sourceLineNo">673</span>            int truthBit = truthValue &amp; 1;<a name="line.673"></a>
+<span class="sourceLineNo">674</span>            truthValue = truthValue &gt;&gt; 1;<a name="line.674"></a>
+<span class="sourceLineNo">675</span><a name="line.675"></a>
+<span class="sourceLineNo">676</span>            // Compute Hamming distance for hard decoding.<a name="line.676"></a>
+<span class="sourceLineNo">677</span>            hammingDistance = hammingDistance + ((y[i] ? 1 : 0) ^ truthBit);<a name="line.677"></a>
+<span class="sourceLineNo">678</span>        }<a name="line.678"></a>
+<span class="sourceLineNo">679</span><a name="line.679"></a>
+<span class="sourceLineNo">680</span>        return hammingDistance;<a name="line.680"></a>
+<span class="sourceLineNo">681</span>    }<a name="line.681"></a>
+<span class="sourceLineNo">682</span><a name="line.682"></a>
+<span class="sourceLineNo">683</span>    /** Compute the Euclidean distance given by the datum received from<a name="line.683"></a>
+<span class="sourceLineNo">684</span>     *  the input port and the value in the truthTable.<a name="line.684"></a>
+<span class="sourceLineNo">685</span>     *  @param y Array of the double-type numbers received from<a name="line.685"></a>
+<span class="sourceLineNo">686</span>     *  the input port.<a name="line.686"></a>
+<span class="sourceLineNo">687</span>     *  @param falseAmp Amplitude of "false" input.<a name="line.687"></a>
+<span class="sourceLineNo">688</span>     *  @param trueAmp Amplitude of "true" input.<a name="line.688"></a>
+<span class="sourceLineNo">689</span>     *  @param truthValue integer representing the truth value<a name="line.689"></a>
+<span class="sourceLineNo">690</span>     *  from the truth table.<a name="line.690"></a>
+<span class="sourceLineNo">691</span>     *  @param inputRate The length of "y" and "truthValue".<a name="line.691"></a>
+<span class="sourceLineNo">692</span>     *  @return The distance.<a name="line.692"></a>
+<span class="sourceLineNo">693</span>     */<a name="line.693"></a>
+<span class="sourceLineNo">694</span>    private double _computeSoftDistance(double[] y, double falseAmp,<a name="line.694"></a>
+<span class="sourceLineNo">695</span>            double trueAmp, int truthValue, int inputRate) {<a name="line.695"></a>
+<span class="sourceLineNo">696</span>        /*if (trellisMode) {<a name="line.696"></a>
+<span class="sourceLineNo">697</span>         Complex truthComplex = constellation[truthValue];<a name="line.697"></a>
+<span class="sourceLineNo">698</span>         Complex z = truthComplex.subtract(y[0].complexValue());<a name="line.698"></a>
+<span class="sourceLineNo">699</span>         return z.magnitudeSquared();<a name="line.699"></a>
+<span class="sourceLineNo">700</span>         } else {*/<a name="line.700"></a>
+<span class="sourceLineNo">701</span>        double distance = 0.0;<a name="line.701"></a>
+<span class="sourceLineNo">702</span>        double truthAmp;<a name="line.702"></a>
+<span class="sourceLineNo">703</span><a name="line.703"></a>
+<span class="sourceLineNo">704</span>        for (int i = 0; i &lt; inputRate; i++) {<a name="line.704"></a>
+<span class="sourceLineNo">705</span>            int truthBit = truthValue &amp; 1;<a name="line.705"></a>
+<span class="sourceLineNo">706</span><a name="line.706"></a>
+<span class="sourceLineNo">707</span>            if (truthBit == 1) {<a name="line.707"></a>
+<span class="sourceLineNo">708</span>                truthAmp = trueAmp;<a name="line.708"></a>
+<span class="sourceLineNo">709</span>            } else {<a name="line.709"></a>
+<span class="sourceLineNo">710</span>                truthAmp = falseAmp;<a name="line.710"></a>
+<span class="sourceLineNo">711</span>            }<a name="line.711"></a>
+<span class="sourceLineNo">712</span><a name="line.712"></a>
+<span class="sourceLineNo">713</span>            // Euclidean distance for soft decoding. Here we<a name="line.713"></a>
+<span class="sourceLineNo">714</span>            // actually compute the square of the Euclidean distance.<a name="line.714"></a>
+<span class="sourceLineNo">715</span>            distance = distance + java.lang.Math.pow(y[i] - truthAmp, 2);<a name="line.715"></a>
+<span class="sourceLineNo">716</span><a name="line.716"></a>
+<span class="sourceLineNo">717</span>            truthValue = truthValue &gt;&gt; 1;<a name="line.717"></a>
+<span class="sourceLineNo">718</span>        }<a name="line.718"></a>
+<span class="sourceLineNo">719</span><a name="line.719"></a>
+<span class="sourceLineNo">720</span>        return distance;<a name="line.720"></a>
+<span class="sourceLineNo">721</span>    }<a name="line.721"></a>
+<span class="sourceLineNo">722</span><a name="line.722"></a>
+<span class="sourceLineNo">723</span>    /** Compute the Euclidean distance given by the datum received<a name="line.723"></a>
+<span class="sourceLineNo">724</span>     *  from the input port and the value in the truthTable in<a name="line.724"></a>
+<span class="sourceLineNo">725</span>     *  trellis decoding mode.<a name="line.725"></a>
+<span class="sourceLineNo">726</span>     *  @param y Complex number received from the input port.<a name="line.726"></a>
+<span class="sourceLineNo">727</span>     *  @param constellation Complex array defining the constellation.<a name="line.727"></a>
+<span class="sourceLineNo">728</span>     *  @param truthValue integer representing the truth value<a name="line.728"></a>
+<span class="sourceLineNo">729</span>     *  from the truth table.<a name="line.729"></a>
+<span class="sourceLineNo">730</span>     *  @return The distance.<a name="line.730"></a>
+<span class="sourceLineNo">731</span>     */<a name="line.731"></a>
+<span class="sourceLineNo">732</span>    private double _computeTrellisDistance(Complex y, Complex[] constellation,<a name="line.732"></a>
+<span class="sourceLineNo">733</span>            int truthValue) {<a name="line.733"></a>
+<span class="sourceLineNo">734</span>        Complex truthComplex = constellation[truthValue];<a name="line.734"></a>
+<span class="sourceLineNo">735</span><a name="line.735"></a>
+<span class="sourceLineNo">736</span>        //Complex z = y;<a name="line.736"></a>
+<span class="sourceLineNo">737</span>        Complex v = truthComplex.subtract(y);<a name="line.737"></a>
+<span class="sourceLineNo">738</span>        return v.magnitudeSquared();<a name="line.738"></a>
+<span class="sourceLineNo">739</span>    }<a name="line.739"></a>
+<span class="sourceLineNo">740</span><a name="line.740"></a>
+<span class="sourceLineNo">741</span>    /** Convert an integer to its binary form. The bits<a name="line.741"></a>
+<span class="sourceLineNo">742</span>     *  are stored in an array.<a name="line.742"></a>
+<span class="sourceLineNo">743</span>     *  @param integer The integer to be converted.<a name="line.743"></a>
+<span class="sourceLineNo">744</span>     *  @param length The length of "integer" in binary form.<a name="line.744"></a>
+<span class="sourceLineNo">745</span>     *  @return The bits of "integer" stored in an array.<a name="line.745"></a>
+<span class="sourceLineNo">746</span>     */<a name="line.746"></a>
+<span class="sourceLineNo">747</span>    private BooleanToken[] _convertToBit(int integer, int length) {<a name="line.747"></a>
+<span class="sourceLineNo">748</span>        BooleanToken[] bit = new BooleanToken[length];<a name="line.748"></a>
+<span class="sourceLineNo">749</span><a name="line.749"></a>
+<span class="sourceLineNo">750</span>        for (int i = length - 1; i &gt;= 0; i--) {<a name="line.750"></a>
+<span class="sourceLineNo">751</span>            if ((integer &amp; 1) == 1) {<a name="line.751"></a>
+<span class="sourceLineNo">752</span>                bit[i] = BooleanToken.TRUE;<a name="line.752"></a>
+<span class="sourceLineNo">753</span>            } else {<a name="line.753"></a>
+<span class="sourceLineNo">754</span>                bit[i] = BooleanToken.FALSE;<a name="line.754"></a>
+<span class="sourceLineNo">755</span>            }<a name="line.755"></a>
+<span class="sourceLineNo">756</span><a name="line.756"></a>
+<span class="sourceLineNo">757</span>            integer = integer &gt;&gt; 1;<a name="line.757"></a>
+<span class="sourceLineNo">758</span>        }<a name="line.758"></a>
+<span class="sourceLineNo">759</span><a name="line.759"></a>
+<span class="sourceLineNo">760</span>        return bit;<a name="line.760"></a>
+<span class="sourceLineNo">761</span>    }<a name="line.761"></a>
+<span class="sourceLineNo">762</span><a name="line.762"></a>
+<span class="sourceLineNo">763</span>    ///////////////////////////////////////////////////////////////////<a name="line.763"></a>
+<span class="sourceLineNo">764</span>    ////           private parameters and variables           ////<a name="line.764"></a>
+<span class="sourceLineNo">765</span>    // Consumption rate of the input port.<a name="line.765"></a>
+<span class="sourceLineNo">766</span>    private Parameter _inputRate;<a name="line.766"></a>
+<span class="sourceLineNo">767</span><a name="line.767"></a>
+<span class="sourceLineNo">768</span>    // Production rate of the output port.<a name="line.768"></a>
+<span class="sourceLineNo">769</span>    private Parameter _outputRate;<a name="line.769"></a>
+<span class="sourceLineNo">770</span><a name="line.770"></a>
+<span class="sourceLineNo">771</span>    // Input port type.<a name="line.771"></a>
+<span class="sourceLineNo">772</span>    private TypeAttribute _type;<a name="line.772"></a>
+<span class="sourceLineNo">773</span><a name="line.773"></a>
+<span class="sourceLineNo">774</span>    // Decoding mode.<a name="line.774"></a>
+<span class="sourceLineNo">775</span>    private boolean _trellisMode;<a name="line.775"></a>
+<span class="sourceLineNo">776</span><a name="line.776"></a>
+<span class="sourceLineNo">777</span>    private boolean _softMode;<a name="line.777"></a>
+<span class="sourceLineNo">778</span><a name="line.778"></a>
+<span class="sourceLineNo">779</span>    private int _mode;<a name="line.779"></a>
+<span class="sourceLineNo">780</span><a name="line.780"></a>
+<span class="sourceLineNo">781</span>    // Amplitudes for soft decoding.<a name="line.781"></a>
+<span class="sourceLineNo">782</span>    private double _trueAmp;<a name="line.782"></a>
+<span class="sourceLineNo">783</span><a name="line.783"></a>
+<span class="sourceLineNo">784</span>    private double _falseAmp;<a name="line.784"></a>
+<span class="sourceLineNo">785</span><a name="line.785"></a>
+<span class="sourceLineNo">786</span>    private Complex[] _constellation;<a name="line.786"></a>
+<span class="sourceLineNo">787</span><a name="line.787"></a>
+<span class="sourceLineNo">788</span>    // Number bits the actor consumes per firing.<a name="line.788"></a>
+<span class="sourceLineNo">789</span>    private int _inputNumber;<a name="line.789"></a>
+<span class="sourceLineNo">790</span><a name="line.790"></a>
+<span class="sourceLineNo">791</span>    // Number of polynomials.<a name="line.791"></a>
+<span class="sourceLineNo">792</span>    private int _maskNumber;<a name="line.792"></a>
+<span class="sourceLineNo">793</span><a name="line.793"></a>
+<span class="sourceLineNo">794</span>    // Polynomial array.<a name="line.794"></a>
+<span class="sourceLineNo">795</span>    private int[] _mask;<a name="line.795"></a>
+<span class="sourceLineNo">796</span><a name="line.796"></a>
+<span class="sourceLineNo">797</span>    // The maximum value in integer among all polynomials.<a name="line.797"></a>
+<span class="sourceLineNo">798</span>    // It is used to compute the necessary shift register's length.<a name="line.798"></a>
+<span class="sourceLineNo">799</span>    private int _maxPolyValue;<a name="line.799"></a>
+<span class="sourceLineNo">800</span><a name="line.800"></a>
+<span class="sourceLineNo">801</span>    // Length of the shift register.<a name="line.801"></a>
+<span class="sourceLineNo">802</span>    private int _shiftRegLength = 0;<a name="line.802"></a>
+<span class="sourceLineNo">803</span><a name="line.803"></a>
+<span class="sourceLineNo">804</span>    // A flag indicating that the private variable<a name="line.804"></a>
+<span class="sourceLineNo">805</span>    // _inputNumber is invalid.<a name="line.805"></a>
+<span class="sourceLineNo">806</span>    private transient boolean _inputNumberInvalid = true;<a name="line.806"></a>
+<span class="sourceLineNo">807</span><a name="line.807"></a>
+<span class="sourceLineNo">808</span>    // A flag indicating that the the private variable<a name="line.808"></a>
+<span class="sourceLineNo">809</span>    // _depth is invalid.<a name="line.809"></a>
+<span class="sourceLineNo">810</span>    private transient boolean _depthInvalid = true;<a name="line.810"></a>
+<span class="sourceLineNo">811</span><a name="line.811"></a>
+<span class="sourceLineNo">812</span>    // Truth table for the corresponding convolutional code.<a name="line.812"></a>
+<span class="sourceLineNo">813</span>    private int[][][] _truthTable;<a name="line.813"></a>
+<span class="sourceLineNo">814</span><a name="line.814"></a>
+<span class="sourceLineNo">815</span>    // Size of first dimension of the truth table.<a name="line.815"></a>
+<span class="sourceLineNo">816</span>    private int _rowNum;<a name="line.816"></a>
+<span class="sourceLineNo">817</span><a name="line.817"></a>
+<span class="sourceLineNo">818</span>    // Size of second dimension of the truth table.<a name="line.818"></a>
+<span class="sourceLineNo">819</span>    private int _colNum;<a name="line.819"></a>
+<span class="sourceLineNo">820</span><a name="line.820"></a>
+<span class="sourceLineNo">821</span>    // The delay specified by the user.<a name="line.821"></a>
+<span class="sourceLineNo">822</span>    private int _depth;<a name="line.822"></a>
+<span class="sourceLineNo">823</span><a name="line.823"></a>
+<span class="sourceLineNo">824</span>    // Buffers for minimum distance, possible input sequence<a name="line.824"></a>
+<span class="sourceLineNo">825</span>    // for each state. And their temporary versions used<a name="line.825"></a>
+<span class="sourceLineNo">826</span>    // when updating.<a name="line.826"></a>
+<span class="sourceLineNo">827</span>    private double[] _distance;<a name="line.827"></a>
+<span class="sourceLineNo">828</span><a name="line.828"></a>
+<span class="sourceLineNo">829</span>    private double[] _tempDistance;<a name="line.829"></a>
+<span class="sourceLineNo">830</span><a name="line.830"></a>
+<span class="sourceLineNo">831</span>    private int[][] _path;<a name="line.831"></a>
+<span class="sourceLineNo">832</span><a name="line.832"></a>
+<span class="sourceLineNo">833</span>    private int[][] _tempPath;<a name="line.833"></a>
+<span class="sourceLineNo">834</span><a name="line.834"></a>
+<span class="sourceLineNo">835</span>    // A flag used to indicate the positions that new values<a name="line.835"></a>
+<span class="sourceLineNo">836</span>    // should be inserted in the buffers.<a name="line.836"></a>
+<span class="sourceLineNo">837</span>    private int _flag;<a name="line.837"></a>
+<span class="sourceLineNo">838</span><a name="line.838"></a>
+<span class="sourceLineNo">839</span>    private static final int _HARD = 0;<a name="line.839"></a>
+<span class="sourceLineNo">840</span><a name="line.840"></a>
+<span class="sourceLineNo">841</span>    private static final int _SOFT = 1;<a name="line.841"></a>
+<span class="sourceLineNo">842</span><a name="line.842"></a>
+<span class="sourceLineNo">843</span>    private static final int _TRELLIS = 2;<a name="line.843"></a>
+<span class="sourceLineNo">844</span>}<a name="line.844"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

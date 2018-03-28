@@ -1,0 +1,175 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../../../../stylesheet.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>/*<a name="line.1"></a>
+<span class="sourceLineNo">002</span> * Copyright (c) 2015 The Regents of the University of California.<a name="line.2"></a>
+<span class="sourceLineNo">003</span> * All rights reserved.<a name="line.3"></a>
+<span class="sourceLineNo">004</span> *<a name="line.4"></a>
+<span class="sourceLineNo">005</span> * '$Author: crawl $'<a name="line.5"></a>
+<span class="sourceLineNo">006</span> * '$Date: 2015-12-16 10:21:36 -0800 (Wed, 16 Dec 2015) $' <a name="line.6"></a>
+<span class="sourceLineNo">007</span> * '$Revision: 34339 $'<a name="line.7"></a>
+<span class="sourceLineNo">008</span> * <a name="line.8"></a>
+<span class="sourceLineNo">009</span> * Permission is hereby granted, without written agreement and without<a name="line.9"></a>
+<span class="sourceLineNo">010</span> * license or royalty fees, to use, copy, modify, and distribute this<a name="line.10"></a>
+<span class="sourceLineNo">011</span> * software and its documentation for any purpose, provided that the above<a name="line.11"></a>
+<span class="sourceLineNo">012</span> * copyright notice and the following two paragraphs appear in all copies<a name="line.12"></a>
+<span class="sourceLineNo">013</span> * of this software.<a name="line.13"></a>
+<span class="sourceLineNo">014</span> *<a name="line.14"></a>
+<span class="sourceLineNo">015</span> * IN NO EVENT SHALL THE UNIVERSITY OF CALIFORNIA BE LIABLE TO ANY PARTY<a name="line.15"></a>
+<span class="sourceLineNo">016</span> * FOR DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES<a name="line.16"></a>
+<span class="sourceLineNo">017</span> * ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION, EVEN IF<a name="line.17"></a>
+<span class="sourceLineNo">018</span> * THE UNIVERSITY OF CALIFORNIA HAS BEEN ADVISED OF THE POSSIBILITY OF<a name="line.18"></a>
+<span class="sourceLineNo">019</span> * SUCH DAMAGE.<a name="line.19"></a>
+<span class="sourceLineNo">020</span> *<a name="line.20"></a>
+<span class="sourceLineNo">021</span> * THE UNIVERSITY OF CALIFORNIA SPECIFICALLY DISCLAIMS ANY WARRANTIES,<a name="line.21"></a>
+<span class="sourceLineNo">022</span> * INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF<a name="line.22"></a>
+<span class="sourceLineNo">023</span> * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE<a name="line.23"></a>
+<span class="sourceLineNo">024</span> * PROVIDED HEREUNDER IS ON AN "AS IS" BASIS, AND THE UNIVERSITY OF<a name="line.24"></a>
+<span class="sourceLineNo">025</span> * CALIFORNIA HAS NO OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT, UPDATES,<a name="line.25"></a>
+<span class="sourceLineNo">026</span> * ENHANCEMENTS, OR MODIFICATIONS.<a name="line.26"></a>
+<span class="sourceLineNo">027</span> *<a name="line.27"></a>
+<span class="sourceLineNo">028</span> */<a name="line.28"></a>
+<span class="sourceLineNo">029</span>package org.kepler.gis.actor.calc;<a name="line.29"></a>
+<span class="sourceLineNo">030</span><a name="line.30"></a>
+<span class="sourceLineNo">031</span>import java.util.ArrayList;<a name="line.31"></a>
+<span class="sourceLineNo">032</span>import java.util.List;<a name="line.32"></a>
+<span class="sourceLineNo">033</span><a name="line.33"></a>
+<span class="sourceLineNo">034</span>import org.geotools.data.simple.SimpleFeatureCollection;<a name="line.34"></a>
+<span class="sourceLineNo">035</span>import org.geotools.data.simple.SimpleFeatureIterator;<a name="line.35"></a>
+<span class="sourceLineNo">036</span>import org.geotools.filter.AreaFunction;<a name="line.36"></a>
+<span class="sourceLineNo">037</span>import org.kepler.gis.data.VectorToken;<a name="line.37"></a>
+<span class="sourceLineNo">038</span>import org.opengis.feature.simple.SimpleFeature;<a name="line.38"></a>
+<span class="sourceLineNo">039</span><a name="line.39"></a>
+<span class="sourceLineNo">040</span>import com.vividsolutions.jts.geom.Geometry;<a name="line.40"></a>
+<span class="sourceLineNo">041</span>import com.vividsolutions.jts.geom.GeometryFactory;<a name="line.41"></a>
+<span class="sourceLineNo">042</span>import com.vividsolutions.jts.geom.MultiLineString;<a name="line.42"></a>
+<span class="sourceLineNo">043</span><a name="line.43"></a>
+<span class="sourceLineNo">044</span>import ptolemy.actor.lib.Transformer;<a name="line.44"></a>
+<span class="sourceLineNo">045</span>import ptolemy.data.ArrayToken;<a name="line.45"></a>
+<span class="sourceLineNo">046</span>import ptolemy.data.DoubleToken;<a name="line.46"></a>
+<span class="sourceLineNo">047</span>import ptolemy.data.type.ArrayType;<a name="line.47"></a>
+<span class="sourceLineNo">048</span>import ptolemy.data.type.BaseType;<a name="line.48"></a>
+<span class="sourceLineNo">049</span>import ptolemy.kernel.CompositeEntity;<a name="line.49"></a>
+<span class="sourceLineNo">050</span>import ptolemy.kernel.util.IllegalActionException;<a name="line.50"></a>
+<span class="sourceLineNo">051</span>import ptolemy.kernel.util.NameDuplicationException;<a name="line.51"></a>
+<span class="sourceLineNo">052</span><a name="line.52"></a>
+<span class="sourceLineNo">053</span>/** Calculate the area of a GIS data set.<a name="line.53"></a>
+<span class="sourceLineNo">054</span> * <a name="line.54"></a>
+<span class="sourceLineNo">055</span> *  @author Daniel Crawl<a name="line.55"></a>
+<span class="sourceLineNo">056</span> *  @version $Id: Area.java 34339 2015-12-16 18:21:36Z crawl $<a name="line.56"></a>
+<span class="sourceLineNo">057</span> */<a name="line.57"></a>
+<span class="sourceLineNo">058</span>public class Area extends Transformer {<a name="line.58"></a>
+<span class="sourceLineNo">059</span><a name="line.59"></a>
+<span class="sourceLineNo">060</span>    /** Create a new Area in a container with a specific name. */<a name="line.60"></a>
+<span class="sourceLineNo">061</span>    public Area(CompositeEntity container, String name) throws NameDuplicationException, IllegalActionException {<a name="line.61"></a>
+<span class="sourceLineNo">062</span>        super(container, name);<a name="line.62"></a>
+<span class="sourceLineNo">063</span>        <a name="line.63"></a>
+<span class="sourceLineNo">064</span>        input.setTypeEquals(VectorToken.VECTOR);<a name="line.64"></a>
+<span class="sourceLineNo">065</span>        <a name="line.65"></a>
+<span class="sourceLineNo">066</span>        output.setTypeEquals(new ArrayType(BaseType.DOUBLE));<a name="line.66"></a>
+<span class="sourceLineNo">067</span>    }<a name="line.67"></a>
+<span class="sourceLineNo">068</span>    <a name="line.68"></a>
+<span class="sourceLineNo">069</span>    @Override<a name="line.69"></a>
+<span class="sourceLineNo">070</span>    public void fire() throws IllegalActionException {<a name="line.70"></a>
+<span class="sourceLineNo">071</span>        <a name="line.71"></a>
+<span class="sourceLineNo">072</span>        super.fire();<a name="line.72"></a>
+<span class="sourceLineNo">073</span>        <a name="line.73"></a>
+<span class="sourceLineNo">074</span>        SimpleFeatureCollection features = ((VectorToken)input.get(0)).getVectors();<a name="line.74"></a>
+<span class="sourceLineNo">075</span>        <a name="line.75"></a>
+<span class="sourceLineNo">076</span>        List&lt;DoubleToken&gt; list = new ArrayList&lt;DoubleToken&gt;(features.size());<a name="line.76"></a>
+<span class="sourceLineNo">077</span>        <a name="line.77"></a>
+<span class="sourceLineNo">078</span>        AreaFunction area = new AreaFunction();<a name="line.78"></a>
+<span class="sourceLineNo">079</span>        GeometryFactory factory = new GeometryFactory();<a name="line.79"></a>
+<span class="sourceLineNo">080</span>        <a name="line.80"></a>
+<span class="sourceLineNo">081</span>        try(SimpleFeatureIterator iterator = features.features();) {<a name="line.81"></a>
+<span class="sourceLineNo">082</span>            while(iterator.hasNext()) {<a name="line.82"></a>
+<span class="sourceLineNo">083</span>                SimpleFeature feature = iterator.next();<a name="line.83"></a>
+<span class="sourceLineNo">084</span>                Object geometryObj = feature.getDefaultGeometry();<a name="line.84"></a>
+<span class="sourceLineNo">085</span>                if(!(geometryObj instanceof Geometry)) {<a name="line.85"></a>
+<span class="sourceLineNo">086</span>                    System.err.println("WARNING: is not instance of Geometry: " + geometryObj.getClass());<a name="line.86"></a>
+<span class="sourceLineNo">087</span>                } else {<a name="line.87"></a>
+<span class="sourceLineNo">088</span>                    Geometry geometry = (Geometry) geometryObj;<a name="line.88"></a>
+<span class="sourceLineNo">089</span>                    if(geometry instanceof MultiLineString) {<a name="line.89"></a>
+<span class="sourceLineNo">090</span>                        MultiLineString multiLineString = (MultiLineString) geometry;<a name="line.90"></a>
+<span class="sourceLineNo">091</span>                        geometry = factory.createPolygon(multiLineString.getCoordinates());<a name="line.91"></a>
+<span class="sourceLineNo">092</span>                    }<a name="line.92"></a>
+<span class="sourceLineNo">093</span>                                        <a name="line.93"></a>
+<span class="sourceLineNo">094</span>                    double areaVal = area.getArea((Geometry)geometry);<a name="line.94"></a>
+<span class="sourceLineNo">095</span>                    list.add(new DoubleToken(areaVal));<a name="line.95"></a>
+<span class="sourceLineNo">096</span>                }<a name="line.96"></a>
+<span class="sourceLineNo">097</span>            }<a name="line.97"></a>
+<span class="sourceLineNo">098</span>        }<a name="line.98"></a>
+<span class="sourceLineNo">099</span>        <a name="line.99"></a>
+<span class="sourceLineNo">100</span>        output.broadcast(new ArrayToken(list.toArray(new DoubleToken[list.size()])));<a name="line.100"></a>
+<span class="sourceLineNo">101</span>    }<a name="line.101"></a>
+<span class="sourceLineNo">102</span><a name="line.102"></a>
+<span class="sourceLineNo">103</span>}<a name="line.103"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>

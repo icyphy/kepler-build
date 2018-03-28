@@ -1,0 +1,803 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../stylesheet.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>/*<a name="line.1"></a>
+<span class="sourceLineNo">002</span> A library for mathematical operations on arrays of doubles.<a name="line.2"></a>
+<span class="sourceLineNo">003</span><a name="line.3"></a>
+<span class="sourceLineNo">004</span> This file was automatically generated with a preprocessor, so that<a name="line.4"></a>
+<span class="sourceLineNo">005</span> similar array operations are supported on ints, longs, floats, and doubles.<a name="line.5"></a>
+<span class="sourceLineNo">006</span><a name="line.6"></a>
+<span class="sourceLineNo">007</span> Copyright (c) 1998-2013 The Regents of the University of California.<a name="line.7"></a>
+<span class="sourceLineNo">008</span> All rights reserved.<a name="line.8"></a>
+<span class="sourceLineNo">009</span><a name="line.9"></a>
+<span class="sourceLineNo">010</span> Permission is hereby granted, without written agreement and without<a name="line.10"></a>
+<span class="sourceLineNo">011</span> license or royalty fees, to use, copy, modify, and distribute this<a name="line.11"></a>
+<span class="sourceLineNo">012</span> software and its documentation for any purpose, provided that the above<a name="line.12"></a>
+<span class="sourceLineNo">013</span> copyright notice and the following two paragraphs appear in all copies<a name="line.13"></a>
+<span class="sourceLineNo">014</span> of this software.<a name="line.14"></a>
+<span class="sourceLineNo">015</span><a name="line.15"></a>
+<span class="sourceLineNo">016</span> IN NO EVENT SHALL THE UNIVERSITY OF CALIFORNIA BE LIABLE TO ANY PARTY<a name="line.16"></a>
+<span class="sourceLineNo">017</span> FOR DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES<a name="line.17"></a>
+<span class="sourceLineNo">018</span> ARISING OUT OF THE USE OF THIS SOFTWARE AND ITS DOCUMENTATION, EVEN IF<a name="line.18"></a>
+<span class="sourceLineNo">019</span> THE UNIVERSITY OF CALIFORNIA HAS BEEN ADVISED OF THE POSSIBILITY OF<a name="line.19"></a>
+<span class="sourceLineNo">020</span> SUCH DAMAGE.<a name="line.20"></a>
+<span class="sourceLineNo">021</span><a name="line.21"></a>
+<span class="sourceLineNo">022</span> THE UNIVERSITY OF CALIFORNIA SPECIFICALLY DISCLAIMS ANY WARRANTIES,<a name="line.22"></a>
+<span class="sourceLineNo">023</span> INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF<a name="line.23"></a>
+<span class="sourceLineNo">024</span> MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. THE SOFTWARE<a name="line.24"></a>
+<span class="sourceLineNo">025</span> PROVIDED HEREUNDER IS ON AN "AS IS" BASIS, AND THE UNIVERSITY OF<a name="line.25"></a>
+<span class="sourceLineNo">026</span> CALIFORNIA HAS NO OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT, UPDATES,<a name="line.26"></a>
+<span class="sourceLineNo">027</span> ENHANCEMENTS, OR MODIFICATIONS.<a name="line.27"></a>
+<span class="sourceLineNo">028</span><a name="line.28"></a>
+<span class="sourceLineNo">029</span> PT_COPYRIGHT_VERSION_2<a name="line.29"></a>
+<span class="sourceLineNo">030</span> COPYRIGHTENDKEY<a name="line.30"></a>
+<span class="sourceLineNo">031</span><a name="line.31"></a>
+<span class="sourceLineNo">032</span> */<a name="line.32"></a>
+<span class="sourceLineNo">033</span>package ptolemy.math;<a name="line.33"></a>
+<span class="sourceLineNo">034</span><a name="line.34"></a>
+<span class="sourceLineNo">035</span>///////////////////////////////////////////////////////////////////<a name="line.35"></a>
+<span class="sourceLineNo">036</span>//// DoubleArrayMath<a name="line.36"></a>
+<span class="sourceLineNo">037</span><a name="line.37"></a>
+<span class="sourceLineNo">038</span>/**<a name="line.38"></a>
+<span class="sourceLineNo">039</span> This class provides a library for mathematical operations on double arrays.<a name="line.39"></a>
+<span class="sourceLineNo">040</span> unless explicitly noted otherwise, all array arguments are assumed to be<a name="line.40"></a>
+<span class="sourceLineNo">041</span> non-null. If a null array is passed to a method, a NullPointerException<a name="line.41"></a>
+<span class="sourceLineNo">042</span> will be thrown in the method or called methods.<a name="line.42"></a>
+<span class="sourceLineNo">043</span> @author Albert Chen, William Wu, Edward A. Lee, Jeff Tsay<a name="line.43"></a>
+<span class="sourceLineNo">044</span> @version $Id$<a name="line.44"></a>
+<span class="sourceLineNo">045</span> @since Ptolemy II 0.3<a name="line.45"></a>
+<span class="sourceLineNo">046</span> @Pt.ProposedRating Yellow (ctsay)<a name="line.46"></a>
+<span class="sourceLineNo">047</span> @Pt.AcceptedRating Yellow (ctsay)<a name="line.47"></a>
+<span class="sourceLineNo">048</span> */<a name="line.48"></a>
+<span class="sourceLineNo">049</span>public class DoubleArrayMath {<a name="line.49"></a>
+<span class="sourceLineNo">050</span>    // Protected constructor prevents construction of this class.<a name="line.50"></a>
+<span class="sourceLineNo">051</span>    protected DoubleArrayMath() {<a name="line.51"></a>
+<span class="sourceLineNo">052</span>    }<a name="line.52"></a>
+<span class="sourceLineNo">053</span><a name="line.53"></a>
+<span class="sourceLineNo">054</span>    ///////////////////////////////////////////////////////////////////<a name="line.54"></a>
+<span class="sourceLineNo">055</span>    ////                         public methods                    ////<a name="line.55"></a>
+<span class="sourceLineNo">056</span><a name="line.56"></a>
+<span class="sourceLineNo">057</span>    /** Return a new array that is the formed by adding z to each element<a name="line.57"></a>
+<span class="sourceLineNo">058</span>     *  of the input array.<a name="line.58"></a>
+<span class="sourceLineNo">059</span>     */<a name="line.59"></a>
+<span class="sourceLineNo">060</span>    public static final double[] add(double[] array, final double z) {<a name="line.60"></a>
+<span class="sourceLineNo">061</span>        int length = array.length;<a name="line.61"></a>
+<span class="sourceLineNo">062</span>        double[] returnValue = new double[length];<a name="line.62"></a>
+<span class="sourceLineNo">063</span><a name="line.63"></a>
+<span class="sourceLineNo">064</span>        for (int i = 0; i &lt; length; i++) {<a name="line.64"></a>
+<span class="sourceLineNo">065</span>            returnValue[i] = array[i] + z;<a name="line.65"></a>
+<span class="sourceLineNo">066</span>        }<a name="line.66"></a>
+<span class="sourceLineNo">067</span><a name="line.67"></a>
+<span class="sourceLineNo">068</span>        return returnValue;<a name="line.68"></a>
+<span class="sourceLineNo">069</span>    }<a name="line.69"></a>
+<span class="sourceLineNo">070</span><a name="line.70"></a>
+<span class="sourceLineNo">071</span>    /** Return a new array that is the element-by-element sum of the two<a name="line.71"></a>
+<span class="sourceLineNo">072</span>     *  input arrays.<a name="line.72"></a>
+<span class="sourceLineNo">073</span>     *  If the lengths of both arrays are 0, return a new array of length 0.<a name="line.73"></a>
+<span class="sourceLineNo">074</span>     *  If the two arrays do not have the same length, throw an<a name="line.74"></a>
+<span class="sourceLineNo">075</span>     *  IllegalArgumentException.<a name="line.75"></a>
+<span class="sourceLineNo">076</span>     */<a name="line.76"></a>
+<span class="sourceLineNo">077</span>    public static final double[] add(final double[] array1,<a name="line.77"></a>
+<span class="sourceLineNo">078</span>            final double[] array2) {<a name="line.78"></a>
+<span class="sourceLineNo">079</span>        int length = _commonLength(array1, array2, "DoubleArrayMath.add");<a name="line.79"></a>
+<span class="sourceLineNo">080</span>        double[] returnValue = new double[length];<a name="line.80"></a>
+<span class="sourceLineNo">081</span><a name="line.81"></a>
+<span class="sourceLineNo">082</span>        for (int i = 0; i &lt; length; i++) {<a name="line.82"></a>
+<span class="sourceLineNo">083</span>            returnValue[i] = array1[i] + array2[i];<a name="line.83"></a>
+<span class="sourceLineNo">084</span>        }<a name="line.84"></a>
+<span class="sourceLineNo">085</span><a name="line.85"></a>
+<span class="sourceLineNo">086</span>        return returnValue;<a name="line.86"></a>
+<span class="sourceLineNo">087</span>    }<a name="line.87"></a>
+<span class="sourceLineNo">088</span><a name="line.88"></a>
+<span class="sourceLineNo">089</span>    /** Return a new array that is a copy of the array argument.<a name="line.89"></a>
+<span class="sourceLineNo">090</span>     *  @param array An array of ints.<a name="line.90"></a>
+<span class="sourceLineNo">091</span>     *  @return A new array of ints.<a name="line.91"></a>
+<span class="sourceLineNo">092</span>     */<a name="line.92"></a>
+<span class="sourceLineNo">093</span>    public static final double[] allocCopy(final double[] array) {<a name="line.93"></a>
+<span class="sourceLineNo">094</span>        int elements = array.length;<a name="line.94"></a>
+<span class="sourceLineNo">095</span>        double[] newArray = new double[elements];<a name="line.95"></a>
+<span class="sourceLineNo">096</span>        System.arraycopy(array, 0, newArray, 0, elements);<a name="line.96"></a>
+<span class="sourceLineNo">097</span>        return newArray;<a name="line.97"></a>
+<span class="sourceLineNo">098</span>    }<a name="line.98"></a>
+<span class="sourceLineNo">099</span><a name="line.99"></a>
+<span class="sourceLineNo">100</span>    /** Return a new array that is the result of appending array2 to the end<a name="line.100"></a>
+<span class="sourceLineNo">101</span>     *  of array1. This method simply calls<a name="line.101"></a>
+<span class="sourceLineNo">102</span>     *  append(array1, 0, array1.length, array2, 0, array2.length)<a name="line.102"></a>
+<span class="sourceLineNo">103</span>     */<a name="line.103"></a>
+<span class="sourceLineNo">104</span>    public static final double[] append(final double[] array1,<a name="line.104"></a>
+<span class="sourceLineNo">105</span>            final double[] array2) {<a name="line.105"></a>
+<span class="sourceLineNo">106</span>        return append(array1, 0, array1.length, array2, 0, array2.length);<a name="line.106"></a>
+<span class="sourceLineNo">107</span>    }<a name="line.107"></a>
+<span class="sourceLineNo">108</span><a name="line.108"></a>
+<span class="sourceLineNo">109</span>    /** Return a new array that is the result of appending length2<a name="line.109"></a>
+<span class="sourceLineNo">110</span>     *  elements of array2, starting from the array2[idx2] to length1<a name="line.110"></a>
+<span class="sourceLineNo">111</span>     *  elements of array1, starting from array1[idx1].  Appending<a name="line.111"></a>
+<span class="sourceLineNo">112</span>     *  empty arrays is supported. In that case, the corresponding idx<a name="line.112"></a>
+<span class="sourceLineNo">113</span>     *  may be any number. Allow System.arraycopy() to throw array<a name="line.113"></a>
+<span class="sourceLineNo">114</span>     *  access exceptions if idx .. idx + length - 1 are not all valid<a name="line.114"></a>
+<span class="sourceLineNo">115</span>     *  array indices, for both of the arrays.<a name="line.115"></a>
+<span class="sourceLineNo">116</span>     *<a name="line.116"></a>
+<span class="sourceLineNo">117</span>     *  @param array1 The first array of doubles.<a name="line.117"></a>
+<span class="sourceLineNo">118</span>     *  @param idx1 The starting index for array1.<a name="line.118"></a>
+<span class="sourceLineNo">119</span>     *  @param length1 The number of elements of array1 to use.<a name="line.119"></a>
+<span class="sourceLineNo">120</span>     *  @param array2 The second array of doubles, which is appended.<a name="line.120"></a>
+<span class="sourceLineNo">121</span>     *  @param idx2 The starting index for array2.<a name="line.121"></a>
+<span class="sourceLineNo">122</span>     *  @param length2 The number of elements of array2 to append.<a name="line.122"></a>
+<span class="sourceLineNo">123</span>     *  @return A new array of doubles.<a name="line.123"></a>
+<span class="sourceLineNo">124</span>     */<a name="line.124"></a>
+<span class="sourceLineNo">125</span>    public static final double[] append(final double[] array1, final int idx1,<a name="line.125"></a>
+<span class="sourceLineNo">126</span>            final int length1, final double[] array2, final int idx2,<a name="line.126"></a>
+<span class="sourceLineNo">127</span>            final int length2) {<a name="line.127"></a>
+<span class="sourceLineNo">128</span>        double[] returnValue = new double[length1 + length2];<a name="line.128"></a>
+<span class="sourceLineNo">129</span><a name="line.129"></a>
+<span class="sourceLineNo">130</span>        if (length1 &gt; 0) {<a name="line.130"></a>
+<span class="sourceLineNo">131</span>            System.arraycopy(array1, idx1, returnValue, 0, length1);<a name="line.131"></a>
+<span class="sourceLineNo">132</span>        }<a name="line.132"></a>
+<span class="sourceLineNo">133</span><a name="line.133"></a>
+<span class="sourceLineNo">134</span>        if (length2 &gt; 0) {<a name="line.134"></a>
+<span class="sourceLineNo">135</span>            System.arraycopy(array2, idx2, returnValue, length1, length2);<a name="line.135"></a>
+<span class="sourceLineNo">136</span>        }<a name="line.136"></a>
+<span class="sourceLineNo">137</span><a name="line.137"></a>
+<span class="sourceLineNo">138</span>        return returnValue;<a name="line.138"></a>
+<span class="sourceLineNo">139</span>    }<a name="line.139"></a>
+<span class="sourceLineNo">140</span><a name="line.140"></a>
+<span class="sourceLineNo">141</span>    /** Return a new array that is formed by applying an instance of a<a name="line.141"></a>
+<span class="sourceLineNo">142</span>     *  DoubleBinaryOperation to each element in the input array<a name="line.142"></a>
+<span class="sourceLineNo">143</span>     *  and z, using the array elements as the left operands and z<a name="line.143"></a>
+<span class="sourceLineNo">144</span>     *  as the right operand in all cases. (op.operate(array[i], z)).<a name="line.144"></a>
+<span class="sourceLineNo">145</span>     *  If the length of the array is 0, return a new array of length 0.<a name="line.145"></a>
+<span class="sourceLineNo">146</span>     */<a name="line.146"></a>
+<span class="sourceLineNo">147</span>    public static final double[] applyBinaryOperation(DoubleBinaryOperation op,<a name="line.147"></a>
+<span class="sourceLineNo">148</span>            final double[] array, final double z) {<a name="line.148"></a>
+<span class="sourceLineNo">149</span>        int length = array.length;<a name="line.149"></a>
+<span class="sourceLineNo">150</span>        double[] returnValue = new double[length];<a name="line.150"></a>
+<span class="sourceLineNo">151</span><a name="line.151"></a>
+<span class="sourceLineNo">152</span>        for (int i = 0; i &lt; length; i++) {<a name="line.152"></a>
+<span class="sourceLineNo">153</span>            returnValue[i] = op.operate(array[i], z);<a name="line.153"></a>
+<span class="sourceLineNo">154</span>        }<a name="line.154"></a>
+<span class="sourceLineNo">155</span><a name="line.155"></a>
+<span class="sourceLineNo">156</span>        return returnValue;<a name="line.156"></a>
+<span class="sourceLineNo">157</span>    }<a name="line.157"></a>
+<span class="sourceLineNo">158</span><a name="line.158"></a>
+<span class="sourceLineNo">159</span>    /** Return a new array that is formed by applying an instance of a<a name="line.159"></a>
+<span class="sourceLineNo">160</span>     *  DoubleBinaryOperation to each element in the input array,<a name="line.160"></a>
+<span class="sourceLineNo">161</span>     *  using z as the left operand in all cases and the array elements<a name="line.161"></a>
+<span class="sourceLineNo">162</span>     *  as the right operands (op.operate(z, array[i])).<a name="line.162"></a>
+<span class="sourceLineNo">163</span>     *  If the length of the array is 0, return a new array of length 0.<a name="line.163"></a>
+<span class="sourceLineNo">164</span>     */<a name="line.164"></a>
+<span class="sourceLineNo">165</span>    public static final double[] applyBinaryOperation(DoubleBinaryOperation op,<a name="line.165"></a>
+<span class="sourceLineNo">166</span>            final double z, final double[] array) {<a name="line.166"></a>
+<span class="sourceLineNo">167</span>        int length = array.length;<a name="line.167"></a>
+<span class="sourceLineNo">168</span>        double[] returnValue = new double[length];<a name="line.168"></a>
+<span class="sourceLineNo">169</span><a name="line.169"></a>
+<span class="sourceLineNo">170</span>        for (int i = 0; i &lt; length; i++) {<a name="line.170"></a>
+<span class="sourceLineNo">171</span>            returnValue[i] = op.operate(array[i], z);<a name="line.171"></a>
+<span class="sourceLineNo">172</span>        }<a name="line.172"></a>
+<span class="sourceLineNo">173</span><a name="line.173"></a>
+<span class="sourceLineNo">174</span>        return returnValue;<a name="line.174"></a>
+<span class="sourceLineNo">175</span>    }<a name="line.175"></a>
+<span class="sourceLineNo">176</span><a name="line.176"></a>
+<span class="sourceLineNo">177</span>    /** Return a new array that is formed by applying an instance of a<a name="line.177"></a>
+<span class="sourceLineNo">178</span>     *  DoubleBinaryOperation to the two arrays, element by element,<a name="line.178"></a>
+<span class="sourceLineNo">179</span>     *  using the elements of the first array as the left operands and the<a name="line.179"></a>
+<span class="sourceLineNo">180</span>     *  elements of the second array as the right operands.<a name="line.180"></a>
+<span class="sourceLineNo">181</span>     *  (op.operate(array[i], array2[i])).<a name="line.181"></a>
+<span class="sourceLineNo">182</span>     *  If the lengths of both arrays are 0, return a new array of length 0.<a name="line.182"></a>
+<span class="sourceLineNo">183</span>     *  If the two arrays do not have the same length, throw an<a name="line.183"></a>
+<span class="sourceLineNo">184</span>     *  IllegalArgumentException.<a name="line.184"></a>
+<span class="sourceLineNo">185</span>     */<a name="line.185"></a>
+<span class="sourceLineNo">186</span>    public static final double[] applyBinaryOperation(DoubleBinaryOperation op,<a name="line.186"></a>
+<span class="sourceLineNo">187</span>            final double[] array1, final double[] array2) {<a name="line.187"></a>
+<span class="sourceLineNo">188</span>        int length = _commonLength(array1, array2,<a name="line.188"></a>
+<span class="sourceLineNo">189</span>                "DoubleArrayMath.applyBinaryOperation");<a name="line.189"></a>
+<span class="sourceLineNo">190</span>        double[] returnValue = new double[length];<a name="line.190"></a>
+<span class="sourceLineNo">191</span><a name="line.191"></a>
+<span class="sourceLineNo">192</span>        for (int i = 0; i &lt; length; i++) {<a name="line.192"></a>
+<span class="sourceLineNo">193</span>            returnValue[i] = op.operate(array1[i], array2[i]);<a name="line.193"></a>
+<span class="sourceLineNo">194</span>        }<a name="line.194"></a>
+<span class="sourceLineNo">195</span><a name="line.195"></a>
+<span class="sourceLineNo">196</span>        return returnValue;<a name="line.196"></a>
+<span class="sourceLineNo">197</span>    }<a name="line.197"></a>
+<span class="sourceLineNo">198</span><a name="line.198"></a>
+<span class="sourceLineNo">199</span>    /** Return a new array that is formed by applying an instance of a<a name="line.199"></a>
+<span class="sourceLineNo">200</span>     *  DoubleUnaryOperation to each element in the input array<a name="line.200"></a>
+<span class="sourceLineNo">201</span>     *  (op.operate(array[i])).<a name="line.201"></a>
+<span class="sourceLineNo">202</span>     *  If the length of the array is 0, return a new array of length 0.<a name="line.202"></a>
+<span class="sourceLineNo">203</span>     */<a name="line.203"></a>
+<span class="sourceLineNo">204</span>    public static final double[] applyUnaryOperation(<a name="line.204"></a>
+<span class="sourceLineNo">205</span>            final DoubleUnaryOperation op, final double[] array) {<a name="line.205"></a>
+<span class="sourceLineNo">206</span>        int length = array.length;<a name="line.206"></a>
+<span class="sourceLineNo">207</span>        double[] returnValue = new double[length];<a name="line.207"></a>
+<span class="sourceLineNo">208</span><a name="line.208"></a>
+<span class="sourceLineNo">209</span>        for (int i = 0; i &lt; length; i++) {<a name="line.209"></a>
+<span class="sourceLineNo">210</span>            returnValue[i] = op.operate(array[i]);<a name="line.210"></a>
+<span class="sourceLineNo">211</span>        }<a name="line.211"></a>
+<span class="sourceLineNo">212</span><a name="line.212"></a>
+<span class="sourceLineNo">213</span>        return returnValue;<a name="line.213"></a>
+<span class="sourceLineNo">214</span>    }<a name="line.214"></a>
+<span class="sourceLineNo">215</span><a name="line.215"></a>
+<span class="sourceLineNo">216</span>    // no need for an element-by-element division, use divide(array,<a name="line.216"></a>
+<span class="sourceLineNo">217</span>    // 1.0 / z) instead<a name="line.217"></a>
+<span class="sourceLineNo">218</span><a name="line.218"></a>
+<span class="sourceLineNo">219</span>    /** Return a new array that is the element-by-element division of<a name="line.219"></a>
+<span class="sourceLineNo">220</span>     *  the first array by the second array (array1[i] / array2[i]).<a name="line.220"></a>
+<span class="sourceLineNo">221</span>     *  If the lengths of both arrays are 0, return a new array of length 0.<a name="line.221"></a>
+<span class="sourceLineNo">222</span>     *  If the two arrays do not have the same length, throw an<a name="line.222"></a>
+<span class="sourceLineNo">223</span>     *  IllegalArgumentException.<a name="line.223"></a>
+<span class="sourceLineNo">224</span>     *  @param array1 The first array of doubles.<a name="line.224"></a>
+<span class="sourceLineNo">225</span>     *  @param array2 The second array of doubles.<a name="line.225"></a>
+<span class="sourceLineNo">226</span>     *  @return A new array of doubles.<a name="line.226"></a>
+<span class="sourceLineNo">227</span>     */<a name="line.227"></a>
+<span class="sourceLineNo">228</span>    public static final double[] divideElements(final double[] array1,<a name="line.228"></a>
+<span class="sourceLineNo">229</span>            final double[] array2) {<a name="line.229"></a>
+<span class="sourceLineNo">230</span>        int length = _commonLength(array1, array2,<a name="line.230"></a>
+<span class="sourceLineNo">231</span>                "DoubleArrayMath.divideElements");<a name="line.231"></a>
+<span class="sourceLineNo">232</span>        double[] returnValue = new double[length];<a name="line.232"></a>
+<span class="sourceLineNo">233</span><a name="line.233"></a>
+<span class="sourceLineNo">234</span>        for (int i = 0; i &lt; length; i++) {<a name="line.234"></a>
+<span class="sourceLineNo">235</span>            returnValue[i] = array1[i] / array2[i];<a name="line.235"></a>
+<span class="sourceLineNo">236</span>        }<a name="line.236"></a>
+<span class="sourceLineNo">237</span><a name="line.237"></a>
+<span class="sourceLineNo">238</span>        return returnValue;<a name="line.238"></a>
+<span class="sourceLineNo">239</span>    }<a name="line.239"></a>
+<span class="sourceLineNo">240</span><a name="line.240"></a>
+<span class="sourceLineNo">241</span>    /** Return a new array that is the element-by-element division of<a name="line.241"></a>
+<span class="sourceLineNo">242</span>     *  the first array by the given value.<a name="line.242"></a>
+<span class="sourceLineNo">243</span>     *  @param array The array of double numbers.<a name="line.243"></a>
+<span class="sourceLineNo">244</span>     *  @param num The double scalar.<a name="line.244"></a>
+<span class="sourceLineNo">245</span>     *  @return A new array of double numbers.<a name="line.245"></a>
+<span class="sourceLineNo">246</span>     */<a name="line.246"></a>
+<span class="sourceLineNo">247</span>    public static final double[] divide(double[] array, double num) {<a name="line.247"></a>
+<span class="sourceLineNo">248</span>        double[] returnValue = new double[array.length];<a name="line.248"></a>
+<span class="sourceLineNo">249</span><a name="line.249"></a>
+<span class="sourceLineNo">250</span>        for (int i = 0; i &lt; array.length; i++) {<a name="line.250"></a>
+<span class="sourceLineNo">251</span>            returnValue[i] = array[i] / num;<a name="line.251"></a>
+<span class="sourceLineNo">252</span>        }<a name="line.252"></a>
+<span class="sourceLineNo">253</span><a name="line.253"></a>
+<span class="sourceLineNo">254</span>        return returnValue;<a name="line.254"></a>
+<span class="sourceLineNo">255</span>    }<a name="line.255"></a>
+<span class="sourceLineNo">256</span><a name="line.256"></a>
+<span class="sourceLineNo">257</span>    /** Return the dot product of the two arrays.<a name="line.257"></a>
+<span class="sourceLineNo">258</span>     *  If the lengths of the array are both 0, return 0.0.<a name="line.258"></a>
+<span class="sourceLineNo">259</span>     *  If the two arrays do not have the same length, throw an<a name="line.259"></a>
+<span class="sourceLineNo">260</span>     *  IllegalArgumentException.<a name="line.260"></a>
+<span class="sourceLineNo">261</span>     */<a name="line.261"></a>
+<span class="sourceLineNo">262</span>    public static final double dotProduct(final double[] array1,<a name="line.262"></a>
+<span class="sourceLineNo">263</span>            final double[] array2) {<a name="line.263"></a>
+<span class="sourceLineNo">264</span>        int length = _commonLength(array1, array2,<a name="line.264"></a>
+<span class="sourceLineNo">265</span>                "DoubleArrayMath.dotProduct");<a name="line.265"></a>
+<span class="sourceLineNo">266</span><a name="line.266"></a>
+<span class="sourceLineNo">267</span>        double sum = 0.0;<a name="line.267"></a>
+<span class="sourceLineNo">268</span><a name="line.268"></a>
+<span class="sourceLineNo">269</span>        for (int i = 0; i &lt; length; i++) {<a name="line.269"></a>
+<span class="sourceLineNo">270</span>            sum += array1[i] * array2[i];<a name="line.270"></a>
+<span class="sourceLineNo">271</span>        }<a name="line.271"></a>
+<span class="sourceLineNo">272</span><a name="line.272"></a>
+<span class="sourceLineNo">273</span>        return sum;<a name="line.273"></a>
+<span class="sourceLineNo">274</span>    }<a name="line.274"></a>
+<span class="sourceLineNo">275</span><a name="line.275"></a>
+<span class="sourceLineNo">276</span>    /** Return the L2-norm of the array, that is, the square root of<a name="line.276"></a>
+<span class="sourceLineNo">277</span>     *  the sum of the squares of the elements.<a name="line.277"></a>
+<span class="sourceLineNo">278</span>     */<a name="line.278"></a>
+<span class="sourceLineNo">279</span>    public static final double l2norm(final double[] array) {<a name="line.279"></a>
+<span class="sourceLineNo">280</span>        return Math.sqrt(sumOfSquares(array));<a name="line.280"></a>
+<span class="sourceLineNo">281</span>    }<a name="line.281"></a>
+<span class="sourceLineNo">282</span><a name="line.282"></a>
+<span class="sourceLineNo">283</span>    /** Return a new array that is a copy of the argument except that<a name="line.283"></a>
+<span class="sourceLineNo">284</span>     *  the elements are limited to lie within the specified range.<a name="line.284"></a>
+<span class="sourceLineNo">285</span>     *  If any value is infinite, then it is replaced by either the<a name="line.285"></a>
+<span class="sourceLineNo">286</span>     *  top or the bottom, depending on its sign.  If any element of<a name="line.286"></a>
+<span class="sourceLineNo">287</span>     *  the array is NaN, then the corresponding element in the new<a name="line.287"></a>
+<span class="sourceLineNo">288</span>     *  array will also be NaN. To leave either the bottom or the top<a name="line.288"></a>
+<span class="sourceLineNo">289</span>     *  unconstrained, specify Double.NEGATIVE_INFINITY or<a name="line.289"></a>
+<span class="sourceLineNo">290</span>     *  Double.POSITIVE_INFINITY.  &lt;p&gt;If the length of the array is 0,<a name="line.290"></a>
+<span class="sourceLineNo">291</span>     *  return a new array of length 0.<a name="line.291"></a>
+<span class="sourceLineNo">292</span>     *<a name="line.292"></a>
+<span class="sourceLineNo">293</span>     *  @param array An array of doubles.<a name="line.293"></a>
+<span class="sourceLineNo">294</span>     *  @param bottom The bottom limit.<a name="line.294"></a>
+<span class="sourceLineNo">295</span>     *  @param top The top limit.<a name="line.295"></a>
+<span class="sourceLineNo">296</span>     *  @return A new array with values in the range [bottom, top].<a name="line.296"></a>
+<span class="sourceLineNo">297</span>     */<a name="line.297"></a>
+<span class="sourceLineNo">298</span>    public static final double[] limit(final double[] array,<a name="line.298"></a>
+<span class="sourceLineNo">299</span>            final double bottom, final double top) {<a name="line.299"></a>
+<span class="sourceLineNo">300</span>        double[] returnValue = new double[array.length];<a name="line.300"></a>
+<span class="sourceLineNo">301</span><a name="line.301"></a>
+<span class="sourceLineNo">302</span>        for (int i = 0; i &lt; array.length; i++) {<a name="line.302"></a>
+<span class="sourceLineNo">303</span>            if (array[i] &gt; top || array[i] == Double.POSITIVE_INFINITY) {<a name="line.303"></a>
+<span class="sourceLineNo">304</span>                returnValue[i] = top;<a name="line.304"></a>
+<span class="sourceLineNo">305</span>            } else if (array[i] &lt; bottom<a name="line.305"></a>
+<span class="sourceLineNo">306</span>                    || array[i] == Double.NEGATIVE_INFINITY) {<a name="line.306"></a>
+<span class="sourceLineNo">307</span>                returnValue[i] = bottom;<a name="line.307"></a>
+<span class="sourceLineNo">308</span>            } else {<a name="line.308"></a>
+<span class="sourceLineNo">309</span>                returnValue[i] = array[i];<a name="line.309"></a>
+<span class="sourceLineNo">310</span>            }<a name="line.310"></a>
+<span class="sourceLineNo">311</span>        }<a name="line.311"></a>
+<span class="sourceLineNo">312</span><a name="line.312"></a>
+<span class="sourceLineNo">313</span>        return returnValue;<a name="line.313"></a>
+<span class="sourceLineNo">314</span>    }<a name="line.314"></a>
+<span class="sourceLineNo">315</span><a name="line.315"></a>
+<span class="sourceLineNo">316</span>    /** Return a new array that is the formed by the modulo of each element<a name="line.316"></a>
+<span class="sourceLineNo">317</span>     *  of the input array and z (array[i] % z).<a name="line.317"></a>
+<span class="sourceLineNo">318</span>     */<a name="line.318"></a>
+<span class="sourceLineNo">319</span>    public static final double[] modulo(double[] array, double z) {<a name="line.319"></a>
+<span class="sourceLineNo">320</span>        int length = array.length;<a name="line.320"></a>
+<span class="sourceLineNo">321</span>        double[] returnValue = new double[length];<a name="line.321"></a>
+<span class="sourceLineNo">322</span><a name="line.322"></a>
+<span class="sourceLineNo">323</span>        for (int i = 0; i &lt; length; i++) {<a name="line.323"></a>
+<span class="sourceLineNo">324</span>            returnValue[i] = array[i] % z;<a name="line.324"></a>
+<span class="sourceLineNo">325</span>        }<a name="line.325"></a>
+<span class="sourceLineNo">326</span><a name="line.326"></a>
+<span class="sourceLineNo">327</span>        return returnValue;<a name="line.327"></a>
+<span class="sourceLineNo">328</span>    }<a name="line.328"></a>
+<span class="sourceLineNo">329</span><a name="line.329"></a>
+<span class="sourceLineNo">330</span>    /** Return a new array that is the element-by-element multiplication of<a name="line.330"></a>
+<span class="sourceLineNo">331</span>     *  the two input arrays.<a name="line.331"></a>
+<span class="sourceLineNo">332</span>     *  If the lengths of both arrays are 0, return a new array of length 0.<a name="line.332"></a>
+<span class="sourceLineNo">333</span>     *  If the two arrays do not have the same length, throw an<a name="line.333"></a>
+<span class="sourceLineNo">334</span>     *  IllegalArgumentException.<a name="line.334"></a>
+<span class="sourceLineNo">335</span>     */<a name="line.335"></a>
+<span class="sourceLineNo">336</span>    public static final double[] multiply(final double[] array1,<a name="line.336"></a>
+<span class="sourceLineNo">337</span>            final double[] array2) {<a name="line.337"></a>
+<span class="sourceLineNo">338</span>        int length = _commonLength(array1, array2, "DoubleArrayMath.multiply");<a name="line.338"></a>
+<span class="sourceLineNo">339</span>        double[] returnValue = new double[length];<a name="line.339"></a>
+<span class="sourceLineNo">340</span><a name="line.340"></a>
+<span class="sourceLineNo">341</span>        for (int i = 0; i &lt; length; i++) {<a name="line.341"></a>
+<span class="sourceLineNo">342</span>            returnValue[i] = array1[i] * array2[i];<a name="line.342"></a>
+<span class="sourceLineNo">343</span>        }<a name="line.343"></a>
+<span class="sourceLineNo">344</span><a name="line.344"></a>
+<span class="sourceLineNo">345</span>        return returnValue;<a name="line.345"></a>
+<span class="sourceLineNo">346</span>    }<a name="line.346"></a>
+<span class="sourceLineNo">347</span><a name="line.347"></a>
+<span class="sourceLineNo">348</span>    /** Return a new array that is constructed from the argument by<a name="line.348"></a>
+<span class="sourceLineNo">349</span>     *  multiplying each element in the array by the second argument, which is<a name="line.349"></a>
+<span class="sourceLineNo">350</span>     *  a double.<a name="line.350"></a>
+<span class="sourceLineNo">351</span>     *  If the sizes of the array is 0, return a new array of size 0.<a name="line.351"></a>
+<span class="sourceLineNo">352</span>     *  @param array An array of doubles.<a name="line.352"></a>
+<span class="sourceLineNo">353</span>     *  @param factor A double.<a name="line.353"></a>
+<span class="sourceLineNo">354</span>     *  @return A new array of doubles.<a name="line.354"></a>
+<span class="sourceLineNo">355</span>     */<a name="line.355"></a>
+<span class="sourceLineNo">356</span>    public static final double[] multiply(double[] array, double factor) {<a name="line.356"></a>
+<span class="sourceLineNo">357</span>        int length = array.length;<a name="line.357"></a>
+<span class="sourceLineNo">358</span>        double[] returnValue = new double[length];<a name="line.358"></a>
+<span class="sourceLineNo">359</span><a name="line.359"></a>
+<span class="sourceLineNo">360</span>        for (int i = 0; i &lt; length; i++) {<a name="line.360"></a>
+<span class="sourceLineNo">361</span>            returnValue[i] = array[i] * factor;<a name="line.361"></a>
+<span class="sourceLineNo">362</span>        }<a name="line.362"></a>
+<span class="sourceLineNo">363</span><a name="line.363"></a>
+<span class="sourceLineNo">364</span>        return returnValue;<a name="line.364"></a>
+<span class="sourceLineNo">365</span>    }<a name="line.365"></a>
+<span class="sourceLineNo">366</span><a name="line.366"></a>
+<span class="sourceLineNo">367</span>    /** Return a new array that is the formed by the additive inverse of each<a name="line.367"></a>
+<span class="sourceLineNo">368</span>     *  element of the input array (-array[i]).<a name="line.368"></a>
+<span class="sourceLineNo">369</span>     */<a name="line.369"></a>
+<span class="sourceLineNo">370</span>    public static final double[] negative(final double[] array) {<a name="line.370"></a>
+<span class="sourceLineNo">371</span>        int length = array.length;<a name="line.371"></a>
+<span class="sourceLineNo">372</span>        double[] returnValue = new double[length];<a name="line.372"></a>
+<span class="sourceLineNo">373</span><a name="line.373"></a>
+<span class="sourceLineNo">374</span>        for (int i = 0; i &lt; length; i++) {<a name="line.374"></a>
+<span class="sourceLineNo">375</span>            returnValue[i] = -array[i];<a name="line.375"></a>
+<span class="sourceLineNo">376</span>        }<a name="line.376"></a>
+<span class="sourceLineNo">377</span><a name="line.377"></a>
+<span class="sourceLineNo">378</span>        return returnValue;<a name="line.378"></a>
+<span class="sourceLineNo">379</span>    }<a name="line.379"></a>
+<span class="sourceLineNo">380</span><a name="line.380"></a>
+<span class="sourceLineNo">381</span>    /** Return a new array that is formed by scaling the array so that<a name="line.381"></a>
+<span class="sourceLineNo">382</span>     *  it has a L2-norm of 1.<a name="line.382"></a>
+<span class="sourceLineNo">383</span>     */<a name="line.383"></a>
+<span class="sourceLineNo">384</span>    public static final double[] normalize(final double[] array) {<a name="line.384"></a>
+<span class="sourceLineNo">385</span>        return scale(array, 1.0 / l2norm(array));<a name="line.385"></a>
+<span class="sourceLineNo">386</span>    }<a name="line.386"></a>
+<span class="sourceLineNo">387</span><a name="line.387"></a>
+<span class="sourceLineNo">388</span>    /** Return a new array of doubles that is formed by padding the<a name="line.388"></a>
+<span class="sourceLineNo">389</span>     *  middle of the array with 0's. If either the length of the<a name="line.389"></a>
+<span class="sourceLineNo">390</span>     *  input array is odd, the sample with index ceil(L/2) will be<a name="line.390"></a>
+<span class="sourceLineNo">391</span>     *  repeated in the output array, where L is the length of the input array.<a name="line.391"></a>
+<span class="sourceLineNo">392</span>     *  If the length of the input and output arrays are equal, return<a name="line.392"></a>
+<span class="sourceLineNo">393</span>     *  a copy of the input array.<a name="line.393"></a>
+<span class="sourceLineNo">394</span>     *  This method is useful for preparing data for an IFFT.<a name="line.394"></a>
+<span class="sourceLineNo">395</span>     *  @param array An array of doubles.<a name="line.395"></a>
+<span class="sourceLineNo">396</span>     *  @param newLength The desired length of the returned array.<a name="line.396"></a>
+<span class="sourceLineNo">397</span>     *  @return A new array of doubles.<a name="line.397"></a>
+<span class="sourceLineNo">398</span>     */<a name="line.398"></a>
+<span class="sourceLineNo">399</span>    public static final double[] padMiddle(final double[] array,<a name="line.399"></a>
+<span class="sourceLineNo">400</span>            final int newLength) {<a name="line.400"></a>
+<span class="sourceLineNo">401</span>        int length = array.length;<a name="line.401"></a>
+<span class="sourceLineNo">402</span><a name="line.402"></a>
+<span class="sourceLineNo">403</span>        int entriesNeeded = newLength - length;<a name="line.403"></a>
+<span class="sourceLineNo">404</span><a name="line.404"></a>
+<span class="sourceLineNo">405</span>        if (entriesNeeded &lt; 0) {<a name="line.405"></a>
+<span class="sourceLineNo">406</span>            throw new IllegalArgumentException("ptolemy.math."<a name="line.406"></a>
+<span class="sourceLineNo">407</span>                    + "DoubleArrayMath.padMiddle() : newLength must be "<a name="line.407"></a>
+<span class="sourceLineNo">408</span>                    + "&gt;= length of array.");<a name="line.408"></a>
+<span class="sourceLineNo">409</span>        } else if (entriesNeeded == 0) {<a name="line.409"></a>
+<span class="sourceLineNo">410</span>            return resize(array, newLength); // allocates a new array<a name="line.410"></a>
+<span class="sourceLineNo">411</span>        }<a name="line.411"></a>
+<span class="sourceLineNo">412</span><a name="line.412"></a>
+<span class="sourceLineNo">413</span>        double halfLength = length * 0.5;<a name="line.413"></a>
+<span class="sourceLineNo">414</span>        int halfLengthFloor = (int) Math.floor(halfLength);<a name="line.414"></a>
+<span class="sourceLineNo">415</span>        int halfLengthCeil = (int) Math.ceil(halfLength);<a name="line.415"></a>
+<span class="sourceLineNo">416</span>        double[] returnValue = new double[newLength];<a name="line.416"></a>
+<span class="sourceLineNo">417</span><a name="line.417"></a>
+<span class="sourceLineNo">418</span>        System.arraycopy(array, 0, returnValue, 0, halfLengthCeil);<a name="line.418"></a>
+<span class="sourceLineNo">419</span><a name="line.419"></a>
+<span class="sourceLineNo">420</span>        System.arraycopy(array, halfLengthFloor, returnValue,<a name="line.420"></a>
+<span class="sourceLineNo">421</span>                newLength - halfLengthCeil, halfLengthCeil);<a name="line.421"></a>
+<span class="sourceLineNo">422</span><a name="line.422"></a>
+<span class="sourceLineNo">423</span>        return returnValue;<a name="line.423"></a>
+<span class="sourceLineNo">424</span>    }<a name="line.424"></a>
+<span class="sourceLineNo">425</span><a name="line.425"></a>
+<span class="sourceLineNo">426</span>    /** Return a new array of length newLength that is formed by<a name="line.426"></a>
+<span class="sourceLineNo">427</span>     *  either truncating or padding the input array.<a name="line.427"></a>
+<span class="sourceLineNo">428</span>     *  This method simply calls :<a name="line.428"></a>
+<span class="sourceLineNo">429</span>     *  resize(array, newLength, 0)<a name="line.429"></a>
+<span class="sourceLineNo">430</span>     *  @param array An array of doubles.<a name="line.430"></a>
+<span class="sourceLineNo">431</span>     *  @param newLength The desired length of the output array.<a name="line.431"></a>
+<span class="sourceLineNo">432</span>     *  @return A new array of doubles of length newLength.<a name="line.432"></a>
+<span class="sourceLineNo">433</span>     */<a name="line.433"></a>
+<span class="sourceLineNo">434</span>    public static final double[] resize(final double[] array,<a name="line.434"></a>
+<span class="sourceLineNo">435</span>            final int newLength) {<a name="line.435"></a>
+<span class="sourceLineNo">436</span>        return resize(array, newLength, 0);<a name="line.436"></a>
+<span class="sourceLineNo">437</span>    }<a name="line.437"></a>
+<span class="sourceLineNo">438</span><a name="line.438"></a>
+<span class="sourceLineNo">439</span>    /** Return a new array of length newLength that is formed by<a name="line.439"></a>
+<span class="sourceLineNo">440</span>     *  either truncating or padding the input array.<a name="line.440"></a>
+<span class="sourceLineNo">441</span>     *  Elements from the input array are copied to the output array,<a name="line.441"></a>
+<span class="sourceLineNo">442</span>     *  starting from array[startIdx] until one of the following conditions<a name="line.442"></a>
+<span class="sourceLineNo">443</span>     *  is met :<a name="line.443"></a>
+<span class="sourceLineNo">444</span>     *  &lt;ol&gt;<a name="line.444"></a>
+<span class="sourceLineNo">445</span>     *  &lt;li&gt; The input array has no more elements to copy.<a name="line.445"></a>
+<span class="sourceLineNo">446</span>     *  &lt;li&gt; The output array has been completely filled.<a name="line.446"></a>
+<span class="sourceLineNo">447</span>     *  &lt;/ol&gt;<a name="line.447"></a>
+<span class="sourceLineNo">448</span>     *  startIdx must index a valid entry in array unless the input array<a name="line.448"></a>
+<span class="sourceLineNo">449</span>     *  is of zero length or the output array is of zero length.<a name="line.449"></a>
+<span class="sourceLineNo">450</span>     *  If case 1) is met, the remainder of the output array is filled with<a name="line.450"></a>
+<span class="sourceLineNo">451</span>     *  zero's, implicitly by Java (padding).<a name="line.451"></a>
+<span class="sourceLineNo">452</span>     *  @param array An array of doubles.<a name="line.452"></a>
+<span class="sourceLineNo">453</span>     *  @param newLength The desired length of the output array.<a name="line.453"></a>
+<span class="sourceLineNo">454</span>     *  @param startIdx The starting index for the input array.<a name="line.454"></a>
+<span class="sourceLineNo">455</span>     *  @return A new array of doubles of length newLength.<a name="line.455"></a>
+<span class="sourceLineNo">456</span>     */<a name="line.456"></a>
+<span class="sourceLineNo">457</span>    public static final double[] resize(double[] array, final int newLength,<a name="line.457"></a>
+<span class="sourceLineNo">458</span>            final int startIdx) {<a name="line.458"></a>
+<span class="sourceLineNo">459</span>        double[] returnValue = new double[newLength];<a name="line.459"></a>
+<span class="sourceLineNo">460</span>        int copySize = Math.min(newLength, array.length - startIdx);<a name="line.460"></a>
+<span class="sourceLineNo">461</span><a name="line.461"></a>
+<span class="sourceLineNo">462</span>        if (startIdx &gt;= array.length &amp;&amp; copySize &gt; 0) {<a name="line.462"></a>
+<span class="sourceLineNo">463</span>            throw new IllegalArgumentException("resize():  the start index '"<a name="line.463"></a>
+<span class="sourceLineNo">464</span>                    + startIdx + "' is greater than equal to the array length '"<a name="line.464"></a>
+<span class="sourceLineNo">465</span>                    + array.length + "' and the number of items to be copied '"<a name="line.465"></a>
+<span class="sourceLineNo">466</span>                    + copySize + "' is greater than zero.");<a name="line.466"></a>
+<span class="sourceLineNo">467</span>        }<a name="line.467"></a>
+<span class="sourceLineNo">468</span><a name="line.468"></a>
+<span class="sourceLineNo">469</span>        if (copySize &gt; 0) {<a name="line.469"></a>
+<span class="sourceLineNo">470</span>            System.arraycopy(array, startIdx, returnValue, 0, copySize);<a name="line.470"></a>
+<span class="sourceLineNo">471</span>        }<a name="line.471"></a>
+<span class="sourceLineNo">472</span><a name="line.472"></a>
+<span class="sourceLineNo">473</span>        return returnValue;<a name="line.473"></a>
+<span class="sourceLineNo">474</span>    }<a name="line.474"></a>
+<span class="sourceLineNo">475</span><a name="line.475"></a>
+<span class="sourceLineNo">476</span>    /** Return a new array of doubles produced by scaling the input<a name="line.476"></a>
+<span class="sourceLineNo">477</span>     *  array elements by scaleFactor.<a name="line.477"></a>
+<span class="sourceLineNo">478</span>     *  If the length of the array is 0, return a new array of length 0.<a name="line.478"></a>
+<span class="sourceLineNo">479</span>     */<a name="line.479"></a>
+<span class="sourceLineNo">480</span>    public static final double[] scale(double[] array, double scaleFactor) {<a name="line.480"></a>
+<span class="sourceLineNo">481</span>        double[] returnValue = new double[array.length];<a name="line.481"></a>
+<span class="sourceLineNo">482</span><a name="line.482"></a>
+<span class="sourceLineNo">483</span>        for (int i = 0; i &lt; array.length; i++) {<a name="line.483"></a>
+<span class="sourceLineNo">484</span>            returnValue[i] = scaleFactor * array[i];<a name="line.484"></a>
+<span class="sourceLineNo">485</span>        }<a name="line.485"></a>
+<span class="sourceLineNo">486</span><a name="line.486"></a>
+<span class="sourceLineNo">487</span>        return returnValue;<a name="line.487"></a>
+<span class="sourceLineNo">488</span>    }<a name="line.488"></a>
+<span class="sourceLineNo">489</span><a name="line.489"></a>
+<span class="sourceLineNo">490</span>    /** Return a new array that is the element-by-element difference of the<a name="line.490"></a>
+<span class="sourceLineNo">491</span>     *  two input arrays, i.e. the first array minus the second array<a name="line.491"></a>
+<span class="sourceLineNo">492</span>     *  (array1[i] - array2[i]).<a name="line.492"></a>
+<span class="sourceLineNo">493</span>     *  If the lengths of both arrays are 0, return a new array of length 0.<a name="line.493"></a>
+<span class="sourceLineNo">494</span>     */<a name="line.494"></a>
+<span class="sourceLineNo">495</span>    public static final double[] subtract(final double[] array1,<a name="line.495"></a>
+<span class="sourceLineNo">496</span>            final double[] array2) {<a name="line.496"></a>
+<span class="sourceLineNo">497</span>        int length = _commonLength(array1, array2, "DoubleArrayMath.subtract");<a name="line.497"></a>
+<span class="sourceLineNo">498</span>        double[] returnValue = new double[length];<a name="line.498"></a>
+<span class="sourceLineNo">499</span><a name="line.499"></a>
+<span class="sourceLineNo">500</span>        for (int i = 0; i &lt; length; i++) {<a name="line.500"></a>
+<span class="sourceLineNo">501</span>            returnValue[i] = array1[i] - array2[i];<a name="line.501"></a>
+<span class="sourceLineNo">502</span>        }<a name="line.502"></a>
+<span class="sourceLineNo">503</span><a name="line.503"></a>
+<span class="sourceLineNo">504</span>        return returnValue;<a name="line.504"></a>
+<span class="sourceLineNo">505</span>    }<a name="line.505"></a>
+<span class="sourceLineNo">506</span><a name="line.506"></a>
+<span class="sourceLineNo">507</span>    /** Return the sum of the elements in the array.<a name="line.507"></a>
+<span class="sourceLineNo">508</span>     *  Return 0.0 if the length of the array is 0.<a name="line.508"></a>
+<span class="sourceLineNo">509</span>     */<a name="line.509"></a>
+<span class="sourceLineNo">510</span>    public static final double sum(double[] array) {<a name="line.510"></a>
+<span class="sourceLineNo">511</span>        double sum = 0.0;<a name="line.511"></a>
+<span class="sourceLineNo">512</span><a name="line.512"></a>
+<span class="sourceLineNo">513</span>        for (double element : array) {<a name="line.513"></a>
+<span class="sourceLineNo">514</span>            sum += element;<a name="line.514"></a>
+<span class="sourceLineNo">515</span>        }<a name="line.515"></a>
+<span class="sourceLineNo">516</span><a name="line.516"></a>
+<span class="sourceLineNo">517</span>        return sum;<a name="line.517"></a>
+<span class="sourceLineNo">518</span>    }<a name="line.518"></a>
+<span class="sourceLineNo">519</span><a name="line.519"></a>
+<span class="sourceLineNo">520</span>    /** Return the sum of the squares of all of the elements in the array.<a name="line.520"></a>
+<span class="sourceLineNo">521</span>     *  This is equivalent to the square of the L2-norm of the array.<a name="line.521"></a>
+<span class="sourceLineNo">522</span>     *  Return 0.0 if the length of the array is 0.<a name="line.522"></a>
+<span class="sourceLineNo">523</span>     */<a name="line.523"></a>
+<span class="sourceLineNo">524</span>    public static final double sumOfSquares(double[] array) {<a name="line.524"></a>
+<span class="sourceLineNo">525</span>        double sum = 0.0;<a name="line.525"></a>
+<span class="sourceLineNo">526</span><a name="line.526"></a>
+<span class="sourceLineNo">527</span>        for (double element : array) {<a name="line.527"></a>
+<span class="sourceLineNo">528</span>            sum += element * element;<a name="line.528"></a>
+<span class="sourceLineNo">529</span>        }<a name="line.529"></a>
+<span class="sourceLineNo">530</span><a name="line.530"></a>
+<span class="sourceLineNo">531</span>        return sum;<a name="line.531"></a>
+<span class="sourceLineNo">532</span>    }<a name="line.532"></a>
+<span class="sourceLineNo">533</span><a name="line.533"></a>
+<span class="sourceLineNo">534</span>    /** Return a new array that is formed by converting the doubles in<a name="line.534"></a>
+<span class="sourceLineNo">535</span>     *  the argument array to complex numbers. Each complex number has<a name="line.535"></a>
+<span class="sourceLineNo">536</span>     *  real part equal to the value in the argument array and a zero<a name="line.536"></a>
+<span class="sourceLineNo">537</span>     *  imaginary part.<a name="line.537"></a>
+<span class="sourceLineNo">538</span>     *<a name="line.538"></a>
+<span class="sourceLineNo">539</span>     *  @param array An array of double.<a name="line.539"></a>
+<span class="sourceLineNo">540</span>     *  @return A new array of complex numbers.<a name="line.540"></a>
+<span class="sourceLineNo">541</span>     */<a name="line.541"></a>
+<span class="sourceLineNo">542</span>    public static final Complex[] toComplexArray(final double[] array) {<a name="line.542"></a>
+<span class="sourceLineNo">543</span>        int length = array.length;<a name="line.543"></a>
+<span class="sourceLineNo">544</span>        Complex[] returnValue = new Complex[length];<a name="line.544"></a>
+<span class="sourceLineNo">545</span><a name="line.545"></a>
+<span class="sourceLineNo">546</span>        for (int i = 0; i &lt; length; i++) {<a name="line.546"></a>
+<span class="sourceLineNo">547</span>            returnValue[i] = new Complex(array[i], 0.0);<a name="line.547"></a>
+<span class="sourceLineNo">548</span>        }<a name="line.548"></a>
+<span class="sourceLineNo">549</span><a name="line.549"></a>
+<span class="sourceLineNo">550</span>        return returnValue;<a name="line.550"></a>
+<span class="sourceLineNo">551</span>    }<a name="line.551"></a>
+<span class="sourceLineNo">552</span><a name="line.552"></a>
+<span class="sourceLineNo">553</span>    /** Return a new array that is formed by converting the doubles in<a name="line.553"></a>
+<span class="sourceLineNo">554</span>     *  the argument array to doubles.  If the length of the argument<a name="line.554"></a>
+<span class="sourceLineNo">555</span>     *  array is 0, return a new array of length 0.<a name="line.555"></a>
+<span class="sourceLineNo">556</span>     *  @param array An array of double.<a name="line.556"></a>
+<span class="sourceLineNo">557</span>     *  @return A new array of doubles.<a name="line.557"></a>
+<span class="sourceLineNo">558</span>     */<a name="line.558"></a>
+<span class="sourceLineNo">559</span>    public static final float[] toFloatArray(final double[] array) {<a name="line.559"></a>
+<span class="sourceLineNo">560</span>        int length = array.length;<a name="line.560"></a>
+<span class="sourceLineNo">561</span>        float[] returnValue = new float[length];<a name="line.561"></a>
+<span class="sourceLineNo">562</span><a name="line.562"></a>
+<span class="sourceLineNo">563</span>        for (int i = 0; i &lt; length; i++) {<a name="line.563"></a>
+<span class="sourceLineNo">564</span>            returnValue[i] = (float) array[i];<a name="line.564"></a>
+<span class="sourceLineNo">565</span>        }<a name="line.565"></a>
+<span class="sourceLineNo">566</span><a name="line.566"></a>
+<span class="sourceLineNo">567</span>        return returnValue;<a name="line.567"></a>
+<span class="sourceLineNo">568</span>    }<a name="line.568"></a>
+<span class="sourceLineNo">569</span><a name="line.569"></a>
+<span class="sourceLineNo">570</span>    /** Return a new array that is formed by converting the doubles in<a name="line.570"></a>
+<span class="sourceLineNo">571</span>     *  the argument array to integers.  If the length of the argument<a name="line.571"></a>
+<span class="sourceLineNo">572</span>     *  array is 0, return a new array of length 0.<a name="line.572"></a>
+<span class="sourceLineNo">573</span>     *  @param array An array of double.<a name="line.573"></a>
+<span class="sourceLineNo">574</span>     *  @return A new array of integers.<a name="line.574"></a>
+<span class="sourceLineNo">575</span>     */<a name="line.575"></a>
+<span class="sourceLineNo">576</span>    public static final int[] toIntegerArray(final double[] array) {<a name="line.576"></a>
+<span class="sourceLineNo">577</span>        int length = array.length;<a name="line.577"></a>
+<span class="sourceLineNo">578</span>        int[] returnValue = new int[length];<a name="line.578"></a>
+<span class="sourceLineNo">579</span><a name="line.579"></a>
+<span class="sourceLineNo">580</span>        for (int i = 0; i &lt; length; i++) {<a name="line.580"></a>
+<span class="sourceLineNo">581</span>            returnValue[i] = (int) array[i];<a name="line.581"></a>
+<span class="sourceLineNo">582</span>        }<a name="line.582"></a>
+<span class="sourceLineNo">583</span><a name="line.583"></a>
+<span class="sourceLineNo">584</span>        return returnValue;<a name="line.584"></a>
+<span class="sourceLineNo">585</span>    }<a name="line.585"></a>
+<span class="sourceLineNo">586</span><a name="line.586"></a>
+<span class="sourceLineNo">587</span>    /** Return a new array that is formed by converting the doubles in<a name="line.587"></a>
+<span class="sourceLineNo">588</span>     *  the argument array to longs.  If the length of the argument<a name="line.588"></a>
+<span class="sourceLineNo">589</span>     *  array is 0, return a new array of length 0.<a name="line.589"></a>
+<span class="sourceLineNo">590</span>     *<a name="line.590"></a>
+<span class="sourceLineNo">591</span>     *  @param array An array of double.<a name="line.591"></a>
+<span class="sourceLineNo">592</span>     *  @return A new array of longs.<a name="line.592"></a>
+<span class="sourceLineNo">593</span>     */<a name="line.593"></a>
+<span class="sourceLineNo">594</span>    public static final long[] toLongArray(final double[] array) {<a name="line.594"></a>
+<span class="sourceLineNo">595</span>        int length = array.length;<a name="line.595"></a>
+<span class="sourceLineNo">596</span>        long[] returnValue = new long[length];<a name="line.596"></a>
+<span class="sourceLineNo">597</span><a name="line.597"></a>
+<span class="sourceLineNo">598</span>        for (int i = 0; i &lt; length; i++) {<a name="line.598"></a>
+<span class="sourceLineNo">599</span>            returnValue[i] = (long) array[i];<a name="line.599"></a>
+<span class="sourceLineNo">600</span>        }<a name="line.600"></a>
+<span class="sourceLineNo">601</span><a name="line.601"></a>
+<span class="sourceLineNo">602</span>        return returnValue;<a name="line.602"></a>
+<span class="sourceLineNo">603</span>    }<a name="line.603"></a>
+<span class="sourceLineNo">604</span><a name="line.604"></a>
+<span class="sourceLineNo">605</span>    /** Return a new String representing the array, formatted as<a name="line.605"></a>
+<span class="sourceLineNo">606</span>     *  in Java array initializers.<a name="line.606"></a>
+<span class="sourceLineNo">607</span>     */<a name="line.607"></a>
+<span class="sourceLineNo">608</span>    public static final String toString(final double[] array) {<a name="line.608"></a>
+<span class="sourceLineNo">609</span>        return toString(array, ", ", "{", "}");<a name="line.609"></a>
+<span class="sourceLineNo">610</span>    }<a name="line.610"></a>
+<span class="sourceLineNo">611</span><a name="line.611"></a>
+<span class="sourceLineNo">612</span>    /** Return a new String representing the array, formatted as<a name="line.612"></a>
+<span class="sourceLineNo">613</span>     *  specified by the ArrayStringFormat argument.<a name="line.613"></a>
+<span class="sourceLineNo">614</span>     *  To get a String in the Ptolemy expression language format,<a name="line.614"></a>
+<span class="sourceLineNo">615</span>     *  call this method with ArrayStringFormat.exprASFormat as the<a name="line.615"></a>
+<span class="sourceLineNo">616</span>     *  format argument.<a name="line.616"></a>
+<span class="sourceLineNo">617</span>     */<a name="line.617"></a>
+<span class="sourceLineNo">618</span>    public static final String toString(final double[] array,<a name="line.618"></a>
+<span class="sourceLineNo">619</span>            String elementDelimiter, String vectorBegin, String vectorEnd) {<a name="line.619"></a>
+<span class="sourceLineNo">620</span>        int length = array.length;<a name="line.620"></a>
+<span class="sourceLineNo">621</span>        StringBuffer sb = new StringBuffer();<a name="line.621"></a>
+<span class="sourceLineNo">622</span><a name="line.622"></a>
+<span class="sourceLineNo">623</span>        sb.append(vectorBegin);<a name="line.623"></a>
+<span class="sourceLineNo">624</span><a name="line.624"></a>
+<span class="sourceLineNo">625</span>        for (int i = 0; i &lt; length; i++) {<a name="line.625"></a>
+<span class="sourceLineNo">626</span>            sb.append(Double.toString(array[i]));<a name="line.626"></a>
+<span class="sourceLineNo">627</span><a name="line.627"></a>
+<span class="sourceLineNo">628</span>            if (i &lt; length - 1) {<a name="line.628"></a>
+<span class="sourceLineNo">629</span>                sb.append(elementDelimiter);<a name="line.629"></a>
+<span class="sourceLineNo">630</span>            }<a name="line.630"></a>
+<span class="sourceLineNo">631</span>        }<a name="line.631"></a>
+<span class="sourceLineNo">632</span><a name="line.632"></a>
+<span class="sourceLineNo">633</span>        sb.append(vectorEnd);<a name="line.633"></a>
+<span class="sourceLineNo">634</span><a name="line.634"></a>
+<span class="sourceLineNo">635</span>        return new String(sb);<a name="line.635"></a>
+<span class="sourceLineNo">636</span>    }<a name="line.636"></a>
+<span class="sourceLineNo">637</span><a name="line.637"></a>
+<span class="sourceLineNo">638</span>    /** Return true if all the distances between corresponding elements<a name="line.638"></a>
+<span class="sourceLineNo">639</span>     *  &lt;i&gt;array1&lt;/i&gt; and &lt;i&gt;array2&lt;/i&gt; are all less than or equal to<a name="line.639"></a>
+<span class="sourceLineNo">640</span>     *  the corresponding elements in &lt;i&gt;maxError&lt;/i&gt;. If both arrays<a name="line.640"></a>
+<span class="sourceLineNo">641</span>     *  are empty, return true. If &lt;i&gt;maxError&lt;/i&gt; is negative, return false.<a name="line.641"></a>
+<span class="sourceLineNo">642</span>     *<a name="line.642"></a>
+<span class="sourceLineNo">643</span>     *  @param array1 The first array.<a name="line.643"></a>
+<span class="sourceLineNo">644</span>     *  @param array2 The second array.<a name="line.644"></a>
+<span class="sourceLineNo">645</span>     *  @param maxError The threshold for the magnitude of the difference.<a name="line.645"></a>
+<span class="sourceLineNo">646</span>     *  @return True if all the distances between corresponding elements<a name="line.646"></a>
+<span class="sourceLineNo">647</span>     *  &lt;i&gt;array1&lt;/i&gt; and &lt;i&gt;array2&lt;/i&gt; are all less than or equal to<a name="line.647"></a>
+<span class="sourceLineNo">648</span>     *  the corresponding elements in &lt;i&gt;maxError&lt;/i&gt;.<a name="line.648"></a>
+<span class="sourceLineNo">649</span>     *  @exception IllegalArgumentException If the arrays are not of the same<a name="line.649"></a>
+<span class="sourceLineNo">650</span>     *   length.<a name="line.650"></a>
+<span class="sourceLineNo">651</span>     */<a name="line.651"></a>
+<span class="sourceLineNo">652</span>    public static final boolean within(final double[] array1,<a name="line.652"></a>
+<span class="sourceLineNo">653</span>            final double[] array2, double maxError) {<a name="line.653"></a>
+<span class="sourceLineNo">654</span>        int length = _commonLength(array1, array2, "DoubleArrayMath.within");<a name="line.654"></a>
+<span class="sourceLineNo">655</span><a name="line.655"></a>
+<span class="sourceLineNo">656</span>        for (int i = 0; i &lt; length; i++) {<a name="line.656"></a>
+<span class="sourceLineNo">657</span>            if (array1[i] &gt; array2[i] + maxError<a name="line.657"></a>
+<span class="sourceLineNo">658</span>                    || array1[i] &lt; array2[i] - maxError) {<a name="line.658"></a>
+<span class="sourceLineNo">659</span>                return false;<a name="line.659"></a>
+<span class="sourceLineNo">660</span>            }<a name="line.660"></a>
+<span class="sourceLineNo">661</span>        }<a name="line.661"></a>
+<span class="sourceLineNo">662</span><a name="line.662"></a>
+<span class="sourceLineNo">663</span>        return true;<a name="line.663"></a>
+<span class="sourceLineNo">664</span>    }<a name="line.664"></a>
+<span class="sourceLineNo">665</span><a name="line.665"></a>
+<span class="sourceLineNo">666</span>    /** Return true if all the distances between corresponding elements<a name="line.666"></a>
+<span class="sourceLineNo">667</span>     *  &lt;i&gt;array1&lt;/i&gt; and &lt;i&gt;array2&lt;/i&gt; are all less than or equal to<a name="line.667"></a>
+<span class="sourceLineNo">668</span>     *  the corresponding elements in &lt;i&gt;maxError&lt;/i&gt;. If both arrays<a name="line.668"></a>
+<span class="sourceLineNo">669</span>     *  are empty, return true. If any element of &lt;i&gt;maxError&lt;/i&gt; is negative,<a name="line.669"></a>
+<span class="sourceLineNo">670</span>     *  return false.<a name="line.670"></a>
+<span class="sourceLineNo">671</span>     *<a name="line.671"></a>
+<span class="sourceLineNo">672</span>     *  @param array1 The first array.<a name="line.672"></a>
+<span class="sourceLineNo">673</span>     *  @param array2 The second array.<a name="line.673"></a>
+<span class="sourceLineNo">674</span>     *  @param maxError The array of thresholds for the magnitudes of<a name="line.674"></a>
+<span class="sourceLineNo">675</span>     *   the difference.<a name="line.675"></a>
+<span class="sourceLineNo">676</span>     *  @return True if all the distances between corresponding elements<a name="line.676"></a>
+<span class="sourceLineNo">677</span>     *  &lt;i&gt;array1&lt;/i&gt; and &lt;i&gt;array2&lt;/i&gt; are all less than or equal to<a name="line.677"></a>
+<span class="sourceLineNo">678</span>     *  the corresponding elements in &lt;i&gt;maxError&lt;/i&gt;.<a name="line.678"></a>
+<span class="sourceLineNo">679</span>     *  @exception IllegalArgumentException If the arrays are not of the same<a name="line.679"></a>
+<span class="sourceLineNo">680</span>     *   length.<a name="line.680"></a>
+<span class="sourceLineNo">681</span>     */<a name="line.681"></a>
+<span class="sourceLineNo">682</span>    public static final boolean within(final double[] array1,<a name="line.682"></a>
+<span class="sourceLineNo">683</span>            final double[] array2, double[] maxError) {<a name="line.683"></a>
+<span class="sourceLineNo">684</span>        int length = _commonLength(array1, array2, "DoubleArrayMath.within");<a name="line.684"></a>
+<span class="sourceLineNo">685</span><a name="line.685"></a>
+<span class="sourceLineNo">686</span>        for (int i = 0; i &lt; length; i++) {<a name="line.686"></a>
+<span class="sourceLineNo">687</span>            if (array1[i] &gt; array2[i] + maxError[i]<a name="line.687"></a>
+<span class="sourceLineNo">688</span>                    || array1[i] &lt; array2[i] - maxError[i]) {<a name="line.688"></a>
+<span class="sourceLineNo">689</span>                return false;<a name="line.689"></a>
+<span class="sourceLineNo">690</span>            }<a name="line.690"></a>
+<span class="sourceLineNo">691</span>        }<a name="line.691"></a>
+<span class="sourceLineNo">692</span><a name="line.692"></a>
+<span class="sourceLineNo">693</span>        return true;<a name="line.693"></a>
+<span class="sourceLineNo">694</span>    }<a name="line.694"></a>
+<span class="sourceLineNo">695</span><a name="line.695"></a>
+<span class="sourceLineNo">696</span>    ///////////////////////////////////////////////////////////////////<a name="line.696"></a>
+<span class="sourceLineNo">697</span>    ////                         protected methods                 ////<a name="line.697"></a>
+<span class="sourceLineNo">698</span><a name="line.698"></a>
+<span class="sourceLineNo">699</span>    /** Throw an exception if the two arrays are not of the same length,<a name="line.699"></a>
+<span class="sourceLineNo">700</span>     *  or if either array is null. An exception is NOT thrown if both<a name="line.700"></a>
+<span class="sourceLineNo">701</span>     *  arrays are of length 0. If no exception is thrown, return the common<a name="line.701"></a>
+<span class="sourceLineNo">702</span>     *  length of the arrays.<a name="line.702"></a>
+<span class="sourceLineNo">703</span>     *  @param array1 The first array of doubles.<a name="line.703"></a>
+<span class="sourceLineNo">704</span>     *  @param array2 The second array of doubles.<a name="line.704"></a>
+<span class="sourceLineNo">705</span>     *  @param methodName A String representing the method name of the caller,<a name="line.705"></a>
+<span class="sourceLineNo">706</span>     *  without parentheses.<a name="line.706"></a>
+<span class="sourceLineNo">707</span>     *  @return The common length of both arrays.<a name="line.707"></a>
+<span class="sourceLineNo">708</span>     */<a name="line.708"></a>
+<span class="sourceLineNo">709</span>    protected static final int _commonLength(final double[] array1,<a name="line.709"></a>
+<span class="sourceLineNo">710</span>            final double[] array2, String methodName) {<a name="line.710"></a>
+<span class="sourceLineNo">711</span>        if (array1 == null) {<a name="line.711"></a>
+<span class="sourceLineNo">712</span>            throw new IllegalArgumentException("ptolemy.math." + methodName<a name="line.712"></a>
+<span class="sourceLineNo">713</span>                    + "() : first input array is null.");<a name="line.713"></a>
+<span class="sourceLineNo">714</span>        }<a name="line.714"></a>
+<span class="sourceLineNo">715</span><a name="line.715"></a>
+<span class="sourceLineNo">716</span>        if (array2 == null) {<a name="line.716"></a>
+<span class="sourceLineNo">717</span>            throw new IllegalArgumentException("ptolemy.math." + methodName<a name="line.717"></a>
+<span class="sourceLineNo">718</span>                    + "() : second input array is null.");<a name="line.718"></a>
+<span class="sourceLineNo">719</span>        }<a name="line.719"></a>
+<span class="sourceLineNo">720</span><a name="line.720"></a>
+<span class="sourceLineNo">721</span>        if (array1.length != array2.length) {<a name="line.721"></a>
+<span class="sourceLineNo">722</span>            throw new IllegalArgumentException("ptolemy.math." + methodName<a name="line.722"></a>
+<span class="sourceLineNo">723</span>                    + "() : input arrays must have the same length, "<a name="line.723"></a>
+<span class="sourceLineNo">724</span>                    + "but the first array has length " + array1.length<a name="line.724"></a>
+<span class="sourceLineNo">725</span>                    + " and the second array has length " + array2.length<a name="line.725"></a>
+<span class="sourceLineNo">726</span>                    + ".");<a name="line.726"></a>
+<span class="sourceLineNo">727</span>        }<a name="line.727"></a>
+<span class="sourceLineNo">728</span><a name="line.728"></a>
+<span class="sourceLineNo">729</span>        return array1.length;<a name="line.729"></a>
+<span class="sourceLineNo">730</span>    }<a name="line.730"></a>
+<span class="sourceLineNo">731</span>}<a name="line.731"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>
