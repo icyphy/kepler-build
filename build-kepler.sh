@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # Build Kepler, the Scientific Workflow System
 # See https://kepler-project.org
