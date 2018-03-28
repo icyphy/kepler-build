@@ -4,6 +4,95 @@
 # See https://kepler-project.org
 # See https://travis-ci.org/icyphy/kepler-build
 
+
+# Copy the file or directory named by
+# source-file-or-directory to directory-in-gh-pages.  For example
+#   updateGhPages logs/installers.txt logs
+# will copy logs/installers.txt to logs in the gh-pages and push it.
+# If the last argument ends in a /, then a directory by that name is created.
+# The reason we need this is because the Travis deploy to gh-pages seems
+# to overwrite everything in the repo.
+# Usage:
+#   updateGhPages fileOrDirectory1 [fileOrDirectory2 ...] destinationDirectory
+#
+updateGhPages () {
+    length=$(($#-1))
+    sources=${@:1:$length}
+    destination=${@: -1}
+
+    if [ -z "$GITHUB_TOKEN" ]; then
+        echo "$0: GITHUB_TOKEN was not set, so $sources will not be copied to $destination in the gh-pages repo."
+        return 
+    fi
+
+    df -k
+    TMP=/tmp/ptIITravisBuild_gh_pages.$$
+    if [ ! -d $TMP ]; then
+        mkdir $TMP
+    fi
+    lastwd=`pwd`
+    cd $TMP
+
+    # Get to the Travis build directory, configure git and clone the repo
+    git config --global user.email "travis@travis-ci.org"
+    git config --global user.name "travis-ci"
+
+    # Don't echo GITHUB_TOKEN
+    set +x
+    git clone --depth=1 --single-branch --branch=gh-pages https://${GITHUB_TOKEN}@github.com/icyphy/kepler-build gh-pages
+    set -x
+
+    df -k
+    # Commit and Push the Changes
+    cd gh-pages
+    echo "$destination" | grep '.*/$'
+    status=$?
+    if [ $status -eq 0 ]; then
+        if [ ! -d $destination ]; then
+            mkdir -p $destination
+            echo "$0: Created $destination in [pwd]."
+        fi
+    fi        
+
+    cp -Rf $sources $destination
+
+    # JUnit xml output will include the values of the environment,
+    # which can include GITHUB_TOKEN, which is supposed to be secret.
+    # So, we remove any lines checked in to gh-pages that mentions
+    # GITHUB_TOKEN.
+    echo "Remove any instances of GITHUB_TOKEN: "
+    date
+    # Don't echo GITHUB_TOKEN
+    set +x
+    files=`find . -type f`
+    for file in $files
+    do
+        egrep -e  "GITHUB_TOKEN" $file > /dev/null
+	retval=$?
+	if [ $retval != 1 ]; then
+            echo -n "$file "
+            egrep -v "GITHUB_TOKEN" $file > $file.tmp
+            mv $file.tmp $file
+        fi
+    done        
+    echo "Done."
+    set -x
+
+    git add -f .
+    date
+    git pull
+    date
+    git commit -m "Lastest successful travis build $TRAVIS_BUILD_NUMBER auto-pushed $1 to $2 in gh-pages."
+    git pull
+    git push origin gh-pages
+    git push -f origin gh-pages
+
+    cd $lastwd
+    rm -rf $TMP
+}
+
+
+
 svn co https://code.kepler-project.org/code/kepler/trunk/modules/build-area
 
 cd build-area
@@ -48,6 +137,9 @@ ant javadoc 2>&1 | grep -v GITHUB_TOKEN > $LOG
 echo "Last 100 lines of $LOG: `date`"
 tail -100 $LOG
 
+# Add javadoc files to the gh-pages branch so that they appear at
+# https://icyphy.github.io/kepler-build/doc/javadoc/index.html
+(cd ..; updateGhPages `pwd`/javadoc doc/)
 
 # Build the installers. If you change this, then update https://kepler-project.org/users/downloads
 export KEPLER_VERSION=2.6.0.1
@@ -85,13 +177,12 @@ ant make-windows-installer -Dversion=$KEPLER_VERSION
 echo "HOME: $HOME:"
 ls $HOME
 
-echo "/home/travis/build/icyphy/finished-kepler-installers:"
-ls /home/travis/build/icyphy/finished-kepler-installers
+echo "../../finished-kepler-installers:"
+ls ../../finished-kepler-installers
 
-echo "/home/travis/build/icyphy/finished-kepler-installers/linux:"
-ls -l /home/travis/build/icyphy/finished-kepler-installers/linux
+echo "../../finished-kepler-installers/linux:"
+ls -l ../../finished-kepler-installers/linux
 
-echo "/home/travis/build/icyphy/finished-kepler-installers/windows:"
-ls -l /home/travis/build/icyphy/finished-kepler-installers/windows
-
+echo "../../finished-kepler-installers/windows:"
+ls -l ../../finished-kepler-installers/windows
 
