@@ -429,19 +429,6 @@
 <tbody>
 <tr class="altColor">
 <td class="colFirst"><code>protected void</code></td>
-<td class="colLast"><span class="typeNameLabel">SQLRecordingV8.</span><code><span class="memberNameLink"><a href="../../../org/kepler/provenance/sql/SQLRecordingV8.html#Z:Z_recordPortEvent-ptolemy.actor.IOPort-int-int-boolean-int-ptolemy.data.Token-ptolemy.actor.IOPort-java.util.Date-">_recordPortEvent</a></span>(<a href="../../../ptolemy/actor/IOPort.html" title="class in ptolemy.actor">IOPort</a>&nbsp;port,
-                int&nbsp;fireId,
-                int&nbsp;rwfireId,
-                boolean&nbsp;isRead,
-                int&nbsp;channel,
-                <a href="../../../ptolemy/data/Token.html" title="class in ptolemy.data">Token</a>&nbsp;token,
-                <a href="../../../ptolemy/actor/IOPort.html" title="class in ptolemy.actor">IOPort</a>&nbsp;destPort,
-                java.util.Date&nbsp;timestamp)</code>
-<div class="block">Record a specific type of firing for an actor.</div>
-</td>
-</tr>
-<tr class="rowColor">
-<td class="colFirst"><code>protected void</code></td>
 <td class="colLast"><span class="typeNameLabel">SQLRecording.</span><code><span class="memberNameLink"><a href="../../../org/kepler/provenance/sql/SQLRecording.html#Z:Z_recordPortEvent-ptolemy.actor.IOPort-int-int-boolean-int-ptolemy.data.Token-ptolemy.actor.IOPort-java.util.Date-">_recordPortEvent</a></span>(<a href="../../../ptolemy/actor/IOPort.html" title="class in ptolemy.actor">IOPort</a>&nbsp;port,
                 int&nbsp;fireId,
                 int&nbsp;rwfireId,
@@ -451,6 +438,19 @@
                 <a href="../../../ptolemy/actor/IOPort.html" title="class in ptolemy.actor">IOPort</a>&nbsp;destPort,
                 java.util.Date&nbsp;timestamp)</code>
 <div class="block">Record a port read or write to the token_flow table.</div>
+</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code>protected void</code></td>
+<td class="colLast"><span class="typeNameLabel">SQLRecordingV8.</span><code><span class="memberNameLink"><a href="../../../org/kepler/provenance/sql/SQLRecordingV8.html#Z:Z_recordPortEvent-ptolemy.actor.IOPort-int-int-boolean-int-ptolemy.data.Token-ptolemy.actor.IOPort-java.util.Date-">_recordPortEvent</a></span>(<a href="../../../ptolemy/actor/IOPort.html" title="class in ptolemy.actor">IOPort</a>&nbsp;port,
+                int&nbsp;fireId,
+                int&nbsp;rwfireId,
+                boolean&nbsp;isRead,
+                int&nbsp;channel,
+                <a href="../../../ptolemy/data/Token.html" title="class in ptolemy.data">Token</a>&nbsp;token,
+                <a href="../../../ptolemy/actor/IOPort.html" title="class in ptolemy.actor">IOPort</a>&nbsp;destPort,
+                java.util.Date&nbsp;timestamp)</code>
+<div class="block">Record a specific type of firing for an actor.</div>
 </td>
 </tr>
 </tbody>
@@ -713,16 +713,16 @@
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code><a href="../../../ptolemy/actor/IOPort.html" title="class in ptolemy.actor">IOPort</a></code></td>
-<td class="colLast"><span class="typeNameLabel">TokenSentEvent.</span><code><span class="memberNameLink"><a href="../../../ptolemy/actor/TokenSentEvent.html#getPort--">getPort</a></span>()</code>
+<td class="colLast"><span class="typeNameLabel">TokenGotEvent.</span><code><span class="memberNameLink"><a href="../../../ptolemy/actor/TokenGotEvent.html#getPort--">getPort</a></span>()</code>
 <div class="block"><span class="deprecatedLabel">Deprecated.</span>&nbsp;</div>
-<div class="block">Return the port that the token was sent from.</div>
+<div class="block">Return the port that the token was received at.</div>
 </td>
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code><a href="../../../ptolemy/actor/IOPort.html" title="class in ptolemy.actor">IOPort</a></code></td>
-<td class="colLast"><span class="typeNameLabel">TokenGotEvent.</span><code><span class="memberNameLink"><a href="../../../ptolemy/actor/TokenGotEvent.html#getPort--">getPort</a></span>()</code>
+<td class="colLast"><span class="typeNameLabel">TokenSentEvent.</span><code><span class="memberNameLink"><a href="../../../ptolemy/actor/TokenSentEvent.html#getPort--">getPort</a></span>()</code>
 <div class="block"><span class="deprecatedLabel">Deprecated.</span>&nbsp;</div>
-<div class="block">Return the port that the token was received at.</div>
+<div class="block">Return the port that the token was sent from.</div>
 </td>
 </tr>
 <tr class="rowColor">
@@ -1035,25 +1035,25 @@
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>boolean</code></td>
-<td class="colLast"><span class="typeNameLabel">DoNothingDirector.</span><code><span class="memberNameLink"><a href="../../../ptolemy/actor/DoNothingDirector.html#transferInputs-ptolemy.actor.IOPort-">transferInputs</a></span>(<a href="../../../ptolemy/actor/IOPort.html" title="class in ptolemy.actor">IOPort</a>&nbsp;port)</code>&nbsp;</td>
-</tr>
-<tr class="altColor">
-<td class="colFirst"><code>boolean</code></td>
 <td class="colLast"><span class="typeNameLabel">Director.</span><code><span class="memberNameLink"><a href="../../../ptolemy/actor/Director.html#transferInputs-ptolemy.actor.IOPort-">transferInputs</a></span>(<a href="../../../ptolemy/actor/IOPort.html" title="class in ptolemy.actor">IOPort</a>&nbsp;port)</code>
 <div class="block">Transfer data from an input port of the container to the ports
   it is connected to on the inside.</div>
 </td>
 </tr>
-<tr class="rowColor">
-<td class="colFirst"><code>boolean</code></td>
-<td class="colLast"><span class="typeNameLabel">DoNothingDirector.</span><code><span class="memberNameLink"><a href="../../../ptolemy/actor/DoNothingDirector.html#transferOutputs-ptolemy.actor.IOPort-">transferOutputs</a></span>(<a href="../../../ptolemy/actor/IOPort.html" title="class in ptolemy.actor">IOPort</a>&nbsp;port)</code>&nbsp;</td>
-</tr>
 <tr class="altColor">
+<td class="colFirst"><code>boolean</code></td>
+<td class="colLast"><span class="typeNameLabel">DoNothingDirector.</span><code><span class="memberNameLink"><a href="../../../ptolemy/actor/DoNothingDirector.html#transferInputs-ptolemy.actor.IOPort-">transferInputs</a></span>(<a href="../../../ptolemy/actor/IOPort.html" title="class in ptolemy.actor">IOPort</a>&nbsp;port)</code>&nbsp;</td>
+</tr>
+<tr class="rowColor">
 <td class="colFirst"><code>boolean</code></td>
 <td class="colLast"><span class="typeNameLabel">Director.</span><code><span class="memberNameLink"><a href="../../../ptolemy/actor/Director.html#transferOutputs-ptolemy.actor.IOPort-">transferOutputs</a></span>(<a href="../../../ptolemy/actor/IOPort.html" title="class in ptolemy.actor">IOPort</a>&nbsp;port)</code>
 <div class="block">Transfer data from an output port of the container to the
   ports it is connected to on the outside.</div>
 </td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code>boolean</code></td>
+<td class="colLast"><span class="typeNameLabel">DoNothingDirector.</span><code><span class="memberNameLink"><a href="../../../ptolemy/actor/DoNothingDirector.html#transferOutputs-ptolemy.actor.IOPort-">transferOutputs</a></span>(<a href="../../../ptolemy/actor/IOPort.html" title="class in ptolemy.actor">IOPort</a>&nbsp;port)</code>&nbsp;</td>
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>void</code></td>
@@ -1509,20 +1509,6 @@
 <tbody>
 <tr class="altColor">
 <td class="colFirst"><code>java.util.Collection&lt;<a href="../../../ptolemy/actor/IOPort.html" title="class in ptolemy.actor">IOPort</a>&gt;</code></td>
-<td class="colLast"><span class="typeNameLabel">DefaultCausalityInterface.</span><code><span class="memberNameLink"><a href="../../../ptolemy/actor/util/DefaultCausalityInterface.html#dependentPorts-ptolemy.actor.IOPort-">dependentPorts</a></span>(<a href="../../../ptolemy/actor/IOPort.html" title="class in ptolemy.actor">IOPort</a>&nbsp;port)</code>
-<div class="block">Return a collection of the ports in this actor that depend on
-  or are depended on by the specified port.</div>
-</td>
-</tr>
-<tr class="rowColor">
-<td class="colFirst"><code>java.util.Collection&lt;<a href="../../../ptolemy/actor/IOPort.html" title="class in ptolemy.actor">IOPort</a>&gt;</code></td>
-<td class="colLast"><span class="typeNameLabel">CausalityInterfaceForComposites.</span><code><span class="memberNameLink"><a href="../../../ptolemy/actor/util/CausalityInterfaceForComposites.html#dependentPorts-ptolemy.actor.IOPort-">dependentPorts</a></span>(<a href="../../../ptolemy/actor/IOPort.html" title="class in ptolemy.actor">IOPort</a>&nbsp;port)</code>
-<div class="block">Return a collection of the ports in the associated actor that depend on
-  or are depended on by the specified port.</div>
-</td>
-</tr>
-<tr class="altColor">
-<td class="colFirst"><code>java.util.Collection&lt;<a href="../../../ptolemy/actor/IOPort.html" title="class in ptolemy.actor">IOPort</a>&gt;</code></td>
 <td class="colLast"><span class="typeNameLabel">CausalityInterface.</span><code><span class="memberNameLink"><a href="../../../ptolemy/actor/util/CausalityInterface.html#dependentPorts-ptolemy.actor.IOPort-">dependentPorts</a></span>(<a href="../../../ptolemy/actor/IOPort.html" title="class in ptolemy.actor">IOPort</a>&nbsp;port)</code>
 <div class="block">Return a collection of the ports in this actor that depend on
   or are depended on by the specified port.</div>
@@ -1537,17 +1523,16 @@
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>java.util.Collection&lt;<a href="../../../ptolemy/actor/IOPort.html" title="class in ptolemy.actor">IOPort</a>&gt;</code></td>
-<td class="colLast"><span class="typeNameLabel">DefaultCausalityInterface.</span><code><span class="memberNameLink"><a href="../../../ptolemy/actor/util/DefaultCausalityInterface.html#equivalentPorts-ptolemy.actor.IOPort-">equivalentPorts</a></span>(<a href="../../../ptolemy/actor/IOPort.html" title="class in ptolemy.actor">IOPort</a>&nbsp;input)</code>
-<div class="block">Return a collection of the input ports in this actor that are
-  in the same equivalence class with the specified input
-  port.</div>
+<td class="colLast"><span class="typeNameLabel">DefaultCausalityInterface.</span><code><span class="memberNameLink"><a href="../../../ptolemy/actor/util/DefaultCausalityInterface.html#dependentPorts-ptolemy.actor.IOPort-">dependentPorts</a></span>(<a href="../../../ptolemy/actor/IOPort.html" title="class in ptolemy.actor">IOPort</a>&nbsp;port)</code>
+<div class="block">Return a collection of the ports in this actor that depend on
+  or are depended on by the specified port.</div>
 </td>
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>java.util.Collection&lt;<a href="../../../ptolemy/actor/IOPort.html" title="class in ptolemy.actor">IOPort</a>&gt;</code></td>
-<td class="colLast"><span class="typeNameLabel">CausalityInterfaceForComposites.</span><code><span class="memberNameLink"><a href="../../../ptolemy/actor/util/CausalityInterfaceForComposites.html#equivalentPorts-ptolemy.actor.IOPort-">equivalentPorts</a></span>(<a href="../../../ptolemy/actor/IOPort.html" title="class in ptolemy.actor">IOPort</a>&nbsp;input)</code>
-<div class="block">Return a set of the input ports in this actor that are
-  in an equivalence class with the specified input.</div>
+<td class="colLast"><span class="typeNameLabel">CausalityInterfaceForComposites.</span><code><span class="memberNameLink"><a href="../../../ptolemy/actor/util/CausalityInterfaceForComposites.html#dependentPorts-ptolemy.actor.IOPort-">dependentPorts</a></span>(<a href="../../../ptolemy/actor/IOPort.html" title="class in ptolemy.actor">IOPort</a>&nbsp;port)</code>
+<div class="block">Return a collection of the ports in the associated actor that depend on
+  or are depended on by the specified port.</div>
 </td>
 </tr>
 <tr class="altColor">
@@ -1555,6 +1540,21 @@
 <td class="colLast"><span class="typeNameLabel">CausalityInterface.</span><code><span class="memberNameLink"><a href="../../../ptolemy/actor/util/CausalityInterface.html#equivalentPorts-ptolemy.actor.IOPort-">equivalentPorts</a></span>(<a href="../../../ptolemy/actor/IOPort.html" title="class in ptolemy.actor">IOPort</a>&nbsp;input)</code>
 <div class="block">Return a collection of input ports in the associated actor that are
   in the same equivalence class as the specified input port.</div>
+</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code>java.util.Collection&lt;<a href="../../../ptolemy/actor/IOPort.html" title="class in ptolemy.actor">IOPort</a>&gt;</code></td>
+<td class="colLast"><span class="typeNameLabel">DefaultCausalityInterface.</span><code><span class="memberNameLink"><a href="../../../ptolemy/actor/util/DefaultCausalityInterface.html#equivalentPorts-ptolemy.actor.IOPort-">equivalentPorts</a></span>(<a href="../../../ptolemy/actor/IOPort.html" title="class in ptolemy.actor">IOPort</a>&nbsp;input)</code>
+<div class="block">Return a collection of the input ports in this actor that are
+  in the same equivalence class with the specified input
+  port.</div>
+</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code>java.util.Collection&lt;<a href="../../../ptolemy/actor/IOPort.html" title="class in ptolemy.actor">IOPort</a>&gt;</code></td>
+<td class="colLast"><span class="typeNameLabel">CausalityInterfaceForComposites.</span><code><span class="memberNameLink"><a href="../../../ptolemy/actor/util/CausalityInterfaceForComposites.html#equivalentPorts-ptolemy.actor.IOPort-">equivalentPorts</a></span>(<a href="../../../ptolemy/actor/IOPort.html" title="class in ptolemy.actor">IOPort</a>&nbsp;input)</code>
+<div class="block">Return a set of the input ports in this actor that are
+  in an equivalence class with the specified input.</div>
 </td>
 </tr>
 </tbody>
@@ -1577,7 +1577,7 @@
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">DefaultCausalityInterface.</span><code><span class="memberNameLink"><a href="../../../ptolemy/actor/util/DefaultCausalityInterface.html#declareDelayDependency-ptolemy.actor.IOPort-ptolemy.actor.IOPort-double-int-">declareDelayDependency</a></span>(<a href="../../../ptolemy/actor/IOPort.html" title="class in ptolemy.actor">IOPort</a>&nbsp;input,
+<td class="colLast"><span class="typeNameLabel">CausalityInterface.</span><code><span class="memberNameLink"><a href="../../../ptolemy/actor/util/CausalityInterface.html#declareDelayDependency-ptolemy.actor.IOPort-ptolemy.actor.IOPort-double-int-">declareDelayDependency</a></span>(<a href="../../../ptolemy/actor/IOPort.html" title="class in ptolemy.actor">IOPort</a>&nbsp;input,
                       <a href="../../../ptolemy/actor/IOPort.html" title="class in ptolemy.actor">IOPort</a>&nbsp;output,
                       double&nbsp;timeDelay,
                       int&nbsp;index)</code>
@@ -1588,27 +1588,13 @@
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">CausalityInterface.</span><code><span class="memberNameLink"><a href="../../../ptolemy/actor/util/CausalityInterface.html#declareDelayDependency-ptolemy.actor.IOPort-ptolemy.actor.IOPort-double-int-">declareDelayDependency</a></span>(<a href="../../../ptolemy/actor/IOPort.html" title="class in ptolemy.actor">IOPort</a>&nbsp;input,
+<td class="colLast"><span class="typeNameLabel">DefaultCausalityInterface.</span><code><span class="memberNameLink"><a href="../../../ptolemy/actor/util/DefaultCausalityInterface.html#declareDelayDependency-ptolemy.actor.IOPort-ptolemy.actor.IOPort-double-int-">declareDelayDependency</a></span>(<a href="../../../ptolemy/actor/IOPort.html" title="class in ptolemy.actor">IOPort</a>&nbsp;input,
                       <a href="../../../ptolemy/actor/IOPort.html" title="class in ptolemy.actor">IOPort</a>&nbsp;output,
                       double&nbsp;timeDelay,
                       int&nbsp;index)</code>
 <div class="block">Set the dependency that the specified output port has
   on the specified input port to represent a time
   delay with the specified value and superdense time index.</div>
-</td>
-</tr>
-<tr class="rowColor">
-<td class="colFirst"><code>java.util.Collection&lt;<a href="../../../ptolemy/actor/IOPort.html" title="class in ptolemy.actor">IOPort</a>&gt;</code></td>
-<td class="colLast"><span class="typeNameLabel">DefaultCausalityInterface.</span><code><span class="memberNameLink"><a href="../../../ptolemy/actor/util/DefaultCausalityInterface.html#dependentPorts-ptolemy.actor.IOPort-">dependentPorts</a></span>(<a href="../../../ptolemy/actor/IOPort.html" title="class in ptolemy.actor">IOPort</a>&nbsp;port)</code>
-<div class="block">Return a collection of the ports in this actor that depend on
-  or are depended on by the specified port.</div>
-</td>
-</tr>
-<tr class="altColor">
-<td class="colFirst"><code>java.util.Collection&lt;<a href="../../../ptolemy/actor/IOPort.html" title="class in ptolemy.actor">IOPort</a>&gt;</code></td>
-<td class="colLast"><span class="typeNameLabel">CausalityInterfaceForComposites.</span><code><span class="memberNameLink"><a href="../../../ptolemy/actor/util/CausalityInterfaceForComposites.html#dependentPorts-ptolemy.actor.IOPort-">dependentPorts</a></span>(<a href="../../../ptolemy/actor/IOPort.html" title="class in ptolemy.actor">IOPort</a>&nbsp;port)</code>
-<div class="block">Return a collection of the ports in the associated actor that depend on
-  or are depended on by the specified port.</div>
 </td>
 </tr>
 <tr class="rowColor">
@@ -1626,26 +1612,25 @@
 </td>
 </tr>
 <tr class="rowColor">
+<td class="colFirst"><code>java.util.Collection&lt;<a href="../../../ptolemy/actor/IOPort.html" title="class in ptolemy.actor">IOPort</a>&gt;</code></td>
+<td class="colLast"><span class="typeNameLabel">DefaultCausalityInterface.</span><code><span class="memberNameLink"><a href="../../../ptolemy/actor/util/DefaultCausalityInterface.html#dependentPorts-ptolemy.actor.IOPort-">dependentPorts</a></span>(<a href="../../../ptolemy/actor/IOPort.html" title="class in ptolemy.actor">IOPort</a>&nbsp;port)</code>
+<div class="block">Return a collection of the ports in this actor that depend on
+  or are depended on by the specified port.</div>
+</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code>java.util.Collection&lt;<a href="../../../ptolemy/actor/IOPort.html" title="class in ptolemy.actor">IOPort</a>&gt;</code></td>
+<td class="colLast"><span class="typeNameLabel">CausalityInterfaceForComposites.</span><code><span class="memberNameLink"><a href="../../../ptolemy/actor/util/CausalityInterfaceForComposites.html#dependentPorts-ptolemy.actor.IOPort-">dependentPorts</a></span>(<a href="../../../ptolemy/actor/IOPort.html" title="class in ptolemy.actor">IOPort</a>&nbsp;port)</code>
+<div class="block">Return a collection of the ports in the associated actor that depend on
+  or are depended on by the specified port.</div>
+</td>
+</tr>
+<tr class="rowColor">
 <td class="colFirst"><code>static java.util.Set&lt;<a href="../../../ptolemy/actor/AtomicActor.html" title="class in ptolemy.actor">AtomicActor</a>&gt;</code></td>
 <td class="colLast"><span class="typeNameLabel">ActorDependencies.</span><code><span class="memberNameLink"><a href="../../../ptolemy/actor/util/ActorDependencies.html#dependents-ptolemy.actor.IOPort-java.lang.Class-">dependents</a></span>(<a href="../../../ptolemy/actor/IOPort.html" title="class in ptolemy.actor">IOPort</a>&nbsp;port,
           java.lang.Class&nbsp;filter)</code>
 <div class="block">Return a Set of dependent (downstream) actors of a particular
   class that are connected to a port.</div>
-</td>
-</tr>
-<tr class="altColor">
-<td class="colFirst"><code>java.util.Collection&lt;<a href="../../../ptolemy/actor/IOPort.html" title="class in ptolemy.actor">IOPort</a>&gt;</code></td>
-<td class="colLast"><span class="typeNameLabel">DefaultCausalityInterface.</span><code><span class="memberNameLink"><a href="../../../ptolemy/actor/util/DefaultCausalityInterface.html#equivalentPorts-ptolemy.actor.IOPort-">equivalentPorts</a></span>(<a href="../../../ptolemy/actor/IOPort.html" title="class in ptolemy.actor">IOPort</a>&nbsp;input)</code>
-<div class="block">Return a collection of the input ports in this actor that are
-  in the same equivalence class with the specified input
-  port.</div>
-</td>
-</tr>
-<tr class="rowColor">
-<td class="colFirst"><code>java.util.Collection&lt;<a href="../../../ptolemy/actor/IOPort.html" title="class in ptolemy.actor">IOPort</a>&gt;</code></td>
-<td class="colLast"><span class="typeNameLabel">CausalityInterfaceForComposites.</span><code><span class="memberNameLink"><a href="../../../ptolemy/actor/util/CausalityInterfaceForComposites.html#equivalentPorts-ptolemy.actor.IOPort-">equivalentPorts</a></span>(<a href="../../../ptolemy/actor/IOPort.html" title="class in ptolemy.actor">IOPort</a>&nbsp;input)</code>
-<div class="block">Return a set of the input ports in this actor that are
-  in an equivalence class with the specified input.</div>
 </td>
 </tr>
 <tr class="altColor">
@@ -1656,19 +1641,18 @@
 </td>
 </tr>
 <tr class="rowColor">
-<td class="colFirst"><code><a href="../../../ptolemy/actor/util/Dependency.html" title="interface in ptolemy.actor.util">Dependency</a></code></td>
-<td class="colLast"><span class="typeNameLabel">DefaultCausalityInterface.</span><code><span class="memberNameLink"><a href="../../../ptolemy/actor/util/DefaultCausalityInterface.html#getDependency-ptolemy.actor.IOPort-ptolemy.actor.IOPort-">getDependency</a></span>(<a href="../../../ptolemy/actor/IOPort.html" title="class in ptolemy.actor">IOPort</a>&nbsp;input,
-             <a href="../../../ptolemy/actor/IOPort.html" title="class in ptolemy.actor">IOPort</a>&nbsp;output)</code>
-<div class="block">Return the dependency between the specified input port
-  and the specified output port.</div>
+<td class="colFirst"><code>java.util.Collection&lt;<a href="../../../ptolemy/actor/IOPort.html" title="class in ptolemy.actor">IOPort</a>&gt;</code></td>
+<td class="colLast"><span class="typeNameLabel">DefaultCausalityInterface.</span><code><span class="memberNameLink"><a href="../../../ptolemy/actor/util/DefaultCausalityInterface.html#equivalentPorts-ptolemy.actor.IOPort-">equivalentPorts</a></span>(<a href="../../../ptolemy/actor/IOPort.html" title="class in ptolemy.actor">IOPort</a>&nbsp;input)</code>
+<div class="block">Return a collection of the input ports in this actor that are
+  in the same equivalence class with the specified input
+  port.</div>
 </td>
 </tr>
 <tr class="altColor">
-<td class="colFirst"><code><a href="../../../ptolemy/actor/util/Dependency.html" title="interface in ptolemy.actor.util">Dependency</a></code></td>
-<td class="colLast"><span class="typeNameLabel">CausalityInterfaceForComposites.</span><code><span class="memberNameLink"><a href="../../../ptolemy/actor/util/CausalityInterfaceForComposites.html#getDependency-ptolemy.actor.IOPort-ptolemy.actor.IOPort-">getDependency</a></span>(<a href="../../../ptolemy/actor/IOPort.html" title="class in ptolemy.actor">IOPort</a>&nbsp;input,
-             <a href="../../../ptolemy/actor/IOPort.html" title="class in ptolemy.actor">IOPort</a>&nbsp;output)</code>
-<div class="block">Return the dependency between the specified input port
-  and the specified output port.</div>
+<td class="colFirst"><code>java.util.Collection&lt;<a href="../../../ptolemy/actor/IOPort.html" title="class in ptolemy.actor">IOPort</a>&gt;</code></td>
+<td class="colLast"><span class="typeNameLabel">CausalityInterfaceForComposites.</span><code><span class="memberNameLink"><a href="../../../ptolemy/actor/util/CausalityInterfaceForComposites.html#equivalentPorts-ptolemy.actor.IOPort-">equivalentPorts</a></span>(<a href="../../../ptolemy/actor/IOPort.html" title="class in ptolemy.actor">IOPort</a>&nbsp;input)</code>
+<div class="block">Return a set of the input ports in this actor that are
+  in an equivalence class with the specified input.</div>
 </td>
 </tr>
 <tr class="rowColor">
@@ -1682,6 +1666,22 @@
 <tr class="altColor">
 <td class="colFirst"><code><a href="../../../ptolemy/actor/util/Dependency.html" title="interface in ptolemy.actor.util">Dependency</a></code></td>
 <td class="colLast"><span class="typeNameLabel">BreakCausalityInterface.</span><code><span class="memberNameLink"><a href="../../../ptolemy/actor/util/BreakCausalityInterface.html#getDependency-ptolemy.actor.IOPort-ptolemy.actor.IOPort-">getDependency</a></span>(<a href="../../../ptolemy/actor/IOPort.html" title="class in ptolemy.actor">IOPort</a>&nbsp;input,
+             <a href="../../../ptolemy/actor/IOPort.html" title="class in ptolemy.actor">IOPort</a>&nbsp;output)</code>
+<div class="block">Return the dependency between the specified input port
+  and the specified output port.</div>
+</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code><a href="../../../ptolemy/actor/util/Dependency.html" title="interface in ptolemy.actor.util">Dependency</a></code></td>
+<td class="colLast"><span class="typeNameLabel">DefaultCausalityInterface.</span><code><span class="memberNameLink"><a href="../../../ptolemy/actor/util/DefaultCausalityInterface.html#getDependency-ptolemy.actor.IOPort-ptolemy.actor.IOPort-">getDependency</a></span>(<a href="../../../ptolemy/actor/IOPort.html" title="class in ptolemy.actor">IOPort</a>&nbsp;input,
+             <a href="../../../ptolemy/actor/IOPort.html" title="class in ptolemy.actor">IOPort</a>&nbsp;output)</code>
+<div class="block">Return the dependency between the specified input port
+  and the specified output port.</div>
+</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code><a href="../../../ptolemy/actor/util/Dependency.html" title="interface in ptolemy.actor.util">Dependency</a></code></td>
+<td class="colLast"><span class="typeNameLabel">CausalityInterfaceForComposites.</span><code><span class="memberNameLink"><a href="../../../ptolemy/actor/util/CausalityInterfaceForComposites.html#getDependency-ptolemy.actor.IOPort-ptolemy.actor.IOPort-">getDependency</a></span>(<a href="../../../ptolemy/actor/IOPort.html" title="class in ptolemy.actor">IOPort</a>&nbsp;input,
              <a href="../../../ptolemy/actor/IOPort.html" title="class in ptolemy.actor">IOPort</a>&nbsp;output)</code>
 <div class="block">Return the dependency between the specified input port
   and the specified output port.</div>
@@ -1730,22 +1730,6 @@
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">DefaultCausalityInterface.</span><code><span class="memberNameLink"><a href="../../../ptolemy/actor/util/DefaultCausalityInterface.html#removeDependency-ptolemy.actor.IOPort-ptolemy.actor.IOPort-">removeDependency</a></span>(<a href="../../../ptolemy/actor/IOPort.html" title="class in ptolemy.actor">IOPort</a>&nbsp;inputPort,
-                <a href="../../../ptolemy/actor/IOPort.html" title="class in ptolemy.actor">IOPort</a>&nbsp;outputPort)</code>
-<div class="block">Remove the dependency that the specified output port has
-  on the specified input port.</div>
-</td>
-</tr>
-<tr class="altColor">
-<td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">CausalityInterfaceForComposites.</span><code><span class="memberNameLink"><a href="../../../ptolemy/actor/util/CausalityInterfaceForComposites.html#removeDependency-ptolemy.actor.IOPort-ptolemy.actor.IOPort-">removeDependency</a></span>(<a href="../../../ptolemy/actor/IOPort.html" title="class in ptolemy.actor">IOPort</a>&nbsp;inputPort,
-                <a href="../../../ptolemy/actor/IOPort.html" title="class in ptolemy.actor">IOPort</a>&nbsp;outputPort)</code>
-<div class="block">Remove the dependency that the specified output port has
-  on the specified input port.</div>
-</td>
-</tr>
-<tr class="rowColor">
-<td class="colFirst"><code>void</code></td>
 <td class="colLast"><span class="typeNameLabel">CausalityInterface.</span><code><span class="memberNameLink"><a href="../../../ptolemy/actor/util/CausalityInterface.html#removeDependency-ptolemy.actor.IOPort-ptolemy.actor.IOPort-">removeDependency</a></span>(<a href="../../../ptolemy/actor/IOPort.html" title="class in ptolemy.actor">IOPort</a>&nbsp;inputPort,
                 <a href="../../../ptolemy/actor/IOPort.html" title="class in ptolemy.actor">IOPort</a>&nbsp;outputPort)</code>
 <div class="block">Remove the dependency that the specified output port has
@@ -1756,6 +1740,22 @@
 <tr class="altColor">
 <td class="colFirst"><code>void</code></td>
 <td class="colLast"><span class="typeNameLabel">BreakCausalityInterface.</span><code><span class="memberNameLink"><a href="../../../ptolemy/actor/util/BreakCausalityInterface.html#removeDependency-ptolemy.actor.IOPort-ptolemy.actor.IOPort-">removeDependency</a></span>(<a href="../../../ptolemy/actor/IOPort.html" title="class in ptolemy.actor">IOPort</a>&nbsp;inputPort,
+                <a href="../../../ptolemy/actor/IOPort.html" title="class in ptolemy.actor">IOPort</a>&nbsp;outputPort)</code>
+<div class="block">Remove the dependency that the specified output port has
+  on the specified input port.</div>
+</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code>void</code></td>
+<td class="colLast"><span class="typeNameLabel">DefaultCausalityInterface.</span><code><span class="memberNameLink"><a href="../../../ptolemy/actor/util/DefaultCausalityInterface.html#removeDependency-ptolemy.actor.IOPort-ptolemy.actor.IOPort-">removeDependency</a></span>(<a href="../../../ptolemy/actor/IOPort.html" title="class in ptolemy.actor">IOPort</a>&nbsp;inputPort,
+                <a href="../../../ptolemy/actor/IOPort.html" title="class in ptolemy.actor">IOPort</a>&nbsp;outputPort)</code>
+<div class="block">Remove the dependency that the specified output port has
+  on the specified input port.</div>
+</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code>void</code></td>
+<td class="colLast"><span class="typeNameLabel">CausalityInterfaceForComposites.</span><code><span class="memberNameLink"><a href="../../../ptolemy/actor/util/CausalityInterfaceForComposites.html#removeDependency-ptolemy.actor.IOPort-ptolemy.actor.IOPort-">removeDependency</a></span>(<a href="../../../ptolemy/actor/IOPort.html" title="class in ptolemy.actor">IOPort</a>&nbsp;inputPort,
                 <a href="../../../ptolemy/actor/IOPort.html" title="class in ptolemy.actor">IOPort</a>&nbsp;outputPort)</code>
 <div class="block">Remove the dependency that the specified output port has
   on the specified input port.</div>
@@ -2089,18 +2089,18 @@
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>boolean</code></td>
-<td class="colLast"><span class="typeNameLabel">MultirateFSMDirector.</span><code><span class="memberNameLink"><a href="../../../ptolemy/domains/modal/kernel/MultirateFSMDirector.html#transferInputs-ptolemy.actor.IOPort-">transferInputs</a></span>(<a href="../../../ptolemy/actor/IOPort.html" title="class in ptolemy.actor">IOPort</a>&nbsp;port)</code>
-<div class="block">Transfer data from the input port of the container to the
-  ports connected to the inside of the input port and on the
-  mode controller or the refinement of its current state.</div>
-</td>
-</tr>
-<tr class="rowColor">
-<td class="colFirst"><code>boolean</code></td>
 <td class="colLast"><span class="typeNameLabel">FSMDirector.</span><code><span class="memberNameLink"><a href="../../../ptolemy/domains/modal/kernel/FSMDirector.html#transferInputs-ptolemy.actor.IOPort-">transferInputs</a></span>(<a href="../../../ptolemy/actor/IOPort.html" title="class in ptolemy.actor">IOPort</a>&nbsp;port)</code>
 <div class="block">Transfer data from the input port of the container to the ports
  connected to the inside of the input port and on the mode
  controller or the refinement of its current state.</div>
+</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code>boolean</code></td>
+<td class="colLast"><span class="typeNameLabel">MultirateFSMDirector.</span><code><span class="memberNameLink"><a href="../../../ptolemy/domains/modal/kernel/MultirateFSMDirector.html#transferInputs-ptolemy.actor.IOPort-">transferInputs</a></span>(<a href="../../../ptolemy/actor/IOPort.html" title="class in ptolemy.actor">IOPort</a>&nbsp;port)</code>
+<div class="block">Transfer data from the input port of the container to the
+  ports connected to the inside of the input port and on the
+  mode controller or the refinement of its current state.</div>
 </td>
 </tr>
 <tr class="altColor">

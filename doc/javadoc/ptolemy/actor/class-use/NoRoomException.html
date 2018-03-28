@@ -141,15 +141,15 @@
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">IOPort.</span><code><span class="memberNameLink"><a href="../../../ptolemy/actor/IOPort.html#broadcast-ptolemy.data.Token-">broadcast</a></span>(<a href="../../../ptolemy/data/Token.html" title="class in ptolemy.data">Token</a>&nbsp;token)</code>
-<div class="block">Send a token to all connected receivers.</div>
+<td class="colLast"><span class="typeNameLabel">ConstantPublisherPort.</span><code><span class="memberNameLink"><a href="../../../ptolemy/actor/ConstantPublisherPort.html#broadcast-ptolemy.data.Token-">broadcast</a></span>(<a href="../../../ptolemy/data/Token.html" title="class in ptolemy.data">Token</a>&nbsp;token)</code>
+<div class="block">Override the base class to replace the specified token with
+  the value of <i>constantValue</i>.</div>
 </td>
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">ConstantPublisherPort.</span><code><span class="memberNameLink"><a href="../../../ptolemy/actor/ConstantPublisherPort.html#broadcast-ptolemy.data.Token-">broadcast</a></span>(<a href="../../../ptolemy/data/Token.html" title="class in ptolemy.data">Token</a>&nbsp;token)</code>
-<div class="block">Override the base class to replace the specified token with
-  the value of <i>constantValue</i>.</div>
+<td class="colLast"><span class="typeNameLabel">IOPort.</span><code><span class="memberNameLink"><a href="../../../ptolemy/actor/IOPort.html#broadcast-ptolemy.data.Token-">broadcast</a></span>(<a href="../../../ptolemy/data/Token.html" title="class in ptolemy.data">Token</a>&nbsp;token)</code>
+<div class="block">Send a token to all connected receivers.</div>
 </td>
 </tr>
 <tr class="rowColor">
@@ -162,30 +162,30 @@
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">IOPort.</span><code><span class="memberNameLink"><a href="../../../ptolemy/actor/IOPort.html#broadcast-ptolemy.data.Token:A-int-">broadcast</a></span>(<a href="../../../ptolemy/data/Token.html" title="class in ptolemy.data">Token</a>[]&nbsp;tokenArray,
-         int&nbsp;vectorLength)</code>
-<div class="block">Send the specified portion of a token array to all receivers connected
-  to this port.</div>
-</td>
-</tr>
-<tr class="rowColor">
-<td class="colFirst"><code>void</code></td>
 <td class="colLast"><span class="typeNameLabel">ConstantPublisherPort.</span><code><span class="memberNameLink"><a href="../../../ptolemy/actor/ConstantPublisherPort.html#broadcast-ptolemy.data.Token:A-int-">broadcast</a></span>(<a href="../../../ptolemy/data/Token.html" title="class in ptolemy.data">Token</a>[]&nbsp;tokenArray,
          int&nbsp;vectorLength)</code>
 <div class="block">Override the base class to replace the specified tokens with
   the value of <i>constantValue</i>.</div>
 </td>
 </tr>
+<tr class="rowColor">
+<td class="colFirst"><code>void</code></td>
+<td class="colLast"><span class="typeNameLabel">IOPort.</span><code><span class="memberNameLink"><a href="../../../ptolemy/actor/IOPort.html#broadcast-ptolemy.data.Token:A-int-">broadcast</a></span>(<a href="../../../ptolemy/data/Token.html" title="class in ptolemy.data">Token</a>[]&nbsp;tokenArray,
+         int&nbsp;vectorLength)</code>
+<div class="block">Send the specified portion of a token array to all receivers connected
+  to this port.</div>
+</td>
+</tr>
 <tr class="altColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">Receiver.</span><code><span class="memberNameLink"><a href="../../../ptolemy/actor/Receiver.html#put-ptolemy.data.Token-">put</a></span>(<a href="../../../ptolemy/data/Token.html" title="class in ptolemy.data">Token</a>&nbsp;token)</code>
-<div class="block">Put the specified token into this receiver.</div>
+<td class="colLast"><span class="typeNameLabel">Mailbox.</span><code><span class="memberNameLink"><a href="../../../ptolemy/actor/Mailbox.html#put-ptolemy.data.Token-">put</a></span>(<a href="../../../ptolemy/data/Token.html" title="class in ptolemy.data">Token</a>&nbsp;token)</code>
+<div class="block">Put a token into the mailbox.</div>
 </td>
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">Mailbox.</span><code><span class="memberNameLink"><a href="../../../ptolemy/actor/Mailbox.html#put-ptolemy.data.Token-">put</a></span>(<a href="../../../ptolemy/data/Token.html" title="class in ptolemy.data">Token</a>&nbsp;token)</code>
-<div class="block">Put a token into the mailbox.</div>
+<td class="colLast"><span class="typeNameLabel">Receiver.</span><code><span class="memberNameLink"><a href="../../../ptolemy/actor/Receiver.html#put-ptolemy.data.Token-">put</a></span>(<a href="../../../ptolemy/data/Token.html" title="class in ptolemy.data">Token</a>&nbsp;token)</code>
+<div class="block">Put the specified token into this receiver.</div>
 </td>
 </tr>
 <tr class="altColor">
@@ -255,18 +255,18 @@
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">IOPort.</span><code><span class="memberNameLink"><a href="../../../ptolemy/actor/IOPort.html#send-int-ptolemy.data.Token-">send</a></span>(int&nbsp;channelIndex,
-    <a href="../../../ptolemy/data/Token.html" title="class in ptolemy.data">Token</a>&nbsp;token)</code>
-<div class="block">Send the specified token to all receivers connected to the
-  specified channel.</div>
-</td>
-</tr>
-<tr class="altColor">
-<td class="colFirst"><code>void</code></td>
 <td class="colLast"><span class="typeNameLabel">ConstantPublisherPort.</span><code><span class="memberNameLink"><a href="../../../ptolemy/actor/ConstantPublisherPort.html#send-int-ptolemy.data.Token-">send</a></span>(int&nbsp;channelIndex,
     <a href="../../../ptolemy/data/Token.html" title="class in ptolemy.data">Token</a>&nbsp;token)</code>
 <div class="block">Override the base class to replace the specified token with
   the value of <i>constantValue</i>.</div>
+</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code>void</code></td>
+<td class="colLast"><span class="typeNameLabel">IOPort.</span><code><span class="memberNameLink"><a href="../../../ptolemy/actor/IOPort.html#send-int-ptolemy.data.Token-">send</a></span>(int&nbsp;channelIndex,
+    <a href="../../../ptolemy/data/Token.html" title="class in ptolemy.data">Token</a>&nbsp;token)</code>
+<div class="block">Send the specified token to all receivers connected to the
+  specified channel.</div>
 </td>
 </tr>
 <tr class="rowColor">
@@ -281,20 +281,20 @@
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">IOPort.</span><code><span class="memberNameLink"><a href="../../../ptolemy/actor/IOPort.html#send-int-ptolemy.data.Token:A-int-">send</a></span>(int&nbsp;channelIndex,
-    <a href="../../../ptolemy/data/Token.html" title="class in ptolemy.data">Token</a>[]&nbsp;tokenArray,
-    int&nbsp;vectorLength)</code>
-<div class="block">Send the specified portion of a token array to all receivers connected
-  to the specified channel.</div>
-</td>
-</tr>
-<tr class="rowColor">
-<td class="colFirst"><code>void</code></td>
 <td class="colLast"><span class="typeNameLabel">ConstantPublisherPort.</span><code><span class="memberNameLink"><a href="../../../ptolemy/actor/ConstantPublisherPort.html#send-int-ptolemy.data.Token:A-int-">send</a></span>(int&nbsp;channelIndex,
     <a href="../../../ptolemy/data/Token.html" title="class in ptolemy.data">Token</a>[]&nbsp;tokenArray,
     int&nbsp;vectorLength)</code>
 <div class="block">Override the base class to replace the specified tokens with
   the value of <i>constantValue</i>.</div>
+</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code>void</code></td>
+<td class="colLast"><span class="typeNameLabel">IOPort.</span><code><span class="memberNameLink"><a href="../../../ptolemy/actor/IOPort.html#send-int-ptolemy.data.Token:A-int-">send</a></span>(int&nbsp;channelIndex,
+    <a href="../../../ptolemy/data/Token.html" title="class in ptolemy.data">Token</a>[]&nbsp;tokenArray,
+    int&nbsp;vectorLength)</code>
+<div class="block">Send the specified portion of a token array to all receivers connected
+  to the specified channel.</div>
 </td>
 </tr>
 <tr class="altColor">
