@@ -9,5 +9,5 @@ The installers are generated via the [Travis kepler-build job](https://travis-ci
 
 * [How to edit this page](edit.html)
 * [Installers](https://github.com/icyphy/kepler-build/releases)
-* [Javadoc](javadoc/index.html)
+* [Javadoc](/doc/javadoc/index.html)
 
