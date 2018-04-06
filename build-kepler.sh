@@ -1,4 +1,6 @@
-#!/bin/bash
+#!/bin/bash -e
+
+# Use -e so that if the build fails, then travis will tell us so.
 
 # Build Kepler, the Scientific Workflow System
 # See https://kepler-project.org
@@ -126,7 +128,6 @@ tail -100 $LOG
 ant update
 ant clean
 ant compile eclipse netbeans idea
-
 
 # Run Javadoc.  The output has too many lines, so we put it in a log.
 which javadoc
