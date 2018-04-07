@@ -287,13 +287,13 @@
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code><a href="../../../../ptolemy/data/expr/ASTPtRootNode.html" title="class in ptolemy.data.expr">ASTPtRootNode</a></code></td>
-<td class="colLast"><span class="typeNameLabel">ASTPtAssignmentNode.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/data/expr/ASTPtAssignmentNode.html#getExpressionTree--">getExpressionTree</a></span>()</code>&nbsp;</td>
-</tr>
-<tr class="altColor">
-<td class="colFirst"><code><a href="../../../../ptolemy/data/expr/ASTPtRootNode.html" title="class in ptolemy.data.expr">ASTPtRootNode</a></code></td>
 <td class="colLast"><span class="typeNameLabel">ASTPtFunctionDefinitionNode.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/data/expr/ASTPtFunctionDefinitionNode.html#getExpressionTree--">getExpressionTree</a></span>()</code>
 <div class="block">Return the parse tree of the expression for this function.</div>
 </td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code><a href="../../../../ptolemy/data/expr/ASTPtRootNode.html" title="class in ptolemy.data.expr">ASTPtRootNode</a></code></td>
+<td class="colLast"><span class="typeNameLabel">ASTPtAssignmentNode.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/data/expr/ASTPtAssignmentNode.html#getExpressionTree--">getExpressionTree</a></span>()</code>&nbsp;</td>
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code><a href="../../../../ptolemy/data/expr/ASTPtRootNode.html" title="class in ptolemy.data.expr">ASTPtRootNode</a></code></td>
@@ -327,7 +327,7 @@
 <tbody>
 <tr class="altColor">
 <td class="colFirst"><code>protected void</code></td>
-<td class="colLast"><span class="typeNameLabel">CParseTreeCodeGenerator.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/data/expr/CParseTreeCodeGenerator.html#Z:Z_assert-boolean-ptolemy.data.expr.ASTPtRootNode-java.lang.String-">_assert</a></span>(boolean&nbsp;flag,
+<td class="colLast"><span class="typeNameLabel">ParseTreeTypeInference.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/data/expr/ParseTreeTypeInference.html#Z:Z_assert-boolean-ptolemy.data.expr.ASTPtRootNode-java.lang.String-">_assert</a></span>(boolean&nbsp;flag,
        <a href="../../../../ptolemy/data/expr/ASTPtRootNode.html" title="class in ptolemy.data.expr">ASTPtRootNode</a>&nbsp;node,
        java.lang.String&nbsp;message)</code>
 <div class="block">Assert that the given boolean value, which describes the given
@@ -336,20 +336,20 @@
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>protected void</code></td>
-<td class="colLast"><span class="typeNameLabel">ParseTreeTypeInference.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/data/expr/ParseTreeTypeInference.html#Z:Z_assert-boolean-ptolemy.data.expr.ASTPtRootNode-java.lang.String-">_assert</a></span>(boolean&nbsp;flag,
-       <a href="../../../../ptolemy/data/expr/ASTPtRootNode.html" title="class in ptolemy.data.expr">ASTPtRootNode</a>&nbsp;node,
-       java.lang.String&nbsp;message)</code>
-<div class="block">Assert that the given boolean value, which describes the given
- parse tree node is true.</div>
-</td>
-</tr>
-<tr class="altColor">
-<td class="colFirst"><code>protected void</code></td>
 <td class="colLast"><span class="typeNameLabel">ParseTreeEvaluator.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/data/expr/ParseTreeEvaluator.html#Z:Z_assert-boolean-ptolemy.data.expr.ASTPtRootNode-java.lang.String-">_assert</a></span>(boolean&nbsp;flag,
        <a href="../../../../ptolemy/data/expr/ASTPtRootNode.html" title="class in ptolemy.data.expr">ASTPtRootNode</a>&nbsp;node,
        java.lang.String&nbsp;message)</code>
 <div class="block">Assert that the given boolean value, which describes the given
   parse tree node, is true.</div>
+</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code>protected void</code></td>
+<td class="colLast"><span class="typeNameLabel">CParseTreeCodeGenerator.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/data/expr/CParseTreeCodeGenerator.html#Z:Z_assert-boolean-ptolemy.data.expr.ASTPtRootNode-java.lang.String-">_assert</a></span>(boolean&nbsp;flag,
+       <a href="../../../../ptolemy/data/expr/ASTPtRootNode.html" title="class in ptolemy.data.expr">ASTPtRootNode</a>&nbsp;node,
+       java.lang.String&nbsp;message)</code>
+<div class="block">Assert that the given boolean value, which describes the given
+ parse tree node is true.</div>
 </td>
 </tr>
 <tr class="rowColor">
@@ -557,6 +557,38 @@
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>boolean</code></td>
+<td class="colLast"><span class="typeNameLabel">ASTPtUnionConstructNode.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/data/expr/ASTPtUnionConstructNode.html#isCongruent-ptolemy.data.expr.ASTPtRootNode-java.util.Map-">isCongruent</a></span>(<a href="../../../../ptolemy/data/expr/ASTPtRootNode.html" title="class in ptolemy.data.expr">ASTPtRootNode</a>&nbsp;node,
+           java.util.Map&nbsp;renaming)</code>
+<div class="block">Return true if this node is (hierarchically) congruent to the
+  given node, under the given renaming of bound identifiers.</div>
+</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code>boolean</code></td>
+<td class="colLast"><span class="typeNameLabel">ASTPtUnaryNode.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/data/expr/ASTPtUnaryNode.html#isCongruent-ptolemy.data.expr.ASTPtRootNode-java.util.Map-">isCongruent</a></span>(<a href="../../../../ptolemy/data/expr/ASTPtRootNode.html" title="class in ptolemy.data.expr">ASTPtRootNode</a>&nbsp;node,
+           java.util.Map&nbsp;renaming)</code>
+<div class="block">Return true if this node is (hierarchically) congruent to the
+  given node, under the given renaming of bound identifiers.</div>
+</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code>boolean</code></td>
+<td class="colLast"><span class="typeNameLabel">ASTPtSumNode.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/data/expr/ASTPtSumNode.html#isCongruent-ptolemy.data.expr.ASTPtRootNode-java.util.Map-">isCongruent</a></span>(<a href="../../../../ptolemy/data/expr/ASTPtRootNode.html" title="class in ptolemy.data.expr">ASTPtRootNode</a>&nbsp;node,
+           java.util.Map&nbsp;renaming)</code>
+<div class="block">Return true if this node is (hierarchically) congruent to the
+  given node, under the given renaming of bound identifiers.</div>
+</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code>boolean</code></td>
+<td class="colLast"><span class="typeNameLabel">ASTPtShiftNode.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/data/expr/ASTPtShiftNode.html#isCongruent-ptolemy.data.expr.ASTPtRootNode-java.util.Map-">isCongruent</a></span>(<a href="../../../../ptolemy/data/expr/ASTPtRootNode.html" title="class in ptolemy.data.expr">ASTPtRootNode</a>&nbsp;node,
+           java.util.Map&nbsp;renaming)</code>
+<div class="block">Return true if this node is (hierarchically) congruent to the
+  given node, under the given renaming of bound identifiers.</div>
+</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code>boolean</code></td>
 <td class="colLast"><span class="typeNameLabel">ASTPtRootNode.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/data/expr/ASTPtRootNode.html#isCongruent-ptolemy.data.expr.ASTPtRootNode-java.util.Map-">isCongruent</a></span>(<a href="../../../../ptolemy/data/expr/ASTPtRootNode.html" title="class in ptolemy.data.expr">ASTPtRootNode</a>&nbsp;node,
            java.util.Map&nbsp;renaming)</code>
 <div class="block">Return true if this node is (hierarchically) congruent to the
@@ -573,47 +605,15 @@
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>boolean</code></td>
-<td class="colLast"><span class="typeNameLabel">ASTPtLogicalNode.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/data/expr/ASTPtLogicalNode.html#isCongruent-ptolemy.data.expr.ASTPtRootNode-java.util.Map-">isCongruent</a></span>(<a href="../../../../ptolemy/data/expr/ASTPtRootNode.html" title="class in ptolemy.data.expr">ASTPtRootNode</a>&nbsp;node,
-           java.util.Map&nbsp;renaming)</code>
-<div class="block">Return true if this node is (hierarchically) congruent to the
-  given node, under the given renaming of bound identifiers.</div>
-</td>
-</tr>
-<tr class="altColor">
-<td class="colFirst"><code>boolean</code></td>
-<td class="colLast"><span class="typeNameLabel">ASTPtSumNode.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/data/expr/ASTPtSumNode.html#isCongruent-ptolemy.data.expr.ASTPtRootNode-java.util.Map-">isCongruent</a></span>(<a href="../../../../ptolemy/data/expr/ASTPtRootNode.html" title="class in ptolemy.data.expr">ASTPtRootNode</a>&nbsp;node,
-           java.util.Map&nbsp;renaming)</code>
-<div class="block">Return true if this node is (hierarchically) congruent to the
-  given node, under the given renaming of bound identifiers.</div>
-</td>
-</tr>
-<tr class="rowColor">
-<td class="colFirst"><code>boolean</code></td>
-<td class="colLast"><span class="typeNameLabel">ASTPtBitwiseNode.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/data/expr/ASTPtBitwiseNode.html#isCongruent-ptolemy.data.expr.ASTPtRootNode-java.util.Map-">isCongruent</a></span>(<a href="../../../../ptolemy/data/expr/ASTPtRootNode.html" title="class in ptolemy.data.expr">ASTPtRootNode</a>&nbsp;node,
-           java.util.Map&nbsp;renaming)</code>
-<div class="block">Return true if this node is (hierarchically) congruent to the
-  given node, under the given renaming of bound identifiers.</div>
-</td>
-</tr>
-<tr class="altColor">
-<td class="colFirst"><code>boolean</code></td>
 <td class="colLast"><span class="typeNameLabel">ASTPtRecordConstructNode.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/data/expr/ASTPtRecordConstructNode.html#isCongruent-ptolemy.data.expr.ASTPtRootNode-java.util.Map-">isCongruent</a></span>(<a href="../../../../ptolemy/data/expr/ASTPtRootNode.html" title="class in ptolemy.data.expr">ASTPtRootNode</a>&nbsp;node,
            java.util.Map&nbsp;renaming)</code>
 <div class="block">Return true if this node is (hierarchically) congruent to the
   given node, under the given renaming of bound identifiers.</div>
 </td>
 </tr>
-<tr class="rowColor">
-<td class="colFirst"><code>boolean</code></td>
-<td class="colLast"><span class="typeNameLabel">ASTPtShiftNode.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/data/expr/ASTPtShiftNode.html#isCongruent-ptolemy.data.expr.ASTPtRootNode-java.util.Map-">isCongruent</a></span>(<a href="../../../../ptolemy/data/expr/ASTPtRootNode.html" title="class in ptolemy.data.expr">ASTPtRootNode</a>&nbsp;node,
-           java.util.Map&nbsp;renaming)</code>
-<div class="block">Return true if this node is (hierarchically) congruent to the
-  given node, under the given renaming of bound identifiers.</div>
-</td>
-</tr>
 <tr class="altColor">
 <td class="colFirst"><code>boolean</code></td>
-<td class="colLast"><span class="typeNameLabel">ASTPtFunctionDefinitionNode.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/data/expr/ASTPtFunctionDefinitionNode.html#isCongruent-ptolemy.data.expr.ASTPtRootNode-java.util.Map-">isCongruent</a></span>(<a href="../../../../ptolemy/data/expr/ASTPtRootNode.html" title="class in ptolemy.data.expr">ASTPtRootNode</a>&nbsp;node,
+<td class="colLast"><span class="typeNameLabel">ASTPtProductNode.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/data/expr/ASTPtProductNode.html#isCongruent-ptolemy.data.expr.ASTPtRootNode-java.util.Map-">isCongruent</a></span>(<a href="../../../../ptolemy/data/expr/ASTPtRootNode.html" title="class in ptolemy.data.expr">ASTPtRootNode</a>&nbsp;node,
            java.util.Map&nbsp;renaming)</code>
 <div class="block">Return true if this node is (hierarchically) congruent to the
   given node, under the given renaming of bound identifiers.</div>
@@ -621,7 +621,7 @@
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>boolean</code></td>
-<td class="colLast"><span class="typeNameLabel">ASTPtUnionConstructNode.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/data/expr/ASTPtUnionConstructNode.html#isCongruent-ptolemy.data.expr.ASTPtRootNode-java.util.Map-">isCongruent</a></span>(<a href="../../../../ptolemy/data/expr/ASTPtRootNode.html" title="class in ptolemy.data.expr">ASTPtRootNode</a>&nbsp;node,
+<td class="colLast"><span class="typeNameLabel">ASTPtLogicalNode.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/data/expr/ASTPtLogicalNode.html#isCongruent-ptolemy.data.expr.ASTPtRootNode-java.util.Map-">isCongruent</a></span>(<a href="../../../../ptolemy/data/expr/ASTPtRootNode.html" title="class in ptolemy.data.expr">ASTPtRootNode</a>&nbsp;node,
            java.util.Map&nbsp;renaming)</code>
 <div class="block">Return true if this node is (hierarchically) congruent to the
   given node, under the given renaming of bound identifiers.</div>
@@ -637,7 +637,7 @@
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>boolean</code></td>
-<td class="colLast"><span class="typeNameLabel">ASTPtUnaryNode.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/data/expr/ASTPtUnaryNode.html#isCongruent-ptolemy.data.expr.ASTPtRootNode-java.util.Map-">isCongruent</a></span>(<a href="../../../../ptolemy/data/expr/ASTPtRootNode.html" title="class in ptolemy.data.expr">ASTPtRootNode</a>&nbsp;node,
+<td class="colLast"><span class="typeNameLabel">ASTPtFunctionDefinitionNode.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/data/expr/ASTPtFunctionDefinitionNode.html#isCongruent-ptolemy.data.expr.ASTPtRootNode-java.util.Map-">isCongruent</a></span>(<a href="../../../../ptolemy/data/expr/ASTPtRootNode.html" title="class in ptolemy.data.expr">ASTPtRootNode</a>&nbsp;node,
            java.util.Map&nbsp;renaming)</code>
 <div class="block">Return true if this node is (hierarchically) congruent to the
   given node, under the given renaming of bound identifiers.</div>
@@ -645,7 +645,7 @@
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>boolean</code></td>
-<td class="colLast"><span class="typeNameLabel">ASTPtProductNode.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/data/expr/ASTPtProductNode.html#isCongruent-ptolemy.data.expr.ASTPtRootNode-java.util.Map-">isCongruent</a></span>(<a href="../../../../ptolemy/data/expr/ASTPtRootNode.html" title="class in ptolemy.data.expr">ASTPtRootNode</a>&nbsp;node,
+<td class="colLast"><span class="typeNameLabel">ASTPtBitwiseNode.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/data/expr/ASTPtBitwiseNode.html#isCongruent-ptolemy.data.expr.ASTPtRootNode-java.util.Map-">isCongruent</a></span>(<a href="../../../../ptolemy/data/expr/ASTPtRootNode.html" title="class in ptolemy.data.expr">ASTPtRootNode</a>&nbsp;node,
            java.util.Map&nbsp;renaming)</code>
 <div class="block">Return true if this node is (hierarchically) congruent to the
   given node, under the given renaming of bound identifiers.</div>

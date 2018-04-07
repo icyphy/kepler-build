@@ -107,16 +107,6 @@
 <tbody>
 <tr class="altColor">
 <td class="colFirst"><code>protected int</code></td>
-<td class="colLast"><span class="typeNameLabel">GsiSshExec.</span><code><span class="memberNameLink"><a href="../../../../org/kepler/ssh/GsiSshExec.html#Z:Z_copyTo-java.io.File-java.lang.String-boolean-">_copyTo</a></span>(java.io.File&nbsp;lfile,
-       java.lang.String&nbsp;targetPath,
-       boolean&nbsp;recursive)</code>
-<div class="block">Copy _one_ local file to a remote directory Input: file of type File
- (which can be a directory) Input must not have wildcards. targetPath is
- either a directory or filename</div>
-</td>
-</tr>
-<tr class="rowColor">
-<td class="colFirst"><code>protected int</code></td>
 <td class="colLast"><span class="typeNameLabel">SshExec.</span><code><span class="memberNameLink"><a href="../../../../org/kepler/ssh/SshExec.html#Z:Z_copyTo-java.io.File-java.lang.String-boolean-">_copyTo</a></span>(java.io.File&nbsp;lfile,
        java.lang.String&nbsp;targetPath,
        boolean&nbsp;recursive)</code>
@@ -125,11 +115,21 @@
  either a directory or filename</div>
 </td>
 </tr>
-<tr class="altColor">
+<tr class="rowColor">
 <td class="colFirst"><code>protected abstract int</code></td>
 <td class="colLast"><span class="typeNameLabel">RemoteExec.</span><code><span class="memberNameLink"><a href="../../../../org/kepler/ssh/RemoteExec.html#Z:Z_copyTo-java.io.File-java.lang.String-boolean-">_copyTo</a></span>(java.io.File&nbsp;lfile,
        java.lang.String&nbsp;targetPath,
        boolean&nbsp;recursive)</code>&nbsp;</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code>protected int</code></td>
+<td class="colLast"><span class="typeNameLabel">GsiSshExec.</span><code><span class="memberNameLink"><a href="../../../../org/kepler/ssh/GsiSshExec.html#Z:Z_copyTo-java.io.File-java.lang.String-boolean-">_copyTo</a></span>(java.io.File&nbsp;lfile,
+       java.lang.String&nbsp;targetPath,
+       boolean&nbsp;recursive)</code>
+<div class="block">Copy _one_ local file to a remote directory Input: file of type File
+ (which can be a directory) Input must not have wildcards. targetPath is
+ either a directory or filename</div>
+</td>
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>boolean</code></td>
@@ -151,9 +151,13 @@
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>int</code></td>
-<td class="colLast"><span class="typeNameLabel">GsiSshExec.</span><code><span class="memberNameLink"><a href="../../../../org/kepler/ssh/GsiSshExec.html#copyFrom-java.lang.String-java.io.File-boolean-">copyFrom</a></span>(java.lang.String&nbsp;sourcePath,
+<td class="colLast"><span class="typeNameLabel">SshExec.</span><code><span class="memberNameLink"><a href="../../../../org/kepler/ssh/SshExec.html#copyFrom-java.lang.String-java.io.File-boolean-">copyFrom</a></span>(java.lang.String&nbsp;rfile,
         java.io.File&nbsp;localPath,
-        boolean&nbsp;recursive)</code>&nbsp;</td>
+        boolean&nbsp;recursive)</code>
+<div class="block">Copy a remote file into a local file Input: 'rfile' of type String (can
+ be a directory or filename) 'localPath' is either a directory or filename
+ Only if 'recursive' is set, will directories copied recursively.</div>
+</td>
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>int</code></td>
@@ -165,18 +169,14 @@
 </td>
 </tr>
 <tr class="altColor">
-<td class="colFirst"><code>int</code></td>
-<td class="colLast"><span class="typeNameLabel">SshExec.</span><code><span class="memberNameLink"><a href="../../../../org/kepler/ssh/SshExec.html#copyFrom-java.lang.String-java.io.File-boolean-">copyFrom</a></span>(java.lang.String&nbsp;rfile,
-        java.io.File&nbsp;localPath,
-        boolean&nbsp;recursive)</code>
-<div class="block">Copy a remote file into a local file Input: 'rfile' of type String (can
- be a directory or filename) 'localPath' is either a directory or filename
- Only if 'recursive' is set, will directories copied recursively.</div>
-</td>
-</tr>
-<tr class="rowColor">
 <td class="colFirst"><code>abstract int</code></td>
 <td class="colLast"><span class="typeNameLabel">RemoteExec.</span><code><span class="memberNameLink"><a href="../../../../org/kepler/ssh/RemoteExec.html#copyFrom-java.lang.String-java.io.File-boolean-">copyFrom</a></span>(java.lang.String&nbsp;rfile,
+        java.io.File&nbsp;localPath,
+        boolean&nbsp;recursive)</code>&nbsp;</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code>int</code></td>
+<td class="colLast"><span class="typeNameLabel">GsiSshExec.</span><code><span class="memberNameLink"><a href="../../../../org/kepler/ssh/GsiSshExec.html#copyFrom-java.lang.String-java.io.File-boolean-">copyFrom</a></span>(java.lang.String&nbsp;sourcePath,
         java.io.File&nbsp;localPath,
         boolean&nbsp;recursive)</code>&nbsp;</td>
 </tr>
@@ -229,7 +229,7 @@
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>static void</code></td>
-<td class="colLast"><span class="typeNameLabel">TestExec.</span><code><span class="memberNameLink"><a href="../../../../org/kepler/ssh/TestExec.html#main-java.lang.String:A-">main</a></span>(java.lang.String[]&nbsp;arg)</code>&nbsp;</td>
+<td class="colLast"><span class="typeNameLabel">TestExecThirdpartyLocal.</span><code><span class="memberNameLink"><a href="../../../../org/kepler/ssh/TestExecThirdpartyLocal.html#main-java.lang.String:A-">main</a></span>(java.lang.String[]&nbsp;arg)</code>&nbsp;</td>
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>static void</code></td>
@@ -237,29 +237,29 @@
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>static void</code></td>
-<td class="colLast"><span class="typeNameLabel">TestDelete.</span><code><span class="memberNameLink"><a href="../../../../org/kepler/ssh/TestDelete.html#main-java.lang.String:A-">main</a></span>(java.lang.String[]&nbsp;arg)</code>&nbsp;</td>
-</tr>
-<tr class="rowColor">
-<td class="colFirst"><code>static void</code></td>
-<td class="colLast"><span class="typeNameLabel">TestExecThirdpartyLocal.</span><code><span class="memberNameLink"><a href="../../../../org/kepler/ssh/TestExecThirdpartyLocal.html#main-java.lang.String:A-">main</a></span>(java.lang.String[]&nbsp;arg)</code>&nbsp;</td>
-</tr>
-<tr class="altColor">
-<td class="colFirst"><code>static void</code></td>
 <td class="colLast"><span class="typeNameLabel">TestExecMulti.</span><code><span class="memberNameLink"><a href="../../../../org/kepler/ssh/TestExecMulti.html#main-java.lang.String:A-">main</a></span>(java.lang.String[]&nbsp;arg)</code>&nbsp;</td>
 </tr>
 <tr class="rowColor">
-<td class="colFirst"><code>boolean</code></td>
-<td class="colLast"><span class="typeNameLabel">GsiSshExec.</span><code><span class="memberNameLink"><a href="../../../../org/kepler/ssh/GsiSshExec.html#openConnection--">openConnection</a></span>()</code>&nbsp;</td>
+<td class="colFirst"><code>static void</code></td>
+<td class="colLast"><span class="typeNameLabel">TestExec.</span><code><span class="memberNameLink"><a href="../../../../org/kepler/ssh/TestExec.html#main-java.lang.String:A-">main</a></span>(java.lang.String[]&nbsp;arg)</code>&nbsp;</td>
 </tr>
 <tr class="altColor">
+<td class="colFirst"><code>static void</code></td>
+<td class="colLast"><span class="typeNameLabel">TestDelete.</span><code><span class="memberNameLink"><a href="../../../../org/kepler/ssh/TestDelete.html#main-java.lang.String:A-">main</a></span>(java.lang.String[]&nbsp;arg)</code>&nbsp;</td>
+</tr>
+<tr class="rowColor">
 <td class="colFirst"><code>boolean</code></td>
 <td class="colLast"><span class="typeNameLabel">SshExec.</span><code><span class="memberNameLink"><a href="../../../../org/kepler/ssh/SshExec.html#openConnection--">openConnection</a></span>()</code>
 <div class="block">Open the connection to the remote machine now.</div>
 </td>
 </tr>
-<tr class="rowColor">
+<tr class="altColor">
 <td class="colFirst"><code>abstract boolean</code></td>
 <td class="colLast"><span class="typeNameLabel">RemoteExec.</span><code><span class="memberNameLink"><a href="../../../../org/kepler/ssh/RemoteExec.html#openConnection--">openConnection</a></span>()</code>&nbsp;</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code>boolean</code></td>
+<td class="colLast"><span class="typeNameLabel">GsiSshExec.</span><code><span class="memberNameLink"><a href="../../../../org/kepler/ssh/GsiSshExec.html#openConnection--">openConnection</a></span>()</code>&nbsp;</td>
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>boolean</code></td>
@@ -321,14 +321,14 @@
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>protected <a href="../../../../org/sdm/spa/actors/transport/FileCopierBase.CopyResult.html" title="class in org.sdm.spa.actors.transport">FileCopierBase.CopyResult</a></code></td>
-<td class="colLast"><span class="typeNameLabel">ScpCopier.</span><code><span class="memberNameLink"><a href="../../../../org/sdm/spa/actors/transport/ScpCopier.html#copyTo-java.lang.String-org.sdm.spa.actors.transport.vo.ConnectionDetails-java.lang.String-boolean-">copyTo</a></span>(java.lang.String&nbsp;srcFile,
+<td class="colLast"><span class="typeNameLabel">SrmliteCopier.</span><code><span class="memberNameLink"><a href="../../../../org/sdm/spa/actors/transport/SrmliteCopier.html#copyTo-java.lang.String-org.sdm.spa.actors.transport.vo.ConnectionDetails-java.lang.String-boolean-">copyTo</a></span>(java.lang.String&nbsp;srcFile,
       <a href="../../../../org/sdm/spa/actors/transport/vo/ConnectionDetails.html" title="class in org.sdm.spa.actors.transport.vo">ConnectionDetails</a>&nbsp;destDetails,
       java.lang.String&nbsp;destFile,
       boolean&nbsp;recursive)</code>&nbsp;</td>
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>protected <a href="../../../../org/sdm/spa/actors/transport/FileCopierBase.CopyResult.html" title="class in org.sdm.spa.actors.transport">FileCopierBase.CopyResult</a></code></td>
-<td class="colLast"><span class="typeNameLabel">SrmliteCopier.</span><code><span class="memberNameLink"><a href="../../../../org/sdm/spa/actors/transport/SrmliteCopier.html#copyTo-java.lang.String-org.sdm.spa.actors.transport.vo.ConnectionDetails-java.lang.String-boolean-">copyTo</a></span>(java.lang.String&nbsp;srcFile,
+<td class="colLast"><span class="typeNameLabel">ScpCopier.</span><code><span class="memberNameLink"><a href="../../../../org/sdm/spa/actors/transport/ScpCopier.html#copyTo-java.lang.String-org.sdm.spa.actors.transport.vo.ConnectionDetails-java.lang.String-boolean-">copyTo</a></span>(java.lang.String&nbsp;srcFile,
       <a href="../../../../org/sdm/spa/actors/transport/vo/ConnectionDetails.html" title="class in org.sdm.spa.actors.transport.vo">ConnectionDetails</a>&nbsp;destDetails,
       java.lang.String&nbsp;destFile,
       boolean&nbsp;recursive)</code>&nbsp;</td>

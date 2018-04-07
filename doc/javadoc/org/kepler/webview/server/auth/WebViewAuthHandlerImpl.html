@@ -17,7 +17,7 @@
     catch(err) {
     }
 //-->
-var methods = {"i0":10};
+var methods = {"i0":10,"i1":10};
 var tabs = {65535:["t0","All Methods"],2:["t2","Instance Methods"],8:["t4","Concrete Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
@@ -74,13 +74,13 @@ var activeTableTab = "activeTableTab";
 <ul class="subNavList">
 <li>Summary:&nbsp;</li>
 <li>Nested&nbsp;|&nbsp;</li>
-<li><a href="#fields.inherited.from.class.io.vertx.ext.web.handler.impl.AuthHandlerImpl">Field</a>&nbsp;|&nbsp;</li>
+<li><a href="#field.summary">Field</a>&nbsp;|&nbsp;</li>
 <li><a href="#constructor.summary">Constr</a>&nbsp;|&nbsp;</li>
 <li><a href="#method.summary">Method</a></li>
 </ul>
 <ul class="subNavList">
 <li>Detail:&nbsp;</li>
-<li>Field&nbsp;|&nbsp;</li>
+<li><a href="#field.detail">Field</a>&nbsp;|&nbsp;</li>
 <li><a href="#constructor.detail">Constr</a>&nbsp;|&nbsp;</li>
 <li><a href="#method.detail">Method</a></li>
 </ul>
@@ -102,7 +102,12 @@ var activeTableTab = "activeTableTab";
 <li>io.vertx.ext.web.handler.impl.AuthHandlerImpl</li>
 <li>
 <ul class="inheritance">
+<li>io.vertx.ext.web.handler.impl.BasicAuthHandlerImpl</li>
+<li>
+<ul class="inheritance">
 <li>org.kepler.webview.server.auth.WebViewAuthHandlerImpl</li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
@@ -118,7 +123,7 @@ var activeTableTab = "activeTableTab";
 <hr>
 <br>
 <pre>public class <a href="../../../../../src-html/org/kepler/webview/server/auth/WebViewAuthHandlerImpl.html#line.38">WebViewAuthHandlerImpl</a>
-extends io.vertx.ext.web.handler.impl.AuthHandlerImpl</pre>
+extends io.vertx.ext.web.handler.impl.BasicAuthHandlerImpl</pre>
 <div class="block">Basic authentication handler that uses "WebView" as the scheme
  instead of "Basic" so that 401 responses are not caught by the browser. 
  
@@ -139,12 +144,23 @@ extends io.vertx.ext.web.handler.impl.AuthHandlerImpl</pre>
 <!--   -->
 </a>
 <h3>Field Summary</h3>
+<table class="memberSummary" border="0" cellpadding="3" cellspacing="0" summary="Field Summary table, listing fields, and an explanation">
+<caption><span>Fields</span><span class="tabEnd">&nbsp;</span></caption>
+<tr>
+<th class="colFirst" scope="col">Modifier and Type</th>
+<th class="colLast" scope="col">Field and Description</th>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code>protected io.vertx.ext.web.handler.impl.AuthorizationAuthHandler.Type</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../org/kepler/webview/server/auth/WebViewAuthHandlerImpl.html#type">type</a></span></code>&nbsp;</td>
+</tr>
+</table>
 <ul class="blockList">
 <li class="blockList"><a name="fields.inherited.from.class.io.vertx.ext.web.handler.impl.AuthHandlerImpl">
 <!--   -->
 </a>
 <h3>Fields inherited from class&nbsp;io.vertx.ext.web.handler.impl.AuthHandlerImpl</h3>
-<code>authorities, authProvider</code></li>
+<code>authorities, authProvider, realm</code></li>
 </ul>
 </li>
 </ul>
@@ -182,13 +198,26 @@ extends io.vertx.ext.web.handler.impl.AuthHandlerImpl</pre>
 <td class="colFirst"><code>void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../../org/kepler/webview/server/auth/WebViewAuthHandlerImpl.html#handle-io.vertx.ext.web.RoutingContext-">handle</a></span>(io.vertx.ext.web.RoutingContext&nbsp;context)</code>&nbsp;</td>
 </tr>
+<tr id="i1" class="rowColor">
+<td class="colFirst"><code>protected void</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../../org/kepler/webview/server/auth/WebViewAuthHandlerImpl.html#parseAuthorization-io.vertx.ext.web.RoutingContext-boolean-io.vertx.core.Handler-">parseAuthorization</a></span>(io.vertx.ext.web.RoutingContext&nbsp;arg0,
+                  boolean&nbsp;arg1,
+                  io.vertx.core.Handler&lt;io.vertx.core.AsyncResult&lt;java.lang.String&gt;&gt;&nbsp;arg2)</code>&nbsp;</td>
+</tr>
 </table>
+<ul class="blockList">
+<li class="blockList"><a name="methods.inherited.from.class.io.vertx.ext.web.handler.impl.BasicAuthHandlerImpl">
+<!--   -->
+</a>
+<h3>Methods inherited from class&nbsp;io.vertx.ext.web.handler.impl.BasicAuthHandlerImpl</h3>
+<code>authenticateHeader, parseCredentials</code></li>
+</ul>
 <ul class="blockList">
 <li class="blockList"><a name="methods.inherited.from.class.io.vertx.ext.web.handler.impl.AuthHandlerImpl">
 <!--   -->
 </a>
 <h3>Methods inherited from class&nbsp;io.vertx.ext.web.handler.impl.AuthHandlerImpl</h3>
-<code>addAuthorities, addAuthority, authenticateHeader, authorize, processException</code></li>
+<code>addAuthorities, addAuthority, authorize, processException</code></li>
 </ul>
 <ul class="blockList">
 <li class="blockList"><a name="methods.inherited.from.class.java.lang.Object">
@@ -196,13 +225,6 @@ extends io.vertx.ext.web.handler.impl.AuthHandlerImpl</pre>
 </a>
 <h3>Methods inherited from class&nbsp;java.lang.Object</h3>
 <code>clone, equals, finalize, getClass, hashCode, notify, notifyAll, toString, wait, wait, wait</code></li>
-</ul>
-<ul class="blockList">
-<li class="blockList"><a name="methods.inherited.from.class.io.vertx.ext.web.handler.AuthHandler">
-<!--   -->
-</a>
-<h3>Methods inherited from interface&nbsp;io.vertx.ext.web.handler.AuthHandler</h3>
-<code>parseCredentials</code></li>
 </ul>
 </li>
 </ul>
@@ -212,6 +234,23 @@ extends io.vertx.ext.web.handler.impl.AuthHandlerImpl</pre>
 <div class="details">
 <ul class="blockList">
 <li class="blockList">
+<!-- ============ FIELD DETAIL =========== -->
+<ul class="blockList">
+<li class="blockList"><a name="field.detail">
+<!--   -->
+</a>
+<h3>Field Detail</h3>
+<a name="type">
+<!--   -->
+</a>
+<ul class="blockListLast">
+<li class="blockList">
+<h4>type</h4>
+<pre>protected final&nbsp;io.vertx.ext.web.handler.impl.AuthorizationAuthHandler.Type <a href="../../../../../src-html/io/vertx/ext/web/handler/impl/AuthorizationAuthHandler.html#line.0">type</a></pre>
+</li>
+</ul>
+</li>
+</ul>
 <!-- ========= CONSTRUCTOR DETAIL ======== -->
 <ul class="blockList">
 <li class="blockList"><a name="constructor.detail">
@@ -224,7 +263,7 @@ extends io.vertx.ext.web.handler.impl.AuthHandlerImpl</pre>
 <ul class="blockListLast">
 <li class="blockList">
 <h4>WebViewAuthHandlerImpl</h4>
-<pre>public&nbsp;<a href="../../../../../src-html/org/kepler/webview/server/auth/WebViewAuthHandlerImpl.html#line.42">WebViewAuthHandlerImpl</a>(io.vertx.ext.auth.AuthProvider&nbsp;authProvider,
+<pre>public&nbsp;<a href="../../../../../src-html/org/kepler/webview/server/auth/WebViewAuthHandlerImpl.html#line.41">WebViewAuthHandlerImpl</a>(io.vertx.ext.auth.AuthProvider&nbsp;authProvider,
                               java.lang.String&nbsp;realm)</pre>
 </li>
 </ul>
@@ -239,16 +278,27 @@ extends io.vertx.ext.web.handler.impl.AuthHandlerImpl</pre>
 <a name="handle-io.vertx.ext.web.RoutingContext-">
 <!--   -->
 </a>
-<ul class="blockListLast">
+<ul class="blockList">
 <li class="blockList">
 <h4>handle</h4>
-<pre>public&nbsp;void&nbsp;<a href="../../../../../src-html/org/kepler/webview/server/auth/WebViewAuthHandlerImpl.html#line.48">handle</a>(io.vertx.ext.web.RoutingContext&nbsp;context)</pre>
+<pre>public&nbsp;void&nbsp;<a href="../../../../../src-html/org/kepler/webview/server/auth/WebViewAuthHandlerImpl.html#line.46">handle</a>(io.vertx.ext.web.RoutingContext&nbsp;context)</pre>
 <dl>
 <dt><span class="overrideSpecifyLabel">Specified by:</span></dt>
 <dd><code>handle</code>&nbsp;in interface&nbsp;<code>io.vertx.core.Handler&lt;io.vertx.ext.web.RoutingContext&gt;</code></dd>
 <dt><span class="overrideSpecifyLabel">Overrides:</span></dt>
 <dd><code>handle</code>&nbsp;in class&nbsp;<code>io.vertx.ext.web.handler.impl.AuthHandlerImpl</code></dd>
 </dl>
+</li>
+</ul>
+<a name="parseAuthorization-io.vertx.ext.web.RoutingContext-boolean-io.vertx.core.Handler-">
+<!--   -->
+</a>
+<ul class="blockListLast">
+<li class="blockList">
+<h4>parseAuthorization</h4>
+<pre>protected final&nbsp;void&nbsp;<a href="../../../../../src-html/io/vertx/ext/web/handler/impl/AuthorizationAuthHandler.html#line.0">parseAuthorization</a>(io.vertx.ext.web.RoutingContext&nbsp;arg0,
+                                        boolean&nbsp;arg1,
+                                        io.vertx.core.Handler&lt;io.vertx.core.AsyncResult&lt;java.lang.String&gt;&gt;&nbsp;arg2)</pre>
 </li>
 </ul>
 </li>
@@ -305,13 +355,13 @@ extends io.vertx.ext.web.handler.impl.AuthHandlerImpl</pre>
 <ul class="subNavList">
 <li>Summary:&nbsp;</li>
 <li>Nested&nbsp;|&nbsp;</li>
-<li><a href="#fields.inherited.from.class.io.vertx.ext.web.handler.impl.AuthHandlerImpl">Field</a>&nbsp;|&nbsp;</li>
+<li><a href="#field.summary">Field</a>&nbsp;|&nbsp;</li>
 <li><a href="#constructor.summary">Constr</a>&nbsp;|&nbsp;</li>
 <li><a href="#method.summary">Method</a></li>
 </ul>
 <ul class="subNavList">
 <li>Detail:&nbsp;</li>
-<li>Field&nbsp;|&nbsp;</li>
+<li><a href="#field.detail">Field</a>&nbsp;|&nbsp;</li>
 <li><a href="#constructor.detail">Constr</a>&nbsp;|&nbsp;</li>
 <li><a href="#method.detail">Method</a></li>
 </ul>

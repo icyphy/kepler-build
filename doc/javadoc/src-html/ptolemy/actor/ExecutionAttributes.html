@@ -55,92 +55,94 @@
 <span class="sourceLineNo">047</span>a ExecutionAspect. The resource scheduler decorates actors<a name="line.47"></a>
 <span class="sourceLineNo">048</span>in a model with the attributes contained by this object.<a name="line.48"></a>
 <span class="sourceLineNo">049</span><a name="line.49"></a>
-<span class="sourceLineNo">050</span> @author  Patricia Derler<a name="line.50"></a>
-<span class="sourceLineNo">051</span> @author  Edward A. Lee<a name="line.51"></a>
-<span class="sourceLineNo">052</span> @version $Id$<a name="line.52"></a>
-<span class="sourceLineNo">053</span> @since Ptolemy II 10.0<a name="line.53"></a>
-<span class="sourceLineNo">054</span> @Pt.ProposedRating Yellow (eal)<a name="line.54"></a>
-<span class="sourceLineNo">055</span> @Pt.AcceptedRating Red (eal)<a name="line.55"></a>
-<span class="sourceLineNo">056</span> */<a name="line.56"></a>
-<span class="sourceLineNo">057</span>public class ExecutionAttributes extends DecoratorAttributes {<a name="line.57"></a>
-<span class="sourceLineNo">058</span><a name="line.58"></a>
-<span class="sourceLineNo">059</span>    /** Constructor to use when editing a model.<a name="line.59"></a>
-<span class="sourceLineNo">060</span>     *  @param target The object being decorated.<a name="line.60"></a>
-<span class="sourceLineNo">061</span>     *  @param decorator The decorator.<a name="line.61"></a>
-<span class="sourceLineNo">062</span>     *  @exception IllegalActionException If the superclass throws it.<a name="line.62"></a>
-<span class="sourceLineNo">063</span>     *  @exception NameDuplicationException If the superclass throws it.<a name="line.63"></a>
-<span class="sourceLineNo">064</span>     */<a name="line.64"></a>
-<span class="sourceLineNo">065</span>    public ExecutionAttributes(NamedObj target, Decorator decorator)<a name="line.65"></a>
-<span class="sourceLineNo">066</span>            throws IllegalActionException, NameDuplicationException {<a name="line.66"></a>
-<span class="sourceLineNo">067</span>        super(target, decorator);<a name="line.67"></a>
-<span class="sourceLineNo">068</span>        _init();<a name="line.68"></a>
-<span class="sourceLineNo">069</span>    }<a name="line.69"></a>
-<span class="sourceLineNo">070</span><a name="line.70"></a>
-<span class="sourceLineNo">071</span>    /** Constructor to use when parsing a MoML file.<a name="line.71"></a>
-<span class="sourceLineNo">072</span>     *  @param target The object being decorated.<a name="line.72"></a>
-<span class="sourceLineNo">073</span>     *  @param name The name of this attribute.<a name="line.73"></a>
-<span class="sourceLineNo">074</span>     *  @exception IllegalActionException If the superclass throws it.<a name="line.74"></a>
-<span class="sourceLineNo">075</span>     *  @exception NameDuplicationException If the superclass throws it.<a name="line.75"></a>
-<span class="sourceLineNo">076</span>     */<a name="line.76"></a>
-<span class="sourceLineNo">077</span>    public ExecutionAttributes(NamedObj target, String name)<a name="line.77"></a>
-<span class="sourceLineNo">078</span>            throws IllegalActionException, NameDuplicationException {<a name="line.78"></a>
-<span class="sourceLineNo">079</span>        super(target, name);<a name="line.79"></a>
-<span class="sourceLineNo">080</span>        _init();<a name="line.80"></a>
-<span class="sourceLineNo">081</span>    }<a name="line.81"></a>
-<span class="sourceLineNo">082</span><a name="line.82"></a>
-<span class="sourceLineNo">083</span>    ///////////////////////////////////////////////////////////////////<a name="line.83"></a>
-<span class="sourceLineNo">084</span>    ////                         parameters                        ////<a name="line.84"></a>
-<span class="sourceLineNo">085</span><a name="line.85"></a>
-<span class="sourceLineNo">086</span>    /** The enable parameter specifies whether the decorated actor uses<a name="line.86"></a>
-<span class="sourceLineNo">087</span>     *  the resource scheduler decorator.<a name="line.87"></a>
-<span class="sourceLineNo">088</span>     *  This is a boolean that defaults to false.<a name="line.88"></a>
-<span class="sourceLineNo">089</span>     */<a name="line.89"></a>
-<span class="sourceLineNo">090</span>    public Parameter enable;<a name="line.90"></a>
-<span class="sourceLineNo">091</span><a name="line.91"></a>
-<span class="sourceLineNo">092</span>    ///////////////////////////////////////////////////////////////////<a name="line.92"></a>
-<span class="sourceLineNo">093</span>    ////                         public methods                    ////<a name="line.93"></a>
-<span class="sourceLineNo">094</span><a name="line.94"></a>
-<span class="sourceLineNo">095</span>    /** React to a change in an attribute.  If the attribute is<a name="line.95"></a>
-<span class="sourceLineNo">096</span>     *  &lt;i&gt;enable&lt;/i&gt;, remember the value.<a name="line.96"></a>
-<span class="sourceLineNo">097</span>     *  @param attribute The attribute that changed.<a name="line.97"></a>
-<span class="sourceLineNo">098</span>     *  @exception IllegalActionException If the change is not acceptable<a name="line.98"></a>
-<span class="sourceLineNo">099</span>     *   to this container (not thrown in this base class).<a name="line.99"></a>
-<span class="sourceLineNo">100</span>     */<a name="line.100"></a>
-<span class="sourceLineNo">101</span>    @Override<a name="line.101"></a>
-<span class="sourceLineNo">102</span>    public void attributeChanged(Attribute attribute)<a name="line.102"></a>
-<span class="sourceLineNo">103</span>            throws IllegalActionException {<a name="line.103"></a>
-<span class="sourceLineNo">104</span>        if (attribute == enable) {<a name="line.104"></a>
-<span class="sourceLineNo">105</span>            _enabled = ((BooleanToken) enable.getToken()).booleanValue();<a name="line.105"></a>
-<span class="sourceLineNo">106</span>        }<a name="line.106"></a>
-<span class="sourceLineNo">107</span>        super.attributeChanged(attribute);<a name="line.107"></a>
-<span class="sourceLineNo">108</span>    }<a name="line.108"></a>
-<span class="sourceLineNo">109</span><a name="line.109"></a>
-<span class="sourceLineNo">110</span>    /** Return whether the decorator associated with this attribute is<a name="line.110"></a>
-<span class="sourceLineNo">111</span>     *  enabled.<a name="line.111"></a>
-<span class="sourceLineNo">112</span>     *  @return True if enabled.<a name="line.112"></a>
-<span class="sourceLineNo">113</span>     */<a name="line.113"></a>
-<span class="sourceLineNo">114</span>    public boolean enabled() {<a name="line.114"></a>
-<span class="sourceLineNo">115</span>        return _enabled;<a name="line.115"></a>
-<span class="sourceLineNo">116</span>    }<a name="line.116"></a>
-<span class="sourceLineNo">117</span><a name="line.117"></a>
-<span class="sourceLineNo">118</span>    ///////////////////////////////////////////////////////////////////<a name="line.118"></a>
-<span class="sourceLineNo">119</span>    ////                         private methods                   ////<a name="line.119"></a>
-<span class="sourceLineNo">120</span><a name="line.120"></a>
-<span class="sourceLineNo">121</span>    /** Create the parameters.<a name="line.121"></a>
-<span class="sourceLineNo">122</span>     */<a name="line.122"></a>
-<span class="sourceLineNo">123</span>    private void _init() {<a name="line.123"></a>
-<span class="sourceLineNo">124</span>        try {<a name="line.124"></a>
-<span class="sourceLineNo">125</span>            enable = new Parameter(this, "enable");<a name="line.125"></a>
-<span class="sourceLineNo">126</span>            enable.setExpression("false");<a name="line.126"></a>
-<span class="sourceLineNo">127</span>            enable.setTypeEquals(BaseType.BOOLEAN);<a name="line.127"></a>
-<span class="sourceLineNo">128</span>        } catch (KernelException ex) {<a name="line.128"></a>
-<span class="sourceLineNo">129</span>            // This should not occur.<a name="line.129"></a>
-<span class="sourceLineNo">130</span>            throw new InternalErrorException(ex);<a name="line.130"></a>
-<span class="sourceLineNo">131</span>        }<a name="line.131"></a>
-<span class="sourceLineNo">132</span>    }<a name="line.132"></a>
-<span class="sourceLineNo">133</span><a name="line.133"></a>
-<span class="sourceLineNo">134</span>    private boolean _enabled;<a name="line.134"></a>
-<span class="sourceLineNo">135</span>}<a name="line.135"></a>
+<span class="sourceLineNo">050</span>This provides an "enable" attribute.<a name="line.50"></a>
+<span class="sourceLineNo">051</span><a name="line.51"></a>
+<span class="sourceLineNo">052</span> @author  Patricia Derler<a name="line.52"></a>
+<span class="sourceLineNo">053</span> @author  Edward A. Lee<a name="line.53"></a>
+<span class="sourceLineNo">054</span> @version $Id$<a name="line.54"></a>
+<span class="sourceLineNo">055</span> @since Ptolemy II 10.0<a name="line.55"></a>
+<span class="sourceLineNo">056</span> @Pt.ProposedRating Yellow (eal)<a name="line.56"></a>
+<span class="sourceLineNo">057</span> @Pt.AcceptedRating Red (eal)<a name="line.57"></a>
+<span class="sourceLineNo">058</span> */<a name="line.58"></a>
+<span class="sourceLineNo">059</span>public class ExecutionAttributes extends DecoratorAttributes {<a name="line.59"></a>
+<span class="sourceLineNo">060</span><a name="line.60"></a>
+<span class="sourceLineNo">061</span>    /** Constructor to use when editing a model.<a name="line.61"></a>
+<span class="sourceLineNo">062</span>     *  @param target The object being decorated.<a name="line.62"></a>
+<span class="sourceLineNo">063</span>     *  @param decorator The decorator.<a name="line.63"></a>
+<span class="sourceLineNo">064</span>     *  @exception IllegalActionException If the superclass throws it.<a name="line.64"></a>
+<span class="sourceLineNo">065</span>     *  @exception NameDuplicationException If the superclass throws it.<a name="line.65"></a>
+<span class="sourceLineNo">066</span>     */<a name="line.66"></a>
+<span class="sourceLineNo">067</span>    public ExecutionAttributes(NamedObj target, Decorator decorator)<a name="line.67"></a>
+<span class="sourceLineNo">068</span>            throws IllegalActionException, NameDuplicationException {<a name="line.68"></a>
+<span class="sourceLineNo">069</span>        super(target, decorator);<a name="line.69"></a>
+<span class="sourceLineNo">070</span>        _init();<a name="line.70"></a>
+<span class="sourceLineNo">071</span>    }<a name="line.71"></a>
+<span class="sourceLineNo">072</span><a name="line.72"></a>
+<span class="sourceLineNo">073</span>    /** Constructor to use when parsing a MoML file.<a name="line.73"></a>
+<span class="sourceLineNo">074</span>     *  @param target The object being decorated.<a name="line.74"></a>
+<span class="sourceLineNo">075</span>     *  @param name The name of this attribute.<a name="line.75"></a>
+<span class="sourceLineNo">076</span>     *  @exception IllegalActionException If the superclass throws it.<a name="line.76"></a>
+<span class="sourceLineNo">077</span>     *  @exception NameDuplicationException If the superclass throws it.<a name="line.77"></a>
+<span class="sourceLineNo">078</span>     */<a name="line.78"></a>
+<span class="sourceLineNo">079</span>    public ExecutionAttributes(NamedObj target, String name)<a name="line.79"></a>
+<span class="sourceLineNo">080</span>            throws IllegalActionException, NameDuplicationException {<a name="line.80"></a>
+<span class="sourceLineNo">081</span>        super(target, name);<a name="line.81"></a>
+<span class="sourceLineNo">082</span>        _init();<a name="line.82"></a>
+<span class="sourceLineNo">083</span>    }<a name="line.83"></a>
+<span class="sourceLineNo">084</span><a name="line.84"></a>
+<span class="sourceLineNo">085</span>    ///////////////////////////////////////////////////////////////////<a name="line.85"></a>
+<span class="sourceLineNo">086</span>    ////                         parameters                        ////<a name="line.86"></a>
+<span class="sourceLineNo">087</span><a name="line.87"></a>
+<span class="sourceLineNo">088</span>    /** The enable parameter specifies whether the decorated actor uses<a name="line.88"></a>
+<span class="sourceLineNo">089</span>     *  the resource scheduler decorator.<a name="line.89"></a>
+<span class="sourceLineNo">090</span>     *  This is a boolean that defaults to false.<a name="line.90"></a>
+<span class="sourceLineNo">091</span>     */<a name="line.91"></a>
+<span class="sourceLineNo">092</span>    public Parameter enable;<a name="line.92"></a>
+<span class="sourceLineNo">093</span><a name="line.93"></a>
+<span class="sourceLineNo">094</span>    ///////////////////////////////////////////////////////////////////<a name="line.94"></a>
+<span class="sourceLineNo">095</span>    ////                         public methods                    ////<a name="line.95"></a>
+<span class="sourceLineNo">096</span><a name="line.96"></a>
+<span class="sourceLineNo">097</span>    /** React to a change in an attribute.  If the attribute is<a name="line.97"></a>
+<span class="sourceLineNo">098</span>     *  &lt;i&gt;enable&lt;/i&gt;, remember the value.<a name="line.98"></a>
+<span class="sourceLineNo">099</span>     *  @param attribute The attribute that changed.<a name="line.99"></a>
+<span class="sourceLineNo">100</span>     *  @exception IllegalActionException If the change is not acceptable<a name="line.100"></a>
+<span class="sourceLineNo">101</span>     *   to this container (not thrown in this base class).<a name="line.101"></a>
+<span class="sourceLineNo">102</span>     */<a name="line.102"></a>
+<span class="sourceLineNo">103</span>    @Override<a name="line.103"></a>
+<span class="sourceLineNo">104</span>    public void attributeChanged(Attribute attribute)<a name="line.104"></a>
+<span class="sourceLineNo">105</span>            throws IllegalActionException {<a name="line.105"></a>
+<span class="sourceLineNo">106</span>        if (attribute == enable) {<a name="line.106"></a>
+<span class="sourceLineNo">107</span>            _enabled = ((BooleanToken) enable.getToken()).booleanValue();<a name="line.107"></a>
+<span class="sourceLineNo">108</span>        }<a name="line.108"></a>
+<span class="sourceLineNo">109</span>        super.attributeChanged(attribute);<a name="line.109"></a>
+<span class="sourceLineNo">110</span>    }<a name="line.110"></a>
+<span class="sourceLineNo">111</span><a name="line.111"></a>
+<span class="sourceLineNo">112</span>    /** Return whether the decorator associated with this attribute is<a name="line.112"></a>
+<span class="sourceLineNo">113</span>     *  enabled.<a name="line.113"></a>
+<span class="sourceLineNo">114</span>     *  @return True if enabled.<a name="line.114"></a>
+<span class="sourceLineNo">115</span>     */<a name="line.115"></a>
+<span class="sourceLineNo">116</span>    public boolean enabled() {<a name="line.116"></a>
+<span class="sourceLineNo">117</span>        return _enabled;<a name="line.117"></a>
+<span class="sourceLineNo">118</span>    }<a name="line.118"></a>
+<span class="sourceLineNo">119</span><a name="line.119"></a>
+<span class="sourceLineNo">120</span>    ///////////////////////////////////////////////////////////////////<a name="line.120"></a>
+<span class="sourceLineNo">121</span>    ////                         private methods                   ////<a name="line.121"></a>
+<span class="sourceLineNo">122</span><a name="line.122"></a>
+<span class="sourceLineNo">123</span>    /** Create the parameters.<a name="line.123"></a>
+<span class="sourceLineNo">124</span>     */<a name="line.124"></a>
+<span class="sourceLineNo">125</span>    private void _init() {<a name="line.125"></a>
+<span class="sourceLineNo">126</span>        try {<a name="line.126"></a>
+<span class="sourceLineNo">127</span>            enable = new Parameter(this, "enable");<a name="line.127"></a>
+<span class="sourceLineNo">128</span>            enable.setExpression("false");<a name="line.128"></a>
+<span class="sourceLineNo">129</span>            enable.setTypeEquals(BaseType.BOOLEAN);<a name="line.129"></a>
+<span class="sourceLineNo">130</span>        } catch (KernelException ex) {<a name="line.130"></a>
+<span class="sourceLineNo">131</span>            // This should not occur.<a name="line.131"></a>
+<span class="sourceLineNo">132</span>            throw new InternalErrorException(ex);<a name="line.132"></a>
+<span class="sourceLineNo">133</span>        }<a name="line.133"></a>
+<span class="sourceLineNo">134</span>    }<a name="line.134"></a>
+<span class="sourceLineNo">135</span><a name="line.135"></a>
+<span class="sourceLineNo">136</span>    private boolean _enabled;<a name="line.136"></a>
+<span class="sourceLineNo">137</span>}<a name="line.137"></a>
 
 
 

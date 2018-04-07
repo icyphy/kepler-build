@@ -284,14 +284,14 @@ KIELER layout algorithm.</div>
 <tbody>
 <tr class="altColor">
 <td class="colFirst"><code>java.lang.String</code></td>
-<td class="colLast"><span class="typeNameLabel">LidarWorkflowExecute.</span><code><span class="memberNameLink"><a href="../../../org/geon/LidarWorkflowExecute.html#executeModel-ptolemy.actor.CompositeActor-">executeModel</a></span>(<a href="../../../ptolemy/actor/CompositeActor.html" title="class in ptolemy.actor">CompositeActor</a>&nbsp;model)</code>
+<td class="colLast"><span class="typeNameLabel">ModelService.</span><code><span class="memberNameLink"><a href="../../../org/geon/ModelService.html#executeModel-ptolemy.actor.CompositeActor-">executeModel</a></span>(<a href="../../../ptolemy/actor/CompositeActor.html" title="class in ptolemy.actor">CompositeActor</a>&nbsp;model)</code>
+<div class="block"><span class="deprecatedLabel">Deprecated.</span>&nbsp;</div>
 <div class="block">This method takes model argument which is type of CompositeActor.</div>
 </td>
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>java.lang.String</code></td>
-<td class="colLast"><span class="typeNameLabel">ModelService.</span><code><span class="memberNameLink"><a href="../../../org/geon/ModelService.html#executeModel-ptolemy.actor.CompositeActor-">executeModel</a></span>(<a href="../../../ptolemy/actor/CompositeActor.html" title="class in ptolemy.actor">CompositeActor</a>&nbsp;model)</code>
-<div class="block"><span class="deprecatedLabel">Deprecated.</span>&nbsp;</div>
+<td class="colLast"><span class="typeNameLabel">LidarWorkflowExecute.</span><code><span class="memberNameLink"><a href="../../../org/geon/LidarWorkflowExecute.html#executeModel-ptolemy.actor.CompositeActor-">executeModel</a></span>(<a href="../../../ptolemy/actor/CompositeActor.html" title="class in ptolemy.actor">CompositeActor</a>&nbsp;model)</code>
 <div class="block">This method takes model argument which is type of CompositeActor.</div>
 </td>
 </tr>
@@ -952,19 +952,19 @@ KIELER layout algorithm.</div>
 <tbody>
 <tr class="altColor">
 <td class="colFirst"><code>protected <a href="../../../ptolemy/actor/CompositeActor.html" title="class in ptolemy.actor">CompositeActor</a></code></td>
-<td class="colLast"><span class="typeNameLabel">CustomizableRunPane.</span><code><span class="memberNameLink"><a href="../../../ptolemy/actor/gui/run/CustomizableRunPane.html#Z:Z_model">_model</a></span></code>
+<td class="colLast"><span class="typeNameLabel">RunLayoutFrame.</span><code><span class="memberNameLink"><a href="../../../ptolemy/actor/gui/run/RunLayoutFrame.html#Z:Z_model">_model</a></span></code>
 <div class="block">The associated model.</div>
 </td>
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>protected <a href="../../../ptolemy/actor/CompositeActor.html" title="class in ptolemy.actor">CompositeActor</a></code></td>
-<td class="colLast"><span class="typeNameLabel">CustomizableRunFrame.</span><code><span class="memberNameLink"><a href="../../../ptolemy/actor/gui/run/CustomizableRunFrame.html#Z:Z_model">_model</a></span></code>
+<td class="colLast"><span class="typeNameLabel">CustomizableRunPane.</span><code><span class="memberNameLink"><a href="../../../ptolemy/actor/gui/run/CustomizableRunPane.html#Z:Z_model">_model</a></span></code>
 <div class="block">The associated model.</div>
 </td>
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>protected <a href="../../../ptolemy/actor/CompositeActor.html" title="class in ptolemy.actor">CompositeActor</a></code></td>
-<td class="colLast"><span class="typeNameLabel">RunLayoutFrame.</span><code><span class="memberNameLink"><a href="../../../ptolemy/actor/gui/run/RunLayoutFrame.html#Z:Z_model">_model</a></span></code>
+<td class="colLast"><span class="typeNameLabel">CustomizableRunFrame.</span><code><span class="memberNameLink"><a href="../../../ptolemy/actor/gui/run/CustomizableRunFrame.html#Z:Z_model">_model</a></span></code>
 <div class="block">The associated model.</div>
 </td>
 </tr>
@@ -1118,25 +1118,33 @@ between the times when the outside model invokes this composite.</div>
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>class&nbsp;</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../ptolemy/actor/lib/hoc/Refinement.html" title="class in ptolemy.actor.lib.hoc">Refinement</a></span></code>
+<div class="block">This typed composite actor supports mirroring of its ports in its container
+ (which is required to be a MultiCompositeActor), which in turn assures
+ mirroring of ports in each of the refinements and the controller.</div>
+</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code>class&nbsp;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../ptolemy/actor/lib/hoc/ReflectComposite.html" title="class in ptolemy.actor.lib.hoc">ReflectComposite</a></span></code>
 <div class="block">A composite that contains one actor and mirrors the ports and
  parameters of that actor.</div>
 </td>
 </tr>
-<tr class="altColor">
+<tr class="rowColor">
 <td class="colFirst"><code>static class&nbsp;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../ptolemy/actor/lib/hoc/ReflectComposite.ReflectCompositeContents.html" title="class in ptolemy.actor.lib.hoc">ReflectComposite.ReflectCompositeContents</a></span></code>
 <div class="block">This is a specialized composite actor for use in ReflectComposite.</div>
 </td>
 </tr>
-<tr class="rowColor">
+<tr class="altColor">
 <td class="colFirst"><code>class&nbsp;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../ptolemy/actor/lib/hoc/RunCompositeActor.html" title="class in ptolemy.actor.lib.hoc">RunCompositeActor</a></span></code>
 <div class="block">This is a composite actor that can execute the contained model
  completely, as if it were a top-level model, on each firing.</div>
 </td>
 </tr>
-<tr class="altColor">
+<tr class="rowColor">
 <td class="colFirst"><code>class&nbsp;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../ptolemy/actor/lib/hoc/ThreadedComposite.html" title="class in ptolemy.actor.lib.hoc">ThreadedComposite</a></span></code>
 <div class="block">A container for another actor that executes that other actor
@@ -1428,14 +1436,6 @@ between the times when the outside model invokes this composite.</div>
 </td>
 </tr>
 <tr class="rowColor">
-<td class="colFirst"><code>class&nbsp;</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../ptolemy/domains/modal/modal/Refinement.html" title="class in ptolemy.domains.modal.modal">Refinement</a></span></code>
-<div class="block">This typed composite actor supports mirroring of its ports in its container
- (which is required to be a ModalModel), which in turn assures
- mirroring of ports in each of the refinements and the controller.</div>
-</td>
-</tr>
-<tr class="altColor">
 <td class="colFirst"><code>class&nbsp;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../ptolemy/domains/modal/modal/TransitionRefinement.html" title="class in ptolemy.domains.modal.modal">TransitionRefinement</a></span></code>
 <div class="block">Transition refinements provide a way to use composite actors which are run

@@ -218,14 +218,14 @@
 <tbody>
 <tr class="altColor">
 <td class="colFirst"><code>protected <a href="../../../../ptolemy/actor/gui/Configuration.html" title="class in ptolemy.actor.gui">Configuration</a></code></td>
-<td class="colLast"><span class="typeNameLabel">ConfigurationApplication.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/actor/gui/ConfigurationApplication.html#Z:Z_configuration">_configuration</a></span></code>
-<div class="block">The configuration model of this application.</div>
+<td class="colLast"><span class="typeNameLabel">PtolemyDialog.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/actor/gui/PtolemyDialog.html#Z:Z_configuration">_configuration</a></span></code>
+<div class="block">The configuration that corresponds with this dialog.</div>
 </td>
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>protected <a href="../../../../ptolemy/actor/gui/Configuration.html" title="class in ptolemy.actor.gui">Configuration</a></code></td>
-<td class="colLast"><span class="typeNameLabel">PtolemyDialog.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/actor/gui/PtolemyDialog.html#Z:Z_configuration">_configuration</a></span></code>
-<div class="block">The configuration that corresponds with this dialog.</div>
+<td class="colLast"><span class="typeNameLabel">ConfigurationApplication.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/actor/gui/ConfigurationApplication.html#Z:Z_configuration">_configuration</a></span></code>
+<div class="block">The configuration model of this application.</div>
 </td>
 </tr>
 </tbody>
@@ -239,8 +239,9 @@
 <tbody>
 <tr class="altColor">
 <td class="colFirst"><code>protected <a href="../../../../ptolemy/actor/gui/Configuration.html" title="class in ptolemy.actor.gui">Configuration</a></code></td>
-<td class="colLast"><span class="typeNameLabel">ConfigurationApplication.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/actor/gui/ConfigurationApplication.html#Z:Z_createDefaultConfiguration--">_createDefaultConfiguration</a></span>()</code>
-<div class="block">Return a default Configuration, or null to do without one.</div>
+<td class="colLast"><span class="typeNameLabel">PtolemyApplication.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/actor/gui/PtolemyApplication.html#Z:Z_createDefaultConfiguration--">_createDefaultConfiguration</a></span>()</code>
+<div class="block">Return a default Configuration, which in this case is given by
+  the MoML file ptolemy/configs/runPanelConfiguration.xml.</div>
 </td>
 </tr>
 <tr class="rowColor">
@@ -252,16 +253,17 @@
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>protected <a href="../../../../ptolemy/actor/gui/Configuration.html" title="class in ptolemy.actor.gui">Configuration</a></code></td>
-<td class="colLast"><span class="typeNameLabel">PtolemyApplication.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/actor/gui/PtolemyApplication.html#Z:Z_createDefaultConfiguration--">_createDefaultConfiguration</a></span>()</code>
-<div class="block">Return a default Configuration, which in this case is given by
-  the MoML file ptolemy/configs/runPanelConfiguration.xml.</div>
+<td class="colLast"><span class="typeNameLabel">ConfigurationApplication.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/actor/gui/ConfigurationApplication.html#Z:Z_createDefaultConfiguration--">_createDefaultConfiguration</a></span>()</code>
+<div class="block">Return a default Configuration, or null to do without one.</div>
 </td>
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>protected <a href="../../../../ptolemy/actor/gui/Configuration.html" title="class in ptolemy.actor.gui">Configuration</a></code></td>
-<td class="colLast"><span class="typeNameLabel">ConfigurationApplication.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/actor/gui/ConfigurationApplication.html#Z:Z_createEmptyConfiguration--">_createEmptyConfiguration</a></span>()</code>
+<td class="colLast"><span class="typeNameLabel">PtolemyApplication.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/actor/gui/PtolemyApplication.html#Z:Z_createEmptyConfiguration--">_createEmptyConfiguration</a></span>()</code>
 <div class="block">Return a default Configuration to use when there are no command-line
-  arguments, or null to do without one.</div>
+  arguments, which in this case is the same as the default configuration
+  given by _createDefaultConfiguration, but with the additional
+  contents of the file ptolemy/configs/runWelcomeWindow.xml.</div>
 </td>
 </tr>
 <tr class="altColor">
@@ -272,11 +274,9 @@
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>protected <a href="../../../../ptolemy/actor/gui/Configuration.html" title="class in ptolemy.actor.gui">Configuration</a></code></td>
-<td class="colLast"><span class="typeNameLabel">PtolemyApplication.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/actor/gui/PtolemyApplication.html#Z:Z_createEmptyConfiguration--">_createEmptyConfiguration</a></span>()</code>
+<td class="colLast"><span class="typeNameLabel">ConfigurationApplication.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/actor/gui/ConfigurationApplication.html#Z:Z_createEmptyConfiguration--">_createEmptyConfiguration</a></span>()</code>
 <div class="block">Return a default Configuration to use when there are no command-line
-  arguments, which in this case is the same as the default configuration
-  given by _createDefaultConfiguration, but with the additional
-  contents of the file ptolemy/configs/runWelcomeWindow.xml.</div>
+  arguments, or null to do without one.</div>
 </td>
 </tr>
 <tr class="altColor">
@@ -607,7 +607,7 @@
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">ActorViewerGraphController.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/vergil/actor/ActorViewerGraphController.html#setConfiguration-ptolemy.actor.gui.Configuration-">setConfiguration</a></span>(<a href="../../../../ptolemy/actor/gui/Configuration.html" title="class in ptolemy.actor.gui">Configuration</a>&nbsp;configuration)</code>
+<td class="colLast"><span class="typeNameLabel">LinkController.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/vergil/actor/LinkController.html#setConfiguration-ptolemy.actor.gui.Configuration-">setConfiguration</a></span>(<a href="../../../../ptolemy/actor/gui/Configuration.html" title="class in ptolemy.actor.gui">Configuration</a>&nbsp;configuration)</code>
 <div class="block">Set the configuration.</div>
 </td>
 </tr>
@@ -625,13 +625,13 @@
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">ActorEditorGraphController.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/vergil/actor/ActorEditorGraphController.html#setConfiguration-ptolemy.actor.gui.Configuration-">setConfiguration</a></span>(<a href="../../../../ptolemy/actor/gui/Configuration.html" title="class in ptolemy.actor.gui">Configuration</a>&nbsp;configuration)</code>
+<td class="colLast"><span class="typeNameLabel">ActorViewerGraphController.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/vergil/actor/ActorViewerGraphController.html#setConfiguration-ptolemy.actor.gui.Configuration-">setConfiguration</a></span>(<a href="../../../../ptolemy/actor/gui/Configuration.html" title="class in ptolemy.actor.gui">Configuration</a>&nbsp;configuration)</code>
 <div class="block">Set the configuration.</div>
 </td>
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">LinkController.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/vergil/actor/LinkController.html#setConfiguration-ptolemy.actor.gui.Configuration-">setConfiguration</a></span>(<a href="../../../../ptolemy/actor/gui/Configuration.html" title="class in ptolemy.actor.gui">Configuration</a>&nbsp;configuration)</code>
+<td class="colLast"><span class="typeNameLabel">ActorEditorGraphController.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/vergil/actor/ActorEditorGraphController.html#setConfiguration-ptolemy.actor.gui.Configuration-">setConfiguration</a></span>(<a href="../../../../ptolemy/actor/gui/Configuration.html" title="class in ptolemy.actor.gui">Configuration</a>&nbsp;configuration)</code>
 <div class="block">Set the configuration.</div>
 </td>
 </tr>
@@ -780,19 +780,19 @@
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">BasicGraphController.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/vergil/basic/BasicGraphController.html#setConfiguration-ptolemy.actor.gui.Configuration-">setConfiguration</a></span>(<a href="../../../../ptolemy/actor/gui/Configuration.html" title="class in ptolemy.actor.gui">Configuration</a>&nbsp;configuration)</code>
-<div class="block">Set the configuration.</div>
-</td>
-</tr>
-<tr class="altColor">
-<td class="colFirst"><code>void</code></td>
 <td class="colLast"><span class="typeNameLabel">LookInsideAction.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/vergil/basic/LookInsideAction.html#setConfiguration-ptolemy.actor.gui.Configuration-">setConfiguration</a></span>(<a href="../../../../ptolemy/actor/gui/Configuration.html" title="class in ptolemy.actor.gui">Configuration</a>&nbsp;configuration)</code>
 <div class="block">Set the configuration to be used by the LookInsideAction object.</div>
 </td>
 </tr>
-<tr class="rowColor">
+<tr class="altColor">
 <td class="colFirst"><code>void</code></td>
 <td class="colLast"><span class="typeNameLabel">GetDocumentationAction.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/vergil/basic/GetDocumentationAction.html#setConfiguration-ptolemy.actor.gui.Configuration-">setConfiguration</a></span>(<a href="../../../../ptolemy/actor/gui/Configuration.html" title="class in ptolemy.actor.gui">Configuration</a>&nbsp;configuration)</code>
+<div class="block">Set the configuration.</div>
+</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code>void</code></td>
+<td class="colLast"><span class="typeNameLabel">BasicGraphController.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/vergil/basic/BasicGraphController.html#setConfiguration-ptolemy.actor.gui.Configuration-">setConfiguration</a></span>(<a href="../../../../ptolemy/actor/gui/Configuration.html" title="class in ptolemy.actor.gui">Configuration</a>&nbsp;configuration)</code>
 <div class="block">Set the configuration.</div>
 </td>
 </tr>
@@ -884,14 +884,14 @@
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">AttributeController.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/vergil/kernel/AttributeController.html#setConfiguration-ptolemy.actor.gui.Configuration-">setConfiguration</a></span>(<a href="../../../../ptolemy/actor/gui/Configuration.html" title="class in ptolemy.actor.gui">Configuration</a>&nbsp;configuration)</code>
-<div class="block">Set the configuration.</div>
+<td class="colLast"><span class="typeNameLabel">ListenToAction.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/vergil/kernel/ListenToAction.html#setConfiguration-ptolemy.actor.gui.Configuration-">setConfiguration</a></span>(<a href="../../../../ptolemy/actor/gui/Configuration.html" title="class in ptolemy.actor.gui">Configuration</a>&nbsp;configuration)</code>
+<div class="block">Set the configuration for use by the help screen.</div>
 </td>
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">ListenToAction.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/vergil/kernel/ListenToAction.html#setConfiguration-ptolemy.actor.gui.Configuration-">setConfiguration</a></span>(<a href="../../../../ptolemy/actor/gui/Configuration.html" title="class in ptolemy.actor.gui">Configuration</a>&nbsp;configuration)</code>
-<div class="block">Set the configuration for use by the help screen.</div>
+<td class="colLast"><span class="typeNameLabel">AttributeController.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/vergil/kernel/AttributeController.html#setConfiguration-ptolemy.actor.gui.Configuration-">setConfiguration</a></span>(<a href="../../../../ptolemy/actor/gui/Configuration.html" title="class in ptolemy.actor.gui">Configuration</a>&nbsp;configuration)</code>
+<div class="block">Set the configuration.</div>
 </td>
 </tr>
 </tbody>
@@ -932,19 +932,19 @@
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">FSMViewerGraphController.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/vergil/modal/FSMViewerGraphController.html#setConfiguration-ptolemy.actor.gui.Configuration-">setConfiguration</a></span>(<a href="../../../../ptolemy/actor/gui/Configuration.html" title="class in ptolemy.actor.gui">Configuration</a>&nbsp;configuration)</code>
+<td class="colLast"><span class="typeNameLabel">TransitionController.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/vergil/modal/TransitionController.html#setConfiguration-ptolemy.actor.gui.Configuration-">setConfiguration</a></span>(<a href="../../../../ptolemy/actor/gui/Configuration.html" title="class in ptolemy.actor.gui">Configuration</a>&nbsp;configuration)</code>
 <div class="block">Set the configuration.</div>
 </td>
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">FSMGraphController.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/vergil/modal/FSMGraphController.html#setConfiguration-ptolemy.actor.gui.Configuration-">setConfiguration</a></span>(<a href="../../../../ptolemy/actor/gui/Configuration.html" title="class in ptolemy.actor.gui">Configuration</a>&nbsp;configuration)</code>
+<td class="colLast"><span class="typeNameLabel">FSMViewerGraphController.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/vergil/modal/FSMViewerGraphController.html#setConfiguration-ptolemy.actor.gui.Configuration-">setConfiguration</a></span>(<a href="../../../../ptolemy/actor/gui/Configuration.html" title="class in ptolemy.actor.gui">Configuration</a>&nbsp;configuration)</code>
 <div class="block">Set the configuration.</div>
 </td>
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">TransitionController.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/vergil/modal/TransitionController.html#setConfiguration-ptolemy.actor.gui.Configuration-">setConfiguration</a></span>(<a href="../../../../ptolemy/actor/gui/Configuration.html" title="class in ptolemy.actor.gui">Configuration</a>&nbsp;configuration)</code>
+<td class="colLast"><span class="typeNameLabel">FSMGraphController.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/vergil/modal/FSMGraphController.html#setConfiguration-ptolemy.actor.gui.Configuration-">setConfiguration</a></span>(<a href="../../../../ptolemy/actor/gui/Configuration.html" title="class in ptolemy.actor.gui">Configuration</a>&nbsp;configuration)</code>
 <div class="block">Set the configuration.</div>
 </td>
 </tr>

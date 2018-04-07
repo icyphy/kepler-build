@@ -67,49 +67,48 @@
 <span class="sourceLineNo">059</span>            CompositeEntity container) {<a name="line.59"></a>
 <span class="sourceLineNo">060</span>        List&lt;NamedObj&gt; toDecorate = new ArrayList&lt;NamedObj&gt;();<a name="line.60"></a>
 <span class="sourceLineNo">061</span>        for (Object entity : container.entityList(ComponentEntity.class)) {<a name="line.61"></a>
-<span class="sourceLineNo">062</span>            if (!(entity instanceof ActorExecutionAspect<a name="line.62"></a>
-<span class="sourceLineNo">063</span>                    || entity instanceof Director)) {<a name="line.63"></a>
-<span class="sourceLineNo">064</span>                toDecorate.add((NamedObj) entity);<a name="line.64"></a>
-<span class="sourceLineNo">065</span>                if (entity instanceof CompositeEntity) {<a name="line.65"></a>
-<span class="sourceLineNo">066</span>                    toDecorate.addAll(ExecutionAspectHelper<a name="line.66"></a>
-<span class="sourceLineNo">067</span>                            .getEntitiesToDecorate((CompositeEntity) entity));<a name="line.67"></a>
-<span class="sourceLineNo">068</span>                }<a name="line.68"></a>
-<span class="sourceLineNo">069</span>            }<a name="line.69"></a>
-<span class="sourceLineNo">070</span>        }<a name="line.70"></a>
-<span class="sourceLineNo">071</span>        return toDecorate;<a name="line.71"></a>
-<span class="sourceLineNo">072</span>    }<a name="line.72"></a>
-<span class="sourceLineNo">073</span><a name="line.73"></a>
-<span class="sourceLineNo">074</span>    /** Schedule an actor for execution on an aspect and return the next time<a name="line.74"></a>
-<span class="sourceLineNo">075</span>     *  this aspect has to perform an action. Derived classes<a name="line.75"></a>
-<span class="sourceLineNo">076</span>     *  must implement this method to actually schedule actors, this<a name="line.76"></a>
-<span class="sourceLineNo">077</span>     *  base class implementation just creates events for aspect<a name="line.77"></a>
-<span class="sourceLineNo">078</span>     *  activity that is displayed in the plotter. This<a name="line.78"></a>
-<span class="sourceLineNo">079</span>     *  base class implementation just creates events for aspect<a name="line.79"></a>
-<span class="sourceLineNo">080</span>     *  activity that is displayed in the plotter.<a name="line.80"></a>
-<span class="sourceLineNo">081</span>     *  @param aspect The aspect.<a name="line.81"></a>
-<span class="sourceLineNo">082</span>     *  @param actor The actor to be scheduled.<a name="line.82"></a>
-<span class="sourceLineNo">083</span>     *  @param environmentTime The current platform time.<a name="line.83"></a>
-<span class="sourceLineNo">084</span>     *  @param deadline The deadline timestamp of the event to be scheduled.<a name="line.84"></a>
-<span class="sourceLineNo">085</span>     *  This can be the same as the environmentTime.<a name="line.85"></a>
-<span class="sourceLineNo">086</span>     *  @return Relative time when this aspect has to be executed<a name="line.86"></a>
-<span class="sourceLineNo">087</span>     *    again to perform rescheduling actions.<a name="line.87"></a>
-<span class="sourceLineNo">088</span>     *  @exception IllegalActionException Thrown if actor parameters such<a name="line.88"></a>
-<span class="sourceLineNo">089</span>     *    as execution time or priority cannot be read.<a name="line.89"></a>
-<span class="sourceLineNo">090</span>     */<a name="line.90"></a>
-<span class="sourceLineNo">091</span>    public static Time schedule(ActorExecutionAspect aspect, NamedObj actor,<a name="line.91"></a>
-<span class="sourceLineNo">092</span>            Time environmentTime, Time deadline) throws IllegalActionException {<a name="line.92"></a>
-<span class="sourceLineNo">093</span>        Director director = ((CompositeActor) ((ComponentEntity) aspect)<a name="line.93"></a>
-<span class="sourceLineNo">094</span>                .getContainer()).getDirector();<a name="line.94"></a>
-<span class="sourceLineNo">095</span>        double executionTime = aspect.getExecutionTime(actor);<a name="line.95"></a>
-<span class="sourceLineNo">096</span>        aspect.notifyExecutionListeners(((NamedObj) aspect),<a name="line.96"></a>
-<span class="sourceLineNo">097</span>                environmentTime.getDoubleValue(), ExecutionEventType.START);<a name="line.97"></a>
-<span class="sourceLineNo">098</span>        aspect.notifyExecutionListeners(((NamedObj) aspect),<a name="line.98"></a>
-<span class="sourceLineNo">099</span>                environmentTime.getDoubleValue(), ExecutionEventType.STOP);<a name="line.99"></a>
-<span class="sourceLineNo">100</span>        return aspect.schedule(actor, environmentTime, deadline,<a name="line.100"></a>
-<span class="sourceLineNo">101</span>                new Time(director, executionTime));<a name="line.101"></a>
-<span class="sourceLineNo">102</span>    }<a name="line.102"></a>
-<span class="sourceLineNo">103</span><a name="line.103"></a>
-<span class="sourceLineNo">104</span>}<a name="line.104"></a>
+<span class="sourceLineNo">062</span>            if (!(entity instanceof ActorExecutionAspect)) {<a name="line.62"></a>
+<span class="sourceLineNo">063</span>                toDecorate.add((NamedObj) entity);<a name="line.63"></a>
+<span class="sourceLineNo">064</span>                if (entity instanceof CompositeEntity) {<a name="line.64"></a>
+<span class="sourceLineNo">065</span>                    toDecorate.addAll(ExecutionAspectHelper<a name="line.65"></a>
+<span class="sourceLineNo">066</span>                            .getEntitiesToDecorate((CompositeEntity) entity));<a name="line.66"></a>
+<span class="sourceLineNo">067</span>                }<a name="line.67"></a>
+<span class="sourceLineNo">068</span>            }<a name="line.68"></a>
+<span class="sourceLineNo">069</span>        }<a name="line.69"></a>
+<span class="sourceLineNo">070</span>        return toDecorate;<a name="line.70"></a>
+<span class="sourceLineNo">071</span>    }<a name="line.71"></a>
+<span class="sourceLineNo">072</span><a name="line.72"></a>
+<span class="sourceLineNo">073</span>    /** Schedule an actor for execution on an aspect and return the next time<a name="line.73"></a>
+<span class="sourceLineNo">074</span>     *  this aspect has to perform an action. Derived classes<a name="line.74"></a>
+<span class="sourceLineNo">075</span>     *  must implement this method to actually schedule actors, this<a name="line.75"></a>
+<span class="sourceLineNo">076</span>     *  base class implementation just creates events for aspect<a name="line.76"></a>
+<span class="sourceLineNo">077</span>     *  activity that is displayed in the plotter. This<a name="line.77"></a>
+<span class="sourceLineNo">078</span>     *  base class implementation just creates events for aspect<a name="line.78"></a>
+<span class="sourceLineNo">079</span>     *  activity that is displayed in the plotter.<a name="line.79"></a>
+<span class="sourceLineNo">080</span>     *  @param aspect The aspect.<a name="line.80"></a>
+<span class="sourceLineNo">081</span>     *  @param actor The actor to be scheduled.<a name="line.81"></a>
+<span class="sourceLineNo">082</span>     *  @param environmentTime The current platform time.<a name="line.82"></a>
+<span class="sourceLineNo">083</span>     *  @param deadline The deadline timestamp of the event to be scheduled.<a name="line.83"></a>
+<span class="sourceLineNo">084</span>     *  This can be the same as the environmentTime.<a name="line.84"></a>
+<span class="sourceLineNo">085</span>     *  @return Relative time when this aspect has to be executed<a name="line.85"></a>
+<span class="sourceLineNo">086</span>     *    again to perform rescheduling actions.<a name="line.86"></a>
+<span class="sourceLineNo">087</span>     *  @exception IllegalActionException Thrown if actor parameters such<a name="line.87"></a>
+<span class="sourceLineNo">088</span>     *    as execution time or priority cannot be read.<a name="line.88"></a>
+<span class="sourceLineNo">089</span>     */<a name="line.89"></a>
+<span class="sourceLineNo">090</span>    public static Time schedule(ActorExecutionAspect aspect, NamedObj actor,<a name="line.90"></a>
+<span class="sourceLineNo">091</span>            Time environmentTime, Time deadline) throws IllegalActionException {<a name="line.91"></a>
+<span class="sourceLineNo">092</span>        Director director = ((CompositeActor) ((ComponentEntity) aspect)<a name="line.92"></a>
+<span class="sourceLineNo">093</span>                .getContainer()).getDirector();<a name="line.93"></a>
+<span class="sourceLineNo">094</span>        double executionTime = aspect.getExecutionTime(actor);<a name="line.94"></a>
+<span class="sourceLineNo">095</span>        aspect.notifyExecutionListeners(((NamedObj) aspect),<a name="line.95"></a>
+<span class="sourceLineNo">096</span>                environmentTime.getDoubleValue(), ExecutionEventType.START);<a name="line.96"></a>
+<span class="sourceLineNo">097</span>        aspect.notifyExecutionListeners(((NamedObj) aspect),<a name="line.97"></a>
+<span class="sourceLineNo">098</span>                environmentTime.getDoubleValue(), ExecutionEventType.STOP);<a name="line.98"></a>
+<span class="sourceLineNo">099</span>        return aspect.schedule(actor, environmentTime, deadline,<a name="line.99"></a>
+<span class="sourceLineNo">100</span>                new Time(director, executionTime));<a name="line.100"></a>
+<span class="sourceLineNo">101</span>    }<a name="line.101"></a>
+<span class="sourceLineNo">102</span><a name="line.102"></a>
+<span class="sourceLineNo">103</span>}<a name="line.103"></a>
 
 
 
