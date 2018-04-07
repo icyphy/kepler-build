@@ -65,6 +65,7 @@ updateGhPages () {
     echo "Remove any instances of GITHUB_TOKEN: "
     date
     # Don't echo GITHUB_TOKEN
+    set +e
     set +x
     files=`find . -type f`
     for file in $files
@@ -77,15 +78,16 @@ updateGhPages () {
             mv $file.tmp $file
         fi
     done        
+    #set -x
     echo "Done."
-    set -x
+    set -e
 
     git add -f .
     date
-    git pull
+    # git pull
     date
     git commit -m "Lastest successful travis build $TRAVIS_BUILD_NUMBER auto-pushed $1 to $2 in gh-pages."
-    git pull
+    git pull 
     git push origin gh-pages
     git push -f origin gh-pages
 
@@ -113,9 +115,13 @@ which java
 svn update
 
 
-# Change to the nightly suite.  The output has too many lines for
-# Travis-ci, so we put it in a log.
-mkdir logs
+# Change to the nightly suite.
+
+# The output has too many lines for Travis-ci, so we put it in a log.
+if [ ! -d logs ]; then
+    mkdir logs
+fi
+
 LOG=logs/change-to.txt
 echo "Running 'ant change-to -Dsuite=nightly', redirecting output to $LOG: `date`"
 ant change-to -Dsuite=nightly 2>&1 | grep -v GITHUB_TOKEN > $LOG
