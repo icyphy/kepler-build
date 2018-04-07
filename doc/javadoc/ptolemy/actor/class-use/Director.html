@@ -296,9 +296,9 @@
 <tbody>
 <tr class="altColor">
 <td class="colFirst"><code>boolean</code></td>
-<td class="colLast"><span class="typeNameLabel">XMLRecording.</span><code><span class="memberNameLink"><a href="../../../org/kepler/provenance/XMLRecording.html#regDirector-ptolemy.actor.Director-">regDirector</a></span>(<a href="../../../ptolemy/actor/Director.html" title="class in ptolemy.actor">Director</a>&nbsp;director)</code>
-<div class="block"><span class="deprecatedLabel">Deprecated.</span>&nbsp;</div>
-&nbsp;</td>
+<td class="colLast"><span class="typeNameLabel">Recording.</span><code><span class="memberNameLink"><a href="../../../org/kepler/provenance/Recording.html#regDirector-ptolemy.actor.Director-">regDirector</a></span>(<a href="../../../ptolemy/actor/Director.html" title="class in ptolemy.actor">Director</a>&nbsp;director)</code>
+<div class="block">Register a director.</div>
+</td>
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>boolean</code></td>
@@ -308,9 +308,9 @@
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>boolean</code></td>
-<td class="colLast"><span class="typeNameLabel">Recording.</span><code><span class="memberNameLink"><a href="../../../org/kepler/provenance/Recording.html#regDirector-ptolemy.actor.Director-">regDirector</a></span>(<a href="../../../ptolemy/actor/Director.html" title="class in ptolemy.actor">Director</a>&nbsp;director)</code>
-<div class="block">Register a director.</div>
-</td>
+<td class="colLast"><span class="typeNameLabel">XMLRecording.</span><code><span class="memberNameLink"><a href="../../../org/kepler/provenance/XMLRecording.html#regDirector-ptolemy.actor.Director-">regDirector</a></span>(<a href="../../../ptolemy/actor/Director.html" title="class in ptolemy.actor">Director</a>&nbsp;director)</code>
+<div class="block"><span class="deprecatedLabel">Deprecated.</span>&nbsp;</div>
+&nbsp;</td>
 </tr>
 </tbody>
 </table>
@@ -387,6 +387,19 @@
 <tbody>
 <tr class="altColor">
 <td class="colFirst"><code><a href="../../../ptolemy/actor/Director.html" title="class in ptolemy.actor">Director</a></code></td>
+<td class="colLast"><span class="typeNameLabel">Actor.</span><code><span class="memberNameLink"><a href="../../../ptolemy/actor/Actor.html#getDirector--">getDirector</a></span>()</code>
+<div class="block">Return the local director, if there is one, otherwise the executive
+  director, if there is one, otherwise null.</div>
+</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code><a href="../../../ptolemy/actor/Director.html" title="class in ptolemy.actor">Director</a></code></td>
+<td class="colLast"><span class="typeNameLabel">AtomicActor.</span><code><span class="memberNameLink"><a href="../../../ptolemy/actor/AtomicActor.html#getDirector--">getDirector</a></span>()</code>
+<div class="block">Return the director responsible for the execution of this actor.</div>
+</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code><a href="../../../ptolemy/actor/Director.html" title="class in ptolemy.actor">Director</a></code></td>
 <td class="colLast"><span class="typeNameLabel">FiringEvent.</span><code><span class="memberNameLink"><a href="../../../ptolemy/actor/FiringEvent.html#getDirector--">getDirector</a></span>()</code>
 <div class="block">Return the director that activated the actor.</div>
 </td>
@@ -400,21 +413,8 @@
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code><a href="../../../ptolemy/actor/Director.html" title="class in ptolemy.actor">Director</a></code></td>
-<td class="colLast"><span class="typeNameLabel">AtomicActor.</span><code><span class="memberNameLink"><a href="../../../ptolemy/actor/AtomicActor.html#getDirector--">getDirector</a></span>()</code>
-<div class="block">Return the director responsible for the execution of this actor.</div>
-</td>
-</tr>
-<tr class="rowColor">
-<td class="colFirst"><code><a href="../../../ptolemy/actor/Director.html" title="class in ptolemy.actor">Director</a></code></td>
-<td class="colLast"><span class="typeNameLabel">Actor.</span><code><span class="memberNameLink"><a href="../../../ptolemy/actor/Actor.html#getDirector--">getDirector</a></span>()</code>
-<div class="block">Return the local director, if there is one, otherwise the executive
-  director, if there is one, otherwise null.</div>
-</td>
-</tr>
-<tr class="altColor">
-<td class="colFirst"><code><a href="../../../ptolemy/actor/Director.html" title="class in ptolemy.actor">Director</a></code></td>
-<td class="colLast"><span class="typeNameLabel">CompositeActor.</span><code><span class="memberNameLink"><a href="../../../ptolemy/actor/CompositeActor.html#getExecutiveDirector--">getExecutiveDirector</a></span>()</code>
-<div class="block">Return the executive director of this CompositeActor.</div>
+<td class="colLast"><span class="typeNameLabel">Actor.</span><code><span class="memberNameLink"><a href="../../../ptolemy/actor/Actor.html#getExecutiveDirector--">getExecutiveDirector</a></span>()</code>
+<div class="block">Return the executive director, if there is one, otherwise return null.</div>
 </td>
 </tr>
 <tr class="rowColor">
@@ -425,8 +425,8 @@
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code><a href="../../../ptolemy/actor/Director.html" title="class in ptolemy.actor">Director</a></code></td>
-<td class="colLast"><span class="typeNameLabel">Actor.</span><code><span class="memberNameLink"><a href="../../../ptolemy/actor/Actor.html#getExecutiveDirector--">getExecutiveDirector</a></span>()</code>
-<div class="block">Return the executive director, if there is one, otherwise return null.</div>
+<td class="colLast"><span class="typeNameLabel">CompositeActor.</span><code><span class="memberNameLink"><a href="../../../ptolemy/actor/CompositeActor.html#getExecutiveDirector--">getExecutiveDirector</a></span>()</code>
+<div class="block">Return the executive director of this CompositeActor.</div>
 </td>
 </tr>
 </tbody>

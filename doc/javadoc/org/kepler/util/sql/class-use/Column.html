@@ -248,13 +248,13 @@
 <tbody>
 <tr class="altColor">
 <td class="colFirst"><code>protected java.lang.String</code></td>
-<td class="colLast"><span class="typeNameLabel">PostgreSQL.</span><code><span class="memberNameLink"><a href="../../../../../org/kepler/util/sql/PostgreSQL.html#Z:Z_getTypeString-org.kepler.util.sql.Column-">_getTypeString</a></span>(<a href="../../../../../org/kepler/util/sql/Column.html" title="class in org.kepler.util.sql">Column</a>&nbsp;column)</code>
+<td class="colLast"><span class="typeNameLabel">Oracle.</span><code><span class="memberNameLink"><a href="../../../../../org/kepler/util/sql/Oracle.html#Z:Z_getTypeString-org.kepler.util.sql.Column-">_getTypeString</a></span>(<a href="../../../../../org/kepler/util/sql/Column.html" title="class in org.kepler.util.sql">Column</a>&nbsp;column)</code>
 <div class="block">Get the SQL string of a column type.</div>
 </td>
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>protected java.lang.String</code></td>
-<td class="colLast"><span class="typeNameLabel">Oracle.</span><code><span class="memberNameLink"><a href="../../../../../org/kepler/util/sql/Oracle.html#Z:Z_getTypeString-org.kepler.util.sql.Column-">_getTypeString</a></span>(<a href="../../../../../org/kepler/util/sql/Column.html" title="class in org.kepler.util.sql">Column</a>&nbsp;column)</code>
+<td class="colLast"><span class="typeNameLabel">PostgreSQL.</span><code><span class="memberNameLink"><a href="../../../../../org/kepler/util/sql/PostgreSQL.html#Z:Z_getTypeString-org.kepler.util.sql.Column-">_getTypeString</a></span>(<a href="../../../../../org/kepler/util/sql/Column.html" title="class in org.kepler.util.sql">Column</a>&nbsp;column)</code>
 <div class="block">Get the SQL string of a column type.</div>
 </td>
 </tr>
@@ -265,14 +265,14 @@
 </td>
 </tr>
 <tr class="rowColor">
-<td class="colFirst"><code>protected java.lang.String</code></td>
-<td class="colLast"><span class="typeNameLabel">HSQL.</span><code><span class="memberNameLink"><a href="../../../../../org/kepler/util/sql/HSQL.html#Z:Z_getTypeString-org.kepler.util.sql.Column-">_getTypeString</a></span>(<a href="../../../../../org/kepler/util/sql/Column.html" title="class in org.kepler.util.sql">Column</a>&nbsp;column)</code>
+<td class="colFirst"><code>protected abstract java.lang.String</code></td>
+<td class="colLast"><span class="typeNameLabel">DatabaseType.</span><code><span class="memberNameLink"><a href="../../../../../org/kepler/util/sql/DatabaseType.html#Z:Z_getTypeString-org.kepler.util.sql.Column-">_getTypeString</a></span>(<a href="../../../../../org/kepler/util/sql/Column.html" title="class in org.kepler.util.sql">Column</a>&nbsp;column)</code>
 <div class="block">Get the SQL string of a column type.</div>
 </td>
 </tr>
 <tr class="altColor">
-<td class="colFirst"><code>protected abstract java.lang.String</code></td>
-<td class="colLast"><span class="typeNameLabel">DatabaseType.</span><code><span class="memberNameLink"><a href="../../../../../org/kepler/util/sql/DatabaseType.html#Z:Z_getTypeString-org.kepler.util.sql.Column-">_getTypeString</a></span>(<a href="../../../../../org/kepler/util/sql/Column.html" title="class in org.kepler.util.sql">Column</a>&nbsp;column)</code>
+<td class="colFirst"><code>protected java.lang.String</code></td>
+<td class="colLast"><span class="typeNameLabel">HSQL.</span><code><span class="memberNameLink"><a href="../../../../../org/kepler/util/sql/HSQL.html#Z:Z_getTypeString-org.kepler.util.sql.Column-">_getTypeString</a></span>(<a href="../../../../../org/kepler/util/sql/Column.html" title="class in org.kepler.util.sql">Column</a>&nbsp;column)</code>
 <div class="block">Get the SQL string of a column type.</div>
 </td>
 </tr>
@@ -354,7 +354,7 @@
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">PostgreSQL.</span><code><span class="memberNameLink"><a href="../../../../../org/kepler/util/sql/PostgreSQL.html#renameColumn-java.lang.String-org.kepler.util.sql.Column-java.lang.String-">renameColumn</a></span>(java.lang.String&nbsp;oldName,
+<td class="colLast"><span class="typeNameLabel">Oracle.</span><code><span class="memberNameLink"><a href="../../../../../org/kepler/util/sql/Oracle.html#renameColumn-java.lang.String-org.kepler.util.sql.Column-java.lang.String-">renameColumn</a></span>(java.lang.String&nbsp;oldName,
             <a href="../../../../../org/kepler/util/sql/Column.html" title="class in org.kepler.util.sql">Column</a>&nbsp;newColumn,
             java.lang.String&nbsp;tableName)</code>
 <div class="block">Rename a column.</div>
@@ -362,7 +362,7 @@
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">Oracle.</span><code><span class="memberNameLink"><a href="../../../../../org/kepler/util/sql/Oracle.html#renameColumn-java.lang.String-org.kepler.util.sql.Column-java.lang.String-">renameColumn</a></span>(java.lang.String&nbsp;oldName,
+<td class="colLast"><span class="typeNameLabel">PostgreSQL.</span><code><span class="memberNameLink"><a href="../../../../../org/kepler/util/sql/PostgreSQL.html#renameColumn-java.lang.String-org.kepler.util.sql.Column-java.lang.String-">renameColumn</a></span>(java.lang.String&nbsp;oldName,
             <a href="../../../../../org/kepler/util/sql/Column.html" title="class in org.kepler.util.sql">Column</a>&nbsp;newColumn,
             java.lang.String&nbsp;tableName)</code>
 <div class="block">Rename a column.</div>
@@ -377,14 +377,6 @@
 </td>
 </tr>
 <tr class="altColor">
-<td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">HSQL.</span><code><span class="memberNameLink"><a href="../../../../../org/kepler/util/sql/HSQL.html#renameColumn-java.lang.String-org.kepler.util.sql.Column-java.lang.String-">renameColumn</a></span>(java.lang.String&nbsp;oldName,
-            <a href="../../../../../org/kepler/util/sql/Column.html" title="class in org.kepler.util.sql">Column</a>&nbsp;newColumn,
-            java.lang.String&nbsp;tableName)</code>
-<div class="block">Rename a column.</div>
-</td>
-</tr>
-<tr class="rowColor">
 <td class="colFirst"><code>abstract void</code></td>
 <td class="colLast"><span class="typeNameLabel">DatabaseType.</span><code><span class="memberNameLink"><a href="../../../../../org/kepler/util/sql/DatabaseType.html#renameColumn-java.lang.String-org.kepler.util.sql.Column-java.lang.String-">renameColumn</a></span>(java.lang.String&nbsp;oldName,
             <a href="../../../../../org/kepler/util/sql/Column.html" title="class in org.kepler.util.sql">Column</a>&nbsp;newColumn,
@@ -392,16 +384,24 @@
 <div class="block">Rename a column.</div>
 </td>
 </tr>
+<tr class="rowColor">
+<td class="colFirst"><code>void</code></td>
+<td class="colLast"><span class="typeNameLabel">HSQL.</span><code><span class="memberNameLink"><a href="../../../../../org/kepler/util/sql/HSQL.html#renameColumn-java.lang.String-org.kepler.util.sql.Column-java.lang.String-">renameColumn</a></span>(java.lang.String&nbsp;oldName,
+            <a href="../../../../../org/kepler/util/sql/Column.html" title="class in org.kepler.util.sql">Column</a>&nbsp;newColumn,
+            java.lang.String&nbsp;tableName)</code>
+<div class="block">Rename a column.</div>
+</td>
+</tr>
 <tr class="altColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">PostgreSQL.</span><code><span class="memberNameLink"><a href="../../../../../org/kepler/util/sql/PostgreSQL.html#setColumnNotNull-org.kepler.util.sql.Column-java.lang.String-">setColumnNotNull</a></span>(<a href="../../../../../org/kepler/util/sql/Column.html" title="class in org.kepler.util.sql">Column</a>&nbsp;column,
+<td class="colLast"><span class="typeNameLabel">Oracle.</span><code><span class="memberNameLink"><a href="../../../../../org/kepler/util/sql/Oracle.html#setColumnNotNull-org.kepler.util.sql.Column-java.lang.String-">setColumnNotNull</a></span>(<a href="../../../../../org/kepler/util/sql/Column.html" title="class in org.kepler.util.sql">Column</a>&nbsp;column,
                 java.lang.String&nbsp;tableName)</code>
 <div class="block">Set not null constraint to a column.</div>
 </td>
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">Oracle.</span><code><span class="memberNameLink"><a href="../../../../../org/kepler/util/sql/Oracle.html#setColumnNotNull-org.kepler.util.sql.Column-java.lang.String-">setColumnNotNull</a></span>(<a href="../../../../../org/kepler/util/sql/Column.html" title="class in org.kepler.util.sql">Column</a>&nbsp;column,
+<td class="colLast"><span class="typeNameLabel">PostgreSQL.</span><code><span class="memberNameLink"><a href="../../../../../org/kepler/util/sql/PostgreSQL.html#setColumnNotNull-org.kepler.util.sql.Column-java.lang.String-">setColumnNotNull</a></span>(<a href="../../../../../org/kepler/util/sql/Column.html" title="class in org.kepler.util.sql">Column</a>&nbsp;column,
                 java.lang.String&nbsp;tableName)</code>
 <div class="block">Set not null constraint to a column.</div>
 </td>
@@ -414,29 +414,29 @@
 </td>
 </tr>
 <tr class="rowColor">
-<td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">HSQL.</span><code><span class="memberNameLink"><a href="../../../../../org/kepler/util/sql/HSQL.html#setColumnNotNull-org.kepler.util.sql.Column-java.lang.String-">setColumnNotNull</a></span>(<a href="../../../../../org/kepler/util/sql/Column.html" title="class in org.kepler.util.sql">Column</a>&nbsp;column,
-                java.lang.String&nbsp;tableName)</code>
-<div class="block">Set not null constraint to a column.</div>
-</td>
-</tr>
-<tr class="altColor">
 <td class="colFirst"><code>abstract void</code></td>
 <td class="colLast"><span class="typeNameLabel">DatabaseType.</span><code><span class="memberNameLink"><a href="../../../../../org/kepler/util/sql/DatabaseType.html#setColumnNotNull-org.kepler.util.sql.Column-java.lang.String-">setColumnNotNull</a></span>(<a href="../../../../../org/kepler/util/sql/Column.html" title="class in org.kepler.util.sql">Column</a>&nbsp;column,
                 java.lang.String&nbsp;tableName)</code>
 <div class="block">Set not null constraint to a column.</div>
 </td>
 </tr>
+<tr class="altColor">
+<td class="colFirst"><code>void</code></td>
+<td class="colLast"><span class="typeNameLabel">HSQL.</span><code><span class="memberNameLink"><a href="../../../../../org/kepler/util/sql/HSQL.html#setColumnNotNull-org.kepler.util.sql.Column-java.lang.String-">setColumnNotNull</a></span>(<a href="../../../../../org/kepler/util/sql/Column.html" title="class in org.kepler.util.sql">Column</a>&nbsp;column,
+                java.lang.String&nbsp;tableName)</code>
+<div class="block">Set not null constraint to a column.</div>
+</td>
+</tr>
 <tr class="rowColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">PostgreSQL.</span><code><span class="memberNameLink"><a href="../../../../../org/kepler/util/sql/PostgreSQL.html#setColumnNull-org.kepler.util.sql.Column-java.lang.String-">setColumnNull</a></span>(<a href="../../../../../org/kepler/util/sql/Column.html" title="class in org.kepler.util.sql">Column</a>&nbsp;column,
+<td class="colLast"><span class="typeNameLabel">Oracle.</span><code><span class="memberNameLink"><a href="../../../../../org/kepler/util/sql/Oracle.html#setColumnNull-org.kepler.util.sql.Column-java.lang.String-">setColumnNull</a></span>(<a href="../../../../../org/kepler/util/sql/Column.html" title="class in org.kepler.util.sql">Column</a>&nbsp;column,
              java.lang.String&nbsp;tableName)</code>
 <div class="block">Change a column to allow null values.</div>
 </td>
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">Oracle.</span><code><span class="memberNameLink"><a href="../../../../../org/kepler/util/sql/Oracle.html#setColumnNull-org.kepler.util.sql.Column-java.lang.String-">setColumnNull</a></span>(<a href="../../../../../org/kepler/util/sql/Column.html" title="class in org.kepler.util.sql">Column</a>&nbsp;column,
+<td class="colLast"><span class="typeNameLabel">PostgreSQL.</span><code><span class="memberNameLink"><a href="../../../../../org/kepler/util/sql/PostgreSQL.html#setColumnNull-org.kepler.util.sql.Column-java.lang.String-">setColumnNull</a></span>(<a href="../../../../../org/kepler/util/sql/Column.html" title="class in org.kepler.util.sql">Column</a>&nbsp;column,
              java.lang.String&nbsp;tableName)</code>
 <div class="block">Change a column to allow null values.</div>
 </td>
@@ -449,15 +449,15 @@
 </td>
 </tr>
 <tr class="altColor">
-<td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">HSQL.</span><code><span class="memberNameLink"><a href="../../../../../org/kepler/util/sql/HSQL.html#setColumnNull-org.kepler.util.sql.Column-java.lang.String-">setColumnNull</a></span>(<a href="../../../../../org/kepler/util/sql/Column.html" title="class in org.kepler.util.sql">Column</a>&nbsp;column,
+<td class="colFirst"><code>abstract void</code></td>
+<td class="colLast"><span class="typeNameLabel">DatabaseType.</span><code><span class="memberNameLink"><a href="../../../../../org/kepler/util/sql/DatabaseType.html#setColumnNull-org.kepler.util.sql.Column-java.lang.String-">setColumnNull</a></span>(<a href="../../../../../org/kepler/util/sql/Column.html" title="class in org.kepler.util.sql">Column</a>&nbsp;column,
              java.lang.String&nbsp;tableName)</code>
 <div class="block">Change a column to allow null values.</div>
 </td>
 </tr>
 <tr class="rowColor">
-<td class="colFirst"><code>abstract void</code></td>
-<td class="colLast"><span class="typeNameLabel">DatabaseType.</span><code><span class="memberNameLink"><a href="../../../../../org/kepler/util/sql/DatabaseType.html#setColumnNull-org.kepler.util.sql.Column-java.lang.String-">setColumnNull</a></span>(<a href="../../../../../org/kepler/util/sql/Column.html" title="class in org.kepler.util.sql">Column</a>&nbsp;column,
+<td class="colFirst"><code>void</code></td>
+<td class="colLast"><span class="typeNameLabel">HSQL.</span><code><span class="memberNameLink"><a href="../../../../../org/kepler/util/sql/HSQL.html#setColumnNull-org.kepler.util.sql.Column-java.lang.String-">setColumnNull</a></span>(<a href="../../../../../org/kepler/util/sql/Column.html" title="class in org.kepler.util.sql">Column</a>&nbsp;column,
              java.lang.String&nbsp;tableName)</code>
 <div class="block">Change a column to allow null values.</div>
 </td>

@@ -294,16 +294,16 @@ KIELER layout algorithm.</div>
 <tbody>
 <tr class="altColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">OpenDBConnection.</span><code><span class="memberNameLink"><a href="../../../org/geon/OpenDBConnection.html#connectionsChanged-ptolemy.kernel.Port-">connectionsChanged</a></span>(<a href="../../../ptolemy/kernel/Port.html" title="class in ptolemy.kernel">Port</a>&nbsp;port)</code>
-<div class="block">When connecting the dbcon port, trigger the connectionsChanged of the
- connected actor.</div>
+<td class="colLast"><span class="typeNameLabel">DatabaseQuery.</span><code><span class="memberNameLink"><a href="../../../org/geon/DatabaseQuery.html#connectionsChanged-ptolemy.kernel.Port-">connectionsChanged</a></span>(<a href="../../../ptolemy/kernel/Port.html" title="class in ptolemy.kernel">Port</a>&nbsp;port)</code>
+<div class="block">Try to set the database schema once the database connection port has been
+ connected.</div>
 </td>
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">DatabaseQuery.</span><code><span class="memberNameLink"><a href="../../../org/geon/DatabaseQuery.html#connectionsChanged-ptolemy.kernel.Port-">connectionsChanged</a></span>(<a href="../../../ptolemy/kernel/Port.html" title="class in ptolemy.kernel">Port</a>&nbsp;port)</code>
-<div class="block">Try to set the database schema once the database connection port has been
- connected.</div>
+<td class="colLast"><span class="typeNameLabel">OpenDBConnection.</span><code><span class="memberNameLink"><a href="../../../org/geon/OpenDBConnection.html#connectionsChanged-ptolemy.kernel.Port-">connectionsChanged</a></span>(<a href="../../../ptolemy/kernel/Port.html" title="class in ptolemy.kernel">Port</a>&nbsp;port)</code>
+<div class="block">When connecting the dbcon port, trigger the connectionsChanged of the
+ connected actor.</div>
 </td>
 </tr>
 </tbody>
@@ -361,14 +361,14 @@ KIELER layout algorithm.</div>
 </tr>
 <tbody>
 <tr class="altColor">
-<td class="colFirst"><code>abstract boolean</code></td>
-<td class="colLast"><span class="typeNameLabel">MultiCompositeTableau.AddRefinementAction.</span><code><span class="memberNameLink"><a href="../../../org/kepler/gui/frame/MultiCompositeTableau.AddRefinementAction.html#mirrorPort-ptolemy.kernel.Port-">mirrorPort</a></span>(<a href="../../../ptolemy/kernel/Port.html" title="class in ptolemy.kernel">Port</a>&nbsp;port)</code>
+<td class="colFirst"><code>boolean</code></td>
+<td class="colLast"><span class="typeNameLabel">CaseGraphTableau.AddCaseAction.</span><code><span class="memberNameLink"><a href="../../../org/kepler/gui/frame/CaseGraphTableau.AddCaseAction.html#mirrorPort-ptolemy.kernel.Port-">mirrorPort</a></span>(<a href="../../../ptolemy/kernel/Port.html" title="class in ptolemy.kernel">Port</a>&nbsp;port)</code>
 <div class="block">Returns true if port should be mirrored.</div>
 </td>
 </tr>
 <tr class="rowColor">
-<td class="colFirst"><code>boolean</code></td>
-<td class="colLast"><span class="typeNameLabel">CaseGraphTableau.AddCaseAction.</span><code><span class="memberNameLink"><a href="../../../org/kepler/gui/frame/CaseGraphTableau.AddCaseAction.html#mirrorPort-ptolemy.kernel.Port-">mirrorPort</a></span>(<a href="../../../ptolemy/kernel/Port.html" title="class in ptolemy.kernel">Port</a>&nbsp;port)</code>
+<td class="colFirst"><code>abstract boolean</code></td>
+<td class="colLast"><span class="typeNameLabel">MultiCompositeTableau.AddRefinementAction.</span><code><span class="memberNameLink"><a href="../../../org/kepler/gui/frame/MultiCompositeTableau.AddRefinementAction.html#mirrorPort-ptolemy.kernel.Port-">mirrorPort</a></span>(<a href="../../../ptolemy/kernel/Port.html" title="class in ptolemy.kernel">Port</a>&nbsp;port)</code>
 <div class="block">Returns true if port should be mirrored.</div>
 </td>
 </tr>
@@ -470,31 +470,31 @@ KIELER layout algorithm.</div>
 <tbody>
 <tr class="altColor">
 <td class="colFirst"><code><a href="../../../ptolemy/kernel/Port.html" title="class in ptolemy.kernel">Port</a></code></td>
-<td class="colLast"><span class="typeNameLabel">TypeOpaqueCompositeActor.</span><code><span class="memberNameLink"><a href="../../../ptolemy/actor/TypeOpaqueCompositeActor.html#newPort-java.lang.String-">newPort</a></span>(java.lang.String&nbsp;name)</code>
-<div class="block">Create a new TypedIOPort with the specified name.</div>
-</td>
-</tr>
-<tr class="rowColor">
-<td class="colFirst"><code><a href="../../../ptolemy/kernel/Port.html" title="class in ptolemy.kernel">Port</a></code></td>
-<td class="colLast"><span class="typeNameLabel">TypedCompositeActor.</span><code><span class="memberNameLink"><a href="../../../ptolemy/actor/TypedCompositeActor.html#newPort-java.lang.String-">newPort</a></span>(java.lang.String&nbsp;name)</code>
-<div class="block">Create a new TypedIOPort with the specified name.</div>
-</td>
-</tr>
-<tr class="altColor">
-<td class="colFirst"><code><a href="../../../ptolemy/kernel/Port.html" title="class in ptolemy.kernel">Port</a></code></td>
 <td class="colLast"><span class="typeNameLabel">TypedAtomicActor.</span><code><span class="memberNameLink"><a href="../../../ptolemy/actor/TypedAtomicActor.html#newPort-java.lang.String-">newPort</a></span>(java.lang.String&nbsp;name)</code>
 <div class="block">Create a new TypedIOPort with the specified name.</div>
 </td>
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code><a href="../../../ptolemy/kernel/Port.html" title="class in ptolemy.kernel">Port</a></code></td>
-<td class="colLast"><span class="typeNameLabel">CompositeActor.</span><code><span class="memberNameLink"><a href="../../../ptolemy/actor/CompositeActor.html#newPort-java.lang.String-">newPort</a></span>(java.lang.String&nbsp;name)</code>
+<td class="colLast"><span class="typeNameLabel">TypeOpaqueCompositeActor.</span><code><span class="memberNameLink"><a href="../../../ptolemy/actor/TypeOpaqueCompositeActor.html#newPort-java.lang.String-">newPort</a></span>(java.lang.String&nbsp;name)</code>
+<div class="block">Create a new TypedIOPort with the specified name.</div>
+</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code><a href="../../../ptolemy/kernel/Port.html" title="class in ptolemy.kernel">Port</a></code></td>
+<td class="colLast"><span class="typeNameLabel">TypedCompositeActor.</span><code><span class="memberNameLink"><a href="../../../ptolemy/actor/TypedCompositeActor.html#newPort-java.lang.String-">newPort</a></span>(java.lang.String&nbsp;name)</code>
+<div class="block">Create a new TypedIOPort with the specified name.</div>
+</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code><a href="../../../ptolemy/kernel/Port.html" title="class in ptolemy.kernel">Port</a></code></td>
+<td class="colLast"><span class="typeNameLabel">AtomicActor.</span><code><span class="memberNameLink"><a href="../../../ptolemy/actor/AtomicActor.html#newPort-java.lang.String-">newPort</a></span>(java.lang.String&nbsp;name)</code>
 <div class="block">Create a new IOPort with the specified name.</div>
 </td>
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code><a href="../../../ptolemy/kernel/Port.html" title="class in ptolemy.kernel">Port</a></code></td>
-<td class="colLast"><span class="typeNameLabel">AtomicActor.</span><code><span class="memberNameLink"><a href="../../../ptolemy/actor/AtomicActor.html#newPort-java.lang.String-">newPort</a></span>(java.lang.String&nbsp;name)</code>
+<td class="colLast"><span class="typeNameLabel">CompositeActor.</span><code><span class="memberNameLink"><a href="../../../ptolemy/actor/CompositeActor.html#newPort-java.lang.String-">newPort</a></span>(java.lang.String&nbsp;name)</code>
 <div class="block">Create a new IOPort with the specified name.</div>
 </td>
 </tr>
@@ -528,31 +528,31 @@ KIELER layout algorithm.</div>
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>protected void</code></td>
-<td class="colLast"><span class="typeNameLabel">TypedIORelation.</span><code><span class="memberNameLink"><a href="../../../ptolemy/actor/TypedIORelation.html#Z:Z_checkPort-ptolemy.kernel.Port-">_checkPort</a></span>(<a href="../../../ptolemy/kernel/Port.html" title="class in ptolemy.kernel">Port</a>&nbsp;port)</code>
-<div class="block">Throw an exception if the specified port cannot be linked to this
-  relation (is not of class TypedIOPort).</div>
-</td>
-</tr>
-<tr class="altColor">
-<td class="colFirst"><code>protected void</code></td>
 <td class="colLast"><span class="typeNameLabel">IORelation.</span><code><span class="memberNameLink"><a href="../../../ptolemy/actor/IORelation.html#Z:Z_checkPort-ptolemy.kernel.Port-">_checkPort</a></span>(<a href="../../../ptolemy/kernel/Port.html" title="class in ptolemy.kernel">Port</a>&nbsp;port)</code>
 <div class="block">Throw an exception if the specified port cannot be linked to this
   relation (is not of class IOPort).</div>
 </td>
 </tr>
+<tr class="altColor">
+<td class="colFirst"><code>protected void</code></td>
+<td class="colLast"><span class="typeNameLabel">TypedIORelation.</span><code><span class="memberNameLink"><a href="../../../ptolemy/actor/TypedIORelation.html#Z:Z_checkPort-ptolemy.kernel.Port-">_checkPort</a></span>(<a href="../../../ptolemy/kernel/Port.html" title="class in ptolemy.kernel">Port</a>&nbsp;port)</code>
+<div class="block">Throw an exception if the specified port cannot be linked to this
+  relation (is not of class TypedIOPort).</div>
+</td>
+</tr>
 <tr class="rowColor">
+<td class="colFirst"><code>void</code></td>
+<td class="colLast"><span class="typeNameLabel">AtomicActor.</span><code><span class="memberNameLink"><a href="../../../ptolemy/actor/AtomicActor.html#connectionsChanged-ptolemy.kernel.Port-">connectionsChanged</a></span>(<a href="../../../ptolemy/kernel/Port.html" title="class in ptolemy.kernel">Port</a>&nbsp;port)</code>
+<div class="block">Create new receivers if the port is
+  an input port and there is a director.</div>
+</td>
+</tr>
+<tr class="altColor">
 <td class="colFirst"><code>void</code></td>
 <td class="colLast"><span class="typeNameLabel">CompositeActor.</span><code><span class="memberNameLink"><a href="../../../ptolemy/actor/CompositeActor.html#connectionsChanged-ptolemy.kernel.Port-">connectionsChanged</a></span>(<a href="../../../ptolemy/kernel/Port.html" title="class in ptolemy.kernel">Port</a>&nbsp;port)</code>
 <div class="block">Invalidate the schedule and type resolution and create
   new receivers if the specified port is an opaque
   output port.</div>
-</td>
-</tr>
-<tr class="altColor">
-<td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">AtomicActor.</span><code><span class="memberNameLink"><a href="../../../ptolemy/actor/AtomicActor.html#connectionsChanged-ptolemy.kernel.Port-">connectionsChanged</a></span>(<a href="../../../ptolemy/kernel/Port.html" title="class in ptolemy.kernel">Port</a>&nbsp;port)</code>
-<div class="block">Create new receivers if the port is
-  an input port and there is a director.</div>
 </td>
 </tr>
 </tbody>
@@ -688,6 +688,18 @@ KIELER layout algorithm.</div>
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code><a href="../../../ptolemy/kernel/Port.html" title="class in ptolemy.kernel">Port</a></code></td>
+<td class="colLast"><span class="typeNameLabel">IterateOverArray.</span><code><span class="memberNameLink"><a href="../../../ptolemy/actor/lib/hoc/IterateOverArray.html#newPort-java.lang.String-">newPort</a></span>(java.lang.String&nbsp;name)</code>
+<div class="block">Override the base class to return a specialized port.</div>
+</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code><a href="../../../ptolemy/kernel/Port.html" title="class in ptolemy.kernel">Port</a></code></td>
+<td class="colLast"><span class="typeNameLabel">IterateOverArray.IterateComposite.</span><code><span class="memberNameLink"><a href="../../../ptolemy/actor/lib/hoc/IterateOverArray.IterateComposite.html#newPort-java.lang.String-">newPort</a></span>(java.lang.String&nbsp;name)</code>
+<div class="block">Override the base class to return a specialized port.</div>
+</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code><a href="../../../ptolemy/kernel/Port.html" title="class in ptolemy.kernel">Port</a></code></td>
 <td class="colLast"><span class="typeNameLabel">Refinement.</span><code><span class="memberNameLink"><a href="../../../ptolemy/actor/lib/hoc/Refinement.html#newPort-java.lang.String-">newPort</a></span>(java.lang.String&nbsp;name)</code>
 <div class="block">Create a new port with the specified name in the container of
   this refinement, which in turn creates a port in this refinement
@@ -699,18 +711,6 @@ KIELER layout algorithm.</div>
 <td class="colLast"><span class="typeNameLabel">MultiCompositeActor.</span><code><span class="memberNameLink"><a href="../../../ptolemy/actor/lib/hoc/MultiCompositeActor.html#newPort-java.lang.String-">newPort</a></span>(java.lang.String&nbsp;name)</code>
 <div class="block">Create a new port with the specified name in this entity
   and all the refinements.</div>
-</td>
-</tr>
-<tr class="rowColor">
-<td class="colFirst"><code><a href="../../../ptolemy/kernel/Port.html" title="class in ptolemy.kernel">Port</a></code></td>
-<td class="colLast"><span class="typeNameLabel">IterateOverArray.</span><code><span class="memberNameLink"><a href="../../../ptolemy/actor/lib/hoc/IterateOverArray.html#newPort-java.lang.String-">newPort</a></span>(java.lang.String&nbsp;name)</code>
-<div class="block">Override the base class to return a specialized port.</div>
-</td>
-</tr>
-<tr class="altColor">
-<td class="colFirst"><code><a href="../../../ptolemy/kernel/Port.html" title="class in ptolemy.kernel">Port</a></code></td>
-<td class="colLast"><span class="typeNameLabel">IterateOverArray.IterateComposite.</span><code><span class="memberNameLink"><a href="../../../ptolemy/actor/lib/hoc/IterateOverArray.IterateComposite.html#newPort-java.lang.String-">newPort</a></span>(java.lang.String&nbsp;name)</code>
-<div class="block">Override the base class to return a specialized port.</div>
 </td>
 </tr>
 </tbody>
@@ -1094,10 +1094,10 @@ KIELER layout algorithm.</div>
 <tbody>
 <tr class="altColor">
 <td class="colFirst"><code><a href="../../../ptolemy/kernel/Port.html" title="class in ptolemy.kernel">Port</a></code></td>
-<td class="colLast"><span class="typeNameLabel">TransitionRefinement.</span><code><span class="memberNameLink"><a href="../../../ptolemy/domains/modal/modal/TransitionRefinement.html#newPort-java.lang.String-">newPort</a></span>(java.lang.String&nbsp;name)</code>
+<td class="colLast"><span class="typeNameLabel">ModalRefinement.</span><code><span class="memberNameLink"><a href="../../../ptolemy/domains/modal/modal/ModalRefinement.html#newPort-java.lang.String-">newPort</a></span>(java.lang.String&nbsp;name)</code>
 <div class="block">Create a new port with the specified name in the container of
-  this refinement, which in turn creates a port in this refinement
-  all other refinements, and the controller.</div>
+  this controller, which in turn creates a port in this controller
+  and all the refinements.</div>
 </td>
 </tr>
 <tr class="rowColor">
@@ -1110,25 +1110,25 @@ KIELER layout algorithm.</div>
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code><a href="../../../ptolemy/kernel/Port.html" title="class in ptolemy.kernel">Port</a></code></td>
-<td class="colLast"><span class="typeNameLabel">ModalRefinement.</span><code><span class="memberNameLink"><a href="../../../ptolemy/domains/modal/modal/ModalRefinement.html#newPort-java.lang.String-">newPort</a></span>(java.lang.String&nbsp;name)</code>
-<div class="block">Create a new port with the specified name in the container of
-  this controller, which in turn creates a port in this controller
-  and all the refinements.</div>
-</td>
-</tr>
-<tr class="rowColor">
-<td class="colFirst"><code><a href="../../../ptolemy/kernel/Port.html" title="class in ptolemy.kernel">Port</a></code></td>
 <td class="colLast"><span class="typeNameLabel">ModalModel.</span><code><span class="memberNameLink"><a href="../../../ptolemy/domains/modal/modal/ModalModel.html#newPort-java.lang.String-">newPort</a></span>(java.lang.String&nbsp;name)</code>
 <div class="block">Create a new port with the specified name in this entity, the
   controller, and all the refinements.</div>
 </td>
 </tr>
-<tr class="altColor">
+<tr class="rowColor">
 <td class="colFirst"><code><a href="../../../ptolemy/kernel/Port.html" title="class in ptolemy.kernel">Port</a></code></td>
 <td class="colLast"><span class="typeNameLabel">ModalController.</span><code><span class="memberNameLink"><a href="../../../ptolemy/domains/modal/modal/ModalController.html#newPort-java.lang.String-">newPort</a></span>(java.lang.String&nbsp;name)</code>
 <div class="block">Create a new port with the specified name in the container of
   this controller, which in turn creates a port in this controller
   and all the refinements.</div>
+</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code><a href="../../../ptolemy/kernel/Port.html" title="class in ptolemy.kernel">Port</a></code></td>
+<td class="colLast"><span class="typeNameLabel">TransitionRefinement.</span><code><span class="memberNameLink"><a href="../../../ptolemy/domains/modal/modal/TransitionRefinement.html#newPort-java.lang.String-">newPort</a></span>(java.lang.String&nbsp;name)</code>
+<div class="block">Create a new port with the specified name in the container of
+  this refinement, which in turn creates a port in this refinement
+  all other refinements, and the controller.</div>
 </td>
 </tr>
 </tbody>

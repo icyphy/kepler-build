@@ -204,18 +204,18 @@ KIELER layout algorithm.</div>
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>protected void</code></td>
-<td class="colLast"><span class="typeNameLabel">TypedIORelation.</span><code><span class="memberNameLink"><a href="../../../ptolemy/actor/TypedIORelation.html#Z:Z_checkRelation-ptolemy.kernel.Relation-boolean-">_checkRelation</a></span>(<a href="../../../ptolemy/kernel/Relation.html" title="class in ptolemy.kernel">Relation</a>&nbsp;relation,
-              boolean&nbsp;symmetric)</code>
-<div class="block">Throw an exception if the specified relation is not an instance
-  of TypedIORelation.</div>
-</td>
-</tr>
-<tr class="altColor">
-<td class="colFirst"><code>protected void</code></td>
 <td class="colLast"><span class="typeNameLabel">IORelation.</span><code><span class="memberNameLink"><a href="../../../ptolemy/actor/IORelation.html#Z:Z_checkRelation-ptolemy.kernel.Relation-boolean-">_checkRelation</a></span>(<a href="../../../ptolemy/kernel/Relation.html" title="class in ptolemy.kernel">Relation</a>&nbsp;relation,
               boolean&nbsp;symmetric)</code>
 <div class="block">Throw an exception if the specified relation is not an instance
   of IORelation or if it does not have the same width as this relation.</div>
+</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code>protected void</code></td>
+<td class="colLast"><span class="typeNameLabel">TypedIORelation.</span><code><span class="memberNameLink"><a href="../../../ptolemy/actor/TypedIORelation.html#Z:Z_checkRelation-ptolemy.kernel.Relation-boolean-">_checkRelation</a></span>(<a href="../../../ptolemy/kernel/Relation.html" title="class in ptolemy.kernel">Relation</a>&nbsp;relation,
+              boolean&nbsp;symmetric)</code>
+<div class="block">Throw an exception if the specified relation is not an instance
+  of TypedIORelation.</div>
 </td>
 </tr>
 <tr class="rowColor">
@@ -487,38 +487,38 @@ KIELER layout algorithm.</div>
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>void</code></td>
+<td class="colLast"><span class="typeNameLabel">Port.</span><code><span class="memberNameLink"><a href="../../../ptolemy/kernel/Port.html#link-ptolemy.kernel.Relation-">link</a></span>(<a href="../../../ptolemy/kernel/Relation.html" title="class in ptolemy.kernel">Relation</a>&nbsp;relation)</code>
+<div class="block">Link this port with a relation, and notify the container by
+  calling its connectionsChanged() method.</div>
+</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code>void</code></td>
+<td class="colLast"><span class="typeNameLabel">ComponentPort.</span><code><span class="memberNameLink"><a href="../../../ptolemy/kernel/ComponentPort.html#link-ptolemy.kernel.Relation-">link</a></span>(<a href="../../../ptolemy/kernel/Relation.html" title="class in ptolemy.kernel">Relation</a>&nbsp;relation)</code>
+<div class="block">Link this port with the specified relation.</div>
+</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code>void</code></td>
 <td class="colLast"><span class="typeNameLabel">Relation.</span><code><span class="memberNameLink"><a href="../../../ptolemy/kernel/Relation.html#link-ptolemy.kernel.Relation-">link</a></span>(<a href="../../../ptolemy/kernel/Relation.html" title="class in ptolemy.kernel">Relation</a>&nbsp;relation)</code>
 <div class="block">Link this relation with another relation.</div>
 </td>
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">Port.</span><code><span class="memberNameLink"><a href="../../../ptolemy/kernel/Port.html#link-ptolemy.kernel.Relation-">link</a></span>(<a href="../../../ptolemy/kernel/Relation.html" title="class in ptolemy.kernel">Relation</a>&nbsp;relation)</code>
-<div class="block">Link this port with a relation, and notify the container by
-  calling its connectionsChanged() method.</div>
+<td class="colLast"><span class="typeNameLabel">Port.</span><code><span class="memberNameLink"><a href="../../../ptolemy/kernel/Port.html#unlink-ptolemy.kernel.Relation-">unlink</a></span>(<a href="../../../ptolemy/kernel/Relation.html" title="class in ptolemy.kernel">Relation</a>&nbsp;relation)</code>
+<div class="block">Unlink the specified Relation.</div>
 </td>
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">ComponentPort.</span><code><span class="memberNameLink"><a href="../../../ptolemy/kernel/ComponentPort.html#link-ptolemy.kernel.Relation-">link</a></span>(<a href="../../../ptolemy/kernel/Relation.html" title="class in ptolemy.kernel">Relation</a>&nbsp;relation)</code>
-<div class="block">Link this port with the specified relation.</div>
+<td class="colLast"><span class="typeNameLabel">ComponentPort.</span><code><span class="memberNameLink"><a href="../../../ptolemy/kernel/ComponentPort.html#unlink-ptolemy.kernel.Relation-">unlink</a></span>(<a href="../../../ptolemy/kernel/Relation.html" title="class in ptolemy.kernel">Relation</a>&nbsp;relation)</code>
+<div class="block">Unlink the specified Relation.</div>
 </td>
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>void</code></td>
 <td class="colLast"><span class="typeNameLabel">Relation.</span><code><span class="memberNameLink"><a href="../../../ptolemy/kernel/Relation.html#unlink-ptolemy.kernel.Relation-">unlink</a></span>(<a href="../../../ptolemy/kernel/Relation.html" title="class in ptolemy.kernel">Relation</a>&nbsp;relation)</code>
-<div class="block">Unlink the specified Relation.</div>
-</td>
-</tr>
-<tr class="altColor">
-<td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">Port.</span><code><span class="memberNameLink"><a href="../../../ptolemy/kernel/Port.html#unlink-ptolemy.kernel.Relation-">unlink</a></span>(<a href="../../../ptolemy/kernel/Relation.html" title="class in ptolemy.kernel">Relation</a>&nbsp;relation)</code>
-<div class="block">Unlink the specified Relation.</div>
-</td>
-</tr>
-<tr class="rowColor">
-<td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">ComponentPort.</span><code><span class="memberNameLink"><a href="../../../ptolemy/kernel/ComponentPort.html#unlink-ptolemy.kernel.Relation-">unlink</a></span>(<a href="../../../ptolemy/kernel/Relation.html" title="class in ptolemy.kernel">Relation</a>&nbsp;relation)</code>
 <div class="block">Unlink the specified Relation.</div>
 </td>
 </tr>

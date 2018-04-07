@@ -782,11 +782,11 @@ with user defined buttons.</div>
 <tbody>
 <tr class="altColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">CAMERAURLProcessor.</span><code><span class="memberNameLink"><a href="../../../../org/camera/service/CAMERAURLProcessor.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;at)</code>&nbsp;</td>
+<td class="colLast"><span class="typeNameLabel">CAMERARESTService.</span><code><span class="memberNameLink"><a href="../../../../org/camera/service/CAMERARESTService.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;at)</code>&nbsp;</td>
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">CAMERARESTService.</span><code><span class="memberNameLink"><a href="../../../../org/camera/service/CAMERARESTService.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;at)</code>&nbsp;</td>
+<td class="colLast"><span class="typeNameLabel">CAMERAURLProcessor.</span><code><span class="memberNameLink"><a href="../../../../org/camera/service/CAMERAURLProcessor.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;at)</code>&nbsp;</td>
 </tr>
 </tbody>
 </table>
@@ -932,27 +932,6 @@ with user defined buttons.</div>
 <tbody>
 <tr class="altColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">OpenDBConnection.</span><code><span class="memberNameLink"><a href="../../../../org/geon/OpenDBConnection.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;at)</code>
-<div class="block">Callback for changes in attribute values.</div>
-</td>
-</tr>
-<tr class="rowColor">
-<td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">FTPClient.</span><code><span class="memberNameLink"><a href="../../../../org/geon/FTPClient.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
-<div class="block">Determine the output format</div>
-</td>
-</tr>
-<tr class="altColor">
-<td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">FileToString.</span><code><span class="memberNameLink"><a href="../../../../org/geon/FileToString.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
-<div class="block">If the specified attribute is <i>fileOrURL</i> and there is an open file
- being read, then close that file and open the new one; if the attribute
- is <i>numberOfLinesToSkip</i> and its value is negative, then throw an
- exception.</div>
-</td>
-</tr>
-<tr class="rowColor">
-<td class="colFirst"><code>void</code></td>
 <td class="colLast"><span class="typeNameLabel">FileToArray.</span><code><span class="memberNameLink"><a href="../../../../org/geon/FileToArray.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
 <div class="block">If the specified attribute is <i>fileOrURL</i> and there is an open file
  being read, then close that file and open the new one; if the attribute
@@ -960,17 +939,38 @@ with user defined buttons.</div>
  exception.</div>
 </td>
 </tr>
-<tr class="altColor">
-<td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">DatabaseQuery.</span><code><span class="memberNameLink"><a href="../../../../org/geon/DatabaseQuery.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
-<div class="block">Determine the output format</div>
-</td>
-</tr>
 <tr class="rowColor">
 <td class="colFirst"><code>void</code></td>
 <td class="colLast"><span class="typeNameLabel">BinaryFileWriter.</span><code><span class="memberNameLink"><a href="../../../../org/geon/BinaryFileWriter.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
 <div class="block">If the specified attribute is <i>fileName</i> and there is an open file
  being written, then close that file.</div>
+</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code>void</code></td>
+<td class="colLast"><span class="typeNameLabel">FTPClient.</span><code><span class="memberNameLink"><a href="../../../../org/geon/FTPClient.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
+<div class="block">Determine the output format</div>
+</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code>void</code></td>
+<td class="colLast"><span class="typeNameLabel">DatabaseQuery.</span><code><span class="memberNameLink"><a href="../../../../org/geon/DatabaseQuery.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
+<div class="block">Determine the output format</div>
+</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code>void</code></td>
+<td class="colLast"><span class="typeNameLabel">OpenDBConnection.</span><code><span class="memberNameLink"><a href="../../../../org/geon/OpenDBConnection.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;at)</code>
+<div class="block">Callback for changes in attribute values.</div>
+</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code>void</code></td>
+<td class="colLast"><span class="typeNameLabel">FileToString.</span><code><span class="memberNameLink"><a href="../../../../org/geon/FileToString.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
+<div class="block">If the specified attribute is <i>fileOrURL</i> and there is an open file
+ being read, then close that file and open the new one; if the attribute
+ is <i>numberOfLinesToSkip</i> and its value is negative, then throw an
+ exception.</div>
 </td>
 </tr>
 </tbody>
@@ -1027,19 +1027,19 @@ with user defined buttons.</div>
 <tbody>
 <tr class="altColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">JobStatus.</span><code><span class="memberNameLink"><a href="../../../../org/kepler/actor/job/JobStatus.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
+<td class="colLast"><span class="typeNameLabel">GenericJobLauncher.</span><code><span class="memberNameLink"><a href="../../../../org/kepler/actor/job/GenericJobLauncher.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
 <div class="block">React to a change in an attribute.</div>
 </td>
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">GenericJobReconnect.</span><code><span class="memberNameLink"><a href="../../../../org/kepler/actor/job/GenericJobReconnect.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
+<td class="colLast"><span class="typeNameLabel">JobStatus.</span><code><span class="memberNameLink"><a href="../../../../org/kepler/actor/job/JobStatus.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
 <div class="block">React to a change in an attribute.</div>
 </td>
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">GenericJobLauncher.</span><code><span class="memberNameLink"><a href="../../../../org/kepler/actor/job/GenericJobLauncher.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
+<td class="colLast"><span class="typeNameLabel">GenericJobReconnect.</span><code><span class="memberNameLink"><a href="../../../../org/kepler/actor/job/GenericJobReconnect.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
 <div class="block">React to a change in an attribute.</div>
 </td>
 </tr>
@@ -1098,14 +1098,14 @@ with user defined buttons.</div>
 <tbody>
 <tr class="altColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">DataTurbineWriter.</span><code><span class="memberNameLink"><a href="../../../../org/kepler/data/datasource/dataturbine/DataTurbineWriter.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
-<div class="block">React to a change in an attribute.</div>
+<td class="colLast"><span class="typeNameLabel">DataTurbine.</span><code><span class="memberNameLink"><a href="../../../../org/kepler/data/datasource/dataturbine/DataTurbine.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
+<div class="block">Reconfigure actor when certain attributes change.</div>
 </td>
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">DataTurbine.</span><code><span class="memberNameLink"><a href="../../../../org/kepler/data/datasource/dataturbine/DataTurbine.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
-<div class="block">Reconfigure actor when certain attributes change.</div>
+<td class="colLast"><span class="typeNameLabel">DataTurbineWriter.</span><code><span class="memberNameLink"><a href="../../../../org/kepler/data/datasource/dataturbine/DataTurbineWriter.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
+<div class="block">React to a change in an attribute.</div>
 </td>
 </tr>
 </tbody>
@@ -1150,13 +1150,13 @@ with user defined buttons.</div>
 <tbody>
 <tr class="altColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">GEONShpResource.</span><code><span class="memberNameLink"><a href="../../../../org/kepler/dataproxy/datasource/geon/GEONShpResource.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
+<td class="colLast"><span class="typeNameLabel">GEONDatabaseResource.</span><code><span class="memberNameLink"><a href="../../../../org/kepler/dataproxy/datasource/geon/GEONDatabaseResource.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
 <div class="block">Callback for changes in attribute values.</div>
 </td>
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">GEONDatabaseResource.</span><code><span class="memberNameLink"><a href="../../../../org/kepler/dataproxy/datasource/geon/GEONDatabaseResource.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
+<td class="colLast"><span class="typeNameLabel">GEONShpResource.</span><code><span class="memberNameLink"><a href="../../../../org/kepler/dataproxy/datasource/geon/GEONShpResource.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
 <div class="block">Callback for changes in attribute values.</div>
 </td>
 </tr>
@@ -1176,11 +1176,11 @@ with user defined buttons.</div>
 <tbody>
 <tr class="altColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">OpendapDataSourceODC.</span><code><span class="memberNameLink"><a href="../../../../org/kepler/dataproxy/datasource/opendap/OpendapDataSourceODC.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>&nbsp;</td>
+<td class="colLast"><span class="typeNameLabel">OpendapDataSource.</span><code><span class="memberNameLink"><a href="../../../../org/kepler/dataproxy/datasource/opendap/OpendapDataSource.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>&nbsp;</td>
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">OpendapDataSource.</span><code><span class="memberNameLink"><a href="../../../../org/kepler/dataproxy/datasource/opendap/OpendapDataSource.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>&nbsp;</td>
+<td class="colLast"><span class="typeNameLabel">OpendapDataSourceODC.</span><code><span class="memberNameLink"><a href="../../../../org/kepler/dataproxy/datasource/opendap/OpendapDataSourceODC.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>&nbsp;</td>
 </tr>
 </tbody>
 </table>
@@ -1268,8 +1268,8 @@ with user defined buttons.</div>
 <tbody>
 <tr class="altColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">SingleInputPatternActor.</span><code><span class="memberNameLink"><a href="../../../../org/kepler/ddp/actor/pattern/SingleInputPatternActor.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
-<div class="block">React to a change in an attribute.</div>
+<td class="colLast"><span class="typeNameLabel">AtomicPatternActor.</span><code><span class="memberNameLink"><a href="../../../../org/kepler/ddp/actor/pattern/AtomicPatternActor.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
+<div class="block">See if the formatType parameter changed.</div>
 </td>
 </tr>
 <tr class="rowColor">
@@ -1280,14 +1280,14 @@ with user defined buttons.</div>
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">DDPDataSource.</span><code><span class="memberNameLink"><a href="../../../../org/kepler/ddp/actor/pattern/DDPDataSource.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
-<div class="block">React to a parameter change.</div>
+<td class="colLast"><span class="typeNameLabel">SingleInputPatternActor.</span><code><span class="memberNameLink"><a href="../../../../org/kepler/ddp/actor/pattern/SingleInputPatternActor.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
+<div class="block">React to a change in an attribute.</div>
 </td>
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">AtomicPatternActor.</span><code><span class="memberNameLink"><a href="../../../../org/kepler/ddp/actor/pattern/AtomicPatternActor.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
-<div class="block">See if the formatType parameter changed.</div>
+<td class="colLast"><span class="typeNameLabel">DDPDataSource.</span><code><span class="memberNameLink"><a href="../../../../org/kepler/ddp/actor/pattern/DDPDataSource.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
+<div class="block">React to a parameter change.</div>
 </td>
 </tr>
 </tbody>
@@ -1323,14 +1323,14 @@ with user defined buttons.</div>
 <tbody>
 <tr class="altColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">DDPEngine.</span><code><span class="memberNameLink"><a href="../../../../org/kepler/ddp/director/DDPEngine.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
-<div class="block">React to a parameter change.</div>
+<td class="colLast"><span class="typeNameLabel">DDPDirector.</span><code><span class="memberNameLink"><a href="../../../../org/kepler/ddp/director/DDPDirector.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
+<div class="block">React to a change in an attribute.</div>
 </td>
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">DDPDirector.</span><code><span class="memberNameLink"><a href="../../../../org/kepler/ddp/director/DDPDirector.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
-<div class="block">React to a change in an attribute.</div>
+<td class="colLast"><span class="typeNameLabel">DDPEngine.</span><code><span class="memberNameLink"><a href="../../../../org/kepler/ddp/director/DDPEngine.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
+<div class="block">React to a parameter change.</div>
 </td>
 </tr>
 </tbody>
@@ -1401,11 +1401,11 @@ with user defined buttons.</div>
 <tbody>
 <tr class="altColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">VectorSort.</span><code><span class="memberNameLink"><a href="../../../../org/kepler/gis/actor/VectorSort.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>&nbsp;</td>
+<td class="colLast"><span class="typeNameLabel">VectorFilter.</span><code><span class="memberNameLink"><a href="../../../../org/kepler/gis/actor/VectorFilter.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>&nbsp;</td>
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">VectorFilter.</span><code><span class="memberNameLink"><a href="../../../../org/kepler/gis/actor/VectorFilter.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>&nbsp;</td>
+<td class="colLast"><span class="typeNameLabel">VectorSort.</span><code><span class="memberNameLink"><a href="../../../../org/kepler/gis/actor/VectorSort.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>&nbsp;</td>
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>void</code></td>
@@ -1925,14 +1925,14 @@ with user defined buttons.</div>
 <tbody>
 <tr class="altColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">MonitorManager.</span><code><span class="memberNameLink"><a href="../../../../org/kepler/monitor/MonitorManager.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
-<div class="block">Sets the icon type and timer delay according to the changed attribute.</div>
+<td class="colLast"><span class="typeNameLabel">MonitorAttribute.</span><code><span class="memberNameLink"><a href="../../../../org/kepler/monitor/MonitorAttribute.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
+<div class="block">Do updates according to the changed attribute.</div>
 </td>
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">MonitorAttribute.</span><code><span class="memberNameLink"><a href="../../../../org/kepler/monitor/MonitorAttribute.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
-<div class="block">Do updates according to the changed attribute.</div>
+<td class="colLast"><span class="typeNameLabel">MonitorManager.</span><code><span class="memberNameLink"><a href="../../../../org/kepler/monitor/MonitorManager.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
+<div class="block">Sets the icon type and timer delay according to the changed attribute.</div>
 </td>
 </tr>
 </tbody>
@@ -2105,13 +2105,13 @@ with user defined buttons.</div>
 <tbody>
 <tr class="altColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">TextFileRecording.</span><code><span class="memberNameLink"><a href="../../../../org/kepler/provenance/TextFileRecording.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
+<td class="colLast"><span class="typeNameLabel">Recording.</span><code><span class="memberNameLink"><a href="../../../../org/kepler/provenance/Recording.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
 <div class="block">React to a change in an attribute.</div>
 </td>
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">Recording.</span><code><span class="memberNameLink"><a href="../../../../org/kepler/provenance/Recording.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
+<td class="colLast"><span class="typeNameLabel">TextFileRecording.</span><code><span class="memberNameLink"><a href="../../../../org/kepler/provenance/TextFileRecording.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
 <div class="block">React to a change in an attribute.</div>
 </td>
 </tr>
@@ -2184,13 +2184,13 @@ with user defined buttons.</div>
 <tbody>
 <tr class="altColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">SQLRecordingV8.</span><code><span class="memberNameLink"><a href="../../../../org/kepler/provenance/sql/SQLRecordingV8.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
+<td class="colLast"><span class="typeNameLabel">SQLRecording.</span><code><span class="memberNameLink"><a href="../../../../org/kepler/provenance/sql/SQLRecording.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
 <div class="block">React to a change in an attribute.</div>
 </td>
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">SQLRecording.</span><code><span class="memberNameLink"><a href="../../../../org/kepler/provenance/sql/SQLRecording.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
+<td class="colLast"><span class="typeNameLabel">SQLRecordingV8.</span><code><span class="memberNameLink"><a href="../../../../org/kepler/provenance/sql/SQLRecordingV8.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
 <div class="block">React to a change in an attribute.</div>
 </td>
 </tr>
@@ -2678,13 +2678,13 @@ with user defined buttons.</div>
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">HttpActor.</span><code><span class="memberNameLink"><a href="../../../../org/ptolemy/ptango/lib/HttpActor.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
+<td class="colLast"><span class="typeNameLabel">HTMLModelExporter.</span><code><span class="memberNameLink"><a href="../../../../org/ptolemy/ptango/lib/HTMLModelExporter.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
 <div class="block">React to a change in an attribute.</div>
 </td>
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">HTMLModelExporter.</span><code><span class="memberNameLink"><a href="../../../../org/ptolemy/ptango/lib/HTMLModelExporter.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
+<td class="colLast"><span class="typeNameLabel">HttpActor.</span><code><span class="memberNameLink"><a href="../../../../org/ptolemy/ptango/lib/HttpActor.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
 <div class="block">React to a change in an attribute.</div>
 </td>
 </tr>
@@ -2730,13 +2730,13 @@ with user defined buttons.</div>
 <tbody>
 <tr class="altColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">WebSocketWriter.</span><code><span class="memberNameLink"><a href="../../../../org/ptolemy/ptango/lib/webSocket/WebSocketWriter.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
+<td class="colLast"><span class="typeNameLabel">WebSocketReader.</span><code><span class="memberNameLink"><a href="../../../../org/ptolemy/ptango/lib/webSocket/WebSocketReader.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
 <div class="block">React to a change in an attribute.</div>
 </td>
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">WebSocketReader.</span><code><span class="memberNameLink"><a href="../../../../org/ptolemy/ptango/lib/webSocket/WebSocketReader.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
+<td class="colLast"><span class="typeNameLabel">WebSocketWriter.</span><code><span class="memberNameLink"><a href="../../../../org/ptolemy/ptango/lib/webSocket/WebSocketWriter.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
 <div class="block">React to a change in an attribute.</div>
 </td>
 </tr>
@@ -2771,22 +2771,22 @@ with user defined buttons.</div>
 <tbody>
 <tr class="altColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">XMPPSource.</span><code><span class="memberNameLink"><a href="../../../../org/ptolemy/ptango/lib/xmpp/XMPPSource.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
-<div class="block">If the argument is the <i>nodeId</i> parameter, then reset the
-  state to the specified value.</div>
-</td>
-</tr>
-<tr class="rowColor">
-<td class="colFirst"><code>void</code></td>
 <td class="colLast"><span class="typeNameLabel">XMPPSink.</span><code><span class="memberNameLink"><a href="../../../../org/ptolemy/ptango/lib/xmpp/XMPPSink.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
 <div class="block">Update the node id if its corresponding parameter has changed.</div>
 </td>
 </tr>
-<tr class="altColor">
+<tr class="rowColor">
 <td class="colFirst"><code>void</code></td>
 <td class="colLast"><span class="typeNameLabel">XMPPGateway.</span><code><span class="memberNameLink"><a href="../../../../org/ptolemy/ptango/lib/xmpp/XMPPGateway.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
 <div class="block">Update the local variable associated with the changed attribute
   and disconnect from the server.</div>
+</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code>void</code></td>
+<td class="colLast"><span class="typeNameLabel">XMPPSource.</span><code><span class="memberNameLink"><a href="../../../../org/ptolemy/ptango/lib/xmpp/XMPPSource.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
+<div class="block">If the argument is the <i>nodeId</i> parameter, then reset the
+  state to the specified value.</div>
 </td>
 </tr>
 </tbody>
@@ -2834,19 +2834,19 @@ with user defined buttons.</div>
 <tbody>
 <tr class="altColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">QAQC.</span><code><span class="memberNameLink"><a href="../../../../org/ROADnet/QAQC.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;at)</code>
-<div class="block">Callback for changes in attribute values Get the attributes from the
- config file.</div>
-</td>
-</tr>
-<tr class="rowColor">
-<td class="colFirst"><code>void</code></td>
 <td class="colLast"><span class="typeNameLabel">OrbLogger.</span><code><span class="memberNameLink"><a href="../../../../org/ROADnet/OrbLogger.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;at)</code>
 <div class="block">If the specified attribute is triggerOutput then create a "triggerReady"
  output port If the specified attribute is paramOutput then create ports
  for all the workflow String Parameters If the specified attribute is
  ErrorOutput then create a "ErrorFile" output port The newly created ports
  are removed if attribute is unchecked.</div>
+</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code>void</code></td>
+<td class="colLast"><span class="typeNameLabel">QAQC.</span><code><span class="memberNameLink"><a href="../../../../org/ROADnet/QAQC.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;at)</code>
+<div class="block">Callback for changes in attribute values Get the attributes from the
+ config file.</div>
 </td>
 </tr>
 </tbody>
@@ -2865,8 +2865,21 @@ with user defined buttons.</div>
 <tbody>
 <tr class="altColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">XMLDisassembler.</span><code><span class="memberNameLink"><a href="../../../../org/sdm/spa/XMLDisassembler.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
+<td class="colLast"><span class="typeNameLabel">WSWithComplexTypes.</span><code><span class="memberNameLink"><a href="../../../../org/sdm/spa/WSWithComplexTypes.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
 <div class="block">React to a change in an attribute.</div>
+</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code>void</code></td>
+<td class="colLast"><span class="typeNameLabel">SoaplabChooseResultType.</span><code><span class="memberNameLink"><a href="../../../../org/sdm/spa/SoaplabChooseResultType.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;at)</code>
+<div class="block">Callback for changes in attribute values Get the WSDL from the given URL.</div>
+</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code>void</code></td>
+<td class="colLast"><span class="typeNameLabel">CommandLine.</span><code><span class="memberNameLink"><a href="../../../../org/sdm/spa/CommandLine.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
+<div class="block">If the specified attribute is <i>showTriggerPort</i>, then get the value
+ of it and re-render the trigger port.</div>
 </td>
 </tr>
 <tr class="rowColor">
@@ -2877,51 +2890,38 @@ with user defined buttons.</div>
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">WSWithComplexTypes.</span><code><span class="memberNameLink"><a href="../../../../org/sdm/spa/WSWithComplexTypes.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
-<div class="block">React to a change in an attribute.</div>
-</td>
-</tr>
-<tr class="rowColor">
-<td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">WebServiceStub.</span><code><span class="memberNameLink"><a href="../../../../org/sdm/spa/WebServiceStub.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;at)</code>
-<div class="block"><span class="deprecatedLabel">Deprecated.</span>&nbsp;</div>
-<div class="block">Callback for changes in attribute values.</div>
-</td>
-</tr>
-<tr class="altColor">
-<td class="colFirst"><code>void</code></td>
 <td class="colLast"><span class="typeNameLabel">WebService.</span><code><span class="memberNameLink"><a href="../../../../org/sdm/spa/WebService.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;at)</code>
 <div class="block">Callback for changes in attribute values Get the WSDL from the given URL.</div>
 </td>
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">SyncOnTerminator.</span><code><span class="memberNameLink"><a href="../../../../org/sdm/spa/SyncOnTerminator.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
-<div class="block">Override the base class to determine which function is being specified.</div>
-</td>
-</tr>
-<tr class="altColor">
-<td class="colFirst"><code>void</code></td>
 <td class="colLast"><span class="typeNameLabel">Ssh2Exec.</span><code><span class="memberNameLink"><a href="../../../../org/sdm/spa/Ssh2Exec.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;at)</code>
 <div class="block">Callback for changes in attribute values Get the WSDL from the given URL.</div>
 </td>
 </tr>
+<tr class="altColor">
+<td class="colFirst"><code>void</code></td>
+<td class="colLast"><span class="typeNameLabel">XMLDisassembler.</span><code><span class="memberNameLink"><a href="../../../../org/sdm/spa/XMLDisassembler.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
+<div class="block">React to a change in an attribute.</div>
+</td>
+</tr>
 <tr class="rowColor">
+<td class="colFirst"><code>void</code></td>
+<td class="colLast"><span class="typeNameLabel">ArrayPermute.</span><code><span class="memberNameLink"><a href="../../../../org/sdm/spa/ArrayPermute.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
+<div class="block">React to a change in attributes.</div>
+</td>
+</tr>
+<tr class="altColor">
 <td class="colFirst"><code>void</code></td>
 <td class="colLast"><span class="typeNameLabel">SoaplabServiceStarter.</span><code><span class="memberNameLink"><a href="../../../../org/sdm/spa/SoaplabServiceStarter.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;at)</code>
 <div class="block">Callback for changes in attribute values Get the WSDL from the given URL.</div>
 </td>
 </tr>
-<tr class="altColor">
-<td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">SoaplabChooseResultType.</span><code><span class="memberNameLink"><a href="../../../../org/sdm/spa/SoaplabChooseResultType.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;at)</code>
-<div class="block">Callback for changes in attribute values Get the WSDL from the given URL.</div>
-</td>
-</tr>
 <tr class="rowColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">SoaplabChooseOperation.</span><code><span class="memberNameLink"><a href="../../../../org/sdm/spa/SoaplabChooseOperation.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;at)</code>
-<div class="block">Callback for changes in attribute values Get the WSDL from the given URL.</div>
+<td class="colLast"><span class="typeNameLabel">BrowserUI.</span><code><span class="memberNameLink"><a href="../../../../org/sdm/spa/BrowserUI.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;at)</code>
+<div class="block">Callback for changes in attribute values.</div>
 </td>
 </tr>
 <tr class="altColor">
@@ -2940,21 +2940,21 @@ with user defined buttons.</div>
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">CommandLine.</span><code><span class="memberNameLink"><a href="../../../../org/sdm/spa/CommandLine.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
-<div class="block">If the specified attribute is <i>showTriggerPort</i>, then get the value
- of it and re-render the trigger port.</div>
+<td class="colLast"><span class="typeNameLabel">SyncOnTerminator.</span><code><span class="memberNameLink"><a href="../../../../org/sdm/spa/SyncOnTerminator.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
+<div class="block">Override the base class to determine which function is being specified.</div>
 </td>
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">BrowserUI.</span><code><span class="memberNameLink"><a href="../../../../org/sdm/spa/BrowserUI.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;at)</code>
+<td class="colLast"><span class="typeNameLabel">WebServiceStub.</span><code><span class="memberNameLink"><a href="../../../../org/sdm/spa/WebServiceStub.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;at)</code>
+<div class="block"><span class="deprecatedLabel">Deprecated.</span>&nbsp;</div>
 <div class="block">Callback for changes in attribute values.</div>
 </td>
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">ArrayPermute.</span><code><span class="memberNameLink"><a href="../../../../org/sdm/spa/ArrayPermute.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
-<div class="block">React to a change in attributes.</div>
+<td class="colLast"><span class="typeNameLabel">SoaplabChooseOperation.</span><code><span class="memberNameLink"><a href="../../../../org/sdm/spa/SoaplabChooseOperation.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;at)</code>
+<div class="block">Callback for changes in attribute values Get the WSDL from the given URL.</div>
 </td>
 </tr>
 </tbody>
@@ -3099,33 +3099,20 @@ a ExecutionAspect.</div>
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">TypedCompositeActor.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/actor/TypedCompositeActor.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
-<div class="block">React to a change in an attribute.</div>
-</td>
-</tr>
-<tr class="altColor">
-<td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">SubscriptionAggregatorPort.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/actor/SubscriptionAggregatorPort.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
-<div class="block">If a publish and subscribe channel is set, then set up the connections.</div>
-</td>
-</tr>
-<tr class="rowColor">
-<td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">SubscriberPort.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/actor/SubscriberPort.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
-<div class="block">If a publish and subscribe channel is set, then set up the connections.</div>
-</td>
-</tr>
-<tr class="altColor">
-<td class="colFirst"><code>void</code></td>
 <td class="colLast"><span class="typeNameLabel">PublisherPort.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/actor/PublisherPort.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
 <div class="block">If a publish and subscribe channel is set, then set up the connections.</div>
 </td>
 </tr>
+<tr class="altColor">
+<td class="colFirst"><code>void</code></td>
+<td class="colLast"><span class="typeNameLabel">TypedCompositeActor.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/actor/TypedCompositeActor.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
+<div class="block">React to a change in an attribute.</div>
+</td>
+</tr>
 <tr class="rowColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">LocalClock.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/actor/LocalClock.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
-<div class="block">Delegate the call to the director, which handles changes
-  to the parameters of the clock.</div>
+<td class="colLast"><span class="typeNameLabel">Director.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/actor/Director.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
+<div class="block">Override the base class to update local variables.</div>
 </td>
 </tr>
 <tr class="altColor">
@@ -3144,14 +3131,27 @@ a ExecutionAspect.</div>
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">ExecutionAttributes.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/actor/ExecutionAttributes.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
-<div class="block">React to a change in an attribute.</div>
+<td class="colLast"><span class="typeNameLabel">LocalClock.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/actor/LocalClock.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
+<div class="block">Delegate the call to the director, which handles changes
+  to the parameters of the clock.</div>
 </td>
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">Director.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/actor/Director.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
-<div class="block">Override the base class to update local variables.</div>
+<td class="colLast"><span class="typeNameLabel">SubscriberPort.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/actor/SubscriberPort.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
+<div class="block">If a publish and subscribe channel is set, then set up the connections.</div>
+</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code>void</code></td>
+<td class="colLast"><span class="typeNameLabel">SubscriptionAggregatorPort.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/actor/SubscriptionAggregatorPort.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
+<div class="block">If a publish and subscribe channel is set, then set up the connections.</div>
+</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code>void</code></td>
+<td class="colLast"><span class="typeNameLabel">ExecutionAttributes.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/actor/ExecutionAttributes.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
+<div class="block">React to a change in an attribute.</div>
 </td>
 </tr>
 <tr class="altColor">
@@ -3163,13 +3163,13 @@ a ExecutionAspect.</div>
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">TypedCompositeActor.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/actor/TypedCompositeActor.html#attributeTypeChanged-ptolemy.kernel.util.Attribute-">attributeTypeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
+<td class="colLast"><span class="typeNameLabel">TypedAtomicActor.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/actor/TypedAtomicActor.html#attributeTypeChanged-ptolemy.kernel.util.Attribute-">attributeTypeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
 <div class="block">React to a change in the type of an attribute.</div>
 </td>
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">TypedAtomicActor.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/actor/TypedAtomicActor.html#attributeTypeChanged-ptolemy.kernel.util.Attribute-">attributeTypeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
+<td class="colLast"><span class="typeNameLabel">TypedCompositeActor.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/actor/TypedCompositeActor.html#attributeTypeChanged-ptolemy.kernel.util.Attribute-">attributeTypeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
 <div class="block">React to a change in the type of an attribute.</div>
 </td>
 </tr>
@@ -3398,20 +3398,6 @@ a ExecutionAspect.</div>
 <tbody>
 <tr class="altColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">WelcomeWindowTableau.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/actor/gui/WelcomeWindowTableau.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
-<div class="block">Handle cases where the <i>url</i> attribute is changed,
-  yet there is no frame.</div>
-</td>
-</tr>
-<tr class="rowColor">
-<td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">TokenEffigy.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/actor/gui/TokenEffigy.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
-<div class="block">If the argument is the <i>uri</i> parameter, then read the
-  specified URL and parse the data contained in it.</div>
-</td>
-</tr>
-<tr class="altColor">
-<td class="colFirst"><code>void</code></td>
 <td class="colLast"><span class="typeNameLabel">Tableau.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/actor/gui/Tableau.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
 <div class="block">If the argument is the <i>size</i> parameter, and a
   frame has been specified with setFrame(), then set the size
@@ -3420,35 +3406,12 @@ a ExecutionAspect.</div>
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">PlotTableau.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/actor/gui/PlotTableau.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
-<div class="block">If the argument is the <i>uri</i> parameter, then open the
-  specified URI and display its contents.</div>
-</td>
-</tr>
-<tr class="altColor">
-<td class="colFirst"><code>void</code></td>
 <td class="colLast"><span class="typeNameLabel">ImageTokenEffigy.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/actor/gui/ImageTokenEffigy.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
 <div class="block">If the argument is the <i>uri</i> parameter, then read the
   specified URL and parse the data contained in it.</div>
 </td>
 </tr>
-<tr class="rowColor">
-<td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">HTMLViewerTableau.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/actor/gui/HTMLViewerTableau.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
-<div class="block">If the argument is the <i>url</i> parameter, then open the
-  specified URL and display its contents.</div>
-</td>
-</tr>
 <tr class="altColor">
-<td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">ExternalTextEffigy.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/actor/gui/ExternalTextEffigy.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
-<div class="block">If the argument is the <i>identifier</i> parameter, then tell
-  the external editor to finally open the file specified by the
-  identifier (as opposed to at newTextEffigy(container, text) time
-  at which the document file is not yet specified.</div>
-</td>
-</tr>
-<tr class="rowColor">
 <td class="colFirst"><code>void</code></td>
 <td class="colLast"><span class="typeNameLabel">Effigy.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/actor/gui/Effigy.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
 <div class="block">If the argument is the <i>identifier</i> parameter, then set
@@ -3457,10 +3420,47 @@ a ExecutionAspect.</div>
   whether it is writable, and call setModifiable() appropriately.</div>
 </td>
 </tr>
+<tr class="rowColor">
+<td class="colFirst"><code>void</code></td>
+<td class="colLast"><span class="typeNameLabel">ExternalTextEffigy.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/actor/gui/ExternalTextEffigy.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
+<div class="block">If the argument is the <i>identifier</i> parameter, then tell
+  the external editor to finally open the file specified by the
+  identifier (as opposed to at newTextEffigy(container, text) time
+  at which the document file is not yet specified.</div>
+</td>
+</tr>
 <tr class="altColor">
+<td class="colFirst"><code>void</code></td>
+<td class="colLast"><span class="typeNameLabel">HTMLViewerTableau.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/actor/gui/HTMLViewerTableau.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
+<div class="block">If the argument is the <i>url</i> parameter, then open the
+  specified URL and display its contents.</div>
+</td>
+</tr>
+<tr class="rowColor">
 <td class="colFirst"><code>void</code></td>
 <td class="colLast"><span class="typeNameLabel">Configuration.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/actor/gui/Configuration.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
 <div class="block">React to a change in an attribute.</div>
+</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code>void</code></td>
+<td class="colLast"><span class="typeNameLabel">PlotTableau.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/actor/gui/PlotTableau.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
+<div class="block">If the argument is the <i>uri</i> parameter, then open the
+  specified URI and display its contents.</div>
+</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code>void</code></td>
+<td class="colLast"><span class="typeNameLabel">WelcomeWindowTableau.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/actor/gui/WelcomeWindowTableau.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
+<div class="block">Handle cases where the <i>url</i> attribute is changed,
+  yet there is no frame.</div>
+</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code>void</code></td>
+<td class="colLast"><span class="typeNameLabel">TokenEffigy.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/actor/gui/TokenEffigy.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
+<div class="block">If the argument is the <i>uri</i> parameter, then read the
+  specified URL and parse the data contained in it.</div>
 </td>
 </tr>
 </tbody>
@@ -3562,19 +3562,19 @@ a ExecutionAspect.</div>
 <tbody>
 <tr class="altColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">Separator.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/actor/gui/properties/Separator.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
+<td class="colLast"><span class="typeNameLabel">GUIProperty.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/actor/gui/properties/GUIProperty.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
 <div class="block">React to a change in an attribute.</div>
 </td>
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">GUIProperty.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/actor/gui/properties/GUIProperty.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
+<td class="colLast"><span class="typeNameLabel">Button.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/actor/gui/properties/Button.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
 <div class="block">React to a change in an attribute.</div>
 </td>
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">Button.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/actor/gui/properties/Button.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
+<td class="colLast"><span class="typeNameLabel">Separator.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/actor/gui/properties/Separator.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
 <div class="block">React to a change in an attribute.</div>
 </td>
 </tr>
@@ -3849,27 +3849,20 @@ a ExecutionAspect.</div>
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>void</code></td>
+<td class="colLast"><span class="typeNameLabel">ComputeHistogram.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/actor/lib/ComputeHistogram.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
+<div class="block">If the parameter is <i>binWidth</i> or <i>binOffset</i>, then
+  configure the histogram with the specified bin width or offset.</div>
+</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code>void</code></td>
 <td class="colLast"><span class="typeNameLabel">URLDirectoryReader.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/actor/lib/URLDirectoryReader.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
 <div class="block"><span class="deprecatedLabel">Deprecated.</span>&nbsp;</div>
 <div class="block">If the specified attribute is <i>URL</i>, then close
   the current file (if there is one) and open the new one.</div>
 </td>
 </tr>
-<tr class="altColor">
-<td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">UnaryMathFunction.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/actor/lib/UnaryMathFunction.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
-<div class="block">Override the base class to determine which function is being
-  specified.</div>
-</td>
-</tr>
 <tr class="rowColor">
-<td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">TrigFunction.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/actor/lib/TrigFunction.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
-<div class="block">Override the base class to determine which function is being
-  specified.</div>
-</td>
-</tr>
-<tr class="altColor">
 <td class="colFirst"><code>void</code></td>
 <td class="colLast"><span class="typeNameLabel">TimedSource.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/actor/lib/TimedSource.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
 <div class="block">If the <i>stopTime</i> parameter is changed and the model is
@@ -3878,11 +3871,32 @@ a ExecutionAspect.</div>
   to fire this actor at that time.</div>
 </td>
 </tr>
+<tr class="altColor">
+<td class="colFirst"><code>void</code></td>
+<td class="colLast"><span class="typeNameLabel">ConfigurationSwitch.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/actor/lib/ConfigurationSwitch.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
+<div class="block">React to a change in an attribute.</div>
+</td>
+</tr>
 <tr class="rowColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">TimeDelay.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/actor/lib/TimeDelay.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
-<div class="block">If the attribute is <i>delay</i>, then ensure that the value
-  is non-negative.</div>
+<td class="colLast"><span class="typeNameLabel">RecursiveLattice.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/actor/lib/RecursiveLattice.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
+<div class="block">If the argument is the <i>reflectionCoefficients</i> parameter,
+  then reallocate the arrays to use.</div>
+</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code>void</code></td>
+<td class="colLast"><span class="typeNameLabel">RandomSource.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/actor/lib/RandomSource.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
+<div class="block">If the attribute is <i>seed</i> or <i>useThisSeed</i>
+  then create the base random number generator.</div>
+</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code>void</code></td>
+<td class="colLast"><span class="typeNameLabel">DiscreteClock.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/actor/lib/DiscreteClock.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
+<div class="block">If the argument is the <i>offsets</i> parameter, check that the
+  array is nondecreasing and has the right dimension; if the
+  argument is <i>period</i>, check that it is positive.</div>
 </td>
 </tr>
 <tr class="altColor">
@@ -3896,165 +3910,9 @@ a ExecutionAspect.</div>
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">RecursiveLattice.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/actor/lib/RecursiveLattice.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
-<div class="block">If the argument is the <i>reflectionCoefficients</i> parameter,
-  then reallocate the arrays to use.</div>
-</td>
-</tr>
-<tr class="altColor">
-<td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">Reader.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/actor/lib/Reader.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
-<div class="block"><span class="deprecatedLabel">Deprecated.</span>&nbsp;</div>
-<div class="block">If the specified attribute is <i>URL</i>, then close
-  the current file (if there is one) and open the new one.</div>
-</td>
-</tr>
-<tr class="rowColor">
-<td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">RandomSource.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/actor/lib/RandomSource.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
-<div class="block">If the attribute is <i>seed</i> or <i>useThisSeed</i>
-  then create the base random number generator.</div>
-</td>
-</tr>
-<tr class="altColor">
-<td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">Ramp.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/actor/lib/Ramp.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
-<div class="block">If the argument is the <i>init</i> parameter, then reset the
-  state to the specified value.</div>
-</td>
-</tr>
-<tr class="rowColor">
-<td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">Quantizer.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/actor/lib/Quantizer.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
-<div class="block">If the argument is the levels parameter, check that the array
-  is increasing and has the right dimension.</div>
-</td>
-</tr>
-<tr class="altColor">
-<td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">Pulse.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/actor/lib/Pulse.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
-<div class="block">If the attribute being changed is <i>indexes</i>, then check
-  that it is increasing and nonnegative.</div>
-</td>
-</tr>
-<tr class="rowColor">
-<td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">PublisherNonStrictTest.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/actor/lib/PublisherNonStrictTest.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
-<div class="block">If the attribute is the channel, increment the workspace version
-  to force cached receiver lists to be updated, and invalidate
-  the schedule and resolved types of the director, if there is one.</div>
-</td>
-</tr>
-<tr class="altColor">
-<td class="colFirst"><code>void</code></td>
 <td class="colLast"><span class="typeNameLabel">PoissonClock.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/actor/lib/PoissonClock.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
 <div class="block">If the argument is the meanTime parameter, check that it is
   positive.</div>
-</td>
-</tr>
-<tr class="rowColor">
-<td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">NonStrictTest.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/actor/lib/NonStrictTest.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
-<div class="block">If the attribute being changed is <i>tolerance</i>, then check
-  that it is increasing and nonnegative.</div>
-</td>
-</tr>
-<tr class="altColor">
-<td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">MovingAverage.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/actor/lib/MovingAverage.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
-<div class="block">Set a flag that causes recalculation of various local variables
-  that are used in execution on the next invocation of fire().</div>
-</td>
-</tr>
-<tr class="rowColor">
-<td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">MathFunction.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/actor/lib/MathFunction.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
-<div class="block"><span class="deprecatedLabel">Deprecated.</span>&nbsp;</div>
-<div class="block">Override the base class to determine which function is being
-  specified.</div>
-</td>
-</tr>
-<tr class="altColor">
-<td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">LinearDifferenceEquationSystem.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/actor/lib/LinearDifferenceEquationSystem.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
-<div class="block">If the argument is <i>A, B, C, D</i> or <i>initialStates</i>
-  parameters, check that they are indeed matrices and vectors,
-  and request initialization from the director if there is one.</div>
-</td>
-</tr>
-<tr class="rowColor">
-<td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">LimitedFiringSource.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/actor/lib/LimitedFiringSource.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
-<div class="block">Override the base class to determine which attribute is being
-  specified.</div>
-</td>
-</tr>
-<tr class="altColor">
-<td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">Lattice.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/actor/lib/Lattice.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
-<div class="block">If the argument is the <i>reflectionCoefficients</i> parameter,
-  then reallocate the arrays to use.</div>
-</td>
-</tr>
-<tr class="rowColor">
-<td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">Interpolator.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/actor/lib/Interpolator.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
-<div class="block">Check the validity of the parameter.</div>
-</td>
-</tr>
-<tr class="altColor">
-<td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">IIR.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/actor/lib/IIR.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
-<div class="block">Handle parameter change events on the
-  <i>numerator</i> and <i>denominator</i> parameters.</div>
-</td>
-</tr>
-<tr class="rowColor">
-<td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">GradientAdaptiveLattice.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/actor/lib/GradientAdaptiveLattice.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
-<div class="block">Handle parameter change events on the
-  <i>order</i> and <i>timeConstant</i> parameters.</div>
-</td>
-</tr>
-<tr class="altColor">
-<td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">Expression.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/actor/lib/Expression.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
-<div class="block">React to a change in the value of an attribute.</div>
-</td>
-</tr>
-<tr class="rowColor">
-<td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">DiscreteRandomSource.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/actor/lib/DiscreteRandomSource.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
-<div class="block">If the specified attribute is <i>pmf</i>, then check that its
-  entries are all between zero and one, and that they add to one,
-  and that its dimension is correct.</div>
-</td>
-</tr>
-<tr class="altColor">
-<td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">DiscreteClock.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/actor/lib/DiscreteClock.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
-<div class="block">If the argument is the <i>offsets</i> parameter, check that the
-  array is nondecreasing and has the right dimension; if the
-  argument is <i>period</i>, check that it is positive.</div>
-</td>
-</tr>
-<tr class="rowColor">
-<td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">ConfigurationSwitch.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/actor/lib/ConfigurationSwitch.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
-<div class="block">React to a change in an attribute.</div>
-</td>
-</tr>
-<tr class="altColor">
-<td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">ConfigurationSelect.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/actor/lib/ConfigurationSelect.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
-<div class="block">React to a change in an attribute.</div>
-</td>
-</tr>
-<tr class="rowColor">
-<td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">ComputeHistogram.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/actor/lib/ComputeHistogram.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
-<div class="block">If the parameter is <i>binWidth</i> or <i>binOffset</i>, then
-  configure the histogram with the specified bin width or offset.</div>
 </td>
 </tr>
 <tr class="altColor">
@@ -4068,8 +3926,150 @@ a ExecutionAspect.</div>
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>void</code></td>
+<td class="colLast"><span class="typeNameLabel">Pulse.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/actor/lib/Pulse.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
+<div class="block">If the attribute being changed is <i>indexes</i>, then check
+  that it is increasing and nonnegative.</div>
+</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code>void</code></td>
+<td class="colLast"><span class="typeNameLabel">ConfigurationSelect.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/actor/lib/ConfigurationSelect.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
+<div class="block">React to a change in an attribute.</div>
+</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code>void</code></td>
 <td class="colLast"><span class="typeNameLabel">CatchExceptionAttribute.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/actor/lib/CatchExceptionAttribute.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
 <div class="block">React to a change in an attribute.</div>
+</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code>void</code></td>
+<td class="colLast"><span class="typeNameLabel">LinearDifferenceEquationSystem.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/actor/lib/LinearDifferenceEquationSystem.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
+<div class="block">If the argument is <i>A, B, C, D</i> or <i>initialStates</i>
+  parameters, check that they are indeed matrices and vectors,
+  and request initialization from the director if there is one.</div>
+</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code>void</code></td>
+<td class="colLast"><span class="typeNameLabel">NonStrictTest.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/actor/lib/NonStrictTest.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
+<div class="block">If the attribute being changed is <i>tolerance</i>, then check
+  that it is increasing and nonnegative.</div>
+</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code>void</code></td>
+<td class="colLast"><span class="typeNameLabel">UnaryMathFunction.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/actor/lib/UnaryMathFunction.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
+<div class="block">Override the base class to determine which function is being
+  specified.</div>
+</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code>void</code></td>
+<td class="colLast"><span class="typeNameLabel">MovingAverage.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/actor/lib/MovingAverage.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
+<div class="block">Set a flag that causes recalculation of various local variables
+  that are used in execution on the next invocation of fire().</div>
+</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code>void</code></td>
+<td class="colLast"><span class="typeNameLabel">Quantizer.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/actor/lib/Quantizer.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
+<div class="block">If the argument is the levels parameter, check that the array
+  is increasing and has the right dimension.</div>
+</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code>void</code></td>
+<td class="colLast"><span class="typeNameLabel">Lattice.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/actor/lib/Lattice.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
+<div class="block">If the argument is the <i>reflectionCoefficients</i> parameter,
+  then reallocate the arrays to use.</div>
+</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code>void</code></td>
+<td class="colLast"><span class="typeNameLabel">Ramp.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/actor/lib/Ramp.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
+<div class="block">If the argument is the <i>init</i> parameter, then reset the
+  state to the specified value.</div>
+</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code>void</code></td>
+<td class="colLast"><span class="typeNameLabel">IIR.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/actor/lib/IIR.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
+<div class="block">Handle parameter change events on the
+  <i>numerator</i> and <i>denominator</i> parameters.</div>
+</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code>void</code></td>
+<td class="colLast"><span class="typeNameLabel">TimeDelay.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/actor/lib/TimeDelay.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
+<div class="block">If the attribute is <i>delay</i>, then ensure that the value
+  is non-negative.</div>
+</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code>void</code></td>
+<td class="colLast"><span class="typeNameLabel">Interpolator.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/actor/lib/Interpolator.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
+<div class="block">Check the validity of the parameter.</div>
+</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code>void</code></td>
+<td class="colLast"><span class="typeNameLabel">LimitedFiringSource.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/actor/lib/LimitedFiringSource.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
+<div class="block">Override the base class to determine which attribute is being
+  specified.</div>
+</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code>void</code></td>
+<td class="colLast"><span class="typeNameLabel">Expression.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/actor/lib/Expression.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
+<div class="block">React to a change in the value of an attribute.</div>
+</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code>void</code></td>
+<td class="colLast"><span class="typeNameLabel">GradientAdaptiveLattice.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/actor/lib/GradientAdaptiveLattice.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
+<div class="block">Handle parameter change events on the
+  <i>order</i> and <i>timeConstant</i> parameters.</div>
+</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code>void</code></td>
+<td class="colLast"><span class="typeNameLabel">Reader.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/actor/lib/Reader.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
+<div class="block"><span class="deprecatedLabel">Deprecated.</span>&nbsp;</div>
+<div class="block">If the specified attribute is <i>URL</i>, then close
+  the current file (if there is one) and open the new one.</div>
+</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code>void</code></td>
+<td class="colLast"><span class="typeNameLabel">TrigFunction.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/actor/lib/TrigFunction.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
+<div class="block">Override the base class to determine which function is being
+  specified.</div>
+</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code>void</code></td>
+<td class="colLast"><span class="typeNameLabel">DiscreteRandomSource.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/actor/lib/DiscreteRandomSource.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
+<div class="block">If the specified attribute is <i>pmf</i>, then check that its
+  entries are all between zero and one, and that they add to one,
+  and that its dimension is correct.</div>
+</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code>void</code></td>
+<td class="colLast"><span class="typeNameLabel">MathFunction.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/actor/lib/MathFunction.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
+<div class="block"><span class="deprecatedLabel">Deprecated.</span>&nbsp;</div>
+<div class="block">Override the base class to determine which function is being
+  specified.</div>
+</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code>void</code></td>
+<td class="colLast"><span class="typeNameLabel">PublisherNonStrictTest.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/actor/lib/PublisherNonStrictTest.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
+<div class="block">If the attribute is the channel, increment the workspace version
+  to force cached receiver lists to be updated, and invalidate
+  the schedule and resolved types of the director, if there is one.</div>
 </td>
 </tr>
 </tbody>
@@ -4119,23 +4119,12 @@ a ExecutionAspect.</div>
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">Scrambler.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/actor/lib/comm/Scrambler.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
-<div class="block">If the attribute being changed is <i>polynomial</i>, then
-  verify that is a positive integer and the lower-order bit is 1.</div>
-</td>
-</tr>
-<tr class="altColor">
-<td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">HuffmanBasic.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/actor/lib/comm/HuffmanBasic.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
-<div class="block">If the attribute being changed is <i>pmf</i>, then verify
-  all the elements are positive and their sum is 1.0.</div>
-</td>
-</tr>
-<tr class="rowColor">
-<td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">HammingDecoder.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/actor/lib/comm/HammingDecoder.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
-<div class="block">If the attribute being changed is <i>uncodedRate</i> or
-  <i>uncodedRate</i>, then verify that it is a positive integer.</div>
+<td class="colLast"><span class="typeNameLabel">ConvolutionalCoder.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/actor/lib/comm/ConvolutionalCoder.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
+<div class="block">If the attribute being changed is <i>uncodedRate</i>,
+  then verify that it is a positive integer; if it is
+  <i>polynomialArray</i>, then verify that each of its elements is
+  a positive integer and find the maximum value among them, which
+  is used to compute the highest order among all polynomials.</div>
 </td>
 </tr>
 <tr class="altColor">
@@ -4143,6 +4132,20 @@ a ExecutionAspect.</div>
 <td class="colLast"><span class="typeNameLabel">HammingCoder.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/actor/lib/comm/HammingCoder.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
 <div class="block">If the attribute being changed is <i>uncodedRate</i> or
   <i>uncodedRate</i>, then verify that it is a positive integer.</div>
+</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code>void</code></td>
+<td class="colLast"><span class="typeNameLabel">DeScrambler.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/actor/lib/comm/DeScrambler.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
+<div class="block">If the attribute being changed is <i>polynomial</i>, then
+  verify that is a positive integer and the lower-order bit is 1.</div>
+</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code>void</code></td>
+<td class="colLast"><span class="typeNameLabel">Scrambler.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/actor/lib/comm/Scrambler.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
+<div class="block">If the attribute being changed is <i>polynomial</i>, then
+  verify that is a positive integer and the lower-order bit is 1.</div>
 </td>
 </tr>
 <tr class="rowColor">
@@ -4156,19 +4159,16 @@ a ExecutionAspect.</div>
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">DeScrambler.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/actor/lib/comm/DeScrambler.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
-<div class="block">If the attribute being changed is <i>polynomial</i>, then
-  verify that is a positive integer and the lower-order bit is 1.</div>
+<td class="colLast"><span class="typeNameLabel">HammingDecoder.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/actor/lib/comm/HammingDecoder.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
+<div class="block">If the attribute being changed is <i>uncodedRate</i> or
+  <i>uncodedRate</i>, then verify that it is a positive integer.</div>
 </td>
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">ConvolutionalCoder.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/actor/lib/comm/ConvolutionalCoder.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
-<div class="block">If the attribute being changed is <i>uncodedRate</i>,
-  then verify that it is a positive integer; if it is
-  <i>polynomialArray</i>, then verify that each of its elements is
-  a positive integer and find the maximum value among them, which
-  is used to compute the highest order among all polynomials.</div>
+<td class="colLast"><span class="typeNameLabel">HuffmanBasic.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/actor/lib/comm/HuffmanBasic.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
+<div class="block">If the attribute being changed is <i>pmf</i>, then verify
+  all the elements are positive and their sum is 1.0.</div>
 </td>
 </tr>
 </tbody>
@@ -4187,21 +4187,21 @@ a ExecutionAspect.</div>
 <tbody>
 <tr class="altColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">Round.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/actor/lib/conversions/Round.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
-<div class="block">Override the base class to determine which function is being
-  specified.</div>
+<td class="colLast"><span class="typeNameLabel">FixToFix.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/actor/lib/conversions/FixToFix.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
+<div class="block">Override the base class to set locally cached variables.</div>
 </td>
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">FixToFix.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/actor/lib/conversions/FixToFix.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
+<td class="colLast"><span class="typeNameLabel">DoubleToFix.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/actor/lib/conversions/DoubleToFix.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
 <div class="block">Override the base class to set locally cached variables.</div>
 </td>
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">DoubleToFix.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/actor/lib/conversions/DoubleToFix.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
-<div class="block">Override the base class to set locally cached variables.</div>
+<td class="colLast"><span class="typeNameLabel">Round.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/actor/lib/conversions/Round.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
+<div class="block">Override the base class to determine which function is being
+  specified.</div>
 </td>
 </tr>
 </tbody>
@@ -4257,34 +4257,21 @@ a ExecutionAspect.</div>
 <tbody>
 <tr class="altColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">XYScope.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/actor/lib/gui/XYScope.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
-<div class="block">Notify this that an attribute has changed.</div>
+<td class="colLast"><span class="typeNameLabel">PlotterBase.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/actor/lib/gui/PlotterBase.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
+<div class="block">If the attribute is <i>legend</i>, then parse the string
+  and set the legend.</div>
 </td>
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">TimedScope.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/actor/lib/gui/TimedScope.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
-<div class="block">Notify this that an attribute has changed.</div>
+<td class="colLast"><span class="typeNameLabel">ArrayPlotter.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/actor/lib/gui/ArrayPlotter.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
+<div class="block">Notification that an attribute has changed.</div>
 </td>
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">SliderSource.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/actor/lib/gui/SliderSource.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
-<div class="block">If the specified attribute is <i>minimum</i> or <i>maximum</i>,
-  then set the range of the slider.</div>
-</td>
-</tr>
-<tr class="rowColor">
-<td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">SketchedSource.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/actor/lib/gui/SketchedSource.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
-<div class="block">If the specified attribute is <i>length</i>,
-  then set the trace to its initial value.</div>
-</td>
-</tr>
-<tr class="altColor">
-<td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">SequenceScope.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/actor/lib/gui/SequenceScope.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
-<div class="block">Notify this that an attribute has changed.</div>
+<td class="colLast"><span class="typeNameLabel">Plotter.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/actor/lib/gui/Plotter.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
+<div class="block">If the attribute is <i>startingDataset</i>, then check its validity.</div>
 </td>
 </tr>
 <tr class="rowColor">
@@ -4295,15 +4282,41 @@ a ExecutionAspect.</div>
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">PlotterBase.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/actor/lib/gui/PlotterBase.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
-<div class="block">If the attribute is <i>legend</i>, then parse the string
-  and set the legend.</div>
+<td class="colLast"><span class="typeNameLabel">SequenceScope.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/actor/lib/gui/SequenceScope.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
+<div class="block">Notify this that an attribute has changed.</div>
 </td>
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">Plotter.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/actor/lib/gui/Plotter.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
-<div class="block">If the attribute is <i>startingDataset</i>, then check its validity.</div>
+<td class="colLast"><span class="typeNameLabel">XYScope.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/actor/lib/gui/XYScope.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
+<div class="block">Notify this that an attribute has changed.</div>
+</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code>void</code></td>
+<td class="colLast"><span class="typeNameLabel">SketchedSource.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/actor/lib/gui/SketchedSource.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
+<div class="block">If the specified attribute is <i>length</i>,
+  then set the trace to its initial value.</div>
+</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code>void</code></td>
+<td class="colLast"><span class="typeNameLabel">SliderSource.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/actor/lib/gui/SliderSource.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
+<div class="block">If the specified attribute is <i>minimum</i> or <i>maximum</i>,
+  then set the range of the slider.</div>
+</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code>void</code></td>
+<td class="colLast"><span class="typeNameLabel">Display.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/actor/lib/gui/Display.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
+<div class="block">If the specified attribute is <i>rowsDisplayed</i>, then set
+  the desired number of rows of the textArea, if there is one.</div>
+</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code>void</code></td>
+<td class="colLast"><span class="typeNameLabel">TimedScope.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/actor/lib/gui/TimedScope.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
+<div class="block">Notify this that an attribute has changed.</div>
 </td>
 </tr>
 <tr class="altColor">
@@ -4317,19 +4330,6 @@ a ExecutionAspect.</div>
 <td class="colLast"><span class="typeNameLabel">HistogramPlotter.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/actor/lib/gui/HistogramPlotter.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
 <div class="block">If the parameter is <i>binWidth</i> or <i>binOffset</i>, then
   configure the histogram with the specified bin width or offset.</div>
-</td>
-</tr>
-<tr class="altColor">
-<td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">Display.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/actor/lib/gui/Display.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
-<div class="block">If the specified attribute is <i>rowsDisplayed</i>, then set
-  the desired number of rows of the textArea, if there is one.</div>
-</td>
-</tr>
-<tr class="rowColor">
-<td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">ArrayPlotter.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/actor/lib/gui/ArrayPlotter.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
-<div class="block">Notification that an attribute has changed.</div>
 </td>
 </tr>
 </tbody>
@@ -4363,20 +4363,20 @@ a ExecutionAspect.</div>
 <tbody>
 <tr class="altColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">ThreadedComposite.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/actor/lib/hoc/ThreadedComposite.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
-<div class="block">React to a change in an attribute.</div>
-</td>
-</tr>
-<tr class="rowColor">
-<td class="colFirst"><code>void</code></td>
 <td class="colLast"><span class="typeNameLabel">RealTimeComposite.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/actor/lib/hoc/RealTimeComposite.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
 <div class="block"><span class="deprecatedLabel">Deprecated.</span>&nbsp;</div>
 <div class="block">React to a change in an attribute.</div>
 </td>
 </tr>
+<tr class="rowColor">
+<td class="colFirst"><code>void</code></td>
+<td class="colLast"><span class="typeNameLabel">ThreadedComposite.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/actor/lib/hoc/ThreadedComposite.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
+<div class="block">React to a change in an attribute.</div>
+</td>
+</tr>
 <tr class="altColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">ModelReference.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/actor/lib/hoc/ModelReference.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
+<td class="colLast"><span class="typeNameLabel">ApplyFilterOverArray.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/actor/lib/hoc/ApplyFilterOverArray.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
 <div class="block">Override the base class to open the model specified if the
   attribute is modelFileOrURL, or for other parameters, to cache
   their values.</div>
@@ -4384,7 +4384,7 @@ a ExecutionAspect.</div>
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">ApplyFilterOverArray.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/actor/lib/hoc/ApplyFilterOverArray.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
+<td class="colLast"><span class="typeNameLabel">ModelReference.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/actor/lib/hoc/ModelReference.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
 <div class="block">Override the base class to open the model specified if the
   attribute is modelFileOrURL, or for other parameters, to cache
   their values.</div>
@@ -4446,12 +4446,18 @@ a ExecutionAspect.</div>
 <tbody>
 <tr class="altColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">LineWriter.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/actor/lib/io/LineWriter.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
-<div class="block">If the specified attribute is <i>fileName</i> and there is an
-  open file being written, then close that file.</div>
+<td class="colLast"><span class="typeNameLabel">CSVReader.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/actor/lib/io/CSVReader.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
+<div class="block">If the specified attribute is <i>separator</i> then set a local
+  variable with the value of the separator.</div>
 </td>
 </tr>
 <tr class="rowColor">
+<td class="colFirst"><code>void</code></td>
+<td class="colLast"><span class="typeNameLabel">DirectoryListing.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/actor/lib/io/DirectoryListing.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
+<div class="block">Override the base class to locally cache parameter values.</div>
+</td>
+</tr>
+<tr class="altColor">
 <td class="colFirst"><code>void</code></td>
 <td class="colLast"><span class="typeNameLabel">LineReader.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/actor/lib/io/LineReader.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
 <div class="block">If the specified attribute is <i>fileOrURL</i> and there is an
@@ -4460,22 +4466,16 @@ a ExecutionAspect.</div>
   negative, then throw an exception.</div>
 </td>
 </tr>
-<tr class="altColor">
-<td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">DirectoryListing.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/actor/lib/io/DirectoryListing.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
-<div class="block">Override the base class to locally cache parameter values.</div>
-</td>
-</tr>
 <tr class="rowColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">CSVWriter.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/actor/lib/io/CSVWriter.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
-<div class="block">If the specified attribute is <i>separator</i> then set a local
-  variable with the value of the separator.</div>
+<td class="colLast"><span class="typeNameLabel">LineWriter.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/actor/lib/io/LineWriter.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
+<div class="block">If the specified attribute is <i>fileName</i> and there is an
+  open file being written, then close that file.</div>
 </td>
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">CSVReader.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/actor/lib/io/CSVReader.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
+<td class="colLast"><span class="typeNameLabel">CSVWriter.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/actor/lib/io/CSVWriter.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
 <div class="block">If the specified attribute is <i>separator</i> then set a local
   variable with the value of the separator.</div>
 </td>
@@ -4496,23 +4496,23 @@ a ExecutionAspect.</div>
 <tbody>
 <tr class="altColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">LogicGate.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/actor/lib/logic/LogicGate.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
-<div class="block">Override the base class to determine which function is being
+<td class="colLast"><span class="typeNameLabel">Comparator.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/actor/lib/logic/Comparator.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
+<div class="block">Override the base class to determine which comparison is being
   specified.</div>
 </td>
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">LogicFunction.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/actor/lib/logic/LogicFunction.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
-<div class="block"><span class="deprecatedLabel">Deprecated.</span>&nbsp;</div>
+<td class="colLast"><span class="typeNameLabel">LogicGate.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/actor/lib/logic/LogicGate.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
 <div class="block">Override the base class to determine which function is being
   specified.</div>
 </td>
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">Comparator.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/actor/lib/logic/Comparator.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
-<div class="block">Override the base class to determine which comparison is being
+<td class="colLast"><span class="typeNameLabel">LogicFunction.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/actor/lib/logic/LogicFunction.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
+<div class="block"><span class="deprecatedLabel">Deprecated.</span>&nbsp;</div>
+<div class="block">Override the base class to determine which function is being
   specified.</div>
 </td>
 </tr>
@@ -4561,23 +4561,9 @@ a ExecutionAspect.</div>
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">StringReplace.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/actor/lib/string/StringReplace.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
-<div class="block">Override the base class to compile a regular expression when
-  it is changed.</div>
-</td>
-</tr>
-<tr class="altColor">
-<td class="colFirst"><code>void</code></td>
 <td class="colLast"><span class="typeNameLabel">StringMatches.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/actor/lib/string/StringMatches.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
 <div class="block">Override the base class to compile the regular expression if
   it has changed.</div>
-</td>
-</tr>
-<tr class="rowColor">
-<td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">StringFunction.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/actor/lib/string/StringFunction.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
-<div class="block">Determine the string function to be performed on the input, and
-  set up the necessary fields for the function to be performed.</div>
 </td>
 </tr>
 <tr class="altColor">
@@ -4585,6 +4571,20 @@ a ExecutionAspect.</div>
 <td class="colLast"><span class="typeNameLabel">StringCompare.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/actor/lib/string/StringCompare.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
 <div class="block">Override the base class to determine which function is being
   specified.</div>
+</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code>void</code></td>
+<td class="colLast"><span class="typeNameLabel">StringReplace.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/actor/lib/string/StringReplace.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
+<div class="block">Override the base class to compile a regular expression when
+  it is changed.</div>
+</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code>void</code></td>
+<td class="colLast"><span class="typeNameLabel">StringFunction.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/actor/lib/string/StringFunction.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
+<div class="block">Determine the string function to be performed on the input, and
+  set up the necessary fields for the function to be performed.</div>
 </td>
 </tr>
 </tbody>
@@ -4690,19 +4690,6 @@ a ExecutionAspect.</div>
 <tbody>
 <tr class="altColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">PortParameter.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/actor/parameters/PortParameter.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
-<div class="block">React to a change in an attribute.</div>
-</td>
-</tr>
-<tr class="rowColor">
-<td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">ParameterSet.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/actor/parameters/ParameterSet.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
-<div class="block">If the parameter is <i>fileOrURL</i>, and the specified file
-  name is not null, then open and read the file.</div>
-</td>
-</tr>
-<tr class="altColor">
-<td class="colFirst"><code>void</code></td>
 <td class="colLast"><span class="typeNameLabel">IntRangeParameter.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/actor/parameters/IntRangeParameter.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
 <div class="block">React to a change in an attribute by ensuring that the current
   value remains within the range given by <i>min</i> and <i>max</i>.</div>
@@ -4713,6 +4700,19 @@ a ExecutionAspect.</div>
 <td class="colLast"><span class="typeNameLabel">DoubleRangeParameter.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/actor/parameters/DoubleRangeParameter.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
 <div class="block">React to a change in an attribute by ensuring that the current
   value remains within the range given by <i>min</i> and <i>max</i>.</div>
+</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code>void</code></td>
+<td class="colLast"><span class="typeNameLabel">ParameterSet.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/actor/parameters/ParameterSet.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
+<div class="block">If the parameter is <i>fileOrURL</i>, and the specified file
+  name is not null, then open and read the file.</div>
+</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code>void</code></td>
+<td class="colLast"><span class="typeNameLabel">PortParameter.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/actor/parameters/PortParameter.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
+<div class="block">React to a change in an attribute.</div>
 </td>
 </tr>
 </tbody>
@@ -5003,7 +5003,7 @@ a ExecutionAspect.</div>
 <tbody>
 <tr class="altColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">Variable.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/data/expr/Variable.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
+<td class="colLast"><span class="typeNameLabel">ChoiceStringParameter.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/data/expr/ChoiceStringParameter.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
 <div class="block">React to a change in an attribute.</div>
 </td>
 </tr>
@@ -5022,7 +5022,7 @@ a ExecutionAspect.</div>
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">ChoiceStringParameter.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/data/expr/ChoiceStringParameter.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
+<td class="colLast"><span class="typeNameLabel">Variable.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/data/expr/Variable.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
 <div class="block">React to a change in an attribute.</div>
 </td>
 </tr>
@@ -5160,17 +5160,13 @@ a ExecutionAspect.</div>
 <tbody>
 <tr class="altColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">Waveform.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/domains/continuous/lib/Waveform.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
-<div class="block">Check the validity of the parameter.</div>
+<td class="colLast"><span class="typeNameLabel">DifferentialSystem.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/domains/continuous/lib/DifferentialSystem.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
+<div class="block">If the argument is any parameter other than <i>stateVariableNames</i>
+  <i>t</i>, or any parameter matching an input port,
+  then request reinitialization.</div>
 </td>
 </tr>
 <tr class="rowColor">
-<td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">PeriodicSampler.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/domains/continuous/lib/PeriodicSampler.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
-<div class="block">If the attribute is microstep, adjust the causality interface.</div>
-</td>
-</tr>
-<tr class="altColor">
 <td class="colFirst"><code>void</code></td>
 <td class="colLast"><span class="typeNameLabel">LinearStateSpace.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/domains/continuous/lib/LinearStateSpace.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
 <div class="block">If the argument is <i>A, B, C, D</i> or <i>initialState</i>
@@ -5178,13 +5174,13 @@ a ExecutionAspect.</div>
   and request for initialization from the director if there is one.</div>
 </td>
 </tr>
-<tr class="rowColor">
+<tr class="altColor">
 <td class="colFirst"><code>void</code></td>
 <td class="colLast"><span class="typeNameLabel">LevelCrossingDetector.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/domains/continuous/lib/LevelCrossingDetector.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
 <div class="block">Update the attribute if it has been changed.</div>
 </td>
 </tr>
-<tr class="altColor">
+<tr class="rowColor">
 <td class="colFirst"><code>void</code></td>
 <td class="colLast"><span class="typeNameLabel">EventSource.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/domains/continuous/lib/EventSource.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
 <div class="block"><span class="deprecatedLabel">Deprecated.</span>&nbsp;</div>
@@ -5193,12 +5189,17 @@ a ExecutionAspect.</div>
   argument is <i>period</i>, check that it is positive.</div>
 </td>
 </tr>
+<tr class="altColor">
+<td class="colFirst"><code>void</code></td>
+<td class="colLast"><span class="typeNameLabel">ContinuousTimeDelay.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/domains/continuous/lib/ContinuousTimeDelay.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
+<div class="block">If the attribute is <i>delay</i>, then ensure that the value
+  is non-negative.</div>
+</td>
+</tr>
 <tr class="rowColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">DifferentialSystem.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/domains/continuous/lib/DifferentialSystem.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
-<div class="block">If the argument is any parameter other than <i>stateVariableNames</i>
-  <i>t</i>, or any parameter matching an input port,
-  then request reinitialization.</div>
+<td class="colLast"><span class="typeNameLabel">PeriodicSampler.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/domains/continuous/lib/PeriodicSampler.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
+<div class="block">If the attribute is microstep, adjust the causality interface.</div>
 </td>
 </tr>
 <tr class="altColor">
@@ -5211,9 +5212,8 @@ a ExecutionAspect.</div>
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">ContinuousTimeDelay.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/domains/continuous/lib/ContinuousTimeDelay.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
-<div class="block">If the attribute is <i>delay</i>, then ensure that the value
-  is non-negative.</div>
+<td class="colLast"><span class="typeNameLabel">Waveform.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/domains/continuous/lib/Waveform.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
+<div class="block">Check the validity of the parameter.</div>
 </td>
 </tr>
 </tbody>
@@ -5305,10 +5305,8 @@ a ExecutionAspect.</div>
 <tbody>
 <tr class="altColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">VariableDelay.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/domains/de/lib/VariableDelay.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
-<div class="block"><span class="deprecatedLabel">Deprecated.</span>&nbsp;</div>
-<div class="block">If the attribute is <i>delay</i>, then ensure that the value
-  is non-negative.</div>
+<td class="colLast"><span class="typeNameLabel">Queue.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/domains/de/lib/Queue.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
+<div class="block">React to a change in an attribute.</div>
 </td>
 </tr>
 <tr class="rowColor">
@@ -5321,23 +5319,9 @@ a ExecutionAspect.</div>
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">Server.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/domains/de/lib/Server.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
-<div class="block">If the attribute is <i>serviceTime</i>, then ensure that the value
-  is non-negative, and if the attribute is
-  <i>capacity</i>, then change the capacity of the queue.</div>
-</td>
-</tr>
-<tr class="rowColor">
-<td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">Queue.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/domains/de/lib/Queue.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
-<div class="block">React to a change in an attribute.</div>
-</td>
-</tr>
-<tr class="altColor">
-<td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">QuantizedSampler.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/domains/de/lib/QuantizedSampler.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
-<div class="block">If the argument is the quantum parameter, then cache
-  the value.</div>
+<td class="colLast"><span class="typeNameLabel">MostRecent.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/domains/de/lib/MostRecent.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
+<div class="block">If the <i>initialValue</i> parameter is the argument, then
+  reset the current output to match the new value.</div>
 </td>
 </tr>
 <tr class="rowColor">
@@ -5349,9 +5333,25 @@ a ExecutionAspect.</div>
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">MostRecent.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/domains/de/lib/MostRecent.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
-<div class="block">If the <i>initialValue</i> parameter is the argument, then
-  reset the current output to match the new value.</div>
+<td class="colLast"><span class="typeNameLabel">Server.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/domains/de/lib/Server.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
+<div class="block">If the attribute is <i>serviceTime</i>, then ensure that the value
+  is non-negative, and if the attribute is
+  <i>capacity</i>, then change the capacity of the queue.</div>
+</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code>void</code></td>
+<td class="colLast"><span class="typeNameLabel">VariableDelay.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/domains/de/lib/VariableDelay.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
+<div class="block"><span class="deprecatedLabel">Deprecated.</span>&nbsp;</div>
+<div class="block">If the attribute is <i>delay</i>, then ensure that the value
+  is non-negative.</div>
+</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code>void</code></td>
+<td class="colLast"><span class="typeNameLabel">QuantizedSampler.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/domains/de/lib/QuantizedSampler.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
+<div class="block">If the argument is the quantum parameter, then cache
+  the value.</div>
 </td>
 </tr>
 </tbody>
@@ -5451,7 +5451,7 @@ a ExecutionAspect.</div>
 <tbody>
 <tr class="altColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">Transition.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/domains/modal/kernel/Transition.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
+<td class="colLast"><span class="typeNameLabel">FSMDirector.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/domains/modal/kernel/FSMDirector.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
 <div class="block">React to a change in an attribute.</div>
 </td>
 </tr>
@@ -5463,15 +5463,15 @@ a ExecutionAspect.</div>
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">FSMDirector.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/domains/modal/kernel/FSMDirector.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
-<div class="block">React to a change in an attribute.</div>
+<td class="colLast"><span class="typeNameLabel">FSMActor.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/domains/modal/kernel/FSMActor.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
+<div class="block">If the attribute is <i>seed</i>
+  then create the base random number generator.</div>
 </td>
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">FSMActor.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/domains/modal/kernel/FSMActor.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
-<div class="block">If the attribute is <i>seed</i>
-  then create the base random number generator.</div>
+<td class="colLast"><span class="typeNameLabel">Transition.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/domains/modal/kernel/Transition.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
+<div class="block">React to a change in an attribute.</div>
 </td>
 </tr>
 </tbody>
@@ -5547,8 +5547,8 @@ a ExecutionAspect.</div>
 <tbody>
 <tr class="altColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">RefinementPort.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/domains/modal/modal/RefinementPort.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
-<div class="block">React to attribute changes.</div>
+<td class="colLast"><span class="typeNameLabel">ModalModel.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/domains/modal/modal/ModalModel.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
+<div class="block">React to a change of the director or other property.</div>
 </td>
 </tr>
 <tr class="rowColor">
@@ -5559,8 +5559,8 @@ a ExecutionAspect.</div>
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">ModalModel.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/domains/modal/modal/ModalModel.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
-<div class="block">React to a change of the director or other property.</div>
+<td class="colLast"><span class="typeNameLabel">RefinementPort.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/domains/modal/modal/RefinementPort.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
+<div class="block">React to attribute changes.</div>
 </td>
 </tr>
 </tbody>
@@ -5683,65 +5683,13 @@ a ExecutionAspect.</div>
 <tbody>
 <tr class="altColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">VariableRecursiveLattice.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/domains/sdf/lib/VariableRecursiveLattice.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
-<div class="block">Ensure that the blockSize parameter is positive.</div>
-</td>
-</tr>
-<tr class="rowColor">
-<td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">VariableLattice.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/domains/sdf/lib/VariableLattice.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
-<div class="block">Ensure that the blockSize parameter is positive.</div>
-</td>
-</tr>
-<tr class="altColor">
-<td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">VariableFIR.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/domains/sdf/lib/VariableFIR.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
-<div class="block">Set a flag that causes recalculation of various local variables
-  that are used in execution on the next invocation of fire().</div>
-</td>
-</tr>
-<tr class="rowColor">
-<td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">UpSample.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/domains/sdf/lib/UpSample.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
-<div class="block">Ensure that the factor and phase parameters are both positive.</div>
-</td>
-</tr>
-<tr class="altColor">
-<td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">SequenceToMatrix.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/domains/sdf/lib/SequenceToMatrix.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
-<div class="block">Ensure that the rows and columns parameters are both positive.</div>
-</td>
-</tr>
-<tr class="rowColor">
-<td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">SequenceToArray.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/domains/sdf/lib/SequenceToArray.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
-<div class="block">Ensure that the arrayLength parameter is not negative.</div>
-</td>
-</tr>
-<tr class="altColor">
-<td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">Repeat.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/domains/sdf/lib/Repeat.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
-<div class="block">Ensure that the numberOfTimes parameter and the blockSize
-  parameter are both positive.</div>
-</td>
-</tr>
-<tr class="rowColor">
-<td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">RaisedCosine.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/domains/sdf/lib/RaisedCosine.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
-<div class="block">Reevaluate the filter taps if the attribute is any of the ones
-  defined locally, and otherwise call the superclass.</div>
-</td>
-</tr>
-<tr class="altColor">
-<td class="colFirst"><code>void</code></td>
 <td class="colLast"><span class="typeNameLabel">MatrixToSequence.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/domains/sdf/lib/MatrixToSequence.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
 <div class="block">Ensure that the rows and columns parameters are both positive.</div>
 </td>
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">MatrixToDouble.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/domains/sdf/lib/MatrixToDouble.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
-<div class="block"><span class="deprecatedLabel">Deprecated.</span>&nbsp;</div>
+<td class="colLast"><span class="typeNameLabel">SequenceToMatrix.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/domains/sdf/lib/SequenceToMatrix.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
 <div class="block">Ensure that the rows and columns parameters are both positive.</div>
 </td>
 </tr>
@@ -5753,37 +5701,49 @@ a ExecutionAspect.</div>
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>void</code></td>
+<td class="colLast"><span class="typeNameLabel">DoubleToMatrix.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/domains/sdf/lib/DoubleToMatrix.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
+<div class="block"><span class="deprecatedLabel">Deprecated.</span>&nbsp;</div>
+<div class="block">Ensure that the rows and columns parameters are both positive.</div>
+</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code>void</code></td>
+<td class="colLast"><span class="typeNameLabel">UpSample.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/domains/sdf/lib/UpSample.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
+<div class="block">Ensure that the factor and phase parameters are both positive.</div>
+</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code>void</code></td>
+<td class="colLast"><span class="typeNameLabel">VariableLattice.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/domains/sdf/lib/VariableLattice.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
+<div class="block">Ensure that the blockSize parameter is positive.</div>
+</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code>void</code></td>
 <td class="colLast"><span class="typeNameLabel">LMSAdaptive.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/domains/sdf/lib/LMSAdaptive.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
 <div class="block">Override the base class to set the <i>taps</i> parameter if the
   <i>initialTaps</i> parameter is changed.</div>
 </td>
 </tr>
-<tr class="altColor">
-<td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">IntToBits.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/domains/sdf/lib/IntToBits.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
-<div class="block">If the argument is the <i>numberOfBits</i> parameter, then
-  set the production rate of the output port.</div>
-</td>
-</tr>
 <tr class="rowColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">IFFT.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/domains/sdf/lib/IFFT.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
-<div class="block">Ensure that the order parameter is positive and recompute the
-  size of internal buffers.</div>
+<td class="colLast"><span class="typeNameLabel">RaisedCosine.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/domains/sdf/lib/RaisedCosine.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
+<div class="block">Reevaluate the filter taps if the attribute is any of the ones
+  defined locally, and otherwise call the superclass.</div>
 </td>
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">FIR.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/domains/sdf/lib/FIR.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
+<td class="colLast"><span class="typeNameLabel">VariableFIR.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/domains/sdf/lib/VariableFIR.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
 <div class="block">Set a flag that causes recalculation of various local variables
   that are used in execution on the next invocation of fire().</div>
 </td>
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">FFT.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/domains/sdf/lib/FFT.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
-<div class="block">Ensure that the order parameter is positive and recompute the
-  size of internal buffers.</div>
+<td class="colLast"><span class="typeNameLabel">Chop.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/domains/sdf/lib/Chop.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
+<div class="block">Check the validity of parameter values and using the new
+  values, recompute the size of the internal buffers.</div>
 </td>
 </tr>
 <tr class="altColor">
@@ -5794,21 +5754,21 @@ a ExecutionAspect.</div>
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">DoubleToMatrix.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/domains/sdf/lib/DoubleToMatrix.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
+<td class="colLast"><span class="typeNameLabel">MatrixToDouble.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/domains/sdf/lib/MatrixToDouble.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
 <div class="block"><span class="deprecatedLabel">Deprecated.</span>&nbsp;</div>
 <div class="block">Ensure that the rows and columns parameters are both positive.</div>
 </td>
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">Chop.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/domains/sdf/lib/Chop.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
-<div class="block">Check the validity of parameter values and using the new
-  values, recompute the size of the internal buffers.</div>
+<td class="colLast"><span class="typeNameLabel">ArrayToSequence.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/domains/sdf/lib/ArrayToSequence.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
+<div class="block">If the argument is the <i>arrayLength</i> parameter, then
+  check to make sure its value is not negative.</div>
 </td>
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">BitsToInt.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/domains/sdf/lib/BitsToInt.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
+<td class="colLast"><span class="typeNameLabel">IntToBits.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/domains/sdf/lib/IntToBits.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
 <div class="block">If the argument is the <i>numberOfBits</i> parameter, then
   set the production rate of the output port.</div>
 </td>
@@ -5822,9 +5782,49 @@ a ExecutionAspect.</div>
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">ArrayToSequence.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/domains/sdf/lib/ArrayToSequence.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
-<div class="block">If the argument is the <i>arrayLength</i> parameter, then
-  check to make sure its value is not negative.</div>
+<td class="colLast"><span class="typeNameLabel">VariableRecursiveLattice.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/domains/sdf/lib/VariableRecursiveLattice.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
+<div class="block">Ensure that the blockSize parameter is positive.</div>
+</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code>void</code></td>
+<td class="colLast"><span class="typeNameLabel">FFT.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/domains/sdf/lib/FFT.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
+<div class="block">Ensure that the order parameter is positive and recompute the
+  size of internal buffers.</div>
+</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code>void</code></td>
+<td class="colLast"><span class="typeNameLabel">FIR.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/domains/sdf/lib/FIR.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
+<div class="block">Set a flag that causes recalculation of various local variables
+  that are used in execution on the next invocation of fire().</div>
+</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code>void</code></td>
+<td class="colLast"><span class="typeNameLabel">SequenceToArray.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/domains/sdf/lib/SequenceToArray.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
+<div class="block">Ensure that the arrayLength parameter is not negative.</div>
+</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code>void</code></td>
+<td class="colLast"><span class="typeNameLabel">IFFT.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/domains/sdf/lib/IFFT.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
+<div class="block">Ensure that the order parameter is positive and recompute the
+  size of internal buffers.</div>
+</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code>void</code></td>
+<td class="colLast"><span class="typeNameLabel">Repeat.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/domains/sdf/lib/Repeat.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
+<div class="block">Ensure that the numberOfTimes parameter and the blockSize
+  parameter are both positive.</div>
+</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code>void</code></td>
+<td class="colLast"><span class="typeNameLabel">BitsToInt.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/domains/sdf/lib/BitsToInt.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
+<div class="block">If the argument is the <i>numberOfBits</i> parameter, then
+  set the production rate of the output port.</div>
 </td>
 </tr>
 <tr class="altColor">
@@ -6050,13 +6050,13 @@ an optimized schedule according to a defined criterion.</div>
 <tbody>
 <tr class="altColor">
 <td class="colFirst"><code><a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a></code></td>
-<td class="colLast"><span class="typeNameLabel">ScopeExtender.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/kernel/util/ScopeExtender.html#getAttribute-java.lang.String-">getAttribute</a></span>(java.lang.String&nbsp;name)</code>
+<td class="colLast"><span class="typeNameLabel">NamedObj.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/kernel/util/NamedObj.html#getAttribute-java.lang.String-">getAttribute</a></span>(java.lang.String&nbsp;name)</code>
 <div class="block">Get the attribute with the given name.</div>
 </td>
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code><a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a></code></td>
-<td class="colLast"><span class="typeNameLabel">NamedObj.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/kernel/util/NamedObj.html#getAttribute-java.lang.String-">getAttribute</a></span>(java.lang.String&nbsp;name)</code>
+<td class="colLast"><span class="typeNameLabel">ScopeExtender.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/kernel/util/ScopeExtender.html#getAttribute-java.lang.String-">getAttribute</a></span>(java.lang.String&nbsp;name)</code>
 <div class="block">Get the attribute with the given name.</div>
 </td>
 </tr>
@@ -6100,15 +6100,15 @@ an optimized schedule according to a defined criterion.</div>
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">NamedObj.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/kernel/util/NamedObj.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
-<div class="block">React to a change in an attribute.</div>
+<td class="colLast"><span class="typeNameLabel">DecoratorAttributes.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/kernel/util/DecoratorAttributes.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
+<div class="block">Override the base class to establish a link to the decorator
+  if the argument is decoratorName.</div>
 </td>
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">DecoratorAttributes.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/kernel/util/DecoratorAttributes.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
-<div class="block">Override the base class to establish a link to the decorator
-  if the argument is decoratorName.</div>
+<td class="colLast"><span class="typeNameLabel">NamedObj.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/kernel/util/NamedObj.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
+<div class="block">React to a change in an attribute.</div>
 </td>
 </tr>
 <tr class="altColor">
@@ -6387,16 +6387,16 @@ an optimized schedule according to a defined criterion.</div>
 <tbody>
 <tr class="altColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">VisualModelReference.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/vergil/actor/lib/VisualModelReference.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
-<div class="block">Override the base class to open the model specified if the
-  attribute is modelFileOrURL, or for other parameters, to cache
-  their values.</div>
+<td class="colLast"><span class="typeNameLabel">ModelDisplay.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/vergil/actor/lib/ModelDisplay.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
+<div class="block">React to a change in an attribute.</div>
 </td>
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">ModelDisplay.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/vergil/actor/lib/ModelDisplay.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
-<div class="block">React to a change in an attribute.</div>
+<td class="colLast"><span class="typeNameLabel">VisualModelReference.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/vergil/actor/lib/VisualModelReference.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
+<div class="block">Override the base class to open the model specified if the
+  attribute is modelFileOrURL, or for other parameters, to cache
+  their values.</div>
 </td>
 </tr>
 </tbody>
@@ -6620,20 +6620,20 @@ an optimized schedule according to a defined criterion.</div>
 <tbody>
 <tr class="altColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">WebExportParameters.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/vergil/basic/export/web/WebExportParameters.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
-<div class="block">React to a change in an attribute.</div>
-</td>
-</tr>
-<tr class="rowColor">
-<td class="colFirst"><code>void</code></td>
 <td class="colLast"><span class="typeNameLabel">WebContent.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/vergil/basic/export/web/WebContent.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
 <div class="block">Override the base class to update the icon.</div>
 </td>
 </tr>
-<tr class="altColor">
+<tr class="rowColor">
 <td class="colFirst"><code>void</code></td>
 <td class="colLast"><span class="typeNameLabel">Title.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/vergil/basic/export/web/Title.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
 <div class="block">React to a changes in the attributes by changing the icon.</div>
+</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code>void</code></td>
+<td class="colLast"><span class="typeNameLabel">WebExportParameters.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/vergil/basic/export/web/WebExportParameters.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
+<div class="block">React to a change in an attribute.</div>
 </td>
 </tr>
 </tbody>
@@ -6847,16 +6847,16 @@ an optimized schedule according to a defined criterion.</div>
 <tbody>
 <tr class="altColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">UpdatedValueIcon.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/vergil/icon/UpdatedValueIcon.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
-<div class="block">Override the base class to identify the named attribute in the
-  container and to attach a listener to it.</div>
+<td class="colLast"><span class="typeNameLabel">NameIcon.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/vergil/icon/NameIcon.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
+<div class="block">React to a changes in the attributes by changing
+  the icon.</div>
 </td>
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">NameIcon.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/vergil/icon/NameIcon.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
-<div class="block">React to a changes in the attributes by changing
-  the icon.</div>
+<td class="colLast"><span class="typeNameLabel">UpdatedValueIcon.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/vergil/icon/UpdatedValueIcon.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
+<div class="block">Override the base class to identify the named attribute in the
+  container and to attach a listener to it.</div>
 </td>
 </tr>
 </tbody>
@@ -6992,15 +6992,53 @@ an optimized schedule according to a defined criterion.</div>
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">ResizablePolygonAttribute.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/vergil/kernel/attributes/ResizablePolygonAttribute.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
-<div class="block">React to a changes in the attributes by changing
-  the icon.</div>
+<td class="colLast"><span class="typeNameLabel">ArrowAttribute.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/vergil/kernel/attributes/ArrowAttribute.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
+<div class="block">React to a changes in the attributes by changing the icon.</div>
 </td>
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>void</code></td>
 <td class="colLast"><span class="typeNameLabel">RectangleAttribute.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/vergil/kernel/attributes/RectangleAttribute.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
 <div class="block">React to a changes in the attributes by changing
+  the icon.</div>
+</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code>void</code></td>
+<td class="colLast"><span class="typeNameLabel">FilledShapeAttribute.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/vergil/kernel/attributes/FilledShapeAttribute.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
+<div class="block">React to a changes in the attributes by changing
+  the icon.</div>
+</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code>void</code></td>
+<td class="colLast"><span class="typeNameLabel">ResizablePolygonAttribute.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/vergil/kernel/attributes/ResizablePolygonAttribute.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
+<div class="block">React to a changes in the attributes by changing
+  the icon.</div>
+</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code>void</code></td>
+<td class="colLast"><span class="typeNameLabel">AbstractTextAttribute.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/vergil/kernel/attributes/AbstractTextAttribute.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
+<div class="block">React to a changes in the attributes by changing the icon.</div>
+</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code>void</code></td>
+<td class="colLast"><span class="typeNameLabel">AttributeValueAttribute.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/vergil/kernel/attributes/AttributeValueAttribute.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
+<div class="block">React to a changes in the attributes by changing the icon.</div>
+</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code>void</code></td>
+<td class="colLast"><span class="typeNameLabel">ArcAttribute.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/vergil/kernel/attributes/ArcAttribute.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
+<div class="block">React to changes in attribute values.</div>
+</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code>void</code></td>
+<td class="colLast"><span class="typeNameLabel">ImageAttribute.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/vergil/kernel/attributes/ImageAttribute.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
+<div class="block">React to a change in the source or scale attributes by changing
   the icon.</div>
 </td>
 </tr>
@@ -7013,46 +7051,8 @@ an optimized schedule according to a defined criterion.</div>
 </tr>
 <tr class="rowColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">ImageAttribute.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/vergil/kernel/attributes/ImageAttribute.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
-<div class="block">React to a change in the source or scale attributes by changing
-  the icon.</div>
-</td>
-</tr>
-<tr class="altColor">
-<td class="colFirst"><code>void</code></td>
 <td class="colLast"><span class="typeNameLabel">IDAttribute.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/vergil/kernel/attributes/IDAttribute.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
 <div class="block">React to a change in an attribute.</div>
-</td>
-</tr>
-<tr class="rowColor">
-<td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">FilledShapeAttribute.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/vergil/kernel/attributes/FilledShapeAttribute.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
-<div class="block">React to a changes in the attributes by changing
-  the icon.</div>
-</td>
-</tr>
-<tr class="altColor">
-<td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">AttributeValueAttribute.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/vergil/kernel/attributes/AttributeValueAttribute.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
-<div class="block">React to a changes in the attributes by changing the icon.</div>
-</td>
-</tr>
-<tr class="rowColor">
-<td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">ArrowAttribute.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/vergil/kernel/attributes/ArrowAttribute.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
-<div class="block">React to a changes in the attributes by changing the icon.</div>
-</td>
-</tr>
-<tr class="altColor">
-<td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">ArcAttribute.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/vergil/kernel/attributes/ArcAttribute.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
-<div class="block">React to changes in attribute values.</div>
-</td>
-</tr>
-<tr class="rowColor">
-<td class="colFirst"><code>void</code></td>
-<td class="colLast"><span class="typeNameLabel">AbstractTextAttribute.</span><code><span class="memberNameLink"><a href="../../../../ptolemy/vergil/kernel/attributes/AbstractTextAttribute.html#attributeChanged-ptolemy.kernel.util.Attribute-">attributeChanged</a></span>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)</code>
-<div class="block">React to a changes in the attributes by changing the icon.</div>
 </td>
 </tr>
 </tbody>
