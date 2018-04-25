@@ -142,7 +142,7 @@ var activeTableTab = "activeTableTab";
 </dl>
 <hr>
 <br>
-<pre>public class <a href="../../src-html/ptolemy/matlab/Expression.html#line.165">Expression</a>
+<pre>public class <a href="../../src-html/ptolemy/matlab/Expression.html#line.255">Expression</a>
 extends <a href="../../ptolemy/actor/TypedAtomicActor.html" title="class in ptolemy.actor">TypedAtomicActor</a></pre>
 <div class="block">On each firing send an expression for evaluation to a matlab <a href="../../ptolemy/matlab/Engine.html" title="class in ptolemy.matlab"><code>Engine</code></a>. The expression is any valid matlab expression, e.g.:
 
@@ -233,7 +233,52 @@ extends <a href="../../ptolemy/actor/TypedAtomicActor.html" title="class in ptol
        Environment Variables| Add the directory that contains
        matlab.exe to your path)</dt>
  <dd><code>Be sure that the matlab binary is in your path</code></dd>
- </dl></div>
+ </dl>
+
+ <h2>Notes about Matlab 10.8 and later</h2>
+
+ <p>Note that under recent version of MacOS, the DYLD_LIBRARY_PATH is no longer used.
+ The workaround is to be sure that matlab is in your path and to run ./configure.</p>
+
+ <p>For example:</p>
+ <pre>
+ bash-3.2$ bash-3.2$ which matlab
+ /Applications/MATLAB_R2018a.app/bin/matlab
+ </pre>
+
+ <p>Then, running:</p>
+ <pre>
+ ./configure --enable-verbose
+ </pre>
+
+ <p>shows:</p>
+
+ <pre>
+ checking for matlab... /Applications/MATLAB_R2018a.app/bin/matlab
+ checking the value of the Matlab root directory ... '/Applications/MATLAB_R2018a.app'
+ checking for gcc... checking for gcc... /usr/bin/gcc
+ checking for malloc_size... yes
+ checking the extension for Matlab .mex files... mexmaci64
+ checking which major type of OS we are running under... MacOSX
+ using '/Applications/MATLAB_R2018a.app/bin/maci' for Matlab's engine libraries
+ </pre>
+
+ Then run
+ <pre>
+ cd $PTII
+ ant
+ cd $PTII/bin
+ make
+ cd $PTII/ptolemy/matlab
+ make clean; make
+ <pre>
+
+ <p>Here's what libraries are used by libptmatlab.jnilib</p>
+
+ <pre>
+ bash-3.2$ otool -L libptmatlab.jnilib
+ libptmatlab.jnilib:
+         libptmatlab64.jnilib (compatibility version 0.0.0, current version 0.0.0)</div>
 <dl>
 <dt><span class="simpleTagLabel">Since:</span></dt>
 <dd>Ptolemy II 2.0</dd>
@@ -529,7 +574,7 @@ extends <a href="../../ptolemy/actor/TypedAtomicActor.html" title="class in ptol
 <ul class="blockList">
 <li class="blockList">
 <h4>output</h4>
-<pre>public&nbsp;<a href="../../ptolemy/actor/TypedIOPort.html" title="class in ptolemy.actor">TypedIOPort</a> <a href="../../src-html/ptolemy/matlab/Expression.html#line.205">output</a></pre>
+<pre>public&nbsp;<a href="../../ptolemy/actor/TypedIOPort.html" title="class in ptolemy.actor">TypedIOPort</a> <a href="../../src-html/ptolemy/matlab/Expression.html#line.295">output</a></pre>
 <div class="block">The output port.</div>
 </li>
 </ul>
@@ -539,7 +584,7 @@ extends <a href="../../ptolemy/actor/TypedAtomicActor.html" title="class in ptol
 <ul class="blockList">
 <li class="blockList">
 <h4>expression</h4>
-<pre>public&nbsp;<a href="../../ptolemy/data/expr/StringParameter.html" title="class in ptolemy.data.expr">StringParameter</a> <a href="../../src-html/ptolemy/matlab/Expression.html#line.212">expression</a></pre>
+<pre>public&nbsp;<a href="../../ptolemy/data/expr/StringParameter.html" title="class in ptolemy.data.expr">StringParameter</a> <a href="../../src-html/ptolemy/matlab/Expression.html#line.302">expression</a></pre>
 <div class="block">The parameter that is evaluated to produce the output.
   Typically, this parameter evaluates an expression involving
   the inputs. To refer to parameters in scope within the expression,
@@ -552,7 +597,7 @@ extends <a href="../../ptolemy/actor/TypedAtomicActor.html" title="class in ptol
 <ul class="blockList">
 <li class="blockList">
 <h4>get1x1asScalars</h4>
-<pre>public&nbsp;<a href="../../ptolemy/data/expr/Parameter.html" title="class in ptolemy.data.expr">Parameter</a> <a href="../../src-html/ptolemy/matlab/Expression.html#line.217">get1x1asScalars</a></pre>
+<pre>public&nbsp;<a href="../../ptolemy/data/expr/Parameter.html" title="class in ptolemy.data.expr">Parameter</a> <a href="../../src-html/ptolemy/matlab/Expression.html#line.307">get1x1asScalars</a></pre>
 <div class="block">If true (checked), 1x1 matrix results are converted to
      ScalarTokens instead of a 1x1 MatrixToken, default is
      <i>true</i>.</div>
@@ -564,7 +609,7 @@ extends <a href="../../ptolemy/actor/TypedAtomicActor.html" title="class in ptol
 <ul class="blockList">
 <li class="blockList">
 <h4>getIntegerMatrices</h4>
-<pre>public&nbsp;<a href="../../ptolemy/data/expr/Parameter.html" title="class in ptolemy.data.expr">Parameter</a> <a href="../../src-html/ptolemy/matlab/Expression.html#line.222">getIntegerMatrices</a></pre>
+<pre>public&nbsp;<a href="../../ptolemy/data/expr/Parameter.html" title="class in ptolemy.data.expr">Parameter</a> <a href="../../src-html/ptolemy/matlab/Expression.html#line.312">getIntegerMatrices</a></pre>
 <div class="block">If true, all double-valued matrix results are checked to see if
      all elements represent integers, and if so, an IntMatrixToken is
      returned, default is <i>false</i> for performance reasons.</div>
@@ -576,7 +621,7 @@ extends <a href="../../ptolemy/actor/TypedAtomicActor.html" title="class in ptol
 <ul class="blockListLast">
 <li class="blockList">
 <h4>clearEnvironment</h4>
-<pre>public&nbsp;<a href="../../ptolemy/data/expr/Parameter.html" title="class in ptolemy.data.expr">Parameter</a> <a href="../../src-html/ptolemy/matlab/Expression.html#line.225">clearEnvironment</a></pre>
+<pre>public&nbsp;<a href="../../ptolemy/data/expr/Parameter.html" title="class in ptolemy.data.expr">Parameter</a> <a href="../../src-html/ptolemy/matlab/Expression.html#line.315">clearEnvironment</a></pre>
 <div class="block">If true, clear variables and globals before each execution.</div>
 </li>
 </ul>
@@ -594,7 +639,7 @@ extends <a href="../../ptolemy/actor/TypedAtomicActor.html" title="class in ptol
 <ul class="blockListLast">
 <li class="blockList">
 <h4>Expression</h4>
-<pre>public&nbsp;<a href="../../src-html/ptolemy/matlab/Expression.html#line.174">Expression</a>(<a href="../../ptolemy/kernel/CompositeEntity.html" title="class in ptolemy.kernel">CompositeEntity</a>&nbsp;container,
+<pre>public&nbsp;<a href="../../src-html/ptolemy/matlab/Expression.html#line.264">Expression</a>(<a href="../../ptolemy/kernel/CompositeEntity.html" title="class in ptolemy.kernel">CompositeEntity</a>&nbsp;container,
                   java.lang.String&nbsp;name)
            throws <a href="../../ptolemy/kernel/util/NameDuplicationException.html" title="class in ptolemy.kernel.util">NameDuplicationException</a>,
                   <a href="../../ptolemy/kernel/util/IllegalActionException.html" title="class in ptolemy.kernel.util">IllegalActionException</a></pre>
@@ -625,7 +670,7 @@ extends <a href="../../ptolemy/actor/TypedAtomicActor.html" title="class in ptol
 <ul class="blockList">
 <li class="blockList">
 <h4>clone</h4>
-<pre>public&nbsp;java.lang.Object&nbsp;<a href="../../src-html/ptolemy/matlab/Expression.html#line.239">clone</a>(<a href="../../ptolemy/kernel/util/Workspace.html" title="class in ptolemy.kernel.util">Workspace</a>&nbsp;workspace)
+<pre>public&nbsp;java.lang.Object&nbsp;<a href="../../src-html/ptolemy/matlab/Expression.html#line.329">clone</a>(<a href="../../ptolemy/kernel/util/Workspace.html" title="class in ptolemy.kernel.util">Workspace</a>&nbsp;workspace)
                        throws java.lang.CloneNotSupportedException</pre>
 <div class="block">Clone the actor into the specified workspace. This calls the
   base class and then sets the <code>iteration</code>
@@ -652,7 +697,7 @@ extends <a href="../../ptolemy/actor/TypedAtomicActor.html" title="class in ptol
 <ul class="blockList">
 <li class="blockList">
 <h4>preinitialize</h4>
-<pre>public&nbsp;void&nbsp;<a href="../../src-html/ptolemy/matlab/Expression.html#line.254">preinitialize</a>()
+<pre>public&nbsp;void&nbsp;<a href="../../src-html/ptolemy/matlab/Expression.html#line.344">preinitialize</a>()
                    throws <a href="../../ptolemy/kernel/util/IllegalActionException.html" title="class in ptolemy.kernel.util">IllegalActionException</a></pre>
 <div class="block">Open a matlab engine.</div>
 <dl>
@@ -671,7 +716,7 @@ extends <a href="../../ptolemy/actor/TypedAtomicActor.html" title="class in ptol
 <ul class="blockList">
 <li class="blockList">
 <h4>initialize</h4>
-<pre>public&nbsp;void&nbsp;<a href="../../src-html/ptolemy/matlab/Expression.html#line.263">initialize</a>()
+<pre>public&nbsp;void&nbsp;<a href="../../src-html/ptolemy/matlab/Expression.html#line.353">initialize</a>()
                 throws <a href="../../ptolemy/kernel/util/IllegalActionException.html" title="class in ptolemy.kernel.util">IllegalActionException</a></pre>
 <div class="block">Initialize the iteration count to 1.</div>
 <dl>
@@ -690,7 +735,7 @@ extends <a href="../../ptolemy/actor/TypedAtomicActor.html" title="class in ptol
 <ul class="blockList">
 <li class="blockList">
 <h4>prefire</h4>
-<pre>public&nbsp;boolean&nbsp;<a href="../../src-html/ptolemy/matlab/Expression.html#line.328">prefire</a>()
+<pre>public&nbsp;boolean&nbsp;<a href="../../src-html/ptolemy/matlab/Expression.html#line.418">prefire</a>()
                 throws <a href="../../ptolemy/kernel/util/IllegalActionException.html" title="class in ptolemy.kernel.util">IllegalActionException</a></pre>
 <div class="block">Return true if all input ports have at least one token.</div>
 <dl>
@@ -711,7 +756,7 @@ extends <a href="../../ptolemy/actor/TypedAtomicActor.html" title="class in ptol
 <ul class="blockList">
 <li class="blockList">
 <h4>fire</h4>
-<pre>public&nbsp;void&nbsp;<a href="../../src-html/ptolemy/matlab/Expression.html#line.348">fire</a>()
+<pre>public&nbsp;void&nbsp;<a href="../../src-html/ptolemy/matlab/Expression.html#line.438">fire</a>()
           throws <a href="../../ptolemy/kernel/util/IllegalActionException.html" title="class in ptolemy.kernel.util">IllegalActionException</a></pre>
 <div class="block">Evaluate the expression and send its result to the output.</div>
 <dl>
@@ -732,7 +777,7 @@ extends <a href="../../ptolemy/actor/TypedAtomicActor.html" title="class in ptol
 <ul class="blockList">
 <li class="blockList">
 <h4>postfire</h4>
-<pre>public&nbsp;boolean&nbsp;<a href="../../src-html/ptolemy/matlab/Expression.html#line.434">postfire</a>()
+<pre>public&nbsp;boolean&nbsp;<a href="../../src-html/ptolemy/matlab/Expression.html#line.524">postfire</a>()
                  throws <a href="../../ptolemy/kernel/util/IllegalActionException.html" title="class in ptolemy.kernel.util">IllegalActionException</a></pre>
 <div class="block">Increment the iteration count.</div>
 <dl>
@@ -753,7 +798,7 @@ extends <a href="../../ptolemy/actor/TypedAtomicActor.html" title="class in ptol
 <ul class="blockList">
 <li class="blockList">
 <h4>wrapup</h4>
-<pre>public&nbsp;void&nbsp;<a href="../../src-html/ptolemy/matlab/Expression.html#line.446">wrapup</a>()
+<pre>public&nbsp;void&nbsp;<a href="../../src-html/ptolemy/matlab/Expression.html#line.536">wrapup</a>()
             throws <a href="../../ptolemy/kernel/util/IllegalActionException.html" title="class in ptolemy.kernel.util">IllegalActionException</a></pre>
 <div class="block">Close matlab engine if it was open.</div>
 <dl>
@@ -772,7 +817,7 @@ extends <a href="../../ptolemy/actor/TypedAtomicActor.html" title="class in ptol
 <ul class="blockListLast">
 <li class="blockList">
 <h4>_defaultTypeConstraints</h4>
-<pre>protected&nbsp;java.util.Set&lt;<a href="../../ptolemy/graph/Inequality.html" title="class in ptolemy.graph">Inequality</a>&gt;&nbsp;<a href="../../src-html/ptolemy/matlab/Expression.html#line.467">_defaultTypeConstraints</a>()</pre>
+<pre>protected&nbsp;java.util.Set&lt;<a href="../../ptolemy/graph/Inequality.html" title="class in ptolemy.graph">Inequality</a>&gt;&nbsp;<a href="../../src-html/ptolemy/matlab/Expression.html#line.557">_defaultTypeConstraints</a>()</pre>
 <div class="block">Default type constraints do not apply in this case, since the input
   type may be totally unrelated to the output type and cannot be
   inferred; return null.</div>

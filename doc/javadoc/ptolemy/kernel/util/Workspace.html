@@ -790,7 +790,7 @@ public&nbsp;java.util.Enumeration&nbsp;<a href="../../../src-html/ptolemy/kernel
 <ul class="blockList">
 <li class="blockList">
 <h4>getVersion</h4>
-<pre>public final&nbsp;long&nbsp;<a href="../../../src-html/ptolemy/kernel/util/Workspace.html#line.464">getVersion</a>()</pre>
+<pre>public final&nbsp;long&nbsp;<a href="../../../src-html/ptolemy/kernel/util/Workspace.html#line.469">getVersion</a>()</pre>
 <div class="block">Get the version number.  The version number is incremented on
   each call to doneWriting() and also on calls to incrVersion().
   It is meant to track changes to the objects in the workspace.</div>
@@ -806,7 +806,7 @@ public&nbsp;java.util.Enumeration&nbsp;<a href="../../../src-html/ptolemy/kernel
 <ul class="blockList">
 <li class="blockList">
 <h4>getWriteAccess</h4>
-<pre>public final&nbsp;void&nbsp;<a href="../../../src-html/ptolemy/kernel/util/Workspace.html#line.492">getWriteAccess</a>()</pre>
+<pre>public final&nbsp;void&nbsp;<a href="../../../src-html/ptolemy/kernel/util/Workspace.html#line.497">getWriteAccess</a>()</pre>
 <div class="block">Obtain permission to write to objects in the workspace.
   Write access is granted if there are no other threads that currently
   have read or write access.  In particular, it <i>is</i> granted
@@ -842,7 +842,7 @@ public&nbsp;java.util.Enumeration&nbsp;<a href="../../../src-html/ptolemy/kernel
 <ul class="blockList">
 <li class="blockList">
 <h4>handleModelError</h4>
-<pre>public&nbsp;boolean&nbsp;<a href="../../../src-html/ptolemy/kernel/util/Workspace.html#line.587">handleModelError</a>(<a href="../../../ptolemy/kernel/util/NamedObj.html" title="class in ptolemy.kernel.util">NamedObj</a>&nbsp;context,
+<pre>public&nbsp;boolean&nbsp;<a href="../../../src-html/ptolemy/kernel/util/Workspace.html#line.592">handleModelError</a>(<a href="../../../ptolemy/kernel/util/NamedObj.html" title="class in ptolemy.kernel.util">NamedObj</a>&nbsp;context,
                                 <a href="../../../ptolemy/kernel/util/IllegalActionException.html" title="class in ptolemy.kernel.util">IllegalActionException</a>&nbsp;exception)
                          throws <a href="../../../ptolemy/kernel/util/IllegalActionException.html" title="class in ptolemy.kernel.util">IllegalActionException</a></pre>
 <div class="block">Handle a model error by throwing the specified exception.</div>
@@ -866,7 +866,7 @@ public&nbsp;java.util.Enumeration&nbsp;<a href="../../../src-html/ptolemy/kernel
 <ul class="blockList">
 <li class="blockList">
 <h4>incrVersion</h4>
-<pre>public final&nbsp;void&nbsp;<a href="../../../src-html/ptolemy/kernel/util/Workspace.html#line.594">incrVersion</a>()</pre>
+<pre>public final&nbsp;void&nbsp;<a href="../../../src-html/ptolemy/kernel/util/Workspace.html#line.599">incrVersion</a>()</pre>
 <div class="block">Increment the version number by one.</div>
 </li>
 </ul>
@@ -876,7 +876,7 @@ public&nbsp;java.util.Enumeration&nbsp;<a href="../../../src-html/ptolemy/kernel
 <ul class="blockList">
 <li class="blockList">
 <h4>reacquireReadPermission</h4>
-<pre>public&nbsp;void&nbsp;<a href="../../../src-html/ptolemy/kernel/util/Workspace.html#line.604">reacquireReadPermission</a>(int&nbsp;depth)</pre>
+<pre>public&nbsp;void&nbsp;<a href="../../../src-html/ptolemy/kernel/util/Workspace.html#line.609">reacquireReadPermission</a>(int&nbsp;depth)</pre>
 <div class="block">Reacquire read permission on the workspace for
   the current thread. Call this after a call to
   releaseReadPermissions().</div>
@@ -894,7 +894,7 @@ public&nbsp;java.util.Enumeration&nbsp;<a href="../../../src-html/ptolemy/kernel
 <ul class="blockList">
 <li class="blockList">
 <h4>releaseReadPermission</h4>
-<pre>public&nbsp;int&nbsp;<a href="../../../src-html/ptolemy/kernel/util/Workspace.html#line.632">releaseReadPermission</a>()</pre>
+<pre>public&nbsp;int&nbsp;<a href="../../../src-html/ptolemy/kernel/util/Workspace.html#line.637">releaseReadPermission</a>()</pre>
 <div class="block">Release read permission on the workspace
   held by the current thread, and return the depth of the
   nested calls to getReadAccess(). It is essential that
@@ -930,7 +930,7 @@ public&nbsp;java.util.Enumeration&nbsp;<a href="../../../src-html/ptolemy/kernel
 <ul class="blockList">
 <li class="blockList">
 <h4>remove</h4>
-<pre>public&nbsp;void&nbsp;<a href="../../../src-html/ptolemy/kernel/util/Workspace.html#line.643">remove</a>(<a href="../../../ptolemy/kernel/util/NamedObj.html" title="class in ptolemy.kernel.util">NamedObj</a>&nbsp;item)</pre>
+<pre>public&nbsp;void&nbsp;<a href="../../../src-html/ptolemy/kernel/util/Workspace.html#line.648">remove</a>(<a href="../../../ptolemy/kernel/util/NamedObj.html" title="class in ptolemy.kernel.util">NamedObj</a>&nbsp;item)</pre>
 <div class="block">Remove the specified item from the directory.
   Note that that item will still refer to this workspace as
   its workspace (its workspace is immutable).  If the object is
@@ -948,7 +948,7 @@ public&nbsp;java.util.Enumeration&nbsp;<a href="../../../src-html/ptolemy/kernel
 <ul class="blockList">
 <li class="blockList">
 <h4>removeAll</h4>
-<pre>public&nbsp;void&nbsp;<a href="../../../src-html/ptolemy/kernel/util/Workspace.html#line.653">removeAll</a>()</pre>
+<pre>public&nbsp;void&nbsp;<a href="../../../src-html/ptolemy/kernel/util/Workspace.html#line.658">removeAll</a>()</pre>
 <div class="block">Remove all items from the directory.
   Note that those items will still refer to this workspace as
   their workspace (their workspace is immutable).
@@ -961,7 +961,7 @@ public&nbsp;java.util.Enumeration&nbsp;<a href="../../../src-html/ptolemy/kernel
 <ul class="blockList">
 <li class="blockList">
 <h4>setName</h4>
-<pre>public&nbsp;void&nbsp;<a href="../../../src-html/ptolemy/kernel/util/Workspace.html#line.665">setName</a>(java.lang.String&nbsp;name)</pre>
+<pre>public&nbsp;void&nbsp;<a href="../../../src-html/ptolemy/kernel/util/Workspace.html#line.670">setName</a>(java.lang.String&nbsp;name)</pre>
 <div class="block">Set or change the name.  If a null argument is given the
   name is set to an empty string.
   Increment the version number.</div>
@@ -981,7 +981,7 @@ public&nbsp;java.util.Enumeration&nbsp;<a href="../../../src-html/ptolemy/kernel
 <ul class="blockList">
 <li class="blockList">
 <h4>toString</h4>
-<pre>public&nbsp;java.lang.String&nbsp;<a href="../../../src-html/ptolemy/kernel/util/Workspace.html#line.678">toString</a>()</pre>
+<pre>public&nbsp;java.lang.String&nbsp;<a href="../../../src-html/ptolemy/kernel/util/Workspace.html#line.683">toString</a>()</pre>
 <div class="block">Return a concise description of the object.</div>
 <dl>
 <dt><span class="overrideSpecifyLabel">Overrides:</span></dt>
@@ -997,7 +997,7 @@ public&nbsp;java.util.Enumeration&nbsp;<a href="../../../src-html/ptolemy/kernel
 <ul class="blockList">
 <li class="blockList">
 <h4>wait</h4>
-<pre>public&nbsp;void&nbsp;<a href="../../../src-html/ptolemy/kernel/util/Workspace.html#line.728">wait</a>(java.lang.Object&nbsp;obj)
+<pre>public&nbsp;void&nbsp;<a href="../../../src-html/ptolemy/kernel/util/Workspace.html#line.733">wait</a>(java.lang.Object&nbsp;obj)
           throws java.lang.InterruptedException</pre>
 <div class="block">Release all the read accesses held by the current thread and suspend
   the thread by calling Object.wait() on the specified object. When the
@@ -1055,7 +1055,7 @@ public&nbsp;java.util.Enumeration&nbsp;<a href="../../../src-html/ptolemy/kernel
 <ul class="blockList">
 <li class="blockList">
 <h4>wait</h4>
-<pre>public&nbsp;void&nbsp;<a href="../../../src-html/ptolemy/kernel/util/Workspace.html#line.774">wait</a>(java.lang.Object&nbsp;obj,
+<pre>public&nbsp;void&nbsp;<a href="../../../src-html/ptolemy/kernel/util/Workspace.html#line.779">wait</a>(java.lang.Object&nbsp;obj,
                  long&nbsp;timeout)
           throws java.lang.InterruptedException</pre>
 <div class="block">This method is equivalent to the single argument version except that
@@ -1095,7 +1095,7 @@ public&nbsp;java.util.Enumeration&nbsp;<a href="../../../src-html/ptolemy/kernel
 <ul class="blockListLast">
 <li class="blockList">
 <h4>_description</h4>
-<pre>protected&nbsp;java.lang.String&nbsp;<a href="../../../src-html/ptolemy/kernel/util/Workspace.html#line.806">_description</a>(int&nbsp;detail,
+<pre>protected&nbsp;java.lang.String&nbsp;<a href="../../../src-html/ptolemy/kernel/util/Workspace.html#line.811">_description</a>(int&nbsp;detail,
                                         int&nbsp;indent,
                                         int&nbsp;bracket)
                                  throws <a href="../../../ptolemy/kernel/util/IllegalActionException.html" title="class in ptolemy.kernel.util">IllegalActionException</a></pre>
