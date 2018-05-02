@@ -80,14 +80,21 @@
 <span class="sourceLineNo">072</span>    @Override<a name="line.72"></a>
 <span class="sourceLineNo">073</span>    protected String _getInputString(int i) throws IllegalActionException {<a name="line.73"></a>
 <span class="sourceLineNo">074</span>        String value = super._getInputString(i);<a name="line.74"></a>
-<span class="sourceLineNo">075</span><a name="line.75"></a>
-<span class="sourceLineNo">076</span>        Director director = getDirector();<a name="line.76"></a>
-<span class="sourceLineNo">077</span>        if (director != null) {<a name="line.77"></a>
-<span class="sourceLineNo">078</span>            return director.getModelTime() + ": " + value;<a name="line.78"></a>
-<span class="sourceLineNo">079</span>        }<a name="line.79"></a>
-<span class="sourceLineNo">080</span>        return value;<a name="line.80"></a>
-<span class="sourceLineNo">081</span>    }<a name="line.81"></a>
-<span class="sourceLineNo">082</span>}<a name="line.82"></a>
+<span class="sourceLineNo">075</span>        if (value == null) {<a name="line.75"></a>
+<span class="sourceLineNo">076</span>            if (_isSuppressBlankLines) {<a name="line.76"></a>
+<span class="sourceLineNo">077</span>                return null;<a name="line.77"></a>
+<span class="sourceLineNo">078</span>            }<a name="line.78"></a>
+<span class="sourceLineNo">079</span>            // Replace with an empty string to show a blank line.<a name="line.79"></a>
+<span class="sourceLineNo">080</span>            value = "";<a name="line.80"></a>
+<span class="sourceLineNo">081</span>        }<a name="line.81"></a>
+<span class="sourceLineNo">082</span><a name="line.82"></a>
+<span class="sourceLineNo">083</span>        Director director = getDirector();<a name="line.83"></a>
+<span class="sourceLineNo">084</span>        if (director != null) {<a name="line.84"></a>
+<span class="sourceLineNo">085</span>            return director.getModelTime() + ": " + value;<a name="line.85"></a>
+<span class="sourceLineNo">086</span>        }<a name="line.86"></a>
+<span class="sourceLineNo">087</span>        return value;<a name="line.87"></a>
+<span class="sourceLineNo">088</span>    }<a name="line.88"></a>
+<span class="sourceLineNo">089</span>}<a name="line.89"></a>
 
 
 
