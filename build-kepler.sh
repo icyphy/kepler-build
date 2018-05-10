@@ -86,8 +86,13 @@ updateGhPages () {
     date
     # git pull
     date
+
+    # Use git diff-index to avoid committing if there are no changes
+    # and having git commit ... return 1, causing this script to exit
+    # because it is invoked with bash -e.
+
     # Don't change 'Travis Build gh-branch' because people filter email on that string.
-    git commit -m "Travis Build gh-branch: Lastest successful travis build $TRAVIS_BUILD_NUMBER auto-pushed $1 to $2 in gh-pages." -a
+    git diff-index --quiet HEAD || git commit -m "Travis Build gh-branch: Lastest successful travis build $TRAVIS_BUILD_NUMBER auto-pushed $1 to $2 in gh-pages." -a
     git pull 
     git push origin gh-pages
     git push -f origin gh-pages
