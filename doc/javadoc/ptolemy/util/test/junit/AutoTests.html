@@ -17,7 +17,7 @@
     catch(err) {
     }
 //-->
-var methods = {"i0":9,"i1":10,"i2":10};
+var methods = {"i0":9,"i1":9,"i2":10,"i3":10};
 var tabs = {65535:["t0","All Methods"],1:["t1","Static Methods"],2:["t2","Instance Methods"],8:["t4","Concrete Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
@@ -226,12 +226,19 @@ extends <a href="../../../../ptolemy/util/test/junit/ModelTests.html" title="cla
 </td>
 </tr>
 <tr id="i1" class="rowColor">
+<td class="colFirst"><code>static void</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../ptolemy/util/test/junit/AutoTests.html#delayIfNecessary-java.lang.String-">delayIfNecessary</a></span>(java.lang.String&nbsp;fullPath)</code>
+<div class="block">If the fullPath is a hlacerti or accessor demo, then
+  delay so that the system can stabilize.</div>
+</td>
+</tr>
+<tr id="i2" class="altColor">
 <td class="colFirst"><code>boolean</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../ptolemy/util/test/junit/AutoTests.html#modelFileIsOK-java.lang.String-">modelFileIsOK</a></span>(java.lang.String&nbsp;fullPath)</code>
 <div class="block">Return true if the model should be run.</div>
 </td>
 </tr>
-<tr id="i2" class="altColor">
+<tr id="i3" class="rowColor">
 <td class="colFirst"><code>void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../ptolemy/util/test/junit/AutoTests.html#RunModel-java.lang.String-">RunModel</a></span>(java.lang.String&nbsp;fullPath)</code>
 <div class="block">Execute a model and time out after 900000 ms.</div>
@@ -272,7 +279,7 @@ extends <a href="../../../../ptolemy/util/test/junit/ModelTests.html" title="cla
 <ul class="blockList">
 <li class="blockList">
 <h4>_jsAccessorClass</h4>
-<pre>protected static&nbsp;java.lang.Class&lt;?&gt; <a href="../../../../src-html/ptolemy/util/test/junit/AutoTests.html#line.236">_jsAccessorClass</a></pre>
+<pre>protected static&nbsp;java.lang.Class&lt;?&gt; <a href="../../../../src-html/ptolemy/util/test/junit/AutoTests.html#line.260">_jsAccessorClass</a></pre>
 <div class="block">The org.terraswarm.accessor.JSAccessor class, which is tested
  by reloading Accessors.</div>
 </li>
@@ -283,7 +290,7 @@ extends <a href="../../../../ptolemy/util/test/junit/ModelTests.html" title="cla
 <ul class="blockListLast">
 <li class="blockList">
 <h4>_jsAccessorReloadAllAccessorsMethod</h4>
-<pre>protected static&nbsp;java.lang.reflect.Method <a href="../../../../src-html/ptolemy/util/test/junit/AutoTests.html#line.239">_jsAccessorReloadAllAccessorsMethod</a></pre>
+<pre>protected static&nbsp;java.lang.reflect.Method <a href="../../../../src-html/ptolemy/util/test/junit/AutoTests.html#line.263">_jsAccessorReloadAllAccessorsMethod</a></pre>
 <div class="block">The method that reloads all the accessors in a CompositeEntity.</div>
 </li>
 </ul>
@@ -324,13 +331,28 @@ extends <a href="../../../../ptolemy/util/test/junit/ModelTests.html" title="cla
   for the Vert.x threads.</div>
 </li>
 </ul>
+<a name="delayIfNecessary-java.lang.String-">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>delayIfNecessary</h4>
+<pre>public static&nbsp;void&nbsp;<a href="../../../../src-html/ptolemy/util/test/junit/AutoTests.html#line.102">delayIfNecessary</a>(java.lang.String&nbsp;fullPath)</pre>
+<div class="block">If the fullPath is a hlacerti or accessor demo, then
+  delay so that the system can stabilize.</div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>fullPath</code> - The forward slash separated path of the demo.</dd>
+</dl>
+</li>
+</ul>
 <a name="RunModel-java.lang.String-">
 <!--   -->
 </a>
 <ul class="blockList">
 <li class="blockList">
 <h4>RunModel</h4>
-<pre>public&nbsp;void&nbsp;<a href="../../../../src-html/ptolemy/util/test/junit/AutoTests.html#line.117">RunModel</a>(java.lang.String&nbsp;fullPath)
+<pre>public&nbsp;void&nbsp;<a href="../../../../src-html/ptolemy/util/test/junit/AutoTests.html#line.141">RunModel</a>(java.lang.String&nbsp;fullPath)
               throws java.lang.Throwable</pre>
 <div class="block">Execute a model and time out after 900000 ms.
 
@@ -356,7 +378,7 @@ extends <a href="../../../../ptolemy/util/test/junit/ModelTests.html" title="cla
 <ul class="blockListLast">
 <li class="blockList">
 <h4>modelFileIsOK</h4>
-<pre>public&nbsp;boolean&nbsp;<a href="../../../../src-html/ptolemy/util/test/junit/AutoTests.html#line.218">modelFileIsOK</a>(java.lang.String&nbsp;fullPath)</pre>
+<pre>public&nbsp;boolean&nbsp;<a href="../../../../src-html/ptolemy/util/test/junit/AutoTests.html#line.242">modelFileIsOK</a>(java.lang.String&nbsp;fullPath)</pre>
 <div class="block">Return true if the model should be run.
   This is a hack to avoid a problem where certain models
   interact badly with the Cobertura code coverage tool.</div>
