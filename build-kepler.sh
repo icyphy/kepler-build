@@ -27,7 +27,7 @@ updateGhPages () {
         return 
     fi
 
-    df -k
+    # df -k
     TMP=/tmp/ptIITravisBuild_gh_pages.$$
     if [ ! -d $TMP ]; then
         mkdir $TMP
