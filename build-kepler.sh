@@ -56,6 +56,7 @@ updateGhPages () {
         fi
     fi        
 
+    ls -l $sources
     cp -Rf $sources $destination
 
     # JUnit xml output will include the values of the environment,
@@ -153,7 +154,11 @@ tail -100 $LOG
 
 # Add javadoc files to the gh-pages branch so that they appear at
 # https://icyphy.github.io/kepler-build/doc/javadoc/index.html
-(cd ..; updateGhPages `pwd`/javadoc doc/)
+if [ ! -d ../javadoc ]; then
+    echo "Running javadoc did not create `pwd`/javadoc.  JDK 10 javadoc has a bug that fails to create output if there are javadoc errors.  So sad."
+else
+    (cd ..; updateGhPages `pwd`/javadoc doc/)
+fi
 
 # Build the installers. If you change this, then update https://kepler-project.org/users/downloads
 export KEPLER_VERSION=2.6.0.1
