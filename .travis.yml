@@ -3,7 +3,18 @@ env:
     # The deploy target uses TRAVIS_TAG.
     - TRAVIS_TAG=weekly
 
+matrix:
+  include:
+    - env: JDK='Oracle JDK 8'
+      jdk: oraclejdk8
+    - env: JDK='Oracle JDK 10'
+      install: . ./install-jdk.sh -F 10 -L BCL
+
 sudo: required
+
+before_install:
+  - wget https://github.com/sormuras/bach/raw/master/install-jdk.sh
+
 before_script:
   - sudo apt-get update
   # Need to install 32-bit libraries so that we can run windres while
@@ -22,6 +33,7 @@ deploy:
       - $HOME/build/icyphy/finished-kepler-installers/windows/Kepler-2.6.0.1-win.exe
     on:
       tags: true
+      condition: $JDK = 'Oracle JDK 8'
     overwrite: true
     skip_cleanup: true    
     verbose: true
