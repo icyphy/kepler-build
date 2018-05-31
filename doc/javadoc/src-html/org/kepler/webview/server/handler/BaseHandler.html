@@ -94,21 +94,30 @@
 <span class="sourceLineNo">086</span>            .end(new JsonObject().put("error", "Error: " + errorStr).encode());<a name="line.86"></a>
 <span class="sourceLineNo">087</span>    }<a name="line.87"></a>
 <span class="sourceLineNo">088</span>    <a name="line.88"></a>
-<span class="sourceLineNo">089</span>    /** Send an success response with text.<a name="line.89"></a>
+<span class="sourceLineNo">089</span>    /** Send an success response with json.<a name="line.89"></a>
 <span class="sourceLineNo">090</span>     * @param request The http request.<a name="line.90"></a>
-<span class="sourceLineNo">091</span>     * @param contentType The value for Content-Type.<a name="line.91"></a>
-<span class="sourceLineNo">092</span>     * @param text The success text.<a name="line.92"></a>
-<span class="sourceLineNo">093</span>     */<a name="line.93"></a>
-<span class="sourceLineNo">094</span>    protected void _sendResponseWithSuccessText(HttpServerRequest request,<a name="line.94"></a>
-<span class="sourceLineNo">095</span>        String contentType, String text) {        <a name="line.95"></a>
-<span class="sourceLineNo">096</span>        request.response()<a name="line.96"></a>
-<span class="sourceLineNo">097</span>            .putHeader("Content-Type", contentType)<a name="line.97"></a>
-<span class="sourceLineNo">098</span>            .setStatusCode(HttpURLConnection.HTTP_OK)<a name="line.98"></a>
-<span class="sourceLineNo">099</span>            .end(text);        <a name="line.99"></a>
-<span class="sourceLineNo">100</span>    }<a name="line.100"></a>
-<span class="sourceLineNo">101</span><a name="line.101"></a>
-<span class="sourceLineNo">102</span>    protected WebViewServer _server;<a name="line.102"></a>
-<span class="sourceLineNo">103</span>}<a name="line.103"></a>
+<span class="sourceLineNo">091</span>     * @param json The json object.<a name="line.91"></a>
+<span class="sourceLineNo">092</span>     */<a name="line.92"></a>
+<span class="sourceLineNo">093</span>    protected void _sendResponseWithSuccessJson(HttpServerRequest request,<a name="line.93"></a>
+<span class="sourceLineNo">094</span>            JsonObject json) {<a name="line.94"></a>
+<span class="sourceLineNo">095</span>        _sendResponseWithSuccessText(request, "application/json", json.encode());<a name="line.95"></a>
+<span class="sourceLineNo">096</span>    }<a name="line.96"></a>
+<span class="sourceLineNo">097</span>    <a name="line.97"></a>
+<span class="sourceLineNo">098</span>    /** Send an success response with text.<a name="line.98"></a>
+<span class="sourceLineNo">099</span>     * @param request The http request.<a name="line.99"></a>
+<span class="sourceLineNo">100</span>     * @param contentType The value for Content-Type.<a name="line.100"></a>
+<span class="sourceLineNo">101</span>     * @param text The success text.<a name="line.101"></a>
+<span class="sourceLineNo">102</span>     */<a name="line.102"></a>
+<span class="sourceLineNo">103</span>    protected void _sendResponseWithSuccessText(HttpServerRequest request,<a name="line.103"></a>
+<span class="sourceLineNo">104</span>        String contentType, String text) {        <a name="line.104"></a>
+<span class="sourceLineNo">105</span>        request.response()<a name="line.105"></a>
+<span class="sourceLineNo">106</span>            .putHeader("Content-Type", contentType)<a name="line.106"></a>
+<span class="sourceLineNo">107</span>            .setStatusCode(HttpURLConnection.HTTP_OK)<a name="line.107"></a>
+<span class="sourceLineNo">108</span>            .end(text);        <a name="line.108"></a>
+<span class="sourceLineNo">109</span>    }<a name="line.109"></a>
+<span class="sourceLineNo">110</span><a name="line.110"></a>
+<span class="sourceLineNo">111</span>    protected WebViewServer _server;<a name="line.111"></a>
+<span class="sourceLineNo">112</span>}<a name="line.112"></a>
 
 
 
