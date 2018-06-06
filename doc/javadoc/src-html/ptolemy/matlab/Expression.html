@@ -192,7 +192,7 @@
 <span class="sourceLineNo">184</span> using '/Applications/MATLAB_R2018a.app/bin/maci' for Matlab's engine libraries<a name="line.184"></a>
 <span class="sourceLineNo">185</span> &lt;/pre&gt;<a name="line.185"></a>
 <span class="sourceLineNo">186</span><a name="line.186"></a>
-<span class="sourceLineNo">187</span> Then run<a name="line.187"></a>
+<span class="sourceLineNo">187</span> &lt;p&gt;Then run&lt;/p&gt;<a name="line.187"></a>
 <span class="sourceLineNo">188</span> &lt;pre&gt;<a name="line.188"></a>
 <span class="sourceLineNo">189</span> cd $PTII<a name="line.189"></a>
 <span class="sourceLineNo">190</span> ant<a name="line.190"></a>
@@ -200,7 +200,7 @@
 <span class="sourceLineNo">192</span> make<a name="line.192"></a>
 <span class="sourceLineNo">193</span> cd $PTII/ptolemy/matlab<a name="line.193"></a>
 <span class="sourceLineNo">194</span> make clean; make<a name="line.194"></a>
-<span class="sourceLineNo">195</span> &lt;pre&gt;<a name="line.195"></a>
+<span class="sourceLineNo">195</span> &lt;/pre&gt;<a name="line.195"></a>
 <span class="sourceLineNo">196</span><a name="line.196"></a>
 <span class="sourceLineNo">197</span> &lt;p&gt;Here's what libraries are used by libptmatlab.jnilib&lt;/p&gt;<a name="line.197"></a>
 <span class="sourceLineNo">198</span><a name="line.198"></a>
@@ -250,400 +250,396 @@
 <span class="sourceLineNo">242</span> &lt;p&gt;Use the &lt;code&gt;otool&lt;/code&gt; &lt;code&gt;-L&lt;/code&gt; and &lt;code&gt;-l&lt;/code&gt;<a name="line.242"></a>
 <span class="sourceLineNo">243</span> commands to ensure that &lt;code&gt;libeng.dylib&lt;/code&gt; can be found.&lt;/p&gt;<a name="line.243"></a>
 <span class="sourceLineNo">244</span><a name="line.244"></a>
-<span class="sourceLineNo">245</span><a name="line.245"></a>
-<span class="sourceLineNo">246</span><a name="line.246"></a>
-<span class="sourceLineNo">247</span><a name="line.247"></a>
-<span class="sourceLineNo">248</span><a name="line.248"></a>
-<span class="sourceLineNo">249</span> @author Zoltan Kemenczy and Sean Simmons, Research in Motion Limited<a name="line.249"></a>
-<span class="sourceLineNo">250</span> @version $Id$<a name="line.250"></a>
-<span class="sourceLineNo">251</span> @since Ptolemy II 2.0<a name="line.251"></a>
-<span class="sourceLineNo">252</span> @Pt.ProposedRating Yellow (zkemenczy)<a name="line.252"></a>
-<span class="sourceLineNo">253</span> @Pt.AcceptedRating Red (cxh)<a name="line.253"></a>
-<span class="sourceLineNo">254</span> */<a name="line.254"></a>
-<span class="sourceLineNo">255</span>public class Expression extends TypedAtomicActor {<a name="line.255"></a>
-<span class="sourceLineNo">256</span>    /** Construct an actor with the given container and name.<a name="line.256"></a>
-<span class="sourceLineNo">257</span>     *  @param container The container.<a name="line.257"></a>
-<span class="sourceLineNo">258</span>     *  @param name The name of this actor.<a name="line.258"></a>
-<span class="sourceLineNo">259</span>     *  @exception IllegalActionException If the actor cannot be contained<a name="line.259"></a>
-<span class="sourceLineNo">260</span>     *   by the proposed container.<a name="line.260"></a>
-<span class="sourceLineNo">261</span>     *  @exception NameDuplicationException If the container already has an<a name="line.261"></a>
-<span class="sourceLineNo">262</span>     *   actor with this name.<a name="line.262"></a>
-<span class="sourceLineNo">263</span>     */<a name="line.263"></a>
-<span class="sourceLineNo">264</span>    public Expression(CompositeEntity container, String name)<a name="line.264"></a>
-<span class="sourceLineNo">265</span>            throws NameDuplicationException, IllegalActionException {<a name="line.265"></a>
-<span class="sourceLineNo">266</span>        super(container, name);<a name="line.266"></a>
+<span class="sourceLineNo">245</span> @author Zoltan Kemenczy and Sean Simmons, Research in Motion Limited<a name="line.245"></a>
+<span class="sourceLineNo">246</span> @version $Id$<a name="line.246"></a>
+<span class="sourceLineNo">247</span> @since Ptolemy II 2.0<a name="line.247"></a>
+<span class="sourceLineNo">248</span> @Pt.ProposedRating Yellow (zkemenczy)<a name="line.248"></a>
+<span class="sourceLineNo">249</span> @Pt.AcceptedRating Red (cxh)<a name="line.249"></a>
+<span class="sourceLineNo">250</span> */<a name="line.250"></a>
+<span class="sourceLineNo">251</span>public class Expression extends TypedAtomicActor {<a name="line.251"></a>
+<span class="sourceLineNo">252</span>    /** Construct an actor with the given container and name.<a name="line.252"></a>
+<span class="sourceLineNo">253</span>     *  @param container The container.<a name="line.253"></a>
+<span class="sourceLineNo">254</span>     *  @param name The name of this actor.<a name="line.254"></a>
+<span class="sourceLineNo">255</span>     *  @exception IllegalActionException If the actor cannot be contained<a name="line.255"></a>
+<span class="sourceLineNo">256</span>     *   by the proposed container.<a name="line.256"></a>
+<span class="sourceLineNo">257</span>     *  @exception NameDuplicationException If the container already has an<a name="line.257"></a>
+<span class="sourceLineNo">258</span>     *   actor with this name.<a name="line.258"></a>
+<span class="sourceLineNo">259</span>     */<a name="line.259"></a>
+<span class="sourceLineNo">260</span>    public Expression(CompositeEntity container, String name)<a name="line.260"></a>
+<span class="sourceLineNo">261</span>            throws NameDuplicationException, IllegalActionException {<a name="line.261"></a>
+<span class="sourceLineNo">262</span>        super(container, name);<a name="line.262"></a>
+<span class="sourceLineNo">263</span><a name="line.263"></a>
+<span class="sourceLineNo">264</span>        output = new TypedIOPort(this, "output", false, true);<a name="line.264"></a>
+<span class="sourceLineNo">265</span>        expression = new StringParameter(this, "expression");<a name="line.265"></a>
+<span class="sourceLineNo">266</span>        new TextStyle(expression, "Matlab expression");<a name="line.266"></a>
 <span class="sourceLineNo">267</span><a name="line.267"></a>
-<span class="sourceLineNo">268</span>        output = new TypedIOPort(this, "output", false, true);<a name="line.268"></a>
-<span class="sourceLineNo">269</span>        expression = new StringParameter(this, "expression");<a name="line.269"></a>
-<span class="sourceLineNo">270</span>        new TextStyle(expression, "Matlab expression");<a name="line.270"></a>
-<span class="sourceLineNo">271</span><a name="line.271"></a>
-<span class="sourceLineNo">272</span>        _dataParameters = new Engine.ConversionParameters();<a name="line.272"></a>
+<span class="sourceLineNo">268</span>        _dataParameters = new Engine.ConversionParameters();<a name="line.268"></a>
+<span class="sourceLineNo">269</span><a name="line.269"></a>
+<span class="sourceLineNo">270</span>        get1x1asScalars = new Parameter(this, "get1x1asScalars",<a name="line.270"></a>
+<span class="sourceLineNo">271</span>                new BooleanToken(_dataParameters.getScalarMatrices));<a name="line.271"></a>
+<span class="sourceLineNo">272</span>        new CheckBoxStyle(get1x1asScalars, "style");<a name="line.272"></a>
 <span class="sourceLineNo">273</span><a name="line.273"></a>
-<span class="sourceLineNo">274</span>        get1x1asScalars = new Parameter(this, "get1x1asScalars",<a name="line.274"></a>
-<span class="sourceLineNo">275</span>                new BooleanToken(_dataParameters.getScalarMatrices));<a name="line.275"></a>
-<span class="sourceLineNo">276</span>        new CheckBoxStyle(get1x1asScalars, "style");<a name="line.276"></a>
+<span class="sourceLineNo">274</span>        getIntegerMatrices = new Parameter(this, "getIntegerMatrices",<a name="line.274"></a>
+<span class="sourceLineNo">275</span>                new BooleanToken(_dataParameters.getIntMatrices));<a name="line.275"></a>
+<span class="sourceLineNo">276</span>        new CheckBoxStyle(getIntegerMatrices, "style");<a name="line.276"></a>
 <span class="sourceLineNo">277</span><a name="line.277"></a>
-<span class="sourceLineNo">278</span>        getIntegerMatrices = new Parameter(this, "getIntegerMatrices",<a name="line.278"></a>
-<span class="sourceLineNo">279</span>                new BooleanToken(_dataParameters.getIntMatrices));<a name="line.279"></a>
-<span class="sourceLineNo">280</span>        new CheckBoxStyle(getIntegerMatrices, "style");<a name="line.280"></a>
-<span class="sourceLineNo">281</span><a name="line.281"></a>
-<span class="sourceLineNo">282</span>        clearEnvironment = new Parameter(this, "clearEnvironment",<a name="line.282"></a>
-<span class="sourceLineNo">283</span>                new BooleanToken(true));<a name="line.283"></a>
-<span class="sourceLineNo">284</span>        clearEnvironment.setTypeEquals(BaseType.BOOLEAN);<a name="line.284"></a>
-<span class="sourceLineNo">285</span>        clearEnvironment.setToken(BooleanToken.TRUE);<a name="line.285"></a>
+<span class="sourceLineNo">278</span>        clearEnvironment = new Parameter(this, "clearEnvironment",<a name="line.278"></a>
+<span class="sourceLineNo">279</span>                new BooleanToken(true));<a name="line.279"></a>
+<span class="sourceLineNo">280</span>        clearEnvironment.setTypeEquals(BaseType.BOOLEAN);<a name="line.280"></a>
+<span class="sourceLineNo">281</span>        clearEnvironment.setToken(BooleanToken.TRUE);<a name="line.281"></a>
+<span class="sourceLineNo">282</span><a name="line.282"></a>
+<span class="sourceLineNo">283</span>        // _time is not needed, fire() sets a matlab variable directly<a name="line.283"></a>
+<span class="sourceLineNo">284</span>        _iteration = new Variable(this, "_iteration", new IntToken(1));<a name="line.284"></a>
+<span class="sourceLineNo">285</span>    }<a name="line.285"></a>
 <span class="sourceLineNo">286</span><a name="line.286"></a>
-<span class="sourceLineNo">287</span>        // _time is not needed, fire() sets a matlab variable directly<a name="line.287"></a>
-<span class="sourceLineNo">288</span>        _iteration = new Variable(this, "_iteration", new IntToken(1));<a name="line.288"></a>
-<span class="sourceLineNo">289</span>    }<a name="line.289"></a>
-<span class="sourceLineNo">290</span><a name="line.290"></a>
-<span class="sourceLineNo">291</span>    ///////////////////////////////////////////////////////////////////<a name="line.291"></a>
-<span class="sourceLineNo">292</span>    ////                     ports and parameters                  ////<a name="line.292"></a>
-<span class="sourceLineNo">293</span><a name="line.293"></a>
-<span class="sourceLineNo">294</span>    /** The output port. */<a name="line.294"></a>
-<span class="sourceLineNo">295</span>    public TypedIOPort output;<a name="line.295"></a>
-<span class="sourceLineNo">296</span><a name="line.296"></a>
-<span class="sourceLineNo">297</span>    /** The parameter that is evaluated to produce the output.<a name="line.297"></a>
-<span class="sourceLineNo">298</span>     *  Typically, this parameter evaluates an expression involving<a name="line.298"></a>
-<span class="sourceLineNo">299</span>     *  the inputs. To refer to parameters in scope within the expression,<a name="line.299"></a>
-<span class="sourceLineNo">300</span>     *  use $name or ${name}, where "name" is the name of the parameter.<a name="line.300"></a>
-<span class="sourceLineNo">301</span>     */<a name="line.301"></a>
-<span class="sourceLineNo">302</span>    public StringParameter expression;<a name="line.302"></a>
-<span class="sourceLineNo">303</span><a name="line.303"></a>
-<span class="sourceLineNo">304</span>    /** If true (checked), 1x1 matrix results are converted to<a name="line.304"></a>
-<span class="sourceLineNo">305</span>     ScalarTokens instead of a 1x1 MatrixToken, default is<a name="line.305"></a>
-<span class="sourceLineNo">306</span>     &lt;i&gt;true&lt;/i&gt;. */<a name="line.306"></a>
-<span class="sourceLineNo">307</span>    public Parameter get1x1asScalars;<a name="line.307"></a>
-<span class="sourceLineNo">308</span><a name="line.308"></a>
-<span class="sourceLineNo">309</span>    /** If true, all double-valued matrix results are checked to see if<a name="line.309"></a>
-<span class="sourceLineNo">310</span>     all elements represent integers, and if so, an IntMatrixToken is<a name="line.310"></a>
-<span class="sourceLineNo">311</span>     returned, default is &lt;i&gt;false&lt;/i&gt; for performance reasons. */<a name="line.311"></a>
-<span class="sourceLineNo">312</span>    public Parameter getIntegerMatrices;<a name="line.312"></a>
-<span class="sourceLineNo">313</span><a name="line.313"></a>
-<span class="sourceLineNo">314</span>    /** If true, clear variables and globals before each execution. */<a name="line.314"></a>
-<span class="sourceLineNo">315</span>    public Parameter clearEnvironment;<a name="line.315"></a>
-<span class="sourceLineNo">316</span><a name="line.316"></a>
-<span class="sourceLineNo">317</span>    ///////////////////////////////////////////////////////////////////<a name="line.317"></a>
-<span class="sourceLineNo">318</span>    ////                         public methods                    ////<a name="line.318"></a>
-<span class="sourceLineNo">319</span><a name="line.319"></a>
-<span class="sourceLineNo">320</span>    /** Clone the actor into the specified workspace. This calls the<a name="line.320"></a>
-<span class="sourceLineNo">321</span>     *  base class and then sets the &lt;code&gt;iteration&lt;/code&gt;<a name="line.321"></a>
-<span class="sourceLineNo">322</span>     *  public member to the parameters of the new actor.<a name="line.322"></a>
-<span class="sourceLineNo">323</span>     *  @param workspace The workspace for the new object.<a name="line.323"></a>
-<span class="sourceLineNo">324</span>     *  @return A new actor.<a name="line.324"></a>
-<span class="sourceLineNo">325</span>     *  @exception CloneNotSupportedException If a derived class contains<a name="line.325"></a>
-<span class="sourceLineNo">326</span>     *   an attribute that cannot be cloned.<a name="line.326"></a>
-<span class="sourceLineNo">327</span>     */<a name="line.327"></a>
-<span class="sourceLineNo">328</span>    @Override<a name="line.328"></a>
-<span class="sourceLineNo">329</span>    public Object clone(Workspace workspace) throws CloneNotSupportedException {<a name="line.329"></a>
-<span class="sourceLineNo">330</span>        Expression newObject = (Expression) super.clone(workspace);<a name="line.330"></a>
-<span class="sourceLineNo">331</span><a name="line.331"></a>
-<span class="sourceLineNo">332</span>        newObject._addPathCommand = null;<a name="line.332"></a>
-<span class="sourceLineNo">333</span>        newObject._iteration = (Variable) newObject.getAttribute("_iteration");<a name="line.333"></a>
-<span class="sourceLineNo">334</span>        newObject._iterationCount = 1;<a name="line.334"></a>
-<span class="sourceLineNo">335</span>        newObject._previousPath = null;<a name="line.335"></a>
-<span class="sourceLineNo">336</span>        newObject._inputTokens = new HashMap&lt;String, Token&gt;();<a name="line.336"></a>
-<span class="sourceLineNo">337</span>        return newObject;<a name="line.337"></a>
-<span class="sourceLineNo">338</span>    }<a name="line.338"></a>
-<span class="sourceLineNo">339</span><a name="line.339"></a>
-<span class="sourceLineNo">340</span>    /** Open a matlab engine.<a name="line.340"></a>
-<span class="sourceLineNo">341</span>     *  @exception IllegalActionException If matlab engine not found.<a name="line.341"></a>
-<span class="sourceLineNo">342</span>     */<a name="line.342"></a>
-<span class="sourceLineNo">343</span>    @Override<a name="line.343"></a>
-<span class="sourceLineNo">344</span>    public void preinitialize() throws IllegalActionException {<a name="line.344"></a>
-<span class="sourceLineNo">345</span>        super.preinitialize();<a name="line.345"></a>
-<span class="sourceLineNo">346</span>        _initializeEngine();<a name="line.346"></a>
-<span class="sourceLineNo">347</span>    }<a name="line.347"></a>
-<span class="sourceLineNo">348</span><a name="line.348"></a>
-<span class="sourceLineNo">349</span>    /** Initialize the iteration count to 1.<a name="line.349"></a>
-<span class="sourceLineNo">350</span>     *  @exception IllegalActionException If the parent class throws it.<a name="line.350"></a>
-<span class="sourceLineNo">351</span>     */<a name="line.351"></a>
-<span class="sourceLineNo">352</span>    @Override<a name="line.352"></a>
-<span class="sourceLineNo">353</span>    public void initialize() throws IllegalActionException {<a name="line.353"></a>
-<span class="sourceLineNo">354</span>        super.initialize();<a name="line.354"></a>
-<span class="sourceLineNo">355</span><a name="line.355"></a>
-<span class="sourceLineNo">356</span>        // Check to make sure that the engine has been initialized.<a name="line.356"></a>
-<span class="sourceLineNo">357</span>        synchronized (Engine.semaphore) {<a name="line.357"></a>
-<span class="sourceLineNo">358</span>            if (engine == null) {<a name="line.358"></a>
-<span class="sourceLineNo">359</span>                _initializeEngine();<a name="line.359"></a>
-<span class="sourceLineNo">360</span>            }<a name="line.360"></a>
-<span class="sourceLineNo">361</span>        }<a name="line.361"></a>
-<span class="sourceLineNo">362</span><a name="line.362"></a>
-<span class="sourceLineNo">363</span>        _iterationCount = 1;<a name="line.363"></a>
-<span class="sourceLineNo">364</span>        _iteration.setToken(new IntToken(_iterationCount));<a name="line.364"></a>
-<span class="sourceLineNo">365</span><a name="line.365"></a>
-<span class="sourceLineNo">366</span>        // Process any additional directories to be added to matlab's<a name="line.366"></a>
-<span class="sourceLineNo">367</span>        // path. The list may contain paths relative to the directory in<a name="line.367"></a>
-<span class="sourceLineNo">368</span>        // which ptolemy was started or any directory listed in the current<a name="line.368"></a>
-<span class="sourceLineNo">369</span>        // classpath (in this order, first match wins). See<a name="line.369"></a>
-<span class="sourceLineNo">370</span>        // UtilityFunctions.findFile()<a name="line.370"></a>
-<span class="sourceLineNo">371</span>        _addPathCommand = null; // Assume none<a name="line.371"></a>
-<span class="sourceLineNo">372</span>        _previousPath = null;<a name="line.372"></a>
-<span class="sourceLineNo">373</span><a name="line.373"></a>
-<span class="sourceLineNo">374</span>        Parameter packageDirectories = (Parameter) getAttribute(<a name="line.374"></a>
-<span class="sourceLineNo">375</span>                "packageDirectories");<a name="line.375"></a>
-<span class="sourceLineNo">376</span><a name="line.376"></a>
-<span class="sourceLineNo">377</span>        if (packageDirectories != null) {<a name="line.377"></a>
-<span class="sourceLineNo">378</span>            StringTokenizer dirs = new StringTokenizer(<a name="line.378"></a>
-<span class="sourceLineNo">379</span>                    ((StringToken) packageDirectories.getToken()).stringValue(),<a name="line.379"></a>
-<span class="sourceLineNo">380</span>                    ",");<a name="line.380"></a>
-<span class="sourceLineNo">381</span>            StringBuffer cellFormat = new StringBuffer(512);<a name="line.381"></a>
-<span class="sourceLineNo">382</span>            cellFormat.append("{");<a name="line.382"></a>
-<span class="sourceLineNo">383</span><a name="line.383"></a>
-<span class="sourceLineNo">384</span>            if (dirs.hasMoreTokens()) {<a name="line.384"></a>
-<span class="sourceLineNo">385</span>                cellFormat.append("'"<a name="line.385"></a>
-<span class="sourceLineNo">386</span>                        + UtilityFunctions.findFile(dirs.nextToken()) + "'");<a name="line.386"></a>
-<span class="sourceLineNo">387</span>            }<a name="line.387"></a>
-<span class="sourceLineNo">388</span><a name="line.388"></a>
-<span class="sourceLineNo">389</span>            while (dirs.hasMoreTokens()) {<a name="line.389"></a>
-<span class="sourceLineNo">390</span>                cellFormat.append(",'"<a name="line.390"></a>
-<span class="sourceLineNo">391</span>                        + UtilityFunctions.findFile(dirs.nextToken()) + "'");<a name="line.391"></a>
-<span class="sourceLineNo">392</span>            }<a name="line.392"></a>
-<span class="sourceLineNo">393</span><a name="line.393"></a>
-<span class="sourceLineNo">394</span>            cellFormat.append("}");<a name="line.394"></a>
+<span class="sourceLineNo">287</span>    ///////////////////////////////////////////////////////////////////<a name="line.287"></a>
+<span class="sourceLineNo">288</span>    ////                     ports and parameters                  ////<a name="line.288"></a>
+<span class="sourceLineNo">289</span><a name="line.289"></a>
+<span class="sourceLineNo">290</span>    /** The output port. */<a name="line.290"></a>
+<span class="sourceLineNo">291</span>    public TypedIOPort output;<a name="line.291"></a>
+<span class="sourceLineNo">292</span><a name="line.292"></a>
+<span class="sourceLineNo">293</span>    /** The parameter that is evaluated to produce the output.<a name="line.293"></a>
+<span class="sourceLineNo">294</span>     *  Typically, this parameter evaluates an expression involving<a name="line.294"></a>
+<span class="sourceLineNo">295</span>     *  the inputs. To refer to parameters in scope within the expression,<a name="line.295"></a>
+<span class="sourceLineNo">296</span>     *  use $name or ${name}, where "name" is the name of the parameter.<a name="line.296"></a>
+<span class="sourceLineNo">297</span>     */<a name="line.297"></a>
+<span class="sourceLineNo">298</span>    public StringParameter expression;<a name="line.298"></a>
+<span class="sourceLineNo">299</span><a name="line.299"></a>
+<span class="sourceLineNo">300</span>    /** If true (checked), 1x1 matrix results are converted to<a name="line.300"></a>
+<span class="sourceLineNo">301</span>     ScalarTokens instead of a 1x1 MatrixToken, default is<a name="line.301"></a>
+<span class="sourceLineNo">302</span>     &lt;i&gt;true&lt;/i&gt;. */<a name="line.302"></a>
+<span class="sourceLineNo">303</span>    public Parameter get1x1asScalars;<a name="line.303"></a>
+<span class="sourceLineNo">304</span><a name="line.304"></a>
+<span class="sourceLineNo">305</span>    /** If true, all double-valued matrix results are checked to see if<a name="line.305"></a>
+<span class="sourceLineNo">306</span>     all elements represent integers, and if so, an IntMatrixToken is<a name="line.306"></a>
+<span class="sourceLineNo">307</span>     returned, default is &lt;i&gt;false&lt;/i&gt; for performance reasons. */<a name="line.307"></a>
+<span class="sourceLineNo">308</span>    public Parameter getIntegerMatrices;<a name="line.308"></a>
+<span class="sourceLineNo">309</span><a name="line.309"></a>
+<span class="sourceLineNo">310</span>    /** If true, clear variables and globals before each execution. */<a name="line.310"></a>
+<span class="sourceLineNo">311</span>    public Parameter clearEnvironment;<a name="line.311"></a>
+<span class="sourceLineNo">312</span><a name="line.312"></a>
+<span class="sourceLineNo">313</span>    ///////////////////////////////////////////////////////////////////<a name="line.313"></a>
+<span class="sourceLineNo">314</span>    ////                         public methods                    ////<a name="line.314"></a>
+<span class="sourceLineNo">315</span><a name="line.315"></a>
+<span class="sourceLineNo">316</span>    /** Clone the actor into the specified workspace. This calls the<a name="line.316"></a>
+<span class="sourceLineNo">317</span>     *  base class and then sets the &lt;code&gt;iteration&lt;/code&gt;<a name="line.317"></a>
+<span class="sourceLineNo">318</span>     *  public member to the parameters of the new actor.<a name="line.318"></a>
+<span class="sourceLineNo">319</span>     *  @param workspace The workspace for the new object.<a name="line.319"></a>
+<span class="sourceLineNo">320</span>     *  @return A new actor.<a name="line.320"></a>
+<span class="sourceLineNo">321</span>     *  @exception CloneNotSupportedException If a derived class contains<a name="line.321"></a>
+<span class="sourceLineNo">322</span>     *   an attribute that cannot be cloned.<a name="line.322"></a>
+<span class="sourceLineNo">323</span>     */<a name="line.323"></a>
+<span class="sourceLineNo">324</span>    @Override<a name="line.324"></a>
+<span class="sourceLineNo">325</span>    public Object clone(Workspace workspace) throws CloneNotSupportedException {<a name="line.325"></a>
+<span class="sourceLineNo">326</span>        Expression newObject = (Expression) super.clone(workspace);<a name="line.326"></a>
+<span class="sourceLineNo">327</span><a name="line.327"></a>
+<span class="sourceLineNo">328</span>        newObject._addPathCommand = null;<a name="line.328"></a>
+<span class="sourceLineNo">329</span>        newObject._iteration = (Variable) newObject.getAttribute("_iteration");<a name="line.329"></a>
+<span class="sourceLineNo">330</span>        newObject._iterationCount = 1;<a name="line.330"></a>
+<span class="sourceLineNo">331</span>        newObject._previousPath = null;<a name="line.331"></a>
+<span class="sourceLineNo">332</span>        newObject._inputTokens = new HashMap&lt;String, Token&gt;();<a name="line.332"></a>
+<span class="sourceLineNo">333</span>        return newObject;<a name="line.333"></a>
+<span class="sourceLineNo">334</span>    }<a name="line.334"></a>
+<span class="sourceLineNo">335</span><a name="line.335"></a>
+<span class="sourceLineNo">336</span>    /** Open a matlab engine.<a name="line.336"></a>
+<span class="sourceLineNo">337</span>     *  @exception IllegalActionException If matlab engine not found.<a name="line.337"></a>
+<span class="sourceLineNo">338</span>     */<a name="line.338"></a>
+<span class="sourceLineNo">339</span>    @Override<a name="line.339"></a>
+<span class="sourceLineNo">340</span>    public void preinitialize() throws IllegalActionException {<a name="line.340"></a>
+<span class="sourceLineNo">341</span>        super.preinitialize();<a name="line.341"></a>
+<span class="sourceLineNo">342</span>        _initializeEngine();<a name="line.342"></a>
+<span class="sourceLineNo">343</span>    }<a name="line.343"></a>
+<span class="sourceLineNo">344</span><a name="line.344"></a>
+<span class="sourceLineNo">345</span>    /** Initialize the iteration count to 1.<a name="line.345"></a>
+<span class="sourceLineNo">346</span>     *  @exception IllegalActionException If the parent class throws it.<a name="line.346"></a>
+<span class="sourceLineNo">347</span>     */<a name="line.347"></a>
+<span class="sourceLineNo">348</span>    @Override<a name="line.348"></a>
+<span class="sourceLineNo">349</span>    public void initialize() throws IllegalActionException {<a name="line.349"></a>
+<span class="sourceLineNo">350</span>        super.initialize();<a name="line.350"></a>
+<span class="sourceLineNo">351</span><a name="line.351"></a>
+<span class="sourceLineNo">352</span>        // Check to make sure that the engine has been initialized.<a name="line.352"></a>
+<span class="sourceLineNo">353</span>        synchronized (Engine.semaphore) {<a name="line.353"></a>
+<span class="sourceLineNo">354</span>            if (engine == null) {<a name="line.354"></a>
+<span class="sourceLineNo">355</span>                _initializeEngine();<a name="line.355"></a>
+<span class="sourceLineNo">356</span>            }<a name="line.356"></a>
+<span class="sourceLineNo">357</span>        }<a name="line.357"></a>
+<span class="sourceLineNo">358</span><a name="line.358"></a>
+<span class="sourceLineNo">359</span>        _iterationCount = 1;<a name="line.359"></a>
+<span class="sourceLineNo">360</span>        _iteration.setToken(new IntToken(_iterationCount));<a name="line.360"></a>
+<span class="sourceLineNo">361</span><a name="line.361"></a>
+<span class="sourceLineNo">362</span>        // Process any additional directories to be added to matlab's<a name="line.362"></a>
+<span class="sourceLineNo">363</span>        // path. The list may contain paths relative to the directory in<a name="line.363"></a>
+<span class="sourceLineNo">364</span>        // which ptolemy was started or any directory listed in the current<a name="line.364"></a>
+<span class="sourceLineNo">365</span>        // classpath (in this order, first match wins). See<a name="line.365"></a>
+<span class="sourceLineNo">366</span>        // UtilityFunctions.findFile()<a name="line.366"></a>
+<span class="sourceLineNo">367</span>        _addPathCommand = null; // Assume none<a name="line.367"></a>
+<span class="sourceLineNo">368</span>        _previousPath = null;<a name="line.368"></a>
+<span class="sourceLineNo">369</span><a name="line.369"></a>
+<span class="sourceLineNo">370</span>        Parameter packageDirectories = (Parameter) getAttribute(<a name="line.370"></a>
+<span class="sourceLineNo">371</span>                "packageDirectories");<a name="line.371"></a>
+<span class="sourceLineNo">372</span><a name="line.372"></a>
+<span class="sourceLineNo">373</span>        if (packageDirectories != null) {<a name="line.373"></a>
+<span class="sourceLineNo">374</span>            StringTokenizer dirs = new StringTokenizer(<a name="line.374"></a>
+<span class="sourceLineNo">375</span>                    ((StringToken) packageDirectories.getToken()).stringValue(),<a name="line.375"></a>
+<span class="sourceLineNo">376</span>                    ",");<a name="line.376"></a>
+<span class="sourceLineNo">377</span>            StringBuffer cellFormat = new StringBuffer(512);<a name="line.377"></a>
+<span class="sourceLineNo">378</span>            cellFormat.append("{");<a name="line.378"></a>
+<span class="sourceLineNo">379</span><a name="line.379"></a>
+<span class="sourceLineNo">380</span>            if (dirs.hasMoreTokens()) {<a name="line.380"></a>
+<span class="sourceLineNo">381</span>                cellFormat.append("'"<a name="line.381"></a>
+<span class="sourceLineNo">382</span>                        + UtilityFunctions.findFile(dirs.nextToken()) + "'");<a name="line.382"></a>
+<span class="sourceLineNo">383</span>            }<a name="line.383"></a>
+<span class="sourceLineNo">384</span><a name="line.384"></a>
+<span class="sourceLineNo">385</span>            while (dirs.hasMoreTokens()) {<a name="line.385"></a>
+<span class="sourceLineNo">386</span>                cellFormat.append(",'"<a name="line.386"></a>
+<span class="sourceLineNo">387</span>                        + UtilityFunctions.findFile(dirs.nextToken()) + "'");<a name="line.387"></a>
+<span class="sourceLineNo">388</span>            }<a name="line.388"></a>
+<span class="sourceLineNo">389</span><a name="line.389"></a>
+<span class="sourceLineNo">390</span>            cellFormat.append("}");<a name="line.390"></a>
+<span class="sourceLineNo">391</span><a name="line.391"></a>
+<span class="sourceLineNo">392</span>            if (cellFormat.length() &gt; 2) {<a name="line.392"></a>
+<span class="sourceLineNo">393</span>                _addPathCommand = "addedPath_ = " + cellFormat.toString()<a name="line.393"></a>
+<span class="sourceLineNo">394</span>                        + ";addpath(addedPath_{:});";<a name="line.394"></a>
 <span class="sourceLineNo">395</span><a name="line.395"></a>
-<span class="sourceLineNo">396</span>            if (cellFormat.length() &gt; 2) {<a name="line.396"></a>
-<span class="sourceLineNo">397</span>                _addPathCommand = "addedPath_ = " + cellFormat.toString()<a name="line.397"></a>
-<span class="sourceLineNo">398</span>                        + ";addpath(addedPath_{:});";<a name="line.398"></a>
-<span class="sourceLineNo">399</span><a name="line.399"></a>
-<span class="sourceLineNo">400</span>                synchronized (Engine.semaphore) {<a name="line.400"></a>
-<span class="sourceLineNo">401</span>                    matlabEngine.evalString(engine, "previousPath_=path");<a name="line.401"></a>
-<span class="sourceLineNo">402</span>                    _previousPath = matlabEngine.get(engine, "previousPath_");<a name="line.402"></a>
-<span class="sourceLineNo">403</span>                }<a name="line.403"></a>
-<span class="sourceLineNo">404</span>            }<a name="line.404"></a>
-<span class="sourceLineNo">405</span>        }<a name="line.405"></a>
-<span class="sourceLineNo">406</span><a name="line.406"></a>
-<span class="sourceLineNo">407</span>        _dataParameters.getScalarMatrices = ((BooleanToken) get1x1asScalars<a name="line.407"></a>
-<span class="sourceLineNo">408</span>                .getToken()).booleanValue();<a name="line.408"></a>
-<span class="sourceLineNo">409</span>        _dataParameters.getIntMatrices = ((BooleanToken) getIntegerMatrices<a name="line.409"></a>
-<span class="sourceLineNo">410</span>                .getToken()).booleanValue();<a name="line.410"></a>
-<span class="sourceLineNo">411</span>    }<a name="line.411"></a>
-<span class="sourceLineNo">412</span><a name="line.412"></a>
-<span class="sourceLineNo">413</span>    /** Return true if all input ports have at least one token.<a name="line.413"></a>
-<span class="sourceLineNo">414</span>     *  @return True if this actor is ready for firing, false otherwise.<a name="line.414"></a>
-<span class="sourceLineNo">415</span>     *  @exception IllegalActionException Not thrown in this base class.<a name="line.415"></a>
-<span class="sourceLineNo">416</span>     */<a name="line.416"></a>
-<span class="sourceLineNo">417</span>    @Override<a name="line.417"></a>
-<span class="sourceLineNo">418</span>    public boolean prefire() throws IllegalActionException {<a name="line.418"></a>
-<span class="sourceLineNo">419</span>        Iterator inputPorts = inputPortList().iterator();<a name="line.419"></a>
-<span class="sourceLineNo">420</span><a name="line.420"></a>
-<span class="sourceLineNo">421</span>        while (inputPorts.hasNext()) {<a name="line.421"></a>
-<span class="sourceLineNo">422</span>            IOPort port = (IOPort) inputPorts.next();<a name="line.422"></a>
-<span class="sourceLineNo">423</span><a name="line.423"></a>
-<span class="sourceLineNo">424</span>            if (!port.hasToken(0)) {<a name="line.424"></a>
-<span class="sourceLineNo">425</span>                return false;<a name="line.425"></a>
-<span class="sourceLineNo">426</span>            }<a name="line.426"></a>
-<span class="sourceLineNo">427</span>        }<a name="line.427"></a>
-<span class="sourceLineNo">428</span><a name="line.428"></a>
-<span class="sourceLineNo">429</span>        return super.prefire();<a name="line.429"></a>
-<span class="sourceLineNo">430</span>    }<a name="line.430"></a>
-<span class="sourceLineNo">431</span><a name="line.431"></a>
-<span class="sourceLineNo">432</span>    /** Evaluate the expression and send its result to the output.<a name="line.432"></a>
-<span class="sourceLineNo">433</span>     *  @exception IllegalActionException If the evaluation of the expression<a name="line.433"></a>
-<span class="sourceLineNo">434</span>     *   triggers it, or the evaluation yields a null result, or the evaluation<a name="line.434"></a>
-<span class="sourceLineNo">435</span>     *   yields an incompatible type, or if there is no director.<a name="line.435"></a>
-<span class="sourceLineNo">436</span>     */<a name="line.436"></a>
-<span class="sourceLineNo">437</span>    @Override<a name="line.437"></a>
-<span class="sourceLineNo">438</span>    public void fire() throws IllegalActionException {<a name="line.438"></a>
-<span class="sourceLineNo">439</span>        super.fire();<a name="line.439"></a>
-<span class="sourceLineNo">440</span>        Director director = getDirector();<a name="line.440"></a>
+<span class="sourceLineNo">396</span>                synchronized (Engine.semaphore) {<a name="line.396"></a>
+<span class="sourceLineNo">397</span>                    matlabEngine.evalString(engine, "previousPath_=path");<a name="line.397"></a>
+<span class="sourceLineNo">398</span>                    _previousPath = matlabEngine.get(engine, "previousPath_");<a name="line.398"></a>
+<span class="sourceLineNo">399</span>                }<a name="line.399"></a>
+<span class="sourceLineNo">400</span>            }<a name="line.400"></a>
+<span class="sourceLineNo">401</span>        }<a name="line.401"></a>
+<span class="sourceLineNo">402</span><a name="line.402"></a>
+<span class="sourceLineNo">403</span>        _dataParameters.getScalarMatrices = ((BooleanToken) get1x1asScalars<a name="line.403"></a>
+<span class="sourceLineNo">404</span>                .getToken()).booleanValue();<a name="line.404"></a>
+<span class="sourceLineNo">405</span>        _dataParameters.getIntMatrices = ((BooleanToken) getIntegerMatrices<a name="line.405"></a>
+<span class="sourceLineNo">406</span>                .getToken()).booleanValue();<a name="line.406"></a>
+<span class="sourceLineNo">407</span>    }<a name="line.407"></a>
+<span class="sourceLineNo">408</span><a name="line.408"></a>
+<span class="sourceLineNo">409</span>    /** Return true if all input ports have at least one token.<a name="line.409"></a>
+<span class="sourceLineNo">410</span>     *  @return True if this actor is ready for firing, false otherwise.<a name="line.410"></a>
+<span class="sourceLineNo">411</span>     *  @exception IllegalActionException Not thrown in this base class.<a name="line.411"></a>
+<span class="sourceLineNo">412</span>     */<a name="line.412"></a>
+<span class="sourceLineNo">413</span>    @Override<a name="line.413"></a>
+<span class="sourceLineNo">414</span>    public boolean prefire() throws IllegalActionException {<a name="line.414"></a>
+<span class="sourceLineNo">415</span>        Iterator inputPorts = inputPortList().iterator();<a name="line.415"></a>
+<span class="sourceLineNo">416</span><a name="line.416"></a>
+<span class="sourceLineNo">417</span>        while (inputPorts.hasNext()) {<a name="line.417"></a>
+<span class="sourceLineNo">418</span>            IOPort port = (IOPort) inputPorts.next();<a name="line.418"></a>
+<span class="sourceLineNo">419</span><a name="line.419"></a>
+<span class="sourceLineNo">420</span>            if (!port.hasToken(0)) {<a name="line.420"></a>
+<span class="sourceLineNo">421</span>                return false;<a name="line.421"></a>
+<span class="sourceLineNo">422</span>            }<a name="line.422"></a>
+<span class="sourceLineNo">423</span>        }<a name="line.423"></a>
+<span class="sourceLineNo">424</span><a name="line.424"></a>
+<span class="sourceLineNo">425</span>        return super.prefire();<a name="line.425"></a>
+<span class="sourceLineNo">426</span>    }<a name="line.426"></a>
+<span class="sourceLineNo">427</span><a name="line.427"></a>
+<span class="sourceLineNo">428</span>    /** Evaluate the expression and send its result to the output.<a name="line.428"></a>
+<span class="sourceLineNo">429</span>     *  @exception IllegalActionException If the evaluation of the expression<a name="line.429"></a>
+<span class="sourceLineNo">430</span>     *   triggers it, or the evaluation yields a null result, or the evaluation<a name="line.430"></a>
+<span class="sourceLineNo">431</span>     *   yields an incompatible type, or if there is no director.<a name="line.431"></a>
+<span class="sourceLineNo">432</span>     */<a name="line.432"></a>
+<span class="sourceLineNo">433</span>    @Override<a name="line.433"></a>
+<span class="sourceLineNo">434</span>    public void fire() throws IllegalActionException {<a name="line.434"></a>
+<span class="sourceLineNo">435</span>        super.fire();<a name="line.435"></a>
+<span class="sourceLineNo">436</span>        Director director = getDirector();<a name="line.436"></a>
+<span class="sourceLineNo">437</span><a name="line.437"></a>
+<span class="sourceLineNo">438</span>        if (director == null) {<a name="line.438"></a>
+<span class="sourceLineNo">439</span>            throw new IllegalActionException(this, "No director!");<a name="line.439"></a>
+<span class="sourceLineNo">440</span>        }<a name="line.440"></a>
 <span class="sourceLineNo">441</span><a name="line.441"></a>
-<span class="sourceLineNo">442</span>        if (director == null) {<a name="line.442"></a>
-<span class="sourceLineNo">443</span>            throw new IllegalActionException(this, "No director!");<a name="line.443"></a>
-<span class="sourceLineNo">444</span>        }<a name="line.444"></a>
-<span class="sourceLineNo">445</span><a name="line.445"></a>
-<span class="sourceLineNo">446</span>        boolean clearEnvironmentValue = ((BooleanToken) clearEnvironment<a name="line.446"></a>
-<span class="sourceLineNo">447</span>                .getToken()).booleanValue();<a name="line.447"></a>
-<span class="sourceLineNo">448</span><a name="line.448"></a>
-<span class="sourceLineNo">449</span>        try {<a name="line.449"></a>
-<span class="sourceLineNo">450</span><a name="line.450"></a>
-<span class="sourceLineNo">451</span>            // Read the input ports before acquiring the engine lock since<a name="line.451"></a>
-<span class="sourceLineNo">452</span>            // get() may block depending on the director, e.g., PN.<a name="line.452"></a>
-<span class="sourceLineNo">453</span>            for (TypedIOPort port : inputPortList()) {<a name="line.453"></a>
-<span class="sourceLineNo">454</span>                _inputTokens.put(port.getName(), port.get(0));<a name="line.454"></a>
-<span class="sourceLineNo">455</span>            }<a name="line.455"></a>
-<span class="sourceLineNo">456</span><a name="line.456"></a>
-<span class="sourceLineNo">457</span>            synchronized (Engine.semaphore) {<a name="line.457"></a>
-<span class="sourceLineNo">458</span><a name="line.458"></a>
-<span class="sourceLineNo">459</span>                if (clearEnvironmentValue) {<a name="line.459"></a>
-<span class="sourceLineNo">460</span>                    // The following clears variables, but preserves any<a name="line.460"></a>
-<span class="sourceLineNo">461</span>                    // persistent storage created by a function (this usually<a name="line.461"></a>
-<span class="sourceLineNo">462</span>                    // for speed-up purposes to avoid recalculation on every<a name="line.462"></a>
-<span class="sourceLineNo">463</span>                    // function call)<a name="line.463"></a>
-<span class="sourceLineNo">464</span>                    matlabEngine.evalString(engine,<a name="line.464"></a>
-<span class="sourceLineNo">465</span>                            "clear variables;clear globals");<a name="line.465"></a>
+<span class="sourceLineNo">442</span>        boolean clearEnvironmentValue = ((BooleanToken) clearEnvironment<a name="line.442"></a>
+<span class="sourceLineNo">443</span>                .getToken()).booleanValue();<a name="line.443"></a>
+<span class="sourceLineNo">444</span><a name="line.444"></a>
+<span class="sourceLineNo">445</span>        try {<a name="line.445"></a>
+<span class="sourceLineNo">446</span><a name="line.446"></a>
+<span class="sourceLineNo">447</span>            // Read the input ports before acquiring the engine lock since<a name="line.447"></a>
+<span class="sourceLineNo">448</span>            // get() may block depending on the director, e.g., PN.<a name="line.448"></a>
+<span class="sourceLineNo">449</span>            for (TypedIOPort port : inputPortList()) {<a name="line.449"></a>
+<span class="sourceLineNo">450</span>                _inputTokens.put(port.getName(), port.get(0));<a name="line.450"></a>
+<span class="sourceLineNo">451</span>            }<a name="line.451"></a>
+<span class="sourceLineNo">452</span><a name="line.452"></a>
+<span class="sourceLineNo">453</span>            synchronized (Engine.semaphore) {<a name="line.453"></a>
+<span class="sourceLineNo">454</span><a name="line.454"></a>
+<span class="sourceLineNo">455</span>                if (clearEnvironmentValue) {<a name="line.455"></a>
+<span class="sourceLineNo">456</span>                    // The following clears variables, but preserves any<a name="line.456"></a>
+<span class="sourceLineNo">457</span>                    // persistent storage created by a function (this usually<a name="line.457"></a>
+<span class="sourceLineNo">458</span>                    // for speed-up purposes to avoid recalculation on every<a name="line.458"></a>
+<span class="sourceLineNo">459</span>                    // function call)<a name="line.459"></a>
+<span class="sourceLineNo">460</span>                    matlabEngine.evalString(engine,<a name="line.460"></a>
+<span class="sourceLineNo">461</span>                            "clear variables;clear globals");<a name="line.461"></a>
+<span class="sourceLineNo">462</span>                }<a name="line.462"></a>
+<span class="sourceLineNo">463</span><a name="line.463"></a>
+<span class="sourceLineNo">464</span>                if (_addPathCommand != null) {<a name="line.464"></a>
+<span class="sourceLineNo">465</span>                    matlabEngine.evalString(engine, _addPathCommand);<a name="line.465"></a>
 <span class="sourceLineNo">466</span>                }<a name="line.466"></a>
 <span class="sourceLineNo">467</span><a name="line.467"></a>
-<span class="sourceLineNo">468</span>                if (_addPathCommand != null) {<a name="line.468"></a>
-<span class="sourceLineNo">469</span>                    matlabEngine.evalString(engine, _addPathCommand);<a name="line.469"></a>
-<span class="sourceLineNo">470</span>                }<a name="line.470"></a>
-<span class="sourceLineNo">471</span><a name="line.471"></a>
-<span class="sourceLineNo">472</span>                try {<a name="line.472"></a>
-<span class="sourceLineNo">473</span>                    matlabEngine.put(engine, "time", new DoubleToken(<a name="line.473"></a>
-<span class="sourceLineNo">474</span>                            director.getModelTime().getDoubleValue()));<a name="line.474"></a>
-<span class="sourceLineNo">475</span>                } catch (IllegalActionException ex) {<a name="line.475"></a>
-<span class="sourceLineNo">476</span>                    throw new IllegalActionException(this, ex,<a name="line.476"></a>
-<span class="sourceLineNo">477</span>                            "Failed to set the \"time\" variable in the Matlab "<a name="line.477"></a>
-<span class="sourceLineNo">478</span>                                    + "engine to " + new DoubleToken(director<a name="line.478"></a>
-<span class="sourceLineNo">479</span>                                            .getModelTime().getDoubleValue()));<a name="line.479"></a>
-<span class="sourceLineNo">480</span>                }<a name="line.480"></a>
-<span class="sourceLineNo">481</span>                try {<a name="line.481"></a>
-<span class="sourceLineNo">482</span>                    matlabEngine.put(engine, "iteration",<a name="line.482"></a>
-<span class="sourceLineNo">483</span>                            _iteration.getToken());<a name="line.483"></a>
-<span class="sourceLineNo">484</span>                } catch (IllegalActionException ex) {<a name="line.484"></a>
-<span class="sourceLineNo">485</span>                    throw new IllegalActionException(this, ex,<a name="line.485"></a>
-<span class="sourceLineNo">486</span>                            "Failed to set the \"iteration\" variable in the Matlab "<a name="line.486"></a>
-<span class="sourceLineNo">487</span>                                    + "engine to " + _iteration.getToken());<a name="line.487"></a>
+<span class="sourceLineNo">468</span>                try {<a name="line.468"></a>
+<span class="sourceLineNo">469</span>                    matlabEngine.put(engine, "time", new DoubleToken(<a name="line.469"></a>
+<span class="sourceLineNo">470</span>                            director.getModelTime().getDoubleValue()));<a name="line.470"></a>
+<span class="sourceLineNo">471</span>                } catch (IllegalActionException ex) {<a name="line.471"></a>
+<span class="sourceLineNo">472</span>                    throw new IllegalActionException(this, ex,<a name="line.472"></a>
+<span class="sourceLineNo">473</span>                            "Failed to set the \"time\" variable in the Matlab "<a name="line.473"></a>
+<span class="sourceLineNo">474</span>                                    + "engine to " + new DoubleToken(director<a name="line.474"></a>
+<span class="sourceLineNo">475</span>                                            .getModelTime().getDoubleValue()));<a name="line.475"></a>
+<span class="sourceLineNo">476</span>                }<a name="line.476"></a>
+<span class="sourceLineNo">477</span>                try {<a name="line.477"></a>
+<span class="sourceLineNo">478</span>                    matlabEngine.put(engine, "iteration",<a name="line.478"></a>
+<span class="sourceLineNo">479</span>                            _iteration.getToken());<a name="line.479"></a>
+<span class="sourceLineNo">480</span>                } catch (IllegalActionException ex) {<a name="line.480"></a>
+<span class="sourceLineNo">481</span>                    throw new IllegalActionException(this, ex,<a name="line.481"></a>
+<span class="sourceLineNo">482</span>                            "Failed to set the \"iteration\" variable in the Matlab "<a name="line.482"></a>
+<span class="sourceLineNo">483</span>                                    + "engine to " + _iteration.getToken());<a name="line.483"></a>
+<span class="sourceLineNo">484</span>                }<a name="line.484"></a>
+<span class="sourceLineNo">485</span><a name="line.485"></a>
+<span class="sourceLineNo">486</span>                for (Map.Entry&lt;String, Token&gt; entry : _inputTokens.entrySet()) {<a name="line.486"></a>
+<span class="sourceLineNo">487</span>                    matlabEngine.put(engine, entry.getKey(), entry.getValue());<a name="line.487"></a>
 <span class="sourceLineNo">488</span>                }<a name="line.488"></a>
 <span class="sourceLineNo">489</span><a name="line.489"></a>
-<span class="sourceLineNo">490</span>                for (Map.Entry&lt;String, Token&gt; entry : _inputTokens.entrySet()) {<a name="line.490"></a>
-<span class="sourceLineNo">491</span>                    matlabEngine.put(engine, entry.getKey(), entry.getValue());<a name="line.491"></a>
-<span class="sourceLineNo">492</span>                }<a name="line.492"></a>
+<span class="sourceLineNo">490</span>                matlabEngine.evalString(engine, expression.stringValue());<a name="line.490"></a>
+<span class="sourceLineNo">491</span><a name="line.491"></a>
+<span class="sourceLineNo">492</span>                Iterator outputPorts = outputPortList().iterator();<a name="line.492"></a>
 <span class="sourceLineNo">493</span><a name="line.493"></a>
-<span class="sourceLineNo">494</span>                matlabEngine.evalString(engine, expression.stringValue());<a name="line.494"></a>
-<span class="sourceLineNo">495</span><a name="line.495"></a>
-<span class="sourceLineNo">496</span>                Iterator outputPorts = outputPortList().iterator();<a name="line.496"></a>
-<span class="sourceLineNo">497</span><a name="line.497"></a>
-<span class="sourceLineNo">498</span>                while (outputPorts.hasNext()) {<a name="line.498"></a>
-<span class="sourceLineNo">499</span>                    IOPort port = (IOPort) outputPorts.next();<a name="line.499"></a>
-<span class="sourceLineNo">500</span><a name="line.500"></a>
-<span class="sourceLineNo">501</span>                    // FIXME: Handle multiports<a name="line.501"></a>
-<span class="sourceLineNo">502</span>                    if (port.isOutsideConnected()) {<a name="line.502"></a>
-<span class="sourceLineNo">503</span>                        port.send(0, matlabEngine.get(engine, port.getName(),<a name="line.503"></a>
-<span class="sourceLineNo">504</span>                                _dataParameters));<a name="line.504"></a>
-<span class="sourceLineNo">505</span>                    }<a name="line.505"></a>
-<span class="sourceLineNo">506</span>                }<a name="line.506"></a>
-<span class="sourceLineNo">507</span><a name="line.507"></a>
-<span class="sourceLineNo">508</span>                // Restore previous path if path was modified above<a name="line.508"></a>
-<span class="sourceLineNo">509</span>                if (_previousPath != null) {<a name="line.509"></a>
-<span class="sourceLineNo">510</span>                    matlabEngine.put(engine, "previousPath_", _previousPath);<a name="line.510"></a>
-<span class="sourceLineNo">511</span>                    matlabEngine.evalString(engine, "path(previousPath_);");<a name="line.511"></a>
-<span class="sourceLineNo">512</span>                }<a name="line.512"></a>
-<span class="sourceLineNo">513</span>            }<a name="line.513"></a>
-<span class="sourceLineNo">514</span>        } finally {<a name="line.514"></a>
-<span class="sourceLineNo">515</span>            // Remove references to any tokens that were read from input ports.<a name="line.515"></a>
-<span class="sourceLineNo">516</span>            _inputTokens.clear();<a name="line.516"></a>
-<span class="sourceLineNo">517</span>        }<a name="line.517"></a>
-<span class="sourceLineNo">518</span>    }<a name="line.518"></a>
-<span class="sourceLineNo">519</span><a name="line.519"></a>
-<span class="sourceLineNo">520</span>    /** Increment the iteration count.<a name="line.520"></a>
-<span class="sourceLineNo">521</span>     *  @exception IllegalActionException If the superclass throws it.<a name="line.521"></a>
-<span class="sourceLineNo">522</span>     */<a name="line.522"></a>
-<span class="sourceLineNo">523</span>    @Override<a name="line.523"></a>
-<span class="sourceLineNo">524</span>    public boolean postfire() throws IllegalActionException {<a name="line.524"></a>
-<span class="sourceLineNo">525</span>        _iterationCount++;<a name="line.525"></a>
-<span class="sourceLineNo">526</span>        _iteration.setToken(new IntToken(_iterationCount));<a name="line.526"></a>
+<span class="sourceLineNo">494</span>                while (outputPorts.hasNext()) {<a name="line.494"></a>
+<span class="sourceLineNo">495</span>                    IOPort port = (IOPort) outputPorts.next();<a name="line.495"></a>
+<span class="sourceLineNo">496</span><a name="line.496"></a>
+<span class="sourceLineNo">497</span>                    // FIXME: Handle multiports<a name="line.497"></a>
+<span class="sourceLineNo">498</span>                    if (port.isOutsideConnected()) {<a name="line.498"></a>
+<span class="sourceLineNo">499</span>                        port.send(0, matlabEngine.get(engine, port.getName(),<a name="line.499"></a>
+<span class="sourceLineNo">500</span>                                _dataParameters));<a name="line.500"></a>
+<span class="sourceLineNo">501</span>                    }<a name="line.501"></a>
+<span class="sourceLineNo">502</span>                }<a name="line.502"></a>
+<span class="sourceLineNo">503</span><a name="line.503"></a>
+<span class="sourceLineNo">504</span>                // Restore previous path if path was modified above<a name="line.504"></a>
+<span class="sourceLineNo">505</span>                if (_previousPath != null) {<a name="line.505"></a>
+<span class="sourceLineNo">506</span>                    matlabEngine.put(engine, "previousPath_", _previousPath);<a name="line.506"></a>
+<span class="sourceLineNo">507</span>                    matlabEngine.evalString(engine, "path(previousPath_);");<a name="line.507"></a>
+<span class="sourceLineNo">508</span>                }<a name="line.508"></a>
+<span class="sourceLineNo">509</span>            }<a name="line.509"></a>
+<span class="sourceLineNo">510</span>        } finally {<a name="line.510"></a>
+<span class="sourceLineNo">511</span>            // Remove references to any tokens that were read from input ports.<a name="line.511"></a>
+<span class="sourceLineNo">512</span>            _inputTokens.clear();<a name="line.512"></a>
+<span class="sourceLineNo">513</span>        }<a name="line.513"></a>
+<span class="sourceLineNo">514</span>    }<a name="line.514"></a>
+<span class="sourceLineNo">515</span><a name="line.515"></a>
+<span class="sourceLineNo">516</span>    /** Increment the iteration count.<a name="line.516"></a>
+<span class="sourceLineNo">517</span>     *  @exception IllegalActionException If the superclass throws it.<a name="line.517"></a>
+<span class="sourceLineNo">518</span>     */<a name="line.518"></a>
+<span class="sourceLineNo">519</span>    @Override<a name="line.519"></a>
+<span class="sourceLineNo">520</span>    public boolean postfire() throws IllegalActionException {<a name="line.520"></a>
+<span class="sourceLineNo">521</span>        _iterationCount++;<a name="line.521"></a>
+<span class="sourceLineNo">522</span>        _iteration.setToken(new IntToken(_iterationCount));<a name="line.522"></a>
+<span class="sourceLineNo">523</span><a name="line.523"></a>
+<span class="sourceLineNo">524</span>        // This actor never requests termination.<a name="line.524"></a>
+<span class="sourceLineNo">525</span>        return super.postfire();<a name="line.525"></a>
+<span class="sourceLineNo">526</span>    }<a name="line.526"></a>
 <span class="sourceLineNo">527</span><a name="line.527"></a>
-<span class="sourceLineNo">528</span>        // This actor never requests termination.<a name="line.528"></a>
-<span class="sourceLineNo">529</span>        return super.postfire();<a name="line.529"></a>
-<span class="sourceLineNo">530</span>    }<a name="line.530"></a>
-<span class="sourceLineNo">531</span><a name="line.531"></a>
-<span class="sourceLineNo">532</span>    /** Close matlab engine if it was open.<a name="line.532"></a>
-<span class="sourceLineNo">533</span>     *  @exception IllegalActionException Not thrown in this base class.<a name="line.533"></a>
-<span class="sourceLineNo">534</span>     */<a name="line.534"></a>
-<span class="sourceLineNo">535</span>    @Override<a name="line.535"></a>
-<span class="sourceLineNo">536</span>    public void wrapup() throws IllegalActionException {<a name="line.536"></a>
-<span class="sourceLineNo">537</span>        super.wrapup();<a name="line.537"></a>
-<span class="sourceLineNo">538</span><a name="line.538"></a>
-<span class="sourceLineNo">539</span>        synchronized (Engine.semaphore) {<a name="line.539"></a>
-<span class="sourceLineNo">540</span>            if (matlabEngine != null) {<a name="line.540"></a>
-<span class="sourceLineNo">541</span>                matlabEngine.close(engine);<a name="line.541"></a>
-<span class="sourceLineNo">542</span>            }<a name="line.542"></a>
-<span class="sourceLineNo">543</span>        }<a name="line.543"></a>
-<span class="sourceLineNo">544</span><a name="line.544"></a>
-<span class="sourceLineNo">545</span>        engine = null;<a name="line.545"></a>
-<span class="sourceLineNo">546</span>    }<a name="line.546"></a>
-<span class="sourceLineNo">547</span><a name="line.547"></a>
-<span class="sourceLineNo">548</span>    ///////////////////////////////////////////////////////////////////<a name="line.548"></a>
-<span class="sourceLineNo">549</span>    ////                         protected methods                 ////<a name="line.549"></a>
-<span class="sourceLineNo">550</span><a name="line.550"></a>
-<span class="sourceLineNo">551</span>    /** Default type constraints do not apply in this case, since the input<a name="line.551"></a>
-<span class="sourceLineNo">552</span>     *  type may be totally unrelated to the output type and cannot be<a name="line.552"></a>
-<span class="sourceLineNo">553</span>     *  inferred; return null.<a name="line.553"></a>
-<span class="sourceLineNo">554</span>     *  @return null<a name="line.554"></a>
-<span class="sourceLineNo">555</span>     */<a name="line.555"></a>
-<span class="sourceLineNo">556</span>    @Override<a name="line.556"></a>
-<span class="sourceLineNo">557</span>    protected Set&lt;Inequality&gt; _defaultTypeConstraints() {<a name="line.557"></a>
-<span class="sourceLineNo">558</span>        return null;<a name="line.558"></a>
-<span class="sourceLineNo">559</span>    }<a name="line.559"></a>
-<span class="sourceLineNo">560</span><a name="line.560"></a>
-<span class="sourceLineNo">561</span>    ///////////////////////////////////////////////////////////////////<a name="line.561"></a>
-<span class="sourceLineNo">562</span>    ////                         private methods                   ////<a name="line.562"></a>
-<span class="sourceLineNo">563</span><a name="line.563"></a>
-<span class="sourceLineNo">564</span>    /** Initialize the Matlab Engine.<a name="line.564"></a>
-<span class="sourceLineNo">565</span>     *  @exception IllegalActionException If the connection to the<a name="line.565"></a>
-<span class="sourceLineNo">566</span>     *  Matlab engine cannot be intialized.<a name="line.566"></a>
-<span class="sourceLineNo">567</span>     */<a name="line.567"></a>
-<span class="sourceLineNo">568</span>    private void _initializeEngine() throws IllegalActionException {<a name="line.568"></a>
-<span class="sourceLineNo">569</span>        synchronized (Engine.semaphore) {<a name="line.569"></a>
-<span class="sourceLineNo">570</span>            // The intialization used to occur in preinitialize(), but this<a name="line.570"></a>
-<span class="sourceLineNo">571</span>            // meant that the Matlab Expression actor could not be used<a name="line.571"></a>
-<span class="sourceLineNo">572</span>            // in a RunComposite because RunComposite invokes _executeInsideModel()<a name="line.572"></a>
-<span class="sourceLineNo">573</span>            // which does not invoke preinitialize().  If _executeInsideModel()<a name="line.573"></a>
-<span class="sourceLineNo">574</span>            // invokes preinitialize(), then the PortParameters of the RunComposite<a name="line.574"></a>
-<span class="sourceLineNo">575</span>            // are constantly reset to the value of the _persistentExpression.<a name="line.575"></a>
-<span class="sourceLineNo">576</span>            try {<a name="line.576"></a>
-<span class="sourceLineNo">577</span>                matlabEngine = new Engine();<a name="line.577"></a>
-<span class="sourceLineNo">578</span>            } catch (Throwable throwable) {<a name="line.578"></a>
-<span class="sourceLineNo">579</span>                // LinkageError is and Error, not an exceptoin<a name="line.579"></a>
-<span class="sourceLineNo">580</span>                throw new IllegalActionException(this, throwable,<a name="line.580"></a>
-<span class="sourceLineNo">581</span>                        "There was a problem invoking the Ptolemy II Matlab "<a name="line.581"></a>
-<span class="sourceLineNo">582</span>                                + "interface.\nThe interface has been tested under "<a name="line.582"></a>
-<span class="sourceLineNo">583</span>                                + "Linux, Mac OS X, and Windows.\n"<a name="line.583"></a>
-<span class="sourceLineNo">584</span>                                + "The interface requires that Matlab be installed "<a name="line.584"></a>
-<span class="sourceLineNo">585</span>                                + "on the local machine and that the ptmatlab "<a name="line.585"></a>
-<span class="sourceLineNo">586</span>                                + "shared library available.\n"<a name="line.586"></a>
-<span class="sourceLineNo">587</span>                                + "* Under Linux, you must have the LD_LIBRARY_PATH "<a name="line.587"></a>
-<span class="sourceLineNo">588</span>                                + "environment variable set to include the directories "<a name="line.588"></a>
-<span class="sourceLineNo">589</span>                                + "that contain libmx.so and libptmatlab.so.\n"<a name="line.589"></a>
-<span class="sourceLineNo">590</span>                                + "* Under Mac OS X, you must have the DYLD_LIBRARY_PATH "<a name="line.590"></a>
-<span class="sourceLineNo">591</span>                                + "environment variable set to include the directories "<a name="line.591"></a>
-<span class="sourceLineNo">592</span>                                + "that contain libmx.dylib and libptmatlab.jnilib.\n"<a name="line.592"></a>
-<span class="sourceLineNo">593</span>                                + "* Under Windows, you must have your PATH set to include "<a name="line.593"></a>
-<span class="sourceLineNo">594</span>                                + "the Matlab bin/win32 or equivalent directory so that "<a name="line.594"></a>
-<span class="sourceLineNo">595</span>                                + "libmex.dll is found and the directory that contains "<a name="line.595"></a>
-<span class="sourceLineNo">596</span>                                + "libptmatlab.dll. "<a name="line.596"></a>
-<span class="sourceLineNo">597</span>                                + "In addition, if you are running under Windows from "<a name="line.597"></a>
-<span class="sourceLineNo">598</span>                                + "the Cygwin bash prompt, then you must start Vergil with "<a name="line.598"></a>
-<span class="sourceLineNo">599</span>                                + "the -jni argument: $PTII/bin/vergil -jni. For details, "<a name="line.599"></a>
-<span class="sourceLineNo">600</span>                                + "see $PTII/jni/package.html.\n"<a name="line.600"></a>
-<span class="sourceLineNo">601</span>                                + "Refer to $PTII/ptolemy/matlab/makefile for more "<a name="line.601"></a>
-<span class="sourceLineNo">602</span>                                + "information.");<a name="line.602"></a>
-<span class="sourceLineNo">603</span>            }<a name="line.603"></a>
-<span class="sourceLineNo">604</span><a name="line.604"></a>
-<span class="sourceLineNo">605</span>            // First set default debugging level, then check for more<a name="line.605"></a>
-<span class="sourceLineNo">606</span>            matlabEngine.setDebugging((byte) 0);<a name="line.606"></a>
-<span class="sourceLineNo">607</span><a name="line.607"></a>
-<span class="sourceLineNo">608</span>            Parameter debugging = (Parameter) getAttribute("_debugging");<a name="line.608"></a>
-<span class="sourceLineNo">609</span><a name="line.609"></a>
-<span class="sourceLineNo">610</span>            if (debugging != null) {<a name="line.610"></a>
-<span class="sourceLineNo">611</span>                Token t = debugging.getToken();<a name="line.611"></a>
-<span class="sourceLineNo">612</span><a name="line.612"></a>
-<span class="sourceLineNo">613</span>                if (t instanceof IntToken) {<a name="line.613"></a>
-<span class="sourceLineNo">614</span>                    matlabEngine.setDebugging((byte) ((IntToken) t).intValue());<a name="line.614"></a>
-<span class="sourceLineNo">615</span>                }<a name="line.615"></a>
-<span class="sourceLineNo">616</span>            }<a name="line.616"></a>
+<span class="sourceLineNo">528</span>    /** Close matlab engine if it was open.<a name="line.528"></a>
+<span class="sourceLineNo">529</span>     *  @exception IllegalActionException Not thrown in this base class.<a name="line.529"></a>
+<span class="sourceLineNo">530</span>     */<a name="line.530"></a>
+<span class="sourceLineNo">531</span>    @Override<a name="line.531"></a>
+<span class="sourceLineNo">532</span>    public void wrapup() throws IllegalActionException {<a name="line.532"></a>
+<span class="sourceLineNo">533</span>        super.wrapup();<a name="line.533"></a>
+<span class="sourceLineNo">534</span><a name="line.534"></a>
+<span class="sourceLineNo">535</span>        synchronized (Engine.semaphore) {<a name="line.535"></a>
+<span class="sourceLineNo">536</span>            if (matlabEngine != null) {<a name="line.536"></a>
+<span class="sourceLineNo">537</span>                matlabEngine.close(engine);<a name="line.537"></a>
+<span class="sourceLineNo">538</span>            }<a name="line.538"></a>
+<span class="sourceLineNo">539</span>        }<a name="line.539"></a>
+<span class="sourceLineNo">540</span><a name="line.540"></a>
+<span class="sourceLineNo">541</span>        engine = null;<a name="line.541"></a>
+<span class="sourceLineNo">542</span>    }<a name="line.542"></a>
+<span class="sourceLineNo">543</span><a name="line.543"></a>
+<span class="sourceLineNo">544</span>    ///////////////////////////////////////////////////////////////////<a name="line.544"></a>
+<span class="sourceLineNo">545</span>    ////                         protected methods                 ////<a name="line.545"></a>
+<span class="sourceLineNo">546</span><a name="line.546"></a>
+<span class="sourceLineNo">547</span>    /** Default type constraints do not apply in this case, since the input<a name="line.547"></a>
+<span class="sourceLineNo">548</span>     *  type may be totally unrelated to the output type and cannot be<a name="line.548"></a>
+<span class="sourceLineNo">549</span>     *  inferred; return null.<a name="line.549"></a>
+<span class="sourceLineNo">550</span>     *  @return null<a name="line.550"></a>
+<span class="sourceLineNo">551</span>     */<a name="line.551"></a>
+<span class="sourceLineNo">552</span>    @Override<a name="line.552"></a>
+<span class="sourceLineNo">553</span>    protected Set&lt;Inequality&gt; _defaultTypeConstraints() {<a name="line.553"></a>
+<span class="sourceLineNo">554</span>        return null;<a name="line.554"></a>
+<span class="sourceLineNo">555</span>    }<a name="line.555"></a>
+<span class="sourceLineNo">556</span><a name="line.556"></a>
+<span class="sourceLineNo">557</span>    ///////////////////////////////////////////////////////////////////<a name="line.557"></a>
+<span class="sourceLineNo">558</span>    ////                         private methods                   ////<a name="line.558"></a>
+<span class="sourceLineNo">559</span><a name="line.559"></a>
+<span class="sourceLineNo">560</span>    /** Initialize the Matlab Engine.<a name="line.560"></a>
+<span class="sourceLineNo">561</span>     *  @exception IllegalActionException If the connection to the<a name="line.561"></a>
+<span class="sourceLineNo">562</span>     *  Matlab engine cannot be intialized.<a name="line.562"></a>
+<span class="sourceLineNo">563</span>     */<a name="line.563"></a>
+<span class="sourceLineNo">564</span>    private void _initializeEngine() throws IllegalActionException {<a name="line.564"></a>
+<span class="sourceLineNo">565</span>        synchronized (Engine.semaphore) {<a name="line.565"></a>
+<span class="sourceLineNo">566</span>            // The intialization used to occur in preinitialize(), but this<a name="line.566"></a>
+<span class="sourceLineNo">567</span>            // meant that the Matlab Expression actor could not be used<a name="line.567"></a>
+<span class="sourceLineNo">568</span>            // in a RunComposite because RunComposite invokes _executeInsideModel()<a name="line.568"></a>
+<span class="sourceLineNo">569</span>            // which does not invoke preinitialize().  If _executeInsideModel()<a name="line.569"></a>
+<span class="sourceLineNo">570</span>            // invokes preinitialize(), then the PortParameters of the RunComposite<a name="line.570"></a>
+<span class="sourceLineNo">571</span>            // are constantly reset to the value of the _persistentExpression.<a name="line.571"></a>
+<span class="sourceLineNo">572</span>            try {<a name="line.572"></a>
+<span class="sourceLineNo">573</span>                matlabEngine = new Engine();<a name="line.573"></a>
+<span class="sourceLineNo">574</span>            } catch (Throwable throwable) {<a name="line.574"></a>
+<span class="sourceLineNo">575</span>                // LinkageError is and Error, not an exceptoin<a name="line.575"></a>
+<span class="sourceLineNo">576</span>                throw new IllegalActionException(this, throwable,<a name="line.576"></a>
+<span class="sourceLineNo">577</span>                        "There was a problem invoking the Ptolemy II Matlab "<a name="line.577"></a>
+<span class="sourceLineNo">578</span>                                + "interface.\nThe interface has been tested under "<a name="line.578"></a>
+<span class="sourceLineNo">579</span>                                + "Linux, Mac OS X, and Windows.\n"<a name="line.579"></a>
+<span class="sourceLineNo">580</span>                                + "The interface requires that Matlab be installed "<a name="line.580"></a>
+<span class="sourceLineNo">581</span>                                + "on the local machine and that the ptmatlab "<a name="line.581"></a>
+<span class="sourceLineNo">582</span>                                + "shared library available.\n"<a name="line.582"></a>
+<span class="sourceLineNo">583</span>                                + "* Under Linux, you must have the LD_LIBRARY_PATH "<a name="line.583"></a>
+<span class="sourceLineNo">584</span>                                + "environment variable set to include the directories "<a name="line.584"></a>
+<span class="sourceLineNo">585</span>                                + "that contain libmx.so and libptmatlab.so.\n"<a name="line.585"></a>
+<span class="sourceLineNo">586</span>                                + "* Under Mac OS X, you must have the DYLD_LIBRARY_PATH "<a name="line.586"></a>
+<span class="sourceLineNo">587</span>                                + "environment variable set to include the directories "<a name="line.587"></a>
+<span class="sourceLineNo">588</span>                                + "that contain libmx.dylib and libptmatlab.jnilib.\n"<a name="line.588"></a>
+<span class="sourceLineNo">589</span>                                + "* Under Windows, you must have your PATH set to include "<a name="line.589"></a>
+<span class="sourceLineNo">590</span>                                + "the Matlab bin/win32 or equivalent directory so that "<a name="line.590"></a>
+<span class="sourceLineNo">591</span>                                + "libmex.dll is found and the directory that contains "<a name="line.591"></a>
+<span class="sourceLineNo">592</span>                                + "libptmatlab.dll. "<a name="line.592"></a>
+<span class="sourceLineNo">593</span>                                + "In addition, if you are running under Windows from "<a name="line.593"></a>
+<span class="sourceLineNo">594</span>                                + "the Cygwin bash prompt, then you must start Vergil with "<a name="line.594"></a>
+<span class="sourceLineNo">595</span>                                + "the -jni argument: $PTII/bin/vergil -jni. For details, "<a name="line.595"></a>
+<span class="sourceLineNo">596</span>                                + "see $PTII/jni/package.html.\n"<a name="line.596"></a>
+<span class="sourceLineNo">597</span>                                + "Refer to $PTII/ptolemy/matlab/makefile for more "<a name="line.597"></a>
+<span class="sourceLineNo">598</span>                                + "information.");<a name="line.598"></a>
+<span class="sourceLineNo">599</span>            }<a name="line.599"></a>
+<span class="sourceLineNo">600</span><a name="line.600"></a>
+<span class="sourceLineNo">601</span>            // First set default debugging level, then check for more<a name="line.601"></a>
+<span class="sourceLineNo">602</span>            matlabEngine.setDebugging((byte) 0);<a name="line.602"></a>
+<span class="sourceLineNo">603</span><a name="line.603"></a>
+<span class="sourceLineNo">604</span>            Parameter debugging = (Parameter) getAttribute("_debugging");<a name="line.604"></a>
+<span class="sourceLineNo">605</span><a name="line.605"></a>
+<span class="sourceLineNo">606</span>            if (debugging != null) {<a name="line.606"></a>
+<span class="sourceLineNo">607</span>                Token t = debugging.getToken();<a name="line.607"></a>
+<span class="sourceLineNo">608</span><a name="line.608"></a>
+<span class="sourceLineNo">609</span>                if (t instanceof IntToken) {<a name="line.609"></a>
+<span class="sourceLineNo">610</span>                    matlabEngine.setDebugging((byte) ((IntToken) t).intValue());<a name="line.610"></a>
+<span class="sourceLineNo">611</span>                }<a name="line.611"></a>
+<span class="sourceLineNo">612</span>            }<a name="line.612"></a>
+<span class="sourceLineNo">613</span><a name="line.613"></a>
+<span class="sourceLineNo">614</span>            engine = matlabEngine.open();<a name="line.614"></a>
+<span class="sourceLineNo">615</span>        }<a name="line.615"></a>
+<span class="sourceLineNo">616</span>    }<a name="line.616"></a>
 <span class="sourceLineNo">617</span><a name="line.617"></a>
-<span class="sourceLineNo">618</span>            engine = matlabEngine.open();<a name="line.618"></a>
-<span class="sourceLineNo">619</span>        }<a name="line.619"></a>
-<span class="sourceLineNo">620</span>    }<a name="line.620"></a>
+<span class="sourceLineNo">618</span>    private transient Engine matlabEngine = null;<a name="line.618"></a>
+<span class="sourceLineNo">619</span><a name="line.619"></a>
+<span class="sourceLineNo">620</span>    long[] engine = null;<a name="line.620"></a>
 <span class="sourceLineNo">621</span><a name="line.621"></a>
-<span class="sourceLineNo">622</span>    private transient Engine matlabEngine = null;<a name="line.622"></a>
+<span class="sourceLineNo">622</span>    private Variable _iteration;<a name="line.622"></a>
 <span class="sourceLineNo">623</span><a name="line.623"></a>
-<span class="sourceLineNo">624</span>    long[] engine = null;<a name="line.624"></a>
+<span class="sourceLineNo">624</span>    private int _iterationCount = 1;<a name="line.624"></a>
 <span class="sourceLineNo">625</span><a name="line.625"></a>
-<span class="sourceLineNo">626</span>    private Variable _iteration;<a name="line.626"></a>
+<span class="sourceLineNo">626</span>    private String _addPathCommand = null;<a name="line.626"></a>
 <span class="sourceLineNo">627</span><a name="line.627"></a>
-<span class="sourceLineNo">628</span>    private int _iterationCount = 1;<a name="line.628"></a>
+<span class="sourceLineNo">628</span>    private Token _previousPath = null;<a name="line.628"></a>
 <span class="sourceLineNo">629</span><a name="line.629"></a>
-<span class="sourceLineNo">630</span>    private String _addPathCommand = null;<a name="line.630"></a>
+<span class="sourceLineNo">630</span>    private transient ConversionParameters _dataParameters;<a name="line.630"></a>
 <span class="sourceLineNo">631</span><a name="line.631"></a>
-<span class="sourceLineNo">632</span>    private Token _previousPath = null;<a name="line.632"></a>
-<span class="sourceLineNo">633</span><a name="line.633"></a>
-<span class="sourceLineNo">634</span>    private transient ConversionParameters _dataParameters;<a name="line.634"></a>
-<span class="sourceLineNo">635</span><a name="line.635"></a>
-<span class="sourceLineNo">636</span>    /** A map of input port names to tokens. */<a name="line.636"></a>
-<span class="sourceLineNo">637</span>    private Map&lt;String, Token&gt; _inputTokens = new HashMap&lt;String, Token&gt;();<a name="line.637"></a>
-<span class="sourceLineNo">638</span>}<a name="line.638"></a>
+<span class="sourceLineNo">632</span>    /** A map of input port names to tokens. */<a name="line.632"></a>
+<span class="sourceLineNo">633</span>    private Map&lt;String, Token&gt; _inputTokens = new HashMap&lt;String, Token&gt;();<a name="line.633"></a>
+<span class="sourceLineNo">634</span>}<a name="line.634"></a>
 
 
 
