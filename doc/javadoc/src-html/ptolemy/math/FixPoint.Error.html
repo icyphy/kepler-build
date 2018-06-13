@@ -8,7 +8,7 @@
 <div class="sourceContainer">
 <pre><span class="sourceLineNo">001</span>/* A FixPoint data type.<a name="line.1"></a>
 <span class="sourceLineNo">002</span><a name="line.2"></a>
-<span class="sourceLineNo">003</span> Copyright (c) 1998-2014 The Regents of the University of California.<a name="line.3"></a>
+<span class="sourceLineNo">003</span> Copyright (c) 1998-2018 The Regents of the University of California.<a name="line.3"></a>
 <span class="sourceLineNo">004</span> All rights reserved.<a name="line.4"></a>
 <span class="sourceLineNo">005</span><a name="line.5"></a>
 <span class="sourceLineNo">006</span> Permission is hereby granted, without written agreement and without<a name="line.6"></a>
@@ -325,7 +325,7 @@
 <span class="sourceLineNo">317</span>         int max_bits = Math.max(_precision.getNumberOfBits(), arg._precision<a name="line.317"></a>
 <span class="sourceLineNo">318</span>         .getNumberOfBits());<a name="line.318"></a>
 <span class="sourceLineNo">319</span>         int bits = (new_bits &gt; max_bits ? new_bits : max_bits);<a name="line.319"></a>
-<span class="sourceLineNo">320</span>        <a name="line.320"></a>
+<span class="sourceLineNo">320</span><a name="line.320"></a>
 <span class="sourceLineNo">321</span>         Precision newPrecision = new Precision(sign, bits, minExponent);<a name="line.321"></a>
 <span class="sourceLineNo">322</span>         */<a name="line.322"></a>
 <span class="sourceLineNo">323</span>        Precision newPrecision = addPrecision(_precision, arg._precision);<a name="line.323"></a>
@@ -578,10 +578,10 @@
 <span class="sourceLineNo">570</span>         Precision worstCasePrecision = new Precision(new_sign, new_sign<a name="line.570"></a>
 <span class="sourceLineNo">571</span>         + newValue.bitLength(), new_exponent);<a name="line.571"></a>
 <span class="sourceLineNo">572</span>         FixPoint newVal = new FixPoint(newValue, worstCasePrecision);<a name="line.572"></a>
-<span class="sourceLineNo">573</span>        <a name="line.573"></a>
+<span class="sourceLineNo">573</span><a name="line.573"></a>
 <span class="sourceLineNo">574</span>         // 2. Requantize the value with the minimum quantization necessary<a name="line.574"></a>
 <span class="sourceLineNo">575</span>         newVal = newVal.minimumQuantization();<a name="line.575"></a>
-<span class="sourceLineNo">576</span>        <a name="line.576"></a>
+<span class="sourceLineNo">576</span><a name="line.576"></a>
 <span class="sourceLineNo">577</span>         // 3. Determine "Growth" precision for result. This will be the<a name="line.577"></a>
 <span class="sourceLineNo">578</span>         //    "maximium" of the precision of the arguments and the result.<a name="line.578"></a>
 <span class="sourceLineNo">579</span>         Precision newPrecision =<a name="line.579"></a>
@@ -679,12 +679,12 @@
 <span class="sourceLineNo">671</span>         // were unsigned, make the result signed.<a name="line.671"></a>
 <span class="sourceLineNo">672</span>         if (sign == 0 &amp;&amp; newValue.signum() == -1)<a name="line.672"></a>
 <span class="sourceLineNo">673</span>         sign = 1;<a name="line.673"></a>
-<span class="sourceLineNo">674</span>        <a name="line.674"></a>
+<span class="sourceLineNo">674</span><a name="line.674"></a>
 <span class="sourceLineNo">675</span>         int new_bits = newValue.bitLength() + sign;<a name="line.675"></a>
 <span class="sourceLineNo">676</span>         int max_bits = Math.max(_precision.getNumberOfBits(), arg._precision<a name="line.676"></a>
 <span class="sourceLineNo">677</span>         .getNumberOfBits());<a name="line.677"></a>
 <span class="sourceLineNo">678</span>         int bits = (new_bits &gt; max_bits ? new_bits : max_bits);<a name="line.678"></a>
-<span class="sourceLineNo">679</span>        <a name="line.679"></a>
+<span class="sourceLineNo">679</span><a name="line.679"></a>
 <span class="sourceLineNo">680</span>         Precision newPrecision = new Precision(sign, bits, minExponent);<a name="line.680"></a>
 <span class="sourceLineNo">681</span>         */<a name="line.681"></a>
 <span class="sourceLineNo">682</span>        Precision newPrecision = subtractPrecision(_precision, arg._precision);<a name="line.682"></a>

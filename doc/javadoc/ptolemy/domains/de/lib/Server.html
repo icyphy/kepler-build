@@ -152,7 +152,7 @@ var activeTableTab = "activeTableTab";
 </dl>
 <hr>
 <br>
-<pre>public class <a href="../../../../src-html/ptolemy/domains/de/lib/Server.html#line.82">Server</a>
+<pre>public class <a href="../../../../src-html/ptolemy/domains/de/lib/Server.html#line.83">Server</a>
 extends <a href="../../../../ptolemy/domains/de/lib/DETransformer.html" title="class in ptolemy.domains.de.lib">DETransformer</a></pre>
 <div class="block">This actor models a preemptive server with a fixed or variable service time.
  A server is either busy (serving a customer) or not busy at any given time.
@@ -489,7 +489,7 @@ extends <a href="../../../../ptolemy/domains/de/lib/DETransformer.html" title="c
 <ul class="blockList">
 <li class="blockList">
 <h4>capacity</h4>
-<pre>public&nbsp;<a href="../../../../ptolemy/data/expr/Parameter.html" title="class in ptolemy.data.expr">Parameter</a> <a href="../../../../src-html/ptolemy/domains/de/lib/Server.html#line.138">capacity</a></pre>
+<pre>public&nbsp;<a href="../../../../ptolemy/data/expr/Parameter.html" title="class in ptolemy.data.expr">Parameter</a> <a href="../../../../src-html/ptolemy/domains/de/lib/Server.html#line.139">capacity</a></pre>
 <div class="block">The capacity of the queue. If the value is positive, then
   it specifies the capacity of the queue. If it is negative
   or 0, then it specifies that the capacity is infinite.
@@ -502,7 +502,7 @@ extends <a href="../../../../ptolemy/domains/de/lib/DETransformer.html" title="c
 <ul class="blockList">
 <li class="blockList">
 <h4>size</h4>
-<pre>public&nbsp;<a href="../../../../ptolemy/actor/TypedIOPort.html" title="class in ptolemy.actor">TypedIOPort</a> <a href="../../../../src-html/ptolemy/domains/de/lib/Server.html#line.143">size</a></pre>
+<pre>public&nbsp;<a href="../../../../ptolemy/actor/TypedIOPort.html" title="class in ptolemy.actor">TypedIOPort</a> <a href="../../../../src-html/ptolemy/domains/de/lib/Server.html#line.144">size</a></pre>
 <div class="block">The current size of the queue. This port produces an output
   whenever the size changes. It has type int.</div>
 </li>
@@ -513,7 +513,7 @@ extends <a href="../../../../ptolemy/domains/de/lib/DETransformer.html" title="c
 <ul class="blockList">
 <li class="blockList">
 <h4>serviceTime</h4>
-<pre>public&nbsp;<a href="../../../../ptolemy/actor/parameters/PortParameter.html" title="class in ptolemy.actor.parameters">PortParameter</a> <a href="../../../../src-html/ptolemy/domains/de/lib/Server.html#line.148">serviceTime</a></pre>
+<pre>public&nbsp;<a href="../../../../ptolemy/actor/parameters/PortParameter.html" title="class in ptolemy.actor.parameters">PortParameter</a> <a href="../../../../src-html/ptolemy/domains/de/lib/Server.html#line.149">serviceTime</a></pre>
 <div class="block">The service time. This is a double with default 1.0.
   It is required to be non-negative.</div>
 </li>
@@ -524,7 +524,7 @@ extends <a href="../../../../ptolemy/domains/de/lib/DETransformer.html" title="c
 <ul class="blockList">
 <li class="blockList">
 <h4>priority</h4>
-<pre>public&nbsp;<a href="../../../../ptolemy/actor/parameters/PortParameter.html" title="class in ptolemy.actor.parameters">PortParameter</a> <a href="../../../../src-html/ptolemy/domains/de/lib/Server.html#line.154">priority</a></pre>
+<pre>public&nbsp;<a href="../../../../ptolemy/actor/parameters/PortParameter.html" title="class in ptolemy.actor.parameters">PortParameter</a> <a href="../../../../src-html/ptolemy/domains/de/lib/Server.html#line.155">priority</a></pre>
 <div class="block">The priority. This is a double with default 0.0.
   A higher priority implies the task has precedence over tasks
   with lower priority values.</div>
@@ -536,7 +536,7 @@ extends <a href="../../../../ptolemy/domains/de/lib/DETransformer.html" title="c
 <ul class="blockList">
 <li class="blockList">
 <h4>_nextTimeFree</h4>
-<pre>protected&nbsp;<a href="../../../../ptolemy/actor/util/Time.html" title="class in ptolemy.actor.util">Time</a> <a href="../../../../src-html/ptolemy/domains/de/lib/Server.html#line.393">_nextTimeFree</a></pre>
+<pre>protected&nbsp;<a href="../../../../ptolemy/actor/util/Time.html" title="class in ptolemy.actor.util">Time</a> <a href="../../../../src-html/ptolemy/domains/de/lib/Server.html#line.396">_nextTimeFree</a></pre>
 <div class="block">Next time the server becomes free.</div>
 </li>
 </ul>
@@ -546,7 +546,7 @@ extends <a href="../../../../ptolemy/domains/de/lib/DETransformer.html" title="c
 <ul class="blockList">
 <li class="blockList">
 <h4>_queues</h4>
-<pre>protected&nbsp;java.util.TreeMap&lt;java.lang.Double,java.util.PriorityQueue&lt;ptolemy.domains.de.lib.Server.Job&gt;&gt; <a href="../../../../src-html/ptolemy/domains/de/lib/Server.html#line.395">_queues</a></pre>
+<pre>protected&nbsp;java.util.TreeMap&lt;java.lang.Double,java.util.PriorityQueue&lt;ptolemy.domains.de.lib.Server.Job&gt;&gt; <a href="../../../../src-html/ptolemy/domains/de/lib/Server.html#line.398">_queues</a></pre>
 </li>
 </ul>
 <a name="Z:Z_queueSize">
@@ -555,7 +555,7 @@ extends <a href="../../../../ptolemy/domains/de/lib/DETransformer.html" title="c
 <ul class="blockList">
 <li class="blockList">
 <h4>_queueSize</h4>
-<pre>protected&nbsp;int <a href="../../../../src-html/ptolemy/domains/de/lib/Server.html#line.397">_queueSize</a></pre>
+<pre>protected&nbsp;int <a href="../../../../src-html/ptolemy/domains/de/lib/Server.html#line.400">_queueSize</a></pre>
 </li>
 </ul>
 <a name="Z:Z_queueCounter">
@@ -564,7 +564,7 @@ extends <a href="../../../../ptolemy/domains/de/lib/DETransformer.html" title="c
 <ul class="blockListLast">
 <li class="blockList">
 <h4>_queueCounter</h4>
-<pre>protected&nbsp;long <a href="../../../../src-html/ptolemy/domains/de/lib/Server.html#line.400">_queueCounter</a></pre>
+<pre>protected&nbsp;long <a href="../../../../src-html/ptolemy/domains/de/lib/Server.html#line.403">_queueCounter</a></pre>
 <div class="block">The counter for tie-breaking the queue by insertion order.</div>
 </li>
 </ul>
@@ -582,7 +582,7 @@ extends <a href="../../../../ptolemy/domains/de/lib/DETransformer.html" title="c
 <ul class="blockListLast">
 <li class="blockList">
 <h4>Server</h4>
-<pre>public&nbsp;<a href="../../../../src-html/ptolemy/domains/de/lib/Server.html#line.91">Server</a>(<a href="../../../../ptolemy/kernel/CompositeEntity.html" title="class in ptolemy.kernel">CompositeEntity</a>&nbsp;container,
+<pre>public&nbsp;<a href="../../../../src-html/ptolemy/domains/de/lib/Server.html#line.92">Server</a>(<a href="../../../../ptolemy/kernel/CompositeEntity.html" title="class in ptolemy.kernel">CompositeEntity</a>&nbsp;container,
               java.lang.String&nbsp;name)
        throws <a href="../../../../ptolemy/kernel/util/NameDuplicationException.html" title="class in ptolemy.kernel.util">NameDuplicationException</a>,
               <a href="../../../../ptolemy/kernel/util/IllegalActionException.html" title="class in ptolemy.kernel.util">IllegalActionException</a></pre>
@@ -613,7 +613,7 @@ extends <a href="../../../../ptolemy/domains/de/lib/DETransformer.html" title="c
 <ul class="blockList">
 <li class="blockList">
 <h4>attributeChanged</h4>
-<pre>public&nbsp;void&nbsp;<a href="../../../../src-html/ptolemy/domains/de/lib/Server.html#line.168">attributeChanged</a>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)
+<pre>public&nbsp;void&nbsp;<a href="../../../../src-html/ptolemy/domains/de/lib/Server.html#line.169">attributeChanged</a>(<a href="../../../../ptolemy/kernel/util/Attribute.html" title="class in ptolemy.kernel.util">Attribute</a>&nbsp;attribute)
                       throws <a href="../../../../ptolemy/kernel/util/IllegalActionException.html" title="class in ptolemy.kernel.util">IllegalActionException</a></pre>
 <div class="block">If the attribute is <i>serviceTime</i>, then ensure that the value
   is non-negative, and if the attribute is
@@ -636,7 +636,7 @@ extends <a href="../../../../ptolemy/domains/de/lib/DETransformer.html" title="c
 <ul class="blockList">
 <li class="blockList">
 <h4>clone</h4>
-<pre>public&nbsp;java.lang.Object&nbsp;<a href="../../../../src-html/ptolemy/domains/de/lib/Server.html#line.205">clone</a>(<a href="../../../../ptolemy/kernel/util/Workspace.html" title="class in ptolemy.kernel.util">Workspace</a>&nbsp;workspace)
+<pre>public&nbsp;java.lang.Object&nbsp;<a href="../../../../src-html/ptolemy/domains/de/lib/Server.html#line.206">clone</a>(<a href="../../../../ptolemy/kernel/util/Workspace.html" title="class in ptolemy.kernel.util">Workspace</a>&nbsp;workspace)
                        throws java.lang.CloneNotSupportedException</pre>
 <div class="block">Clone the actor into the specified workspace. Set a type
   constraint that the output type is the same as the that of input.</div>
@@ -662,7 +662,7 @@ extends <a href="../../../../ptolemy/domains/de/lib/DETransformer.html" title="c
 <ul class="blockList">
 <li class="blockList">
 <h4>declareDelayDependency</h4>
-<pre>public&nbsp;void&nbsp;<a href="../../../../src-html/ptolemy/domains/de/lib/Server.html#line.219">declareDelayDependency</a>()
+<pre>public&nbsp;void&nbsp;<a href="../../../../src-html/ptolemy/domains/de/lib/Server.html#line.221">declareDelayDependency</a>()
                             throws <a href="../../../../ptolemy/kernel/util/IllegalActionException.html" title="class in ptolemy.kernel.util">IllegalActionException</a></pre>
 <div class="block">Declare that the <i>output</i> does not depend on
   the <i>input</i>, <i>serviceTime</i>, and <i>priority</i>, in a firing.</div>
@@ -683,7 +683,7 @@ extends <a href="../../../../ptolemy/domains/de/lib/DETransformer.html" title="c
 <ul class="blockList">
 <li class="blockList">
 <h4>fire</h4>
-<pre>public&nbsp;void&nbsp;<a href="../../../../src-html/ptolemy/domains/de/lib/Server.html#line.236">fire</a>()
+<pre>public&nbsp;void&nbsp;<a href="../../../../src-html/ptolemy/domains/de/lib/Server.html#line.238">fire</a>()
           throws <a href="../../../../ptolemy/kernel/util/IllegalActionException.html" title="class in ptolemy.kernel.util">IllegalActionException</a></pre>
 <div class="block">If there is input, read it and put it in the queue.
   If the service time has expired for a token currently
@@ -707,7 +707,7 @@ extends <a href="../../../../ptolemy/domains/de/lib/DETransformer.html" title="c
 <ul class="blockList">
 <li class="blockList">
 <h4>queueSize</h4>
-<pre>protected&nbsp;int&nbsp;<a href="../../../../src-html/ptolemy/domains/de/lib/Server.html#line.285">queueSize</a>()</pre>
+<pre>protected&nbsp;int&nbsp;<a href="../../../../src-html/ptolemy/domains/de/lib/Server.html#line.288">queueSize</a>()</pre>
 </li>
 </ul>
 <a name="initialize--">
@@ -716,7 +716,7 @@ extends <a href="../../../../ptolemy/domains/de/lib/DETransformer.html" title="c
 <ul class="blockList">
 <li class="blockList">
 <h4>initialize</h4>
-<pre>public&nbsp;void&nbsp;<a href="../../../../src-html/ptolemy/domains/de/lib/Server.html#line.352">initialize</a>()
+<pre>public&nbsp;void&nbsp;<a href="../../../../src-html/ptolemy/domains/de/lib/Server.html#line.355">initialize</a>()
                 throws <a href="../../../../ptolemy/kernel/util/IllegalActionException.html" title="class in ptolemy.kernel.util">IllegalActionException</a></pre>
 <div class="block">Reset the states of the server to indicate that the server is ready
   to serve.</div>
@@ -736,7 +736,7 @@ extends <a href="../../../../ptolemy/domains/de/lib/DETransformer.html" title="c
 <ul class="blockList">
 <li class="blockList">
 <h4>postfire</h4>
-<pre>public&nbsp;boolean&nbsp;<a href="../../../../src-html/ptolemy/domains/de/lib/Server.html#line.366">postfire</a>()
+<pre>public&nbsp;boolean&nbsp;<a href="../../../../src-html/ptolemy/domains/de/lib/Server.html#line.369">postfire</a>()
                  throws <a href="../../../../ptolemy/kernel/util/IllegalActionException.html" title="class in ptolemy.kernel.util">IllegalActionException</a></pre>
 <div class="block">If the server is free and there is at least one token in the queue,
   request a firing at the current time plus the service time.</div>
@@ -758,7 +758,7 @@ extends <a href="../../../../ptolemy/domains/de/lib/DETransformer.html" title="c
 <ul class="blockListLast">
 <li class="blockList">
 <h4>wrapup</h4>
-<pre>public&nbsp;void&nbsp;<a href="../../../../src-html/ptolemy/domains/de/lib/Server.html#line.382">wrapup</a>()
+<pre>public&nbsp;void&nbsp;<a href="../../../../src-html/ptolemy/domains/de/lib/Server.html#line.385">wrapup</a>()
             throws <a href="../../../../ptolemy/kernel/util/IllegalActionException.html" title="class in ptolemy.kernel.util">IllegalActionException</a></pre>
 <div class="block">Clear the queue so that the capacity can be changed.</div>
 <dl>

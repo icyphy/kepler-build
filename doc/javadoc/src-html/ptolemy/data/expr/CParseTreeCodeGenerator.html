@@ -8,7 +8,7 @@
 <div class="sourceContainer">
 <pre><span class="sourceLineNo">001</span>/* A visitor for parse trees of the expression language that generates C code.<a name="line.1"></a>
 <span class="sourceLineNo">002</span><a name="line.2"></a>
-<span class="sourceLineNo">003</span> Copyright (c) 2003-2015 The Regents of the University of California<a name="line.3"></a>
+<span class="sourceLineNo">003</span> Copyright (c) 2003-2018 The Regents of the University of California<a name="line.3"></a>
 <span class="sourceLineNo">004</span> All rights reserved.<a name="line.4"></a>
 <span class="sourceLineNo">005</span> Permission is hereby granted, without written agreement and without<a name="line.5"></a>
 <span class="sourceLineNo">006</span> license or royalty fees, to use, copy, modify, and distribute this<a name="line.6"></a>
@@ -273,53 +273,53 @@
 <span class="sourceLineNo">265</span>     PtolemyUtilities.booleanMatrixTokenClass,<a name="line.265"></a>
 <span class="sourceLineNo">266</span>     PtolemyUtilities.booleanMatrixTokenConstructor,<a name="line.266"></a>
 <span class="sourceLineNo">267</span>     returnLocal);<a name="line.267"></a>
-<span class="sourceLineNo">268</span>    <a name="line.268"></a>
+<span class="sourceLineNo">268</span><a name="line.268"></a>
 <span class="sourceLineNo">269</span>     } else if (returnType.equals(ArrayType.v(IntType.v(),2))) {<a name="line.269"></a>
 <span class="sourceLineNo">270</span>     tokenLocal = PtolemyUtilities.addTokenLocalBefore(_body, _insertPoint, "token",<a name="line.270"></a>
 <span class="sourceLineNo">271</span>     PtolemyUtilities.intMatrixTokenClass,<a name="line.271"></a>
 <span class="sourceLineNo">272</span>     PtolemyUtilities.intMatrixTokenConstructor,<a name="line.272"></a>
 <span class="sourceLineNo">273</span>     returnLocal);<a name="line.273"></a>
-<span class="sourceLineNo">274</span>    <a name="line.274"></a>
+<span class="sourceLineNo">274</span><a name="line.274"></a>
 <span class="sourceLineNo">275</span>     } else if (returnType.equals(ArrayType.v(LongType.v(),2))) {<a name="line.275"></a>
 <span class="sourceLineNo">276</span>     tokenLocal = PtolemyUtilities.addTokenLocalBefore(_body, _insertPoint, "token",<a name="line.276"></a>
 <span class="sourceLineNo">277</span>     PtolemyUtilities.doubleMatrixTokenClass,<a name="line.277"></a>
 <span class="sourceLineNo">278</span>     PtolemyUtilities.doubleMatrixTokenConstructor,<a name="line.278"></a>
 <span class="sourceLineNo">279</span>     returnLocal);<a name="line.279"></a>
-<span class="sourceLineNo">280</span>    <a name="line.280"></a>
+<span class="sourceLineNo">280</span><a name="line.280"></a>
 <span class="sourceLineNo">281</span>     } else if (returnType.equals(ArrayType.v(DoubleType.v(),2))) {<a name="line.281"></a>
 <span class="sourceLineNo">282</span>     tokenLocal = PtolemyUtilities.addTokenLocalBefore(_body, _insertPoint, "token",<a name="line.282"></a>
 <span class="sourceLineNo">283</span>     PtolemyUtilities.doubleMatrixTokenClass,<a name="line.283"></a>
 <span class="sourceLineNo">284</span>     PtolemyUtilities.doubleMatrixTokenConstructor,<a name="line.284"></a>
 <span class="sourceLineNo">285</span>     returnLocal);<a name="line.285"></a>
-<span class="sourceLineNo">286</span>    <a name="line.286"></a>
+<span class="sourceLineNo">286</span><a name="line.286"></a>
 <span class="sourceLineNo">287</span>     } else if (returnType.equals(ArrayType.v(RefType.v("ptolemy.math.Complex"),2))) {<a name="line.287"></a>
 <span class="sourceLineNo">288</span>     tokenLocal = PtolemyUtilities.addTokenLocalBefore(_body, _insertPoint, "token",<a name="line.288"></a>
 <span class="sourceLineNo">289</span>     PtolemyUtilities.complexMatrixTokenClass,<a name="line.289"></a>
 <span class="sourceLineNo">290</span>     PtolemyUtilities.complexMatrixTokenConstructor,<a name="line.290"></a>
 <span class="sourceLineNo">291</span>     returnLocal);<a name="line.291"></a>
-<span class="sourceLineNo">292</span>    <a name="line.292"></a>
+<span class="sourceLineNo">292</span><a name="line.292"></a>
 <span class="sourceLineNo">293</span>     } else if (returnType.equals(ArrayType.v(RefType.v("ptolemy.math.FixPoint"),2))) {<a name="line.293"></a>
 <span class="sourceLineNo">294</span>     tokenLocal = PtolemyUtilities.addTokenLocalBefore(_body, _insertPoint, "token",<a name="line.294"></a>
 <span class="sourceLineNo">295</span>     PtolemyUtilities.fixMatrixTokenClass,<a name="line.295"></a>
 <span class="sourceLineNo">296</span>     PtolemyUtilities.fixMatrixTokenConstructor,<a name="line.296"></a>
 <span class="sourceLineNo">297</span>     returnLocal);<a name="line.297"></a>
-<span class="sourceLineNo">298</span>    <a name="line.298"></a>
+<span class="sourceLineNo">298</span><a name="line.298"></a>
 <span class="sourceLineNo">299</span>     } else {<a name="line.299"></a>
 <span class="sourceLineNo">300</span>     throw new IllegalActionException("unrecognized case");<a name="line.300"></a>
 <span class="sourceLineNo">301</span>     }<a name="line.301"></a>
 <span class="sourceLineNo">302</span>     return tokenLocal;<a name="line.302"></a>
 <span class="sourceLineNo">303</span>     }<a name="line.303"></a>
-<span class="sourceLineNo">304</span>    <a name="line.304"></a>
+<span class="sourceLineNo">304</span><a name="line.304"></a>
 <span class="sourceLineNo">305</span>     private Local _convertTokenArgToJavaArg(Local tokenLocal,<a name="line.305"></a>
 <span class="sourceLineNo">306</span>     ptolemy.data.type.Type tokenType,<a name="line.306"></a>
 <span class="sourceLineNo">307</span>     CachedMethod.ArgumentConversion conversion)<a name="line.307"></a>
 <span class="sourceLineNo">308</span>     throws IllegalActionException {<a name="line.308"></a>
-<span class="sourceLineNo">309</span>    <a name="line.309"></a>
+<span class="sourceLineNo">309</span><a name="line.309"></a>
 <span class="sourceLineNo">310</span>     if (conversion == CachedMethod.IDENTITY_CONVERSION) {<a name="line.310"></a>
 <span class="sourceLineNo">311</span>     Local tempLocal = Jimple.v().newLocal("arg" ,<a name="line.311"></a>
 <span class="sourceLineNo">312</span>     PtolemyUtilities.tokenType);<a name="line.312"></a>
 <span class="sourceLineNo">313</span>     _body.getLocals().add(tempLocal);<a name="line.313"></a>
-<span class="sourceLineNo">314</span>    <a name="line.314"></a>
+<span class="sourceLineNo">314</span><a name="line.314"></a>
 <span class="sourceLineNo">315</span>     // Add the new local to the list of arguments<a name="line.315"></a>
 <span class="sourceLineNo">316</span>     _units.insertBefore(<a name="line.316"></a>
 <span class="sourceLineNo">317</span>     Jimple.v().newAssignStmt(<a name="line.317"></a>
@@ -334,7 +334,7 @@
 <span class="sourceLineNo">326</span>     Local resultLocal = Jimple.v().newLocal("arg" ,<a name="line.326"></a>
 <span class="sourceLineNo">327</span>     ArrayType.v(RefType.v(PtolemyUtilities.objectClass), 1));<a name="line.327"></a>
 <span class="sourceLineNo">328</span>     _body.getLocals().add(resultLocal);<a name="line.328"></a>
-<span class="sourceLineNo">329</span>    <a name="line.329"></a>
+<span class="sourceLineNo">329</span><a name="line.329"></a>
 <span class="sourceLineNo">330</span>     // Add the new local to the list of arguments<a name="line.330"></a>
 <span class="sourceLineNo">331</span>     _units.insertBefore(<a name="line.331"></a>
 <span class="sourceLineNo">332</span>     Jimple.v().newAssignStmt(<a name="line.332"></a>
@@ -442,7 +442,7 @@
 <span class="sourceLineNo">434</span>     RefType.v("java.lang.String"));<a name="line.434"></a>
 <span class="sourceLineNo">435</span>     _body.getLocals().add(resultLocal);<a name="line.435"></a>
 <span class="sourceLineNo">436</span>     // Add the new local to the list of arguments<a name="line.436"></a>
-<span class="sourceLineNo">437</span>    <a name="line.437"></a>
+<span class="sourceLineNo">437</span><a name="line.437"></a>
 <span class="sourceLineNo">438</span>     _units.insertBefore(<a name="line.438"></a>
 <span class="sourceLineNo">439</span>     Jimple.v().newAssignStmt(<a name="line.439"></a>
 <span class="sourceLineNo">440</span>     tempLocal,<a name="line.440"></a>
@@ -464,7 +464,7 @@
 <span class="sourceLineNo">456</span>     BooleanType.v());<a name="line.456"></a>
 <span class="sourceLineNo">457</span>     _body.getLocals().add(resultLocal);<a name="line.457"></a>
 <span class="sourceLineNo">458</span>     // Add the new local to the list of arguments<a name="line.458"></a>
-<span class="sourceLineNo">459</span>    <a name="line.459"></a>
+<span class="sourceLineNo">459</span><a name="line.459"></a>
 <span class="sourceLineNo">460</span>     _units.insertBefore(<a name="line.460"></a>
 <span class="sourceLineNo">461</span>     Jimple.v().newAssignStmt(<a name="line.461"></a>
 <span class="sourceLineNo">462</span>     tempLocal,<a name="line.462"></a>
@@ -486,7 +486,7 @@
 <span class="sourceLineNo">478</span>     RefType.v("ptolemy.math.Complex"));<a name="line.478"></a>
 <span class="sourceLineNo">479</span>     _body.getLocals().add(resultLocal);<a name="line.479"></a>
 <span class="sourceLineNo">480</span>     // Add the new local to the list of arguments<a name="line.480"></a>
-<span class="sourceLineNo">481</span>    <a name="line.481"></a>
+<span class="sourceLineNo">481</span><a name="line.481"></a>
 <span class="sourceLineNo">482</span>     _units.insertBefore(<a name="line.482"></a>
 <span class="sourceLineNo">483</span>     Jimple.v().newAssignStmt(<a name="line.483"></a>
 <span class="sourceLineNo">484</span>     tempLocal,<a name="line.484"></a>
@@ -508,7 +508,7 @@
 <span class="sourceLineNo">500</span>     RefType.v("ptolemy.math.FixPoint"));<a name="line.500"></a>
 <span class="sourceLineNo">501</span>     _body.getLocals().add(resultLocal);<a name="line.501"></a>
 <span class="sourceLineNo">502</span>     // Add the new local to the list of arguments<a name="line.502"></a>
-<span class="sourceLineNo">503</span>    <a name="line.503"></a>
+<span class="sourceLineNo">503</span><a name="line.503"></a>
 <span class="sourceLineNo">504</span>     _units.insertBefore(<a name="line.504"></a>
 <span class="sourceLineNo">505</span>     Jimple.v().newAssignStmt(<a name="line.505"></a>
 <span class="sourceLineNo">506</span>     tempLocal,<a name="line.506"></a>
@@ -530,7 +530,7 @@
 <span class="sourceLineNo">522</span>     ArrayType.v(DoubleType.v(),2));<a name="line.522"></a>
 <span class="sourceLineNo">523</span>     _body.getLocals().add(resultLocal);<a name="line.523"></a>
 <span class="sourceLineNo">524</span>     // Add the new local to the list of arguments<a name="line.524"></a>
-<span class="sourceLineNo">525</span>    <a name="line.525"></a>
+<span class="sourceLineNo">525</span><a name="line.525"></a>
 <span class="sourceLineNo">526</span>     _units.insertBefore(<a name="line.526"></a>
 <span class="sourceLineNo">527</span>     Jimple.v().newAssignStmt(<a name="line.527"></a>
 <span class="sourceLineNo">528</span>     tempLocal,<a name="line.528"></a>
@@ -552,7 +552,7 @@
 <span class="sourceLineNo">544</span>     ArrayType.v(IntType.v(),2));<a name="line.544"></a>
 <span class="sourceLineNo">545</span>     _body.getLocals().add(resultLocal);<a name="line.545"></a>
 <span class="sourceLineNo">546</span>     // Add the new local to the list of arguments<a name="line.546"></a>
-<span class="sourceLineNo">547</span>    <a name="line.547"></a>
+<span class="sourceLineNo">547</span><a name="line.547"></a>
 <span class="sourceLineNo">548</span>     _units.insertBefore(<a name="line.548"></a>
 <span class="sourceLineNo">549</span>     Jimple.v().newAssignStmt(<a name="line.549"></a>
 <span class="sourceLineNo">550</span>     tempLocal,<a name="line.550"></a>
@@ -574,7 +574,7 @@
 <span class="sourceLineNo">566</span>     ArrayType.v(LongType.v(),2));<a name="line.566"></a>
 <span class="sourceLineNo">567</span>     _body.getLocals().add(resultLocal);<a name="line.567"></a>
 <span class="sourceLineNo">568</span>     // Add the new local to the list of arguments<a name="line.568"></a>
-<span class="sourceLineNo">569</span>    <a name="line.569"></a>
+<span class="sourceLineNo">569</span><a name="line.569"></a>
 <span class="sourceLineNo">570</span>     _units.insertBefore(<a name="line.570"></a>
 <span class="sourceLineNo">571</span>     Jimple.v().newAssignStmt(<a name="line.571"></a>
 <span class="sourceLineNo">572</span>     tempLocal,<a name="line.572"></a>
@@ -596,7 +596,7 @@
 <span class="sourceLineNo">588</span>     ArrayType.v(BooleanType.v(),2));<a name="line.588"></a>
 <span class="sourceLineNo">589</span>     _body.getLocals().add(resultLocal);<a name="line.589"></a>
 <span class="sourceLineNo">590</span>     // Add the new local to the list of arguments<a name="line.590"></a>
-<span class="sourceLineNo">591</span>    <a name="line.591"></a>
+<span class="sourceLineNo">591</span><a name="line.591"></a>
 <span class="sourceLineNo">592</span>     _units.insertBefore(<a name="line.592"></a>
 <span class="sourceLineNo">593</span>     Jimple.v().newAssignStmt(<a name="line.593"></a>
 <span class="sourceLineNo">594</span>     tempLocal,<a name="line.594"></a>
@@ -618,7 +618,7 @@
 <span class="sourceLineNo">610</span>     ArrayType.v(RefType.v("ptolemy.math.Complex"),2));<a name="line.610"></a>
 <span class="sourceLineNo">611</span>     _body.getLocals().add(resultLocal);<a name="line.611"></a>
 <span class="sourceLineNo">612</span>     // Add the new local to the list of arguments<a name="line.612"></a>
-<span class="sourceLineNo">613</span>    <a name="line.613"></a>
+<span class="sourceLineNo">613</span><a name="line.613"></a>
 <span class="sourceLineNo">614</span>     _units.insertBefore(<a name="line.614"></a>
 <span class="sourceLineNo">615</span>     Jimple.v().newAssignStmt(<a name="line.615"></a>
 <span class="sourceLineNo">616</span>     tempLocal,<a name="line.616"></a>
@@ -640,7 +640,7 @@
 <span class="sourceLineNo">632</span>     ArrayType.v(RefType.v("ptolemy.math.FixPoint"),2));<a name="line.632"></a>
 <span class="sourceLineNo">633</span>     _body.getLocals().add(resultLocal);<a name="line.633"></a>
 <span class="sourceLineNo">634</span>     // Add the new local to the list of arguments<a name="line.634"></a>
-<span class="sourceLineNo">635</span>    <a name="line.635"></a>
+<span class="sourceLineNo">635</span><a name="line.635"></a>
 <span class="sourceLineNo">636</span>     _units.insertBefore(<a name="line.636"></a>
 <span class="sourceLineNo">637</span>     Jimple.v().newAssignStmt(<a name="line.637"></a>
 <span class="sourceLineNo">638</span>     tempLocal,<a name="line.638"></a>
@@ -663,7 +663,7 @@
 <span class="sourceLineNo">655</span>     "CodeGeneration not supported for argument " +<a name="line.655"></a>
 <span class="sourceLineNo">656</span>     "conversion " + conversion);<a name="line.656"></a>
 <span class="sourceLineNo">657</span>     }<a name="line.657"></a>
-<span class="sourceLineNo">658</span>    <a name="line.658"></a>
+<span class="sourceLineNo">658</span><a name="line.658"></a>
 <span class="sourceLineNo">659</span>     }<a name="line.659"></a>
 <span class="sourceLineNo">660</span>     */<a name="line.660"></a>
 <span class="sourceLineNo">661</span>    @Override<a name="line.661"></a>
@@ -675,24 +675,24 @@
 <span class="sourceLineNo">667</span>        // Note that we take care to have short-circuit evaluation here.<a name="line.667"></a>
 <span class="sourceLineNo">668</span><a name="line.668"></a>
 <span class="sourceLineNo">669</span>        /* _generateChild(node, 0);<a name="line.669"></a>
-<span class="sourceLineNo">670</span>        <a name="line.670"></a>
+<span class="sourceLineNo">670</span><a name="line.670"></a>
 <span class="sourceLineNo">671</span>         Local conditionTokenLocal =<a name="line.671"></a>
 <span class="sourceLineNo">672</span>         (Local)_nodeToLocal.get(node.jjtGetChild(0));<a name="line.672"></a>
-<span class="sourceLineNo">673</span>        <a name="line.673"></a>
+<span class="sourceLineNo">673</span><a name="line.673"></a>
 <span class="sourceLineNo">674</span>         Local booleanTokenLocal = Jimple.v().newLocal("result" ,<a name="line.674"></a>
 <span class="sourceLineNo">675</span>         RefType.v(PtolemyUtilities.booleanTokenClass));<a name="line.675"></a>
 <span class="sourceLineNo">676</span>         _body.getLocals().add(booleanTokenLocal);<a name="line.676"></a>
 <span class="sourceLineNo">677</span>         Local flagLocal = Jimple.v().newLocal("result" ,<a name="line.677"></a>
 <span class="sourceLineNo">678</span>         BooleanType.v());<a name="line.678"></a>
 <span class="sourceLineNo">679</span>         _body.getLocals().add(flagLocal);<a name="line.679"></a>
-<span class="sourceLineNo">680</span>        <a name="line.680"></a>
+<span class="sourceLineNo">680</span><a name="line.680"></a>
 <span class="sourceLineNo">681</span>         Local resultLocal = Jimple.v().newLocal("result" ,<a name="line.681"></a>
 <span class="sourceLineNo">682</span>         PtolemyUtilities.tokenType);<a name="line.682"></a>
 <span class="sourceLineNo">683</span>         _body.getLocals().add(resultLocal);<a name="line.683"></a>
-<span class="sourceLineNo">684</span>        <a name="line.684"></a>
+<span class="sourceLineNo">684</span><a name="line.684"></a>
 <span class="sourceLineNo">685</span>         Stmt startTrue = Jimple.v().newNopStmt();<a name="line.685"></a>
 <span class="sourceLineNo">686</span>         Stmt endTrue = Jimple.v().newNopStmt();<a name="line.686"></a>
-<span class="sourceLineNo">687</span>        <a name="line.687"></a>
+<span class="sourceLineNo">687</span><a name="line.687"></a>
 <span class="sourceLineNo">688</span>         // Check the condition<a name="line.688"></a>
 <span class="sourceLineNo">689</span>         _units.insertBefore(<a name="line.689"></a>
 <span class="sourceLineNo">690</span>         Jimple.v().newAssignStmt(<a name="line.690"></a>
@@ -714,7 +714,7 @@
 <span class="sourceLineNo">706</span>         IntConstant.v(1)),<a name="line.706"></a>
 <span class="sourceLineNo">707</span>         startTrue),<a name="line.707"></a>
 <span class="sourceLineNo">708</span>         _insertPoint);<a name="line.708"></a>
-<span class="sourceLineNo">709</span>        <a name="line.709"></a>
+<span class="sourceLineNo">709</span><a name="line.709"></a>
 <span class="sourceLineNo">710</span>         // Otherwise, do the false branch,<a name="line.710"></a>
 <span class="sourceLineNo">711</span>         _generateChild(node, 2);<a name="line.711"></a>
 <span class="sourceLineNo">712</span>         // Assign the false result<a name="line.712"></a>
@@ -725,10 +725,10 @@
 <span class="sourceLineNo">717</span>         // And continue on.<a name="line.717"></a>
 <span class="sourceLineNo">718</span>         _units.insertBefore(Jimple.v().newGotoStmt(endTrue),<a name="line.718"></a>
 <span class="sourceLineNo">719</span>         _insertPoint);<a name="line.719"></a>
-<span class="sourceLineNo">720</span>        <a name="line.720"></a>
+<span class="sourceLineNo">720</span><a name="line.720"></a>
 <span class="sourceLineNo">721</span>         _units.insertBefore(startTrue,<a name="line.721"></a>
 <span class="sourceLineNo">722</span>         _insertPoint);<a name="line.722"></a>
-<span class="sourceLineNo">723</span>        <a name="line.723"></a>
+<span class="sourceLineNo">723</span><a name="line.723"></a>
 <span class="sourceLineNo">724</span>         // Otherwise, do the true branch,<a name="line.724"></a>
 <span class="sourceLineNo">725</span>         _generateChild(node, 1);<a name="line.725"></a>
 <span class="sourceLineNo">726</span>         // Assign the true result<a name="line.726"></a>
@@ -737,7 +737,7 @@
 <span class="sourceLineNo">729</span>         resultLocal,<a name="line.729"></a>
 <span class="sourceLineNo">730</span>         (Local)_nodeToLocal.get(node.jjtGetChild(1))), _insertPoint);<a name="line.730"></a>
 <span class="sourceLineNo">731</span>         _units.insertBefore(endTrue, _insertPoint);<a name="line.731"></a>
-<span class="sourceLineNo">732</span>        <a name="line.732"></a>
+<span class="sourceLineNo">732</span><a name="line.732"></a>
 <span class="sourceLineNo">733</span>         _nodeToLocal.put(node, resultLocal);<a name="line.733"></a>
 <span class="sourceLineNo">734</span>         */<a name="line.734"></a>
 <span class="sourceLineNo">735</span>    }<a name="line.735"></a>
@@ -816,11 +816,11 @@
 <span class="sourceLineNo">808</span><a name="line.808"></a>
 <span class="sourceLineNo">809</span>        /*    // Method calls are generally not cached...  They are repeated<a name="line.809"></a>
 <span class="sourceLineNo">810</span>         // every time the tree is evaluated.<a name="line.810"></a>
-<span class="sourceLineNo">811</span>        <a name="line.811"></a>
+<span class="sourceLineNo">811</span><a name="line.811"></a>
 <span class="sourceLineNo">812</span>         int argCount = node.jjtGetNumChildren();<a name="line.812"></a>
 <span class="sourceLineNo">813</span>         _generateAllChildren(node);<a name="line.813"></a>
 <span class="sourceLineNo">814</span>         // The first child is the token on which to invoke the method.<a name="line.814"></a>
-<span class="sourceLineNo">815</span>        <a name="line.815"></a>
+<span class="sourceLineNo">815</span><a name="line.815"></a>
 <span class="sourceLineNo">816</span>         // Handle indexing into a record.<a name="line.816"></a>
 <span class="sourceLineNo">817</span>         ptolemy.data.type.Type baseTokenType =<a name="line.817"></a>
 <span class="sourceLineNo">818</span>         ((ASTPtRootNode)node.jjtGetChild(0)).getType();<a name="line.818"></a>
@@ -840,7 +840,7 @@
 <span class="sourceLineNo">832</span>         Jimple.v().newCastExpr(<a name="line.832"></a>
 <span class="sourceLineNo">833</span>         originalBaseLocal,<a name="line.833"></a>
 <span class="sourceLineNo">834</span>         RefType.v(PtolemyUtilities.recordTokenClass))), _insertPoint);<a name="line.834"></a>
-<span class="sourceLineNo">835</span>        <a name="line.835"></a>
+<span class="sourceLineNo">835</span><a name="line.835"></a>
 <span class="sourceLineNo">836</span>         // invoke get()<a name="line.836"></a>
 <span class="sourceLineNo">837</span>         Local returnLocal = Jimple.v().newLocal("returnValue",<a name="line.837"></a>
 <span class="sourceLineNo">838</span>         RefType.v(PtolemyUtilities.tokenClass));<a name="line.838"></a>
@@ -853,46 +853,46 @@
 <span class="sourceLineNo">845</span>         PtolemyUtilities.recordGetMethod,<a name="line.845"></a>
 <span class="sourceLineNo">846</span>         StringConstant.v(node.getMethodName()))), _insertPoint);<a name="line.846"></a>
 <span class="sourceLineNo">847</span>         _nodeToLocal.put(node, returnLocal);<a name="line.847"></a>
-<span class="sourceLineNo">848</span>        <a name="line.848"></a>
+<span class="sourceLineNo">848</span><a name="line.848"></a>
 <span class="sourceLineNo">849</span>         return;<a name="line.849"></a>
 <span class="sourceLineNo">850</span>         }<a name="line.850"></a>
 <span class="sourceLineNo">851</span>         }<a name="line.851"></a>
-<span class="sourceLineNo">852</span>        <a name="line.852"></a>
+<span class="sourceLineNo">852</span><a name="line.852"></a>
 <span class="sourceLineNo">853</span>         // The array of token types that the method takes.<a name="line.853"></a>
 <span class="sourceLineNo">854</span>         ptolemy.data.type.Type[] argTypes =<a name="line.854"></a>
 <span class="sourceLineNo">855</span>         new ptolemy.data.type.Type[node.jjtGetNumChildren()];<a name="line.855"></a>
 <span class="sourceLineNo">856</span>         for (int i = 0; i &lt; node.jjtGetNumChildren(); i++) {<a name="line.856"></a>
 <span class="sourceLineNo">857</span>         argTypes[i] = ((ASTPtRootNode)node.jjtGetChild(i)).getType();<a name="line.857"></a>
 <span class="sourceLineNo">858</span>         }<a name="line.858"></a>
-<span class="sourceLineNo">859</span>        <a name="line.859"></a>
+<span class="sourceLineNo">859</span><a name="line.859"></a>
 <span class="sourceLineNo">860</span>         // Find the method...<a name="line.860"></a>
 <span class="sourceLineNo">861</span>         CachedMethod cachedMethod =<a name="line.861"></a>
 <span class="sourceLineNo">862</span>         CachedMethod.findMethod(node.getMethodName(),<a name="line.862"></a>
 <span class="sourceLineNo">863</span>         argTypes, CachedMethod.METHOD);<a name="line.863"></a>
-<span class="sourceLineNo">864</span>        <a name="line.864"></a>
+<span class="sourceLineNo">864</span><a name="line.864"></a>
 <span class="sourceLineNo">865</span>         if (!cachedMethod.isValid()) {<a name="line.865"></a>
 <span class="sourceLineNo">866</span>         throw new IllegalActionException("Function " + cachedMethod +<a name="line.866"></a>
 <span class="sourceLineNo">867</span>         " not found.");<a name="line.867"></a>
 <span class="sourceLineNo">868</span>         }<a name="line.868"></a>
-<span class="sourceLineNo">869</span>        <a name="line.869"></a>
+<span class="sourceLineNo">869</span><a name="line.869"></a>
 <span class="sourceLineNo">870</span>         if (cachedMethod instanceof CachedMethod.ArrayMapCachedMethod ||<a name="line.870"></a>
 <span class="sourceLineNo">871</span>         cachedMethod instanceof CachedMethod.MatrixMapCachedMethod) {<a name="line.871"></a>
 <span class="sourceLineNo">872</span>         throw new IllegalActionException(<a name="line.872"></a>
 <span class="sourceLineNo">873</span>         "CodeGeneration not supported for " +<a name="line.873"></a>
 <span class="sourceLineNo">874</span>         cachedMethod.getClass());<a name="line.874"></a>
 <span class="sourceLineNo">875</span>         }<a name="line.875"></a>
-<span class="sourceLineNo">876</span>        <a name="line.876"></a>
+<span class="sourceLineNo">876</span><a name="line.876"></a>
 <span class="sourceLineNo">877</span>         Method method = cachedMethod.getMethod();<a name="line.877"></a>
-<span class="sourceLineNo">878</span>        <a name="line.878"></a>
+<span class="sourceLineNo">878</span><a name="line.878"></a>
 <span class="sourceLineNo">879</span>         // Find the corresponding soot method.<a name="line.879"></a>
 <span class="sourceLineNo">880</span>         SootMethod sootMethod = SootUtilities.getSootMethodForMethod(method);<a name="line.880"></a>
-<span class="sourceLineNo">881</span>        <a name="line.881"></a>
+<span class="sourceLineNo">881</span><a name="line.881"></a>
 <span class="sourceLineNo">882</span>         Local originalBaseLocal = (Local)_nodeToLocal.get(node.jjtGetChild(0));<a name="line.882"></a>
 <span class="sourceLineNo">883</span>         RefType baseType = RefType.v(sootMethod.getDeclaringClass());<a name="line.883"></a>
 <span class="sourceLineNo">884</span>         Local baseLocal = Jimple.v().newLocal("base",<a name="line.884"></a>
 <span class="sourceLineNo">885</span>         baseType);<a name="line.885"></a>
 <span class="sourceLineNo">886</span>         _body.getLocals().add(baseLocal);<a name="line.886"></a>
-<span class="sourceLineNo">887</span>        <a name="line.887"></a>
+<span class="sourceLineNo">887</span><a name="line.887"></a>
 <span class="sourceLineNo">888</span>         if (cachedMethod instanceof CachedMethod.BaseConvertCachedMethod) {<a name="line.888"></a>
 <span class="sourceLineNo">889</span>         RefType tempBaseType = PtolemyUtilities.getSootTypeForTokenType(<a name="line.889"></a>
 <span class="sourceLineNo">890</span>         argTypes[0]);<a name="line.890"></a>
@@ -914,38 +914,38 @@
 <span class="sourceLineNo">906</span>         originalBaseLocal,<a name="line.906"></a>
 <span class="sourceLineNo">907</span>         baseType)), _insertPoint);<a name="line.907"></a>
 <span class="sourceLineNo">908</span>         }<a name="line.908"></a>
-<span class="sourceLineNo">909</span>        <a name="line.909"></a>
-<span class="sourceLineNo">910</span>        <a name="line.910"></a>
+<span class="sourceLineNo">909</span><a name="line.909"></a>
+<span class="sourceLineNo">910</span><a name="line.910"></a>
 <span class="sourceLineNo">911</span>         // The list of locals that are arguments to the function.<a name="line.911"></a>
 <span class="sourceLineNo">912</span>         List args = new LinkedList();<a name="line.912"></a>
-<span class="sourceLineNo">913</span>        <a name="line.913"></a>
+<span class="sourceLineNo">913</span><a name="line.913"></a>
 <span class="sourceLineNo">914</span>         CachedMethod.ArgumentConversion[] conversions =<a name="line.914"></a>
 <span class="sourceLineNo">915</span>         cachedMethod.getConversions();<a name="line.915"></a>
 <span class="sourceLineNo">916</span>         for (int i = 1; i &lt; node.jjtGetNumChildren(); i++) {<a name="line.916"></a>
 <span class="sourceLineNo">917</span>         Local tokenLocal = (Local)_nodeToLocal.get(node.jjtGetChild(i));<a name="line.917"></a>
-<span class="sourceLineNo">918</span>        <a name="line.918"></a>
+<span class="sourceLineNo">918</span><a name="line.918"></a>
 <span class="sourceLineNo">919</span>         // Insert the appropriate conversion.<a name="line.919"></a>
 <span class="sourceLineNo">920</span>         Local argLocal = _convertTokenArgToJavaArg(<a name="line.920"></a>
 <span class="sourceLineNo">921</span>         tokenLocal, argTypes[i-1], conversions[i-1]);<a name="line.921"></a>
 <span class="sourceLineNo">922</span>         args.add(argLocal);<a name="line.922"></a>
 <span class="sourceLineNo">923</span>         }<a name="line.923"></a>
-<span class="sourceLineNo">924</span>        <a name="line.924"></a>
+<span class="sourceLineNo">924</span><a name="line.924"></a>
 <span class="sourceLineNo">925</span>         Type returnType = sootMethod.getReturnType();<a name="line.925"></a>
 <span class="sourceLineNo">926</span>         Local returnLocal = Jimple.v().newLocal("returnValue",<a name="line.926"></a>
 <span class="sourceLineNo">927</span>         returnType);<a name="line.927"></a>
 <span class="sourceLineNo">928</span>         _body.getLocals().add(returnLocal);<a name="line.928"></a>
-<span class="sourceLineNo">929</span>        <a name="line.929"></a>
+<span class="sourceLineNo">929</span><a name="line.929"></a>
 <span class="sourceLineNo">930</span>         // Actually invoke the method.<a name="line.930"></a>
 <span class="sourceLineNo">931</span>         _units.insertBefore(<a name="line.931"></a>
 <span class="sourceLineNo">932</span>         Jimple.v().newAssignStmt(<a name="line.932"></a>
 <span class="sourceLineNo">933</span>         returnLocal,<a name="line.933"></a>
 <span class="sourceLineNo">934</span>         Jimple.v().newVirtualInvokeExpr(<a name="line.934"></a>
 <span class="sourceLineNo">935</span>         baseLocal, sootMethod, args)), _insertPoint);<a name="line.935"></a>
-<span class="sourceLineNo">936</span>        <a name="line.936"></a>
+<span class="sourceLineNo">936</span><a name="line.936"></a>
 <span class="sourceLineNo">937</span>         // Convert the result back to a token.<a name="line.937"></a>
 <span class="sourceLineNo">938</span>         Local tokenLocal = _convertJavaResultToToken(returnLocal, returnType);<a name="line.938"></a>
-<span class="sourceLineNo">939</span>        <a name="line.939"></a>
-<span class="sourceLineNo">940</span>        <a name="line.940"></a>
+<span class="sourceLineNo">939</span><a name="line.939"></a>
+<span class="sourceLineNo">940</span><a name="line.940"></a>
 <span class="sourceLineNo">941</span>         //      RefType objectType = RefType.v(PtolemyUtilities.objectClass);<a name="line.941"></a>
 <span class="sourceLineNo">942</span>         //         Local argValuesLocal = Jimple.v().newLocal("tokenArray",<a name="line.942"></a>
 <span class="sourceLineNo">943</span>         //                 ArrayType.v(objectType, 1));<a name="line.943"></a>
@@ -956,7 +956,7 @@
 <span class="sourceLineNo">948</span>         //                         Jimple.v().newNewArrayExpr(<a name="line.948"></a>
 <span class="sourceLineNo">949</span>         //                                 objectType,<a name="line.949"></a>
 <span class="sourceLineNo">950</span>         //                                 IntConstant.v(node.jjtGetNumChildren()))));<a name="line.950"></a>
-<span class="sourceLineNo">951</span>        <a name="line.951"></a>
+<span class="sourceLineNo">951</span><a name="line.951"></a>
 <span class="sourceLineNo">952</span>         //         for (int i = 0; i &lt; node.jjtGetNumChildren(); i++) {<a name="line.952"></a>
 <span class="sourceLineNo">953</span>         //             _units.insertBefore(<a name="line.953"></a>
 <span class="sourceLineNo">954</span>         //                     Jimple.v().newAssignStmt(<a name="line.954"></a>
@@ -965,7 +965,7 @@
 <span class="sourceLineNo">957</span>         //                                     IntConstant.v(i)),<a name="line.957"></a>
 <span class="sourceLineNo">958</span>         //                             (Local)_nodeToLocal.get(node.jjtGetChild(i))));<a name="line.958"></a>
 <span class="sourceLineNo">959</span>         //         }<a name="line.959"></a>
-<span class="sourceLineNo">960</span>        <a name="line.960"></a>
+<span class="sourceLineNo">960</span><a name="line.960"></a>
 <span class="sourceLineNo">961</span>         //         RefType typeType = RefType.v("ptolemy.data.type.Type");<a name="line.961"></a>
 <span class="sourceLineNo">962</span>         //         Local argTypesLocal = Jimple.v().newLocal("tokenTypes",<a name="line.962"></a>
 <span class="sourceLineNo">963</span>         //                 ArrayType.v(typeType, 1));<a name="line.963"></a>
@@ -976,24 +976,24 @@
 <span class="sourceLineNo">968</span>         //         Local tokenLocal = Jimple.v().newLocal("token",<a name="line.968"></a>
 <span class="sourceLineNo">969</span>         //                 PtolemyUtilities.tokenType);<a name="line.969"></a>
 <span class="sourceLineNo">970</span>         //         _body.getLocals().add(tokenLocal);<a name="line.970"></a>
-<span class="sourceLineNo">971</span>        <a name="line.971"></a>
+<span class="sourceLineNo">971</span><a name="line.971"></a>
 <span class="sourceLineNo">972</span>         //         _units.insertBefore(<a name="line.972"></a>
 <span class="sourceLineNo">973</span>         //                 Jimple.v().newAssignStmt(<a name="line.973"></a>
 <span class="sourceLineNo">974</span>         //                         argTypesLocal,<a name="line.974"></a>
 <span class="sourceLineNo">975</span>         //                         Jimple.v().newNewArrayExpr(<a name="line.975"></a>
 <span class="sourceLineNo">976</span>         //                                 typeType,<a name="line.976"></a>
 <span class="sourceLineNo">977</span>         //                                 IntConstant.v(argCount))));<a name="line.977"></a>
-<span class="sourceLineNo">978</span>        <a name="line.978"></a>
+<span class="sourceLineNo">978</span><a name="line.978"></a>
 <span class="sourceLineNo">979</span>         //         Local indexLocal = Jimple.v().newLocal("index", IntType.v());<a name="line.979"></a>
 <span class="sourceLineNo">980</span>         //         _body.getLocals().add(indexLocal);<a name="line.980"></a>
-<span class="sourceLineNo">981</span>        <a name="line.981"></a>
+<span class="sourceLineNo">981</span><a name="line.981"></a>
 <span class="sourceLineNo">982</span>         //         // The list of initializer instructions.<a name="line.982"></a>
 <span class="sourceLineNo">983</span>         //         List initializerList = new LinkedList();<a name="line.983"></a>
 <span class="sourceLineNo">984</span>         //         initializerList.add(<a name="line.984"></a>
 <span class="sourceLineNo">985</span>         //                 Jimple.v().newAssignStmt(<a name="line.985"></a>
 <span class="sourceLineNo">986</span>         //                         indexLocal,<a name="line.986"></a>
 <span class="sourceLineNo">987</span>         //                         IntConstant.v(0)));<a name="line.987"></a>
-<span class="sourceLineNo">988</span>        <a name="line.988"></a>
+<span class="sourceLineNo">988</span><a name="line.988"></a>
 <span class="sourceLineNo">989</span>         //         // The list of body instructions.<a name="line.989"></a>
 <span class="sourceLineNo">990</span>         //         List bodyList = new LinkedList();<a name="line.990"></a>
 <span class="sourceLineNo">991</span>         //         bodyList.add(<a name="line.991"></a>
@@ -1014,8 +1014,8 @@
 <span class="sourceLineNo">1006</span>         //                                 argTypesLocal,<a name="line.1006"></a>
 <span class="sourceLineNo">1007</span>         //                                 indexLocal),<a name="line.1007"></a>
 <span class="sourceLineNo">1008</span>         //                         typeLocal));<a name="line.1008"></a>
-<span class="sourceLineNo">1009</span>        <a name="line.1009"></a>
-<span class="sourceLineNo">1010</span>        <a name="line.1010"></a>
+<span class="sourceLineNo">1009</span><a name="line.1009"></a>
+<span class="sourceLineNo">1010</span><a name="line.1010"></a>
 <span class="sourceLineNo">1011</span>         //         // Increment the index.<a name="line.1011"></a>
 <span class="sourceLineNo">1012</span>         //         bodyList.add(<a name="line.1012"></a>
 <span class="sourceLineNo">1013</span>         //                 Jimple.v().newAssignStmt(<a name="line.1013"></a>
@@ -1023,21 +1023,21 @@
 <span class="sourceLineNo">1015</span>         //                         Jimple.v().newAddExpr(<a name="line.1015"></a>
 <span class="sourceLineNo">1016</span>         //                                 indexLocal,<a name="line.1016"></a>
 <span class="sourceLineNo">1017</span>         //                                 IntConstant.v(1))));<a name="line.1017"></a>
-<span class="sourceLineNo">1018</span>        <a name="line.1018"></a>
+<span class="sourceLineNo">1018</span><a name="line.1018"></a>
 <span class="sourceLineNo">1019</span>         //         Expr conditionalExpr =<a name="line.1019"></a>
 <span class="sourceLineNo">1020</span>         //             Jimple.v().newLtExpr(<a name="line.1020"></a>
 <span class="sourceLineNo">1021</span>         //                     indexLocal,<a name="line.1021"></a>
 <span class="sourceLineNo">1022</span>         //                     IntConstant.v(argCount));<a name="line.1022"></a>
-<span class="sourceLineNo">1023</span>        <a name="line.1023"></a>
+<span class="sourceLineNo">1023</span><a name="line.1023"></a>
 <span class="sourceLineNo">1024</span>         //         Stmt stmt = Jimple.v().newNopStmt();<a name="line.1024"></a>
 <span class="sourceLineNo">1025</span>         //         _units.insertBefore(stmt);<a name="line.1025"></a>
-<span class="sourceLineNo">1026</span>        <a name="line.1026"></a>
+<span class="sourceLineNo">1026</span><a name="line.1026"></a>
 <span class="sourceLineNo">1027</span>         //         SootUtilities.createForLoopBefore(_body,<a name="line.1027"></a>
 <span class="sourceLineNo">1028</span>         //                 stmt,<a name="line.1028"></a>
 <span class="sourceLineNo">1029</span>         //                 initializerList,<a name="line.1029"></a>
 <span class="sourceLineNo">1030</span>         //                 bodyList,<a name="line.1030"></a>
 <span class="sourceLineNo">1031</span>         //                 conditionalExpr);<a name="line.1031"></a>
-<span class="sourceLineNo">1032</span>        <a name="line.1032"></a>
+<span class="sourceLineNo">1032</span><a name="line.1032"></a>
 <span class="sourceLineNo">1033</span>         //         SootMethod methodCallEvaluationMethod =<a name="line.1033"></a>
 <span class="sourceLineNo">1034</span>         //             Scene.v().getMethod("&lt;ptolemy.data.expr.ParseTreeEvaluator: ptolemy.data.Token methodCall(java.lang.String,int,ptolemy.data.type.Type[],java.lang.Object[])&gt;");<a name="line.1034"></a>
 <span class="sourceLineNo">1035</span>         //         List argList = new ArrayList();<a name="line.1035"></a>
@@ -1045,14 +1045,14 @@
 <span class="sourceLineNo">1037</span>         //         argList.add(IntConstant.v(argCount));<a name="line.1037"></a>
 <span class="sourceLineNo">1038</span>         //         argList.add(argTypesLocal);<a name="line.1038"></a>
 <span class="sourceLineNo">1039</span>         //         argList.add(argValuesLocal);<a name="line.1039"></a>
-<span class="sourceLineNo">1040</span>        <a name="line.1040"></a>
+<span class="sourceLineNo">1040</span><a name="line.1040"></a>
 <span class="sourceLineNo">1041</span>         //         _units.insertBefore(<a name="line.1041"></a>
 <span class="sourceLineNo">1042</span>         //                 Jimple.v().newAssignStmt(<a name="line.1042"></a>
 <span class="sourceLineNo">1043</span>         //                         tokenLocal,<a name="line.1043"></a>
 <span class="sourceLineNo">1044</span>         //                         Jimple.v().newStaticInvokeExpr(<a name="line.1044"></a>
 <span class="sourceLineNo">1045</span>         //                                 methodCallEvaluationMethod,<a name="line.1045"></a>
 <span class="sourceLineNo">1046</span>         //                                 argList)));<a name="line.1046"></a>
-<span class="sourceLineNo">1047</span>        <a name="line.1047"></a>
+<span class="sourceLineNo">1047</span><a name="line.1047"></a>
 <span class="sourceLineNo">1048</span>         _nodeToLocal.put(node, tokenLocal);<a name="line.1048"></a>
 <span class="sourceLineNo">1049</span>         */<a name="line.1049"></a>
 <span class="sourceLineNo">1050</span>    }<a name="line.1050"></a>

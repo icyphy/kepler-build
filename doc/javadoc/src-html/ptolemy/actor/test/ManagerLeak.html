@@ -8,7 +8,7 @@
 <div class="sourceContainer">
 <pre><span class="sourceLineNo">001</span>// Simple test model for testing for leaks in Manager.<a name="line.1"></a>
 <span class="sourceLineNo">002</span>/*<a name="line.2"></a>
-<span class="sourceLineNo">003</span>   Copyright (c) 2017 The Regents of the University of California.<a name="line.3"></a>
+<span class="sourceLineNo">003</span>   Copyright (c) 2017-2018 The Regents of the University of California.<a name="line.3"></a>
 <span class="sourceLineNo">004</span>   All rights reserved.<a name="line.4"></a>
 <span class="sourceLineNo">005</span>   Permission is hereby granted, without written agreement and without<a name="line.5"></a>
 <span class="sourceLineNo">006</span>   license or royalty fees, to use, copy, modify, and distribute this<a name="line.6"></a>
@@ -50,51 +50,53 @@
 <span class="sourceLineNo">042</span> *  See https://projects.ecoinformatics.org/ecoinfo/issues/7190<a name="line.42"></a>
 <span class="sourceLineNo">043</span> *<a name="line.43"></a>
 <span class="sourceLineNo">044</span> *  @author Christpher Brooks, based on leak.java by Daniel Crawl<a name="line.44"></a>
-<span class="sourceLineNo">045</span> *  @version $Id$<a name="line.45"></a>
-<span class="sourceLineNo">046</span> */<a name="line.46"></a>
-<span class="sourceLineNo">047</span>public class ManagerLeak {<a name="line.47"></a>
-<span class="sourceLineNo">048</span><a name="line.48"></a>
-<span class="sourceLineNo">049</span>    public void go() throws Throwable {<a name="line.49"></a>
-<span class="sourceLineNo">050</span>        TypedCompositeActor top = new TypedCompositeActor();<a name="line.50"></a>
-<span class="sourceLineNo">051</span>        Manager manager = new Manager();<a name="line.51"></a>
-<span class="sourceLineNo">052</span>        SDFDirector director = new SDFDirector();<a name="line.52"></a>
-<span class="sourceLineNo">053</span>        top.setDirector(director);<a name="line.53"></a>
-<span class="sourceLineNo">054</span>        top.setName("top");<a name="line.54"></a>
-<span class="sourceLineNo">055</span>        top.setManager(manager);<a name="line.55"></a>
-<span class="sourceLineNo">056</span><a name="line.56"></a>
-<span class="sourceLineNo">057</span>        Parameter iterations = (Parameter) director.getAttribute("iterations");<a name="line.57"></a>
-<span class="sourceLineNo">058</span>        iterations.setToken(new IntToken(3));<a name="line.58"></a>
-<span class="sourceLineNo">059</span><a name="line.59"></a>
-<span class="sourceLineNo">060</span>        Ramp ramp = new Ramp(top, "ramp");<a name="line.60"></a>
-<span class="sourceLineNo">061</span>        Recorder recorder = new Recorder(top, "recorder");<a name="line.61"></a>
-<span class="sourceLineNo">062</span>        top.connect(ramp.output, recorder.input);<a name="line.62"></a>
-<span class="sourceLineNo">063</span><a name="line.63"></a>
-<span class="sourceLineNo">064</span>        manager.run();<a name="line.64"></a>
+<span class="sourceLineNo">045</span>@version $Id$<a name="line.45"></a>
+<span class="sourceLineNo">046</span>@since Ptolemy II 11.0<a name="line.46"></a>
+<span class="sourceLineNo">047</span> *  @version $Id$<a name="line.47"></a>
+<span class="sourceLineNo">048</span> */<a name="line.48"></a>
+<span class="sourceLineNo">049</span>public class ManagerLeak {<a name="line.49"></a>
+<span class="sourceLineNo">050</span><a name="line.50"></a>
+<span class="sourceLineNo">051</span>    public void go() throws Throwable {<a name="line.51"></a>
+<span class="sourceLineNo">052</span>        TypedCompositeActor top = new TypedCompositeActor();<a name="line.52"></a>
+<span class="sourceLineNo">053</span>        Manager manager = new Manager();<a name="line.53"></a>
+<span class="sourceLineNo">054</span>        SDFDirector director = new SDFDirector();<a name="line.54"></a>
+<span class="sourceLineNo">055</span>        top.setDirector(director);<a name="line.55"></a>
+<span class="sourceLineNo">056</span>        top.setName("top");<a name="line.56"></a>
+<span class="sourceLineNo">057</span>        top.setManager(manager);<a name="line.57"></a>
+<span class="sourceLineNo">058</span><a name="line.58"></a>
+<span class="sourceLineNo">059</span>        Parameter iterations = (Parameter) director.getAttribute("iterations");<a name="line.59"></a>
+<span class="sourceLineNo">060</span>        iterations.setToken(new IntToken(3));<a name="line.60"></a>
+<span class="sourceLineNo">061</span><a name="line.61"></a>
+<span class="sourceLineNo">062</span>        Ramp ramp = new Ramp(top, "ramp");<a name="line.62"></a>
+<span class="sourceLineNo">063</span>        Recorder recorder = new Recorder(top, "recorder");<a name="line.63"></a>
+<span class="sourceLineNo">064</span>        top.connect(ramp.output, recorder.input);<a name="line.64"></a>
 <span class="sourceLineNo">065</span><a name="line.65"></a>
-<span class="sourceLineNo">066</span>        manager.execute();<a name="line.66"></a>
+<span class="sourceLineNo">066</span>        manager.run();<a name="line.66"></a>
 <span class="sourceLineNo">067</span><a name="line.67"></a>
-<span class="sourceLineNo">068</span>        manager.run();<a name="line.68"></a>
+<span class="sourceLineNo">068</span>        manager.execute();<a name="line.68"></a>
 <span class="sourceLineNo">069</span><a name="line.69"></a>
-<span class="sourceLineNo">070</span>        top.setManager(null);<a name="line.70"></a>
-<span class="sourceLineNo">071</span>        top.setContainer(null);<a name="line.71"></a>
-<span class="sourceLineNo">072</span><a name="line.72"></a>
-<span class="sourceLineNo">073</span>        manager = null;<a name="line.73"></a>
-<span class="sourceLineNo">074</span>    }<a name="line.74"></a>
-<span class="sourceLineNo">075</span><a name="line.75"></a>
-<span class="sourceLineNo">076</span>    public static void main(String[] args) {<a name="line.76"></a>
-<span class="sourceLineNo">077</span>        try {<a name="line.77"></a>
-<span class="sourceLineNo">078</span>            ManagerLeak managerLeak = new ManagerLeak();<a name="line.78"></a>
-<span class="sourceLineNo">079</span>            managerLeak.go();<a name="line.79"></a>
-<span class="sourceLineNo">080</span>            System.gc();<a name="line.80"></a>
-<span class="sourceLineNo">081</span><a name="line.81"></a>
-<span class="sourceLineNo">082</span>            System.out.println("Sleeping...");<a name="line.82"></a>
-<span class="sourceLineNo">083</span>            Thread.sleep(100000L);<a name="line.83"></a>
-<span class="sourceLineNo">084</span>        } catch (Throwable t) {<a name="line.84"></a>
-<span class="sourceLineNo">085</span>            System.err.println("caught: " + t);<a name="line.85"></a>
-<span class="sourceLineNo">086</span>        }<a name="line.86"></a>
-<span class="sourceLineNo">087</span>    }<a name="line.87"></a>
-<span class="sourceLineNo">088</span><a name="line.88"></a>
-<span class="sourceLineNo">089</span>}<a name="line.89"></a>
+<span class="sourceLineNo">070</span>        manager.run();<a name="line.70"></a>
+<span class="sourceLineNo">071</span><a name="line.71"></a>
+<span class="sourceLineNo">072</span>        top.setManager(null);<a name="line.72"></a>
+<span class="sourceLineNo">073</span>        top.setContainer(null);<a name="line.73"></a>
+<span class="sourceLineNo">074</span><a name="line.74"></a>
+<span class="sourceLineNo">075</span>        manager = null;<a name="line.75"></a>
+<span class="sourceLineNo">076</span>    }<a name="line.76"></a>
+<span class="sourceLineNo">077</span><a name="line.77"></a>
+<span class="sourceLineNo">078</span>    public static void main(String[] args) {<a name="line.78"></a>
+<span class="sourceLineNo">079</span>        try {<a name="line.79"></a>
+<span class="sourceLineNo">080</span>            ManagerLeak managerLeak = new ManagerLeak();<a name="line.80"></a>
+<span class="sourceLineNo">081</span>            managerLeak.go();<a name="line.81"></a>
+<span class="sourceLineNo">082</span>            System.gc();<a name="line.82"></a>
+<span class="sourceLineNo">083</span><a name="line.83"></a>
+<span class="sourceLineNo">084</span>            System.out.println("Sleeping...");<a name="line.84"></a>
+<span class="sourceLineNo">085</span>            Thread.sleep(100000L);<a name="line.85"></a>
+<span class="sourceLineNo">086</span>        } catch (Throwable t) {<a name="line.86"></a>
+<span class="sourceLineNo">087</span>            System.err.println("caught: " + t);<a name="line.87"></a>
+<span class="sourceLineNo">088</span>        }<a name="line.88"></a>
+<span class="sourceLineNo">089</span>    }<a name="line.89"></a>
+<span class="sourceLineNo">090</span><a name="line.90"></a>
+<span class="sourceLineNo">091</span>}<a name="line.91"></a>
 
 
 

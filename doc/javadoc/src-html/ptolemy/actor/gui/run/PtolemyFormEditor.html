@@ -8,7 +8,7 @@
 <div class="sourceContainer">
 <pre><span class="sourceLineNo">001</span>/* A panel for editing the layout of a customizable run control panel.<a name="line.1"></a>
 <span class="sourceLineNo">002</span><a name="line.2"></a>
-<span class="sourceLineNo">003</span> Copyright (c) 2007-2016 The Regents of the University of California.<a name="line.3"></a>
+<span class="sourceLineNo">003</span> Copyright (c) 2007-2018 The Regents of the University of California.<a name="line.3"></a>
 <span class="sourceLineNo">004</span> All rights reserved.<a name="line.4"></a>
 <span class="sourceLineNo">005</span> Permission is hereby granted, without written agreement and without<a name="line.5"></a>
 <span class="sourceLineNo">006</span> license or royalty fees, to use, copy, modify, and distribute this<a name="line.6"></a>
@@ -35,7 +35,7 @@
 <span class="sourceLineNo">027</span> This class is based on FormEditor by Michael Connor, which<a name="line.27"></a>
 <span class="sourceLineNo">028</span> bears the following copyright:<a name="line.28"></a>
 <span class="sourceLineNo">029</span><a name="line.29"></a>
-<span class="sourceLineNo">030</span> * Copyright (c) 2004-2016 by Michael Connor. All Rights Reserved.<a name="line.30"></a>
+<span class="sourceLineNo">030</span> * Copyright (c) 2004-2018 by Michael Connor. All Rights Reserved.<a name="line.30"></a>
 <span class="sourceLineNo">031</span> *<a name="line.31"></a>
 <span class="sourceLineNo">032</span> * Redistribution and use in source and binary forms, with or without<a name="line.32"></a>
 <span class="sourceLineNo">033</span> * modification, are permitted provided that the following conditions are met:<a name="line.33"></a>
@@ -376,32 +376,32 @@
 <span class="sourceLineNo">368</span><a name="line.368"></a>
 <span class="sourceLineNo">369</span>        /* FIXME<a name="line.369"></a>
 <span class="sourceLineNo">370</span>         *<a name="line.370"></a>
-<span class="sourceLineNo">371</span>        <a name="line.371"></a>
+<span class="sourceLineNo">371</span><a name="line.371"></a>
 <span class="sourceLineNo">372</span>        NewComponentDialog dlg = NewComponentDialog.editDialog(<a name="line.372"></a>
 <span class="sourceLineNo">373</span>                (JFrame) _layoutFrame, componentDef);<a name="line.373"></a>
 <span class="sourceLineNo">374</span>        if (!dlg.succeeded())<a name="line.374"></a>
 <span class="sourceLineNo">375</span>            return false;<a name="line.375"></a>
-<span class="sourceLineNo">376</span>        <a name="line.376"></a>
+<span class="sourceLineNo">376</span><a name="line.376"></a>
 <span class="sourceLineNo">377</span>        componentDef.name = uniqueName(dlg.getComponentName(), component);<a name="line.377"></a>
 <span class="sourceLineNo">378</span>        String newname = componentDef.name;<a name="line.378"></a>
-<span class="sourceLineNo">379</span>        <a name="line.379"></a>
+<span class="sourceLineNo">379</span><a name="line.379"></a>
 <span class="sourceLineNo">380</span>        Component newcomponent = dlg.getInstance();<a name="line.380"></a>
 <span class="sourceLineNo">381</span>        containerLayout.removeLayoutComponent(component);<a name="line.381"></a>
 <span class="sourceLineNo">382</span>        containerLayout.addComponent(newname, componentDef, cellConstraints);<a name="line.382"></a>
-<span class="sourceLineNo">383</span>        <a name="line.383"></a>
+<span class="sourceLineNo">383</span><a name="line.383"></a>
 <span class="sourceLineNo">384</span>        container.remove(component);<a name="line.384"></a>
 <span class="sourceLineNo">385</span>        container.add(newcomponent, newname);<a name="line.385"></a>
-<span class="sourceLineNo">386</span>        <a name="line.386"></a>
+<span class="sourceLineNo">386</span><a name="line.386"></a>
 <span class="sourceLineNo">387</span>        newComponents.remove(component);<a name="line.387"></a>
 <span class="sourceLineNo">388</span>        newComponents.add(newcomponent);<a name="line.388"></a>
-<span class="sourceLineNo">389</span>        <a name="line.389"></a>
+<span class="sourceLineNo">389</span><a name="line.389"></a>
 <span class="sourceLineNo">390</span>        if (componentDef.isContainer) {<a name="line.390"></a>
 <span class="sourceLineNo">391</span>            // @todo losing components INSIDE the container!!<a name="line.391"></a>
 <span class="sourceLineNo">392</span>            //layoutFrame.replaceContainer(name, newName, (Container) newcomponent);<a name="line.392"></a>
 <span class="sourceLineNo">393</span>            layoutFrame.removeContainer(name);<a name="line.393"></a>
 <span class="sourceLineNo">394</span>            layoutFrame.addContainer(newname, (Container) newcomponent);<a name="line.394"></a>
 <span class="sourceLineNo">395</span>        }<a name="line.395"></a>
-<span class="sourceLineNo">396</span>        <a name="line.396"></a>
+<span class="sourceLineNo">396</span><a name="line.396"></a>
 <span class="sourceLineNo">397</span>        updateLayout(newcomponent);<a name="line.397"></a>
 <span class="sourceLineNo">398</span>        _updateList();<a name="line.398"></a>
 <span class="sourceLineNo">399</span>         */<a name="line.399"></a>

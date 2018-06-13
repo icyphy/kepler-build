@@ -8,7 +8,7 @@
 <div class="sourceContainer">
 <pre><span class="sourceLineNo">001</span>/** A class representing the type of a RecordToken.<a name="line.1"></a>
 <span class="sourceLineNo">002</span><a name="line.2"></a>
-<span class="sourceLineNo">003</span> Copyright (c) 1997-2014 The Regents of the University of California.<a name="line.3"></a>
+<span class="sourceLineNo">003</span> Copyright (c) 1997-2018 The Regents of the University of California.<a name="line.3"></a>
 <span class="sourceLineNo">004</span> All rights reserved.<a name="line.4"></a>
 <span class="sourceLineNo">005</span> Permission is hereby granted, without written agreement and without<a name="line.5"></a>
 <span class="sourceLineNo">006</span> license or royalty fees, to use, copy, modify, and distribute this<a name="line.6"></a>
@@ -134,29 +134,29 @@
 <span class="sourceLineNo">126</span>         // The converted token has the same set of labels as the argument.<a name="line.126"></a>
 <span class="sourceLineNo">127</span>         // That is, fields not in this type are not cut off.<a name="line.127"></a>
 <span class="sourceLineNo">128</span>         Object[] labelArray = functionToken.labelSet().toArray();<a name="line.128"></a>
-<span class="sourceLineNo">129</span>        <a name="line.129"></a>
+<span class="sourceLineNo">129</span><a name="line.129"></a>
 <span class="sourceLineNo">130</span>         // Arrays that will be used to create the new token.<a name="line.130"></a>
 <span class="sourceLineNo">131</span>         String[] labelStringArray = new String[labelArray.length];<a name="line.131"></a>
 <span class="sourceLineNo">132</span>         Token[] values = new Token[labelArray.length];<a name="line.132"></a>
-<span class="sourceLineNo">133</span>        <a name="line.133"></a>
+<span class="sourceLineNo">133</span><a name="line.133"></a>
 <span class="sourceLineNo">134</span>         for (int i = 0; i &lt; labelArray.length; i++) {<a name="line.134"></a>
 <span class="sourceLineNo">135</span>         String label = (String)labelArray[i];<a name="line.135"></a>
-<span class="sourceLineNo">136</span>        <a name="line.136"></a>
+<span class="sourceLineNo">136</span><a name="line.136"></a>
 <span class="sourceLineNo">137</span>         // Convert each field of the function.<a name="line.137"></a>
 <span class="sourceLineNo">138</span>         Token fieldToken = functionToken.get(label);<a name="line.138"></a>
 <span class="sourceLineNo">139</span>         Type newFieldTypeTerm = get(label);<a name="line.139"></a>
-<span class="sourceLineNo">140</span>        <a name="line.140"></a>
+<span class="sourceLineNo">140</span><a name="line.140"></a>
 <span class="sourceLineNo">141</span>         // If the type of the field is specified, then convert it.<a name="line.141"></a>
 <span class="sourceLineNo">142</span>         if (newFieldTypeTerm != null) {<a name="line.142"></a>
 <span class="sourceLineNo">143</span>         values[i] = newFieldTypeTerm.convert(fieldToken);<a name="line.143"></a>
 <span class="sourceLineNo">144</span>         } else {<a name="line.144"></a>
 <span class="sourceLineNo">145</span>         values[i] = fieldToken;<a name="line.145"></a>
 <span class="sourceLineNo">146</span>         }<a name="line.146"></a>
-<span class="sourceLineNo">147</span>        <a name="line.147"></a>
+<span class="sourceLineNo">147</span><a name="line.147"></a>
 <span class="sourceLineNo">148</span>         // Store the label for each field.<a name="line.148"></a>
 <span class="sourceLineNo">149</span>         labelStringArray[i] = label;<a name="line.149"></a>
 <span class="sourceLineNo">150</span>         }<a name="line.150"></a>
-<span class="sourceLineNo">151</span>        <a name="line.151"></a>
+<span class="sourceLineNo">151</span><a name="line.151"></a>
 <span class="sourceLineNo">152</span>         return new FunctionToken(labelStringArray, values);<a name="line.152"></a>
 <span class="sourceLineNo">153</span>         }*/<a name="line.153"></a>
 <span class="sourceLineNo">154</span>    }<a name="line.154"></a>
