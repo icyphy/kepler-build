@@ -11,8 +11,8 @@
 <span class="sourceLineNo">003</span> * All rights reserved.<a name="line.3"></a>
 <span class="sourceLineNo">004</span> *<a name="line.4"></a>
 <span class="sourceLineNo">005</span> * '$Author: crawl $'<a name="line.5"></a>
-<span class="sourceLineNo">006</span> * '$Date: 2018-03-09 21:51:34 +0000 (Fri, 09 Mar 2018) $' <a name="line.6"></a>
-<span class="sourceLineNo">007</span> * '$Revision: 34673 $'<a name="line.7"></a>
+<span class="sourceLineNo">006</span> * '$Date: 2018-07-07 23:43:34 +0000 (Sat, 07 Jul 2018) $' <a name="line.6"></a>
+<span class="sourceLineNo">007</span> * '$Revision: 34701 $'<a name="line.7"></a>
 <span class="sourceLineNo">008</span> * <a name="line.8"></a>
 <span class="sourceLineNo">009</span> * Permission is hereby granted, without written agreement and without<a name="line.9"></a>
 <span class="sourceLineNo">010</span> * license or royalty fees, to use, copy, modify, and distribute this<a name="line.10"></a>
@@ -40,133 +40,145 @@
 <span class="sourceLineNo">032</span>import java.io.File;<a name="line.32"></a>
 <span class="sourceLineNo">033</span>import java.io.IOException;<a name="line.33"></a>
 <span class="sourceLineNo">034</span>import java.util.Random;<a name="line.34"></a>
-<span class="sourceLineNo">035</span><a name="line.35"></a>
-<span class="sourceLineNo">036</span>import ptolemy.actor.TypedIOPort;<a name="line.36"></a>
-<span class="sourceLineNo">037</span>import ptolemy.actor.lib.LimitedFiringSource;<a name="line.37"></a>
-<span class="sourceLineNo">038</span>import ptolemy.actor.parameters.PortParameter;<a name="line.38"></a>
-<span class="sourceLineNo">039</span>import ptolemy.data.StringToken;<a name="line.39"></a>
-<span class="sourceLineNo">040</span>import ptolemy.data.type.BaseType;<a name="line.40"></a>
-<span class="sourceLineNo">041</span>import ptolemy.kernel.CompositeEntity;<a name="line.41"></a>
-<span class="sourceLineNo">042</span>import ptolemy.kernel.util.IllegalActionException;<a name="line.42"></a>
-<span class="sourceLineNo">043</span>import ptolemy.kernel.util.NameDuplicationException;<a name="line.43"></a>
-<span class="sourceLineNo">044</span><a name="line.44"></a>
-<span class="sourceLineNo">045</span>//////////////////////////////////////////////////////////////////////////<a name="line.45"></a>
-<span class="sourceLineNo">046</span>//// RandomDirectoryMaker<a name="line.46"></a>
+<span class="sourceLineNo">035</span>import java.util.UUID;<a name="line.35"></a>
+<span class="sourceLineNo">036</span><a name="line.36"></a>
+<span class="sourceLineNo">037</span>import ptolemy.actor.TypedIOPort;<a name="line.37"></a>
+<span class="sourceLineNo">038</span>import ptolemy.actor.lib.LimitedFiringSource;<a name="line.38"></a>
+<span class="sourceLineNo">039</span>import ptolemy.actor.parameters.PortParameter;<a name="line.39"></a>
+<span class="sourceLineNo">040</span>import ptolemy.data.expr.Parameter;<a name="line.40"></a>
+<span class="sourceLineNo">041</span>import ptolemy.data.BooleanToken;<a name="line.41"></a>
+<span class="sourceLineNo">042</span>import ptolemy.data.StringToken;<a name="line.42"></a>
+<span class="sourceLineNo">043</span>import ptolemy.data.type.BaseType;<a name="line.43"></a>
+<span class="sourceLineNo">044</span>import ptolemy.kernel.CompositeEntity;<a name="line.44"></a>
+<span class="sourceLineNo">045</span>import ptolemy.kernel.util.IllegalActionException;<a name="line.45"></a>
+<span class="sourceLineNo">046</span>import ptolemy.kernel.util.NameDuplicationException;<a name="line.46"></a>
 <span class="sourceLineNo">047</span><a name="line.47"></a>
-<span class="sourceLineNo">048</span>/**<a name="line.48"></a>
-<span class="sourceLineNo">049</span> * This actor creates a new directory. The corresponding path is given out.<a name="line.49"></a>
-<span class="sourceLineNo">050</span> * <a name="line.50"></a>
-<span class="sourceLineNo">051</span> * @author Jianwu Wang<a name="line.51"></a>
-<span class="sourceLineNo">052</span> * @version $Id: RandomDirectoryMaker.java 34673 2018-03-09 21:51:34Z crawl $<a name="line.52"></a>
-<span class="sourceLineNo">053</span> */<a name="line.53"></a>
-<span class="sourceLineNo">054</span>public class RandomDirectoryMaker extends LimitedFiringSource {<a name="line.54"></a>
-<span class="sourceLineNo">055</span><a name="line.55"></a>
-<span class="sourceLineNo">056</span>        /**<a name="line.56"></a>
-<span class="sourceLineNo">057</span>         * Construct a RandomDirectoryMaker with the given container and name.<a name="line.57"></a>
-<span class="sourceLineNo">058</span>         * <a name="line.58"></a>
-<span class="sourceLineNo">059</span>         * @param container<a name="line.59"></a>
-<span class="sourceLineNo">060</span>         *            The container.<a name="line.60"></a>
-<span class="sourceLineNo">061</span>         * @param name<a name="line.61"></a>
-<span class="sourceLineNo">062</span>         *            The name of this actor.<a name="line.62"></a>
-<span class="sourceLineNo">063</span>         * @exception IllegalActionException<a name="line.63"></a>
-<span class="sourceLineNo">064</span>         *                If the entity cannot be contained by the proposed<a name="line.64"></a>
-<span class="sourceLineNo">065</span>         *                container.<a name="line.65"></a>
-<span class="sourceLineNo">066</span>         * @exception NameDuplicationException<a name="line.66"></a>
-<span class="sourceLineNo">067</span>         *                If the container already has an actor with this name.<a name="line.67"></a>
-<span class="sourceLineNo">068</span>         */<a name="line.68"></a>
-<span class="sourceLineNo">069</span>        public RandomDirectoryMaker(CompositeEntity container, String name)<a name="line.69"></a>
-<span class="sourceLineNo">070</span>                        throws NameDuplicationException, IllegalActionException {<a name="line.70"></a>
-<span class="sourceLineNo">071</span>                super(container, name);<a name="line.71"></a>
-<span class="sourceLineNo">072</span><a name="line.72"></a>
-<span class="sourceLineNo">073</span>                path = new TypedIOPort(this, "path", false, true);<a name="line.73"></a>
-<span class="sourceLineNo">074</span>                path.setTypeEquals(BaseType.STRING);<a name="line.74"></a>
+<span class="sourceLineNo">048</span>//////////////////////////////////////////////////////////////////////////<a name="line.48"></a>
+<span class="sourceLineNo">049</span>//// RandomDirectoryMaker<a name="line.49"></a>
+<span class="sourceLineNo">050</span><a name="line.50"></a>
+<span class="sourceLineNo">051</span>/**<a name="line.51"></a>
+<span class="sourceLineNo">052</span> * This actor creates a new directory. The corresponding path is given out.<a name="line.52"></a>
+<span class="sourceLineNo">053</span> * <a name="line.53"></a>
+<span class="sourceLineNo">054</span> * @author Jianwu Wang<a name="line.54"></a>
+<span class="sourceLineNo">055</span> * @version $Id: RandomDirectoryMaker.java 34701 2018-07-07 23:43:34Z crawl $<a name="line.55"></a>
+<span class="sourceLineNo">056</span> */<a name="line.56"></a>
+<span class="sourceLineNo">057</span>public class RandomDirectoryMaker extends LimitedFiringSource {<a name="line.57"></a>
+<span class="sourceLineNo">058</span><a name="line.58"></a>
+<span class="sourceLineNo">059</span>    /**<a name="line.59"></a>
+<span class="sourceLineNo">060</span>     * Construct a RandomDirectoryMaker with the given container and name.<a name="line.60"></a>
+<span class="sourceLineNo">061</span>     * <a name="line.61"></a>
+<span class="sourceLineNo">062</span>     * @param container<a name="line.62"></a>
+<span class="sourceLineNo">063</span>     *            The container.<a name="line.63"></a>
+<span class="sourceLineNo">064</span>     * @param name<a name="line.64"></a>
+<span class="sourceLineNo">065</span>     *            The name of this actor.<a name="line.65"></a>
+<span class="sourceLineNo">066</span>     * @exception IllegalActionException<a name="line.66"></a>
+<span class="sourceLineNo">067</span>     *                If the entity cannot be contained by the proposed<a name="line.67"></a>
+<span class="sourceLineNo">068</span>     *                container.<a name="line.68"></a>
+<span class="sourceLineNo">069</span>     * @exception NameDuplicationException<a name="line.69"></a>
+<span class="sourceLineNo">070</span>     *                If the container already has an actor with this name.<a name="line.70"></a>
+<span class="sourceLineNo">071</span>     */<a name="line.71"></a>
+<span class="sourceLineNo">072</span>    public RandomDirectoryMaker(CompositeEntity container, String name)<a name="line.72"></a>
+<span class="sourceLineNo">073</span>            throws NameDuplicationException, IllegalActionException {<a name="line.73"></a>
+<span class="sourceLineNo">074</span>        super(container, name);<a name="line.74"></a>
 <span class="sourceLineNo">075</span><a name="line.75"></a>
-<span class="sourceLineNo">076</span>                parentDir = new PortParameter(this, "parent directory name");<a name="line.76"></a>
-<span class="sourceLineNo">077</span>                parentDir.setStringMode(true);<a name="line.77"></a>
-<span class="sourceLineNo">078</span>                parentDir.getPort().setTypeEquals(BaseType.STRING);<a name="line.78"></a>
-<span class="sourceLineNo">079</span><a name="line.79"></a>
-<span class="sourceLineNo">080</span>                _attachText("_iconDescription", "&lt;svg&gt;\n"<a name="line.80"></a>
-<span class="sourceLineNo">081</span>                                + "&lt;rect x=\"-25\" y=\"-20\" " + "width=\"50\" height=\"40\" "<a name="line.81"></a>
-<span class="sourceLineNo">082</span>                                + "style=\"fill:white\"/&gt;\n"<a name="line.82"></a>
-<span class="sourceLineNo">083</span>                                + "&lt;polygon points=\"-15,-10 -12,-10 -8,-14 -1,-14 3,-10"<a name="line.83"></a>
-<span class="sourceLineNo">084</span>                                + " 15,-10 15,10, -15,10\" " + "style=\"fill:red\"/&gt;\n"<a name="line.84"></a>
-<span class="sourceLineNo">085</span>                                + "&lt;/svg&gt;\n");<a name="line.85"></a>
-<span class="sourceLineNo">086</span>        }<a name="line.86"></a>
-<span class="sourceLineNo">087</span><a name="line.87"></a>
-<span class="sourceLineNo">088</span>        // /////////////////////////////////////////////////////////////////<a name="line.88"></a>
-<span class="sourceLineNo">089</span>        // // ports and parameters ////<a name="line.89"></a>
-<span class="sourceLineNo">090</span><a name="line.90"></a>
-<span class="sourceLineNo">091</span>        /**<a name="line.91"></a>
-<span class="sourceLineNo">092</span>         * The output port, which contains the new directory path.<a name="line.92"></a>
-<span class="sourceLineNo">093</span>         */<a name="line.93"></a>
-<span class="sourceLineNo">094</span>        public TypedIOPort path = null;<a name="line.94"></a>
-<span class="sourceLineNo">095</span>        /**<a name="line.95"></a>
-<span class="sourceLineNo">096</span>         * The parameter, which is a string with the directory name.<a name="line.96"></a>
-<span class="sourceLineNo">097</span>         */<a name="line.97"></a>
-<span class="sourceLineNo">098</span>        public PortParameter parentDir = null;<a name="line.98"></a>
-<span class="sourceLineNo">099</span><a name="line.99"></a>
-<span class="sourceLineNo">100</span>        // /////////////////////////////////////////////////////////////////<a name="line.100"></a>
-<span class="sourceLineNo">101</span>        // // public methods ////<a name="line.101"></a>
-<span class="sourceLineNo">102</span><a name="line.102"></a>
-<span class="sourceLineNo">103</span>        /**<a name="line.103"></a>
-<span class="sourceLineNo">104</span>         * Create the new directory.<a name="line.104"></a>
-<span class="sourceLineNo">105</span>         * <a name="line.105"></a>
-<span class="sourceLineNo">106</span>         * @exception IllegalActionException<a name="line.106"></a>
-<span class="sourceLineNo">107</span>         *                If there's no director or if directory making does not<a name="line.107"></a>
-<span class="sourceLineNo">108</span>         *                work.<a name="line.108"></a>
-<span class="sourceLineNo">109</span>         */<a name="line.109"></a>
-<span class="sourceLineNo">110</span>        @Override<a name="line.110"></a>
-<span class="sourceLineNo">111</span>    public void fire() throws IllegalActionException {<a name="line.111"></a>
-<span class="sourceLineNo">112</span>                super.fire();<a name="line.112"></a>
-<span class="sourceLineNo">113</span>                parentDir.update();<a name="line.113"></a>
-<span class="sourceLineNo">114</span>                _dirName = ((StringToken)parentDir.getToken()).stringValue();<a name="line.114"></a>
-<span class="sourceLineNo">115</span>                Random ran = new Random();<a name="line.115"></a>
-<span class="sourceLineNo">116</span>                if (_dirName.length() &gt; 0) {<a name="line.116"></a>
-<span class="sourceLineNo">117</span>                        _dir = new File(_dirName);<a name="line.117"></a>
-<span class="sourceLineNo">118</span>                        if (_dir.exists() &amp;&amp; !_dir.isDirectory()) {<a name="line.118"></a>
-<span class="sourceLineNo">119</span>                                throw new IllegalActionException(this, _dir<a name="line.119"></a>
-<span class="sourceLineNo">120</span>                                                + " exists and is not a directory.");<a name="line.120"></a>
-<span class="sourceLineNo">121</span>                        }<a name="line.121"></a>
-<span class="sourceLineNo">122</span>                        if(_dir.exists() &amp;&amp; !_dir.canWrite()) {<a name="line.122"></a>
-<span class="sourceLineNo">123</span>                                throw new IllegalActionException(this, _dir<a name="line.123"></a>
-<span class="sourceLineNo">124</span>                                                + " exists but doesn't have write perssion.");<a name="line.124"></a>
-<span class="sourceLineNo">125</span>                        }<a name="line.125"></a>
-<span class="sourceLineNo">126</span>                        else<a name="line.126"></a>
-<span class="sourceLineNo">127</span>                        {<a name="line.127"></a>
-<span class="sourceLineNo">128</span>                                synchronized (this) {<a name="line.128"></a>
-<span class="sourceLineNo">129</span>                                        _mkdirsSuccess = false;<a name="line.129"></a>
-<span class="sourceLineNo">130</span>                                        do<a name="line.130"></a>
-<span class="sourceLineNo">131</span>                                        {<a name="line.131"></a>
-<span class="sourceLineNo">132</span>                                                randomInt = ran.nextInt();<a name="line.132"></a>
-<span class="sourceLineNo">133</span>                                                if (randomInt &lt; 0)<a name="line.133"></a>
-<span class="sourceLineNo">134</span>                                                        randomInt = 0 - randomInt;<a name="line.134"></a>
-<span class="sourceLineNo">135</span>                                                _childDir = new File(_dir, new Integer (randomInt).toString());<a name="line.135"></a>
-<span class="sourceLineNo">136</span>                                                if (!_childDir.exists())<a name="line.136"></a>
-<span class="sourceLineNo">137</span>                                                        _mkdirsSuccess = _childDir.mkdirs();<a name="line.137"></a>
-<span class="sourceLineNo">138</span>                                        }       <a name="line.138"></a>
-<span class="sourceLineNo">139</span>                                        while (!_mkdirsSuccess);<a name="line.139"></a>
-<span class="sourceLineNo">140</span>                                }<a name="line.140"></a>
-<span class="sourceLineNo">141</span>                        }<a name="line.141"></a>
-<span class="sourceLineNo">142</span>                        try {<a name="line.142"></a>
-<span class="sourceLineNo">143</span>                                _childDirName = _childDir.getCanonicalPath();<a name="line.143"></a>
-<span class="sourceLineNo">144</span>                        } catch (IOException ex) {<a name="line.144"></a>
-<span class="sourceLineNo">145</span>                                _debug("Cannot get directory path.");<a name="line.145"></a>
-<span class="sourceLineNo">146</span>                                throw new IllegalActionException(this, "Cannot get directory path of " + _childDir);<a name="line.146"></a>
-<span class="sourceLineNo">147</span>                        }<a name="line.147"></a>
-<span class="sourceLineNo">148</span>                }<a name="line.148"></a>
-<span class="sourceLineNo">149</span>                path.send(0, new StringToken(_childDirName));<a name="line.149"></a>
-<span class="sourceLineNo">150</span>        }<a name="line.150"></a>
-<span class="sourceLineNo">151</span><a name="line.151"></a>
-<span class="sourceLineNo">152</span>        // /////////////////////////////////////////////////////////////////<a name="line.152"></a>
-<span class="sourceLineNo">153</span>        // // private members ////<a name="line.153"></a>
-<span class="sourceLineNo">154</span><a name="line.154"></a>
-<span class="sourceLineNo">155</span>        private File _dir;<a name="line.155"></a>
-<span class="sourceLineNo">156</span>        private File _childDir;<a name="line.156"></a>
-<span class="sourceLineNo">157</span>        private boolean _mkdirsSuccess;<a name="line.157"></a>
-<span class="sourceLineNo">158</span>        private String _dirName;<a name="line.158"></a>
-<span class="sourceLineNo">159</span>        private String _childDirName;<a name="line.159"></a>
-<span class="sourceLineNo">160</span>        private int randomInt;<a name="line.160"></a>
-<span class="sourceLineNo">161</span>}<a name="line.161"></a>
+<span class="sourceLineNo">076</span>        path = new TypedIOPort(this, "path", false, true);<a name="line.76"></a>
+<span class="sourceLineNo">077</span>        path.setTypeEquals(BaseType.STRING);<a name="line.77"></a>
+<span class="sourceLineNo">078</span><a name="line.78"></a>
+<span class="sourceLineNo">079</span>        parentDir = new PortParameter(this, "parent directory name");<a name="line.79"></a>
+<span class="sourceLineNo">080</span>        parentDir.setStringMode(true);<a name="line.80"></a>
+<span class="sourceLineNo">081</span>        parentDir.getPort().setTypeEquals(BaseType.STRING);<a name="line.81"></a>
+<span class="sourceLineNo">082</span><a name="line.82"></a>
+<span class="sourceLineNo">083</span>        useUUID = new Parameter(this, "useUUID");<a name="line.83"></a>
+<span class="sourceLineNo">084</span>        useUUID.setTypeEquals(BaseType.BOOLEAN);<a name="line.84"></a>
+<span class="sourceLineNo">085</span>        useUUID.setToken(BooleanToken.FALSE);<a name="line.85"></a>
+<span class="sourceLineNo">086</span><a name="line.86"></a>
+<span class="sourceLineNo">087</span>        _attachText("_iconDescription", "&lt;svg&gt;\n" + "&lt;rect x=\"-25\" y=\"-20\" "<a name="line.87"></a>
+<span class="sourceLineNo">088</span>                + "width=\"50\" height=\"40\" " + "style=\"fill:white\"/&gt;\n"<a name="line.88"></a>
+<span class="sourceLineNo">089</span>                + "&lt;polygon points=\"-15,-10 -12,-10 -8,-14 -1,-14 3,-10"<a name="line.89"></a>
+<span class="sourceLineNo">090</span>                + " 15,-10 15,10, -15,10\" " + "style=\"fill:red\"/&gt;\n"<a name="line.90"></a>
+<span class="sourceLineNo">091</span>                + "&lt;/svg&gt;\n");<a name="line.91"></a>
+<span class="sourceLineNo">092</span>    }<a name="line.92"></a>
+<span class="sourceLineNo">093</span><a name="line.93"></a>
+<span class="sourceLineNo">094</span>    // /////////////////////////////////////////////////////////////////<a name="line.94"></a>
+<span class="sourceLineNo">095</span>    // // ports and parameters ////<a name="line.95"></a>
+<span class="sourceLineNo">096</span><a name="line.96"></a>
+<span class="sourceLineNo">097</span>    /**<a name="line.97"></a>
+<span class="sourceLineNo">098</span>     * The output port, which contains the new directory path.<a name="line.98"></a>
+<span class="sourceLineNo">099</span>     */<a name="line.99"></a>
+<span class="sourceLineNo">100</span>    public TypedIOPort path = null;<a name="line.100"></a>
+<span class="sourceLineNo">101</span>    /**<a name="line.101"></a>
+<span class="sourceLineNo">102</span>     * The parameter, which is a string with the directory name.<a name="line.102"></a>
+<span class="sourceLineNo">103</span>     */<a name="line.103"></a>
+<span class="sourceLineNo">104</span>    public PortParameter parentDir = null;<a name="line.104"></a>
+<span class="sourceLineNo">105</span><a name="line.105"></a>
+<span class="sourceLineNo">106</span>    /** If true, use UUIDs for the random directory name. Otherwise,<a name="line.106"></a>
+<span class="sourceLineNo">107</span>     use integers.<a name="line.107"></a>
+<span class="sourceLineNo">108</span>    */<a name="line.108"></a>
+<span class="sourceLineNo">109</span>    public Parameter useUUID;<a name="line.109"></a>
+<span class="sourceLineNo">110</span><a name="line.110"></a>
+<span class="sourceLineNo">111</span>    // /////////////////////////////////////////////////////////////////<a name="line.111"></a>
+<span class="sourceLineNo">112</span>    // // public methods ////<a name="line.112"></a>
+<span class="sourceLineNo">113</span><a name="line.113"></a>
+<span class="sourceLineNo">114</span>    /**<a name="line.114"></a>
+<span class="sourceLineNo">115</span>     * Create the new directory.<a name="line.115"></a>
+<span class="sourceLineNo">116</span>     * <a name="line.116"></a>
+<span class="sourceLineNo">117</span>     * @exception IllegalActionException<a name="line.117"></a>
+<span class="sourceLineNo">118</span>     *                If there's no director or if directory making does not<a name="line.118"></a>
+<span class="sourceLineNo">119</span>     *                work.<a name="line.119"></a>
+<span class="sourceLineNo">120</span>     */<a name="line.120"></a>
+<span class="sourceLineNo">121</span>    @Override<a name="line.121"></a>
+<span class="sourceLineNo">122</span>    public void fire() throws IllegalActionException {<a name="line.122"></a>
+<span class="sourceLineNo">123</span>        super.fire();<a name="line.123"></a>
+<span class="sourceLineNo">124</span>        parentDir.update();<a name="line.124"></a>
+<span class="sourceLineNo">125</span>        String dirName = ((StringToken)parentDir.getToken()).stringValue();<a name="line.125"></a>
+<span class="sourceLineNo">126</span>        String childDirName = null;<a name="line.126"></a>
+<span class="sourceLineNo">127</span>        if (dirName.length() &gt; 0) {<a name="line.127"></a>
+<span class="sourceLineNo">128</span>            File dir = new File(dirName);<a name="line.128"></a>
+<span class="sourceLineNo">129</span>            File childDir = null;<a name="line.129"></a>
+<span class="sourceLineNo">130</span>            if (dir.exists() &amp;&amp; !dir.isDirectory()) {<a name="line.130"></a>
+<span class="sourceLineNo">131</span>                throw new IllegalActionException(this, dir<a name="line.131"></a>
+<span class="sourceLineNo">132</span>                        + " exists and is not a directory.");<a name="line.132"></a>
+<span class="sourceLineNo">133</span>            }<a name="line.133"></a>
+<span class="sourceLineNo">134</span>            if(dir.exists() &amp;&amp; !dir.canWrite()) {<a name="line.134"></a>
+<span class="sourceLineNo">135</span>                throw new IllegalActionException(this, dir<a name="line.135"></a>
+<span class="sourceLineNo">136</span>                        + " exists but doesn't have write perssion.");<a name="line.136"></a>
+<span class="sourceLineNo">137</span>            }<a name="line.137"></a>
+<span class="sourceLineNo">138</span>            else<a name="line.138"></a>
+<span class="sourceLineNo">139</span>            {<a name="line.139"></a>
+<span class="sourceLineNo">140</span>                boolean mkdirsSuccess = false;<a name="line.140"></a>
+<span class="sourceLineNo">141</span>                if(((BooleanToken)useUUID.getToken()).booleanValue()) {<a name="line.141"></a>
+<span class="sourceLineNo">142</span>                    while(!mkdirsSuccess) {<a name="line.142"></a>
+<span class="sourceLineNo">143</span>                        childDir = new File(dir, UUID.randomUUID().toString());<a name="line.143"></a>
+<span class="sourceLineNo">144</span>                        if(!childDir.exists()) {<a name="line.144"></a>
+<span class="sourceLineNo">145</span>                            mkdirsSuccess = childDir.mkdirs();<a name="line.145"></a>
+<span class="sourceLineNo">146</span>                        }<a name="line.146"></a>
+<span class="sourceLineNo">147</span>                    }<a name="line.147"></a>
+<span class="sourceLineNo">148</span>                } else {<a name="line.148"></a>
+<span class="sourceLineNo">149</span>                    Random ran = new Random();<a name="line.149"></a>
+<span class="sourceLineNo">150</span>                    do<a name="line.150"></a>
+<span class="sourceLineNo">151</span>                    {<a name="line.151"></a>
+<span class="sourceLineNo">152</span>                        int randomInt = ran.nextInt();<a name="line.152"></a>
+<span class="sourceLineNo">153</span>                        if (randomInt &lt; 0) {<a name="line.153"></a>
+<span class="sourceLineNo">154</span>                            randomInt = 0 - randomInt;<a name="line.154"></a>
+<span class="sourceLineNo">155</span>                        }<a name="line.155"></a>
+<span class="sourceLineNo">156</span>                        childDir = new File(dir, new Integer (randomInt).toString());<a name="line.156"></a>
+<span class="sourceLineNo">157</span>                        if (!childDir.exists()) {<a name="line.157"></a>
+<span class="sourceLineNo">158</span>                            mkdirsSuccess = childDir.mkdirs();<a name="line.158"></a>
+<span class="sourceLineNo">159</span>                        }<a name="line.159"></a>
+<span class="sourceLineNo">160</span>                    }   <a name="line.160"></a>
+<span class="sourceLineNo">161</span>                    while (!mkdirsSuccess);<a name="line.161"></a>
+<span class="sourceLineNo">162</span>                }<a name="line.162"></a>
+<span class="sourceLineNo">163</span>            }<a name="line.163"></a>
+<span class="sourceLineNo">164</span>            try {<a name="line.164"></a>
+<span class="sourceLineNo">165</span>                childDirName = childDir.getCanonicalPath();<a name="line.165"></a>
+<span class="sourceLineNo">166</span>            } catch (IOException ex) {<a name="line.166"></a>
+<span class="sourceLineNo">167</span>                _debug("Cannot get directory path.");<a name="line.167"></a>
+<span class="sourceLineNo">168</span>                throw new IllegalActionException(this, "Cannot get directory path of " + childDir);<a name="line.168"></a>
+<span class="sourceLineNo">169</span>            }<a name="line.169"></a>
+<span class="sourceLineNo">170</span>        }<a name="line.170"></a>
+<span class="sourceLineNo">171</span>        path.broadcast(new StringToken(childDirName));<a name="line.171"></a>
+<span class="sourceLineNo">172</span>    }<a name="line.172"></a>
+<span class="sourceLineNo">173</span>}<a name="line.173"></a>
 
 
 
