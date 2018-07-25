@@ -11,8 +11,8 @@
 <span class="sourceLineNo">003</span> * All rights reserved.<a name="line.3"></a>
 <span class="sourceLineNo">004</span> *<a name="line.4"></a>
 <span class="sourceLineNo">005</span> * '$Author: crawl $'<a name="line.5"></a>
-<span class="sourceLineNo">006</span> * '$Date: 2015-12-21 19:26:08 +0000 (Mon, 21 Dec 2015) $' <a name="line.6"></a>
-<span class="sourceLineNo">007</span> * '$Revision: 34355 $'<a name="line.7"></a>
+<span class="sourceLineNo">006</span> * '$Date: 2018-07-24 17:15:39 +0000 (Tue, 24 Jul 2018) $' <a name="line.6"></a>
+<span class="sourceLineNo">007</span> * '$Revision: 34704 $'<a name="line.7"></a>
 <span class="sourceLineNo">008</span> * <a name="line.8"></a>
 <span class="sourceLineNo">009</span> * Permission is hereby granted, without written agreement and without<a name="line.9"></a>
 <span class="sourceLineNo">010</span> * license or royalty fees, to use, copy, modify, and distribute this<a name="line.10"></a>
@@ -39,10 +39,10 @@
 <span class="sourceLineNo">031</span>import java.io.File;<a name="line.31"></a>
 <span class="sourceLineNo">032</span><a name="line.32"></a>
 <span class="sourceLineNo">033</span>import org.geotools.coverage.grid.io.AbstractGridCoverage2DReader;<a name="line.33"></a>
-<span class="sourceLineNo">034</span>import org.kepler.gis.data.RasterToken;<a name="line.34"></a>
-<span class="sourceLineNo">035</span>import org.kepler.gis.util.RasterUtilities;<a name="line.35"></a>
-<span class="sourceLineNo">036</span><a name="line.36"></a>
-<span class="sourceLineNo">037</span>import ptolemy.actor.TypedAtomicActor;<a name="line.37"></a>
+<span class="sourceLineNo">034</span>import org.kepler.gis.actor.CRSActor;<a name="line.34"></a>
+<span class="sourceLineNo">035</span>import org.kepler.gis.data.RasterToken;<a name="line.35"></a>
+<span class="sourceLineNo">036</span>import org.kepler.gis.util.RasterUtilities;<a name="line.36"></a>
+<span class="sourceLineNo">037</span><a name="line.37"></a>
 <span class="sourceLineNo">038</span>import ptolemy.actor.TypedIOPort;<a name="line.38"></a>
 <span class="sourceLineNo">039</span>import ptolemy.actor.parameters.PortParameter;<a name="line.39"></a>
 <span class="sourceLineNo">040</span>import ptolemy.data.StringToken;<a name="line.40"></a>
@@ -57,9 +57,9 @@
 <span class="sourceLineNo">049</span> *  TODO this actor is not finished.<a name="line.49"></a>
 <span class="sourceLineNo">050</span> * <a name="line.50"></a>
 <span class="sourceLineNo">051</span> *  @author Daniel Crawl<a name="line.51"></a>
-<span class="sourceLineNo">052</span> *  @version $Id: RasterReader.java 34355 2015-12-21 19:26:08Z crawl $<a name="line.52"></a>
+<span class="sourceLineNo">052</span> *  @version $Id: RasterReader.java 34704 2018-07-24 17:15:39Z crawl $<a name="line.52"></a>
 <span class="sourceLineNo">053</span> */<a name="line.53"></a>
-<span class="sourceLineNo">054</span>public class RasterReader extends TypedAtomicActor {<a name="line.54"></a>
+<span class="sourceLineNo">054</span>public class RasterReader extends CRSActor {<a name="line.54"></a>
 <span class="sourceLineNo">055</span><a name="line.55"></a>
 <span class="sourceLineNo">056</span>    public RasterReader(CompositeEntity container, String name)<a name="line.56"></a>
 <span class="sourceLineNo">057</span>            throws IllegalActionException, NameDuplicationException {<a name="line.57"></a>
@@ -92,7 +92,7 @@
 <span class="sourceLineNo">084</span>        }<a name="line.84"></a>
 <span class="sourceLineNo">085</span>        <a name="line.85"></a>
 <span class="sourceLineNo">086</span>        try {<a name="line.86"></a>
-<span class="sourceLineNo">087</span>            AbstractGridCoverage2DReader reader = RasterUtilities.getReader(inputFile);<a name="line.87"></a>
+<span class="sourceLineNo">087</span>            AbstractGridCoverage2DReader reader = RasterUtilities.getReader(inputFile, _crs);<a name="line.87"></a>
 <span class="sourceLineNo">088</span>            if(reader == null) {<a name="line.88"></a>
 <span class="sourceLineNo">089</span>                //System.out.println("file not natively supported by geotools.");<a name="line.89"></a>
 <span class="sourceLineNo">090</span>                rasterToken = new RasterToken(inputFile);<a name="line.90"></a>

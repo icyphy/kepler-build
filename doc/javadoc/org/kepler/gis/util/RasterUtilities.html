@@ -17,7 +17,7 @@
     catch(err) {
     }
 //-->
-var methods = {"i0":9,"i1":9,"i2":9,"i3":9,"i4":9};
+var methods = {"i0":9,"i1":9,"i2":9,"i3":9,"i4":9,"i5":9};
 var tabs = {65535:["t0","All Methods"],1:["t1","Static Methods"],8:["t4","Concrete Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
@@ -108,7 +108,7 @@ var activeTableTab = "activeTableTab";
 <li class="blockList">
 <hr>
 <br>
-<pre>public class <a href="../../../../src-html/org/kepler/gis/util/RasterUtilities.html#line.62">RasterUtilities</a>
+<pre>public class <a href="../../../../src-html/org/kepler/gis/util/RasterUtilities.html#line.65">RasterUtilities</a>
 extends java.lang.Object</pre>
 <div class="block">A collection of utilities for rasters.</div>
 <dl>
@@ -162,23 +162,31 @@ extends java.lang.Object</pre>
 </tr>
 <tr id="i1" class="rowColor">
 <td class="colFirst"><code>static org.opengis.coverage.grid.GridCoverage</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../org/kepler/gis/util/RasterUtilities.html#getCoverage-java.io.File-">getCoverage</a></span>(java.io.File&nbsp;file)</code>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../org/kepler/gis/util/RasterUtilities.html#getCoverage-java.io.File-org.opengis.referencing.crs.CoordinateReferenceSystem-">getCoverage</a></span>(java.io.File&nbsp;file,
+           org.opengis.referencing.crs.CoordinateReferenceSystem&nbsp;defaultCRS)</code>
 <div class="block">Get a coverage for a raster file.</div>
 </td>
 </tr>
 <tr id="i2" class="altColor">
+<td class="colFirst"><code>static java.lang.Integer[]</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../org/kepler/gis/util/RasterUtilities.html#getGridSize-org.kepler.gis.data.RasterToken-">getGridSize</a></span>(<a href="../../../../org/kepler/gis/data/RasterToken.html" title="class in org.kepler.gis.data">RasterToken</a>&nbsp;raster)</code>
+<div class="block">Get the grid size of a raster.</div>
+</td>
+</tr>
+<tr id="i3" class="rowColor">
 <td class="colFirst"><code>static <a href="../../../../org/kepler/gis/util/RasterUtilities.RasterInfo.html" title="class in org.kepler.gis.util">RasterUtilities.RasterInfo</a></code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../org/kepler/gis/util/RasterUtilities.html#getInfo-java.io.File-">getInfo</a></span>(java.io.File&nbsp;file)</code>
 <div class="block">Get a RasterInfo object for a raster file.</div>
 </td>
 </tr>
-<tr id="i3" class="rowColor">
+<tr id="i4" class="altColor">
 <td class="colFirst"><code>static org.geotools.coverage.grid.io.AbstractGridCoverage2DReader</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../org/kepler/gis/util/RasterUtilities.html#getReader-java.io.File-">getReader</a></span>(java.io.File&nbsp;file)</code>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../org/kepler/gis/util/RasterUtilities.html#getReader-java.io.File-org.opengis.referencing.crs.CoordinateReferenceSystem-">getReader</a></span>(java.io.File&nbsp;file,
+         org.opengis.referencing.crs.CoordinateReferenceSystem&nbsp;defaultCRS)</code>
 <div class="block">Get a reader for a raster file.</div>
 </td>
 </tr>
-<tr id="i4" class="altColor">
+<tr id="i5" class="rowColor">
 <td class="colFirst"><code>static java.io.File</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../org/kepler/gis/util/RasterUtilities.html#reproject-java.io.File-org.opengis.referencing.crs.CoordinateReferenceSystem-">reproject</a></span>(java.io.File&nbsp;rasterFile,
          org.opengis.referencing.crs.CoordinateReferenceSystem&nbsp;destCRS)</code>
@@ -207,13 +215,14 @@ extends java.lang.Object</pre>
 <!--   -->
 </a>
 <h3>Method Detail</h3>
-<a name="getCoverage-java.io.File-">
+<a name="getCoverage-java.io.File-org.opengis.referencing.crs.CoordinateReferenceSystem-">
 <!--   -->
 </a>
 <ul class="blockList">
 <li class="blockList">
 <h4>getCoverage</h4>
-<pre>public static&nbsp;org.opengis.coverage.grid.GridCoverage&nbsp;<a href="../../../../src-html/org/kepler/gis/util/RasterUtilities.html#line.70">getCoverage</a>(java.io.File&nbsp;file)
+<pre>public static&nbsp;org.opengis.coverage.grid.GridCoverage&nbsp;<a href="../../../../src-html/org/kepler/gis/util/RasterUtilities.html#line.73">getCoverage</a>(java.io.File&nbsp;file,
+                                                                 org.opengis.referencing.crs.CoordinateReferenceSystem&nbsp;defaultCRS)
                                                           throws java.lang.IllegalArgumentException,
                                                                  java.io.IOException</pre>
 <div class="block">Get a coverage for a raster file.</div>
@@ -226,13 +235,31 @@ extends java.lang.Object</pre>
 </dl>
 </li>
 </ul>
-<a name="getReader-java.io.File-">
+<a name="getGridSize-org.kepler.gis.data.RasterToken-">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>getGridSize</h4>
+<pre>public static&nbsp;java.lang.Integer[]&nbsp;<a href="../../../../src-html/org/kepler/gis/util/RasterUtilities.html#line.84">getGridSize</a>(<a href="../../../../org/kepler/gis/data/RasterToken.html" title="class in org.kepler.gis.data">RasterToken</a>&nbsp;raster)
+                                       throws <a href="../../../../ptolemy/kernel/util/IllegalActionException.html" title="class in ptolemy.kernel.util">IllegalActionException</a></pre>
+<div class="block">Get the grid size of a raster.</div>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>The width and height.</dd>
+<dt><span class="throwsLabel">Throws:</span></dt>
+<dd><code><a href="../../../../ptolemy/kernel/util/IllegalActionException.html" title="class in ptolemy.kernel.util">IllegalActionException</a></code></dd>
+</dl>
+</li>
+</ul>
+<a name="getReader-java.io.File-org.opengis.referencing.crs.CoordinateReferenceSystem-">
 <!--   -->
 </a>
 <ul class="blockList">
 <li class="blockList">
 <h4>getReader</h4>
-<pre>public static&nbsp;org.geotools.coverage.grid.io.AbstractGridCoverage2DReader&nbsp;<a href="../../../../src-html/org/kepler/gis/util/RasterUtilities.html#line.81">getReader</a>(java.io.File&nbsp;file)</pre>
+<pre>public static&nbsp;org.geotools.coverage.grid.io.AbstractGridCoverage2DReader&nbsp;<a href="../../../../src-html/org/kepler/gis/util/RasterUtilities.html#line.103">getReader</a>(java.io.File&nbsp;file,
+                                                                                   org.opengis.referencing.crs.CoordinateReferenceSystem&nbsp;defaultCRS)</pre>
 <div class="block">Get a reader for a raster file.</div>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
@@ -246,7 +273,7 @@ extends java.lang.Object</pre>
 <ul class="blockList">
 <li class="blockList">
 <h4>closeReaders</h4>
-<pre>public static&nbsp;void&nbsp;<a href="../../../../src-html/org/kepler/gis/util/RasterUtilities.html#line.96">closeReaders</a>()</pre>
+<pre>public static&nbsp;void&nbsp;<a href="../../../../src-html/org/kepler/gis/util/RasterUtilities.html#line.127">closeReaders</a>()</pre>
 <div class="block">Close all readers opened by getReader() and getCoverage().</div>
 </li>
 </ul>
@@ -256,7 +283,7 @@ extends java.lang.Object</pre>
 <ul class="blockList">
 <li class="blockList">
 <h4>getInfo</h4>
-<pre>public static&nbsp;<a href="../../../../org/kepler/gis/util/RasterUtilities.RasterInfo.html" title="class in org.kepler.gis.util">RasterUtilities.RasterInfo</a>&nbsp;<a href="../../../../src-html/org/kepler/gis/util/RasterUtilities.html#line.109">getInfo</a>(java.io.File&nbsp;file)
+<pre>public static&nbsp;<a href="../../../../org/kepler/gis/util/RasterUtilities.RasterInfo.html" title="class in org.kepler.gis.util">RasterUtilities.RasterInfo</a>&nbsp;<a href="../../../../src-html/org/kepler/gis/util/RasterUtilities.html#line.140">getInfo</a>(java.io.File&nbsp;file)
                                           throws <a href="../../../../ptolemy/kernel/util/IllegalActionException.html" title="class in ptolemy.kernel.util">IllegalActionException</a></pre>
 <div class="block">Get a RasterInfo object for a raster file. This method calls "gdalinfo"
   to find the CRS and bounding box.</div>
@@ -272,7 +299,7 @@ extends java.lang.Object</pre>
 <ul class="blockListLast">
 <li class="blockList">
 <h4>reproject</h4>
-<pre>public static&nbsp;java.io.File&nbsp;<a href="../../../../src-html/org/kepler/gis/util/RasterUtilities.html#line.191">reproject</a>(java.io.File&nbsp;rasterFile,
+<pre>public static&nbsp;java.io.File&nbsp;<a href="../../../../src-html/org/kepler/gis/util/RasterUtilities.html#line.222">reproject</a>(java.io.File&nbsp;rasterFile,
                                      org.opengis.referencing.crs.CoordinateReferenceSystem&nbsp;destCRS)
                               throws <a href="../../../../ptolemy/kernel/util/IllegalActionException.html" title="class in ptolemy.kernel.util">IllegalActionException</a></pre>
 <div class="block">Reproject a raster file.</div>

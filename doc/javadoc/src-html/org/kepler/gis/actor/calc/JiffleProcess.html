@@ -1,0 +1,407 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+<title>Source code</title>
+<link rel="stylesheet" type="text/css" href="../../../../../../stylesheet.css" title="Style">
+</head>
+<body>
+<div class="sourceContainer">
+<pre><span class="sourceLineNo">001</span>/*<a name="line.1"></a>
+<span class="sourceLineNo">002</span> *    GeoTools - The Open Source Java GIS Toolkit<a name="line.2"></a>
+<span class="sourceLineNo">003</span> *    http://geotools.org<a name="line.3"></a>
+<span class="sourceLineNo">004</span> *<a name="line.4"></a>
+<span class="sourceLineNo">005</span> *    (C) 2018, Open Source Geospatial Foundation (OSGeo)<a name="line.5"></a>
+<span class="sourceLineNo">006</span> *<a name="line.6"></a>
+<span class="sourceLineNo">007</span> *    This library is free software; you can redistribute it and/or<a name="line.7"></a>
+<span class="sourceLineNo">008</span> *    modify it under the terms of the GNU Lesser General Public<a name="line.8"></a>
+<span class="sourceLineNo">009</span> *    License as published by the Free Software Foundation;<a name="line.9"></a>
+<span class="sourceLineNo">010</span> *    version 2.1 of the License.<a name="line.10"></a>
+<span class="sourceLineNo">011</span> *<a name="line.11"></a>
+<span class="sourceLineNo">012</span> *    This library is distributed in the hope that it will be useful,<a name="line.12"></a>
+<span class="sourceLineNo">013</span> *    but WITHOUT ANY WARRANTY; without even the implied warranty of<a name="line.13"></a>
+<span class="sourceLineNo">014</span> *    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU<a name="line.14"></a>
+<span class="sourceLineNo">015</span> *    Lesser General Public License for more details.<a name="line.15"></a>
+<span class="sourceLineNo">016</span> *<a name="line.16"></a>
+<span class="sourceLineNo">017</span> */<a name="line.17"></a>
+<span class="sourceLineNo">018</span>package org.kepler.gis.actor.calc;<a name="line.18"></a>
+<span class="sourceLineNo">019</span><a name="line.19"></a>
+<span class="sourceLineNo">020</span>import it.geosolutions.jaiext.jiffle.Jiffle;<a name="line.20"></a>
+<span class="sourceLineNo">021</span>import it.geosolutions.jaiext.jiffle.JiffleException;<a name="line.21"></a>
+<span class="sourceLineNo">022</span>import it.geosolutions.jaiext.jiffle.parser.node.Band;<a name="line.22"></a>
+<span class="sourceLineNo">023</span>import it.geosolutions.jaiext.jiffle.parser.node.Expression;<a name="line.23"></a>
+<span class="sourceLineNo">024</span>import it.geosolutions.jaiext.jiffle.parser.node.GetSourceValue;<a name="line.24"></a>
+<span class="sourceLineNo">025</span>import it.geosolutions.jaiext.jiffle.parser.node.ScalarLiteral;<a name="line.25"></a>
+<span class="sourceLineNo">026</span>import it.geosolutions.jaiext.jiffle.runtime.BandTransform;<a name="line.26"></a>
+<span class="sourceLineNo">027</span>import it.geosolutions.jaiext.jiffleop.JiffleDescriptor;<a name="line.27"></a>
+<span class="sourceLineNo">028</span>import it.geosolutions.jaiext.jiffleop.JiffleRIF;<a name="line.28"></a>
+<span class="sourceLineNo">029</span>import it.geosolutions.jaiext.range.Range.DataType;<a name="line.29"></a>
+<span class="sourceLineNo">030</span>import java.awt.image.RenderedImage;<a name="line.30"></a>
+<span class="sourceLineNo">031</span>import java.awt.image.SampleModel;<a name="line.31"></a>
+<span class="sourceLineNo">032</span>import java.util.ArrayList;<a name="line.32"></a>
+<span class="sourceLineNo">033</span>import java.util.Arrays;<a name="line.33"></a>
+<span class="sourceLineNo">034</span>import java.util.Collections;<a name="line.34"></a>
+<span class="sourceLineNo">035</span>import java.util.HashSet;<a name="line.35"></a>
+<span class="sourceLineNo">036</span>import java.util.List;<a name="line.36"></a>
+<span class="sourceLineNo">037</span>import java.util.Set;<a name="line.37"></a>
+<span class="sourceLineNo">038</span>import java.util.logging.Level;<a name="line.38"></a>
+<span class="sourceLineNo">039</span>import java.util.logging.Logger;<a name="line.39"></a>
+<span class="sourceLineNo">040</span>import javax.media.jai.ImageLayout;<a name="line.40"></a>
+<span class="sourceLineNo">041</span>import javax.media.jai.JAI;<a name="line.41"></a>
+<span class="sourceLineNo">042</span>import javax.media.jai.ROI;<a name="line.42"></a>
+<span class="sourceLineNo">043</span>import javax.media.jai.RenderedOp;<a name="line.43"></a>
+<span class="sourceLineNo">044</span>import org.geotools.coverage.grid.GridCoverage2D;<a name="line.44"></a>
+<span class="sourceLineNo">045</span>import org.geotools.coverage.grid.GridCoverageFactory;<a name="line.45"></a>
+<span class="sourceLineNo">046</span>import org.geotools.coverage.grid.io.AbstractGridFormat;<a name="line.46"></a>
+<span class="sourceLineNo">047</span>import org.geotools.coverage.grid.io.GridCoverage2DReader;<a name="line.47"></a>
+<span class="sourceLineNo">048</span>import org.geotools.coverage.processing.operation.GridCoverage2DRIA;<a name="line.48"></a>
+<span class="sourceLineNo">049</span>import org.geotools.factory.GeoTools;<a name="line.49"></a>
+<span class="sourceLineNo">050</span>import org.geotools.image.jai.Registry;<a name="line.50"></a>
+<span class="sourceLineNo">051</span>import org.geotools.process.ProcessException;<a name="line.51"></a>
+<span class="sourceLineNo">052</span>import org.geotools.process.factory.DescribeParameter;<a name="line.52"></a>
+<span class="sourceLineNo">053</span>import org.geotools.process.factory.DescribeProcess;<a name="line.53"></a>
+<span class="sourceLineNo">054</span>import org.geotools.process.factory.DescribeResult;<a name="line.54"></a>
+<span class="sourceLineNo">055</span>import org.geotools.process.raster.RasterProcess;<a name="line.55"></a>
+<span class="sourceLineNo">056</span>import org.geotools.resources.coverage.CoverageUtilities;<a name="line.56"></a>
+<span class="sourceLineNo">057</span>import org.geotools.util.logging.Logging;<a name="line.57"></a>
+<span class="sourceLineNo">058</span>import org.opengis.coverage.grid.GridCoverageReader;<a name="line.58"></a>
+<span class="sourceLineNo">059</span>import org.opengis.parameter.GeneralParameterValue;<a name="line.59"></a>
+<span class="sourceLineNo">060</span>import org.opengis.parameter.ParameterValue;<a name="line.60"></a>
+<span class="sourceLineNo">061</span>import org.opengis.parameter.ParameterValueGroup;<a name="line.61"></a>
+<span class="sourceLineNo">062</span>import org.opengis.util.ProgressListener;<a name="line.62"></a>
+<span class="sourceLineNo">063</span><a name="line.63"></a>
+<span class="sourceLineNo">064</span>@DescribeProcess(title = "Jiffle map algebra", description = "Map algebra powered by Jiffle")<a name="line.64"></a>
+<span class="sourceLineNo">065</span>public class JiffleProcess implements RasterProcess {<a name="line.65"></a>
+<span class="sourceLineNo">066</span><a name="line.66"></a>
+<span class="sourceLineNo">067</span>    static {<a name="line.67"></a>
+<span class="sourceLineNo">068</span>        Registry.registerRIF(<a name="line.68"></a>
+<span class="sourceLineNo">069</span>                JAI.getDefaultInstance(),<a name="line.69"></a>
+<span class="sourceLineNo">070</span>                new JiffleDescriptor(),<a name="line.70"></a>
+<span class="sourceLineNo">071</span>                new JiffleRIF(),<a name="line.71"></a>
+<span class="sourceLineNo">072</span>                "it.geosolutions.jaiext");<a name="line.72"></a>
+<span class="sourceLineNo">073</span>    }<a name="line.73"></a>
+<span class="sourceLineNo">074</span><a name="line.74"></a>
+<span class="sourceLineNo">075</span>    static final Logger LOGGER = Logging.getLogger(JiffleProcess.class);<a name="line.75"></a>
+<span class="sourceLineNo">076</span><a name="line.76"></a>
+<span class="sourceLineNo">077</span>    public static final String IN_COVERAGE = "coverage";<a name="line.77"></a>
+<span class="sourceLineNo">078</span>    public static final String IN_SCRIPT = "script";<a name="line.78"></a>
+<span class="sourceLineNo">079</span>    public static final String IN_DEST_NAME = "destName";<a name="line.79"></a>
+<span class="sourceLineNo">080</span>    public static final String IN_SOURCE_NAME = "sourceName";<a name="line.80"></a>
+<span class="sourceLineNo">081</span>    public static final String IN_OUTPUT_TYPE = "outputType";<a name="line.81"></a>
+<span class="sourceLineNo">082</span>    public static final String OUT_RESULT = "result";<a name="line.82"></a>
+<span class="sourceLineNo">083</span>    public static final String TX_BANDS = "bands";<a name="line.83"></a>
+<span class="sourceLineNo">084</span><a name="line.84"></a>
+<span class="sourceLineNo">085</span>    /**<a name="line.85"></a>
+<span class="sourceLineNo">086</span>     * Executes a Jiffle raster algebra. Check the {@link DescribeParameter} annotations for a<a name="line.86"></a>
+<span class="sourceLineNo">087</span>     * description of the various arguments<a name="line.87"></a>
+<span class="sourceLineNo">088</span>     *<a name="line.88"></a>
+<span class="sourceLineNo">089</span>     * @param progressListener<a name="line.89"></a>
+<span class="sourceLineNo">090</span>     * @return<a name="line.90"></a>
+<span class="sourceLineNo">091</span>     * @throws ProcessException<a name="line.91"></a>
+<span class="sourceLineNo">092</span>     */<a name="line.92"></a>
+<span class="sourceLineNo">093</span>    @DescribeResult(name = OUT_RESULT, description = "The map algebra output")<a name="line.93"></a>
+<span class="sourceLineNo">094</span>    public GridCoverage2D execute(<a name="line.94"></a>
+<span class="sourceLineNo">095</span>            @DescribeParameter(name = IN_COVERAGE, description = "Source raster(s)")<a name="line.95"></a>
+<span class="sourceLineNo">096</span>                    GridCoverage2D[] coverages,<a name="line.96"></a>
+<span class="sourceLineNo">097</span>            @DescribeParameter(<a name="line.97"></a>
+<span class="sourceLineNo">098</span>                        name = IN_SCRIPT,<a name="line.98"></a>
+<span class="sourceLineNo">099</span>                        description = "The script performing the map algebra, in Jiffle language"<a name="line.99"></a>
+<span class="sourceLineNo">100</span>                    )<a name="line.100"></a>
+<span class="sourceLineNo">101</span>                    String script,<a name="line.101"></a>
+<span class="sourceLineNo">102</span>            @DescribeParameter(<a name="line.102"></a>
+<span class="sourceLineNo">103</span>                        name = IN_DEST_NAME,<a name="line.103"></a>
+<span class="sourceLineNo">104</span>                        description =<a name="line.104"></a>
+<span class="sourceLineNo">105</span>                                "Name of the output, as used in the script (defaults to 'dest' if not specified)",<a name="line.105"></a>
+<span class="sourceLineNo">106</span>                        min = 0<a name="line.106"></a>
+<span class="sourceLineNo">107</span>                    )<a name="line.107"></a>
+<span class="sourceLineNo">108</span>                    String destName,<a name="line.108"></a>
+<span class="sourceLineNo">109</span>            @DescribeParameter(<a name="line.109"></a>
+<span class="sourceLineNo">110</span>                        name = IN_SOURCE_NAME,<a name="line.110"></a>
+<span class="sourceLineNo">111</span>                        description =<a name="line.111"></a>
+<span class="sourceLineNo">112</span>                                "Name of the inputs, as used in the script (default to src, src1, src2, ... if not specified)",<a name="line.112"></a>
+<span class="sourceLineNo">113</span>                        min = 0<a name="line.113"></a>
+<span class="sourceLineNo">114</span>                    )<a name="line.114"></a>
+<span class="sourceLineNo">115</span>                    String[] sourceNames,<a name="line.115"></a>
+<span class="sourceLineNo">116</span>            @DescribeParameter(<a name="line.116"></a>
+<span class="sourceLineNo">117</span>                        name = IN_OUTPUT_TYPE,<a name="line.117"></a>
+<span class="sourceLineNo">118</span>                        description =<a name="line.118"></a>
+<span class="sourceLineNo">119</span>                                "Output data type, BYTE, USHORT, SHORT, INT, FLOAT, DOUBLE. Defaults to DOUBLE if not specified",<a name="line.119"></a>
+<span class="sourceLineNo">120</span>                        min = 0<a name="line.120"></a>
+<span class="sourceLineNo">121</span>                    )<a name="line.121"></a>
+<span class="sourceLineNo">122</span>                    DataType dataType,<a name="line.122"></a>
+<span class="sourceLineNo">123</span>            ProgressListener progressListener)<a name="line.123"></a>
+<span class="sourceLineNo">124</span>            throws ProcessException, JiffleException {<a name="line.124"></a>
+<span class="sourceLineNo">125</span>        if (coverages.length == 0) {<a name="line.125"></a>
+<span class="sourceLineNo">126</span>            // we could remove this limit, but a few extra input parameters are needed (output<a name="line.126"></a>
+<span class="sourceLineNo">127</span>            // raster size and output envelope, with CRS)<a name="line.127"></a>
+<span class="sourceLineNo">128</span>            throw new IllegalArgumentException("Need at least one coverage in input");<a name="line.128"></a>
+<span class="sourceLineNo">129</span>        }<a name="line.129"></a>
+<span class="sourceLineNo">130</span>        // prepare the input rendered images<a name="line.130"></a>
+<span class="sourceLineNo">131</span>        RenderedImage[] sources = new RenderedImage[coverages.length];<a name="line.131"></a>
+<span class="sourceLineNo">132</span>        GridCoverage2D reference = coverages[0];<a name="line.132"></a>
+<span class="sourceLineNo">133</span>        sources[0] = reference.getRenderedImage();<a name="line.133"></a>
+<span class="sourceLineNo">134</span>        for (int i = 1; i &lt; sources.length; i++) {<a name="line.134"></a>
+<span class="sourceLineNo">135</span>            GridCoverage2D coverage = coverages[i];<a name="line.135"></a>
+<span class="sourceLineNo">136</span>            double[] nodata = CoverageUtilities.getBackgroundValues(coverage);<a name="line.136"></a>
+<span class="sourceLineNo">137</span>            ROI roi = CoverageUtilities.getROIProperty(coverage);<a name="line.137"></a>
+<span class="sourceLineNo">138</span>            sources[i] =<a name="line.138"></a>
+<span class="sourceLineNo">139</span>                    GridCoverage2DRIA.create(<a name="line.139"></a>
+<span class="sourceLineNo">140</span>                            coverage, reference, nodata, GeoTools.getDefaultHints(), roi);<a name="line.140"></a>
+<span class="sourceLineNo">141</span>        }<a name="line.141"></a>
+<span class="sourceLineNo">142</span><a name="line.142"></a>
+<span class="sourceLineNo">143</span>        // in case we have optimized out band selection, need to remap the band access<a name="line.143"></a>
+<span class="sourceLineNo">144</span>        BandTransform[] bandTransforms = null;<a name="line.144"></a>
+<span class="sourceLineNo">145</span>        if (sources.length == 1) {<a name="line.145"></a>
+<span class="sourceLineNo">146</span>            BandTransform bt =<a name="line.146"></a>
+<span class="sourceLineNo">147</span>                    getRenderingTransformationBandTransform(script, sourceNames, sources[0]);<a name="line.147"></a>
+<span class="sourceLineNo">148</span>            bandTransforms = new BandTransform[] {bt};<a name="line.148"></a>
+<span class="sourceLineNo">149</span>        }<a name="line.149"></a>
+<span class="sourceLineNo">150</span><a name="line.150"></a>
+<span class="sourceLineNo">151</span>        Integer awtDataType = dataType == null ? null : dataType.getDataType();<a name="line.151"></a>
+<span class="sourceLineNo">152</span>        RenderedOp result =<a name="line.152"></a>
+<span class="sourceLineNo">153</span>                JiffleDescriptor.create(<a name="line.153"></a>
+<span class="sourceLineNo">154</span>                        sources,<a name="line.154"></a>
+<span class="sourceLineNo">155</span>                        sourceNames,<a name="line.155"></a>
+<span class="sourceLineNo">156</span>                        destName,<a name="line.156"></a>
+<span class="sourceLineNo">157</span>                        script,<a name="line.157"></a>
+<span class="sourceLineNo">158</span>                        null,<a name="line.158"></a>
+<span class="sourceLineNo">159</span>                        awtDataType,<a name="line.159"></a>
+<span class="sourceLineNo">160</span>                        null,<a name="line.160"></a>
+<span class="sourceLineNo">161</span>                        bandTransforms,<a name="line.161"></a>
+<span class="sourceLineNo">162</span>                        GeoTools.getDefaultHints());<a name="line.162"></a>
+<span class="sourceLineNo">163</span><a name="line.163"></a>
+<span class="sourceLineNo">164</span>        GridCoverageFactory factory = new GridCoverageFactory(GeoTools.getDefaultHints());<a name="line.164"></a>
+<span class="sourceLineNo">165</span>        return factory.create("jiffle", result, reference.getEnvelope());<a name="line.165"></a>
+<span class="sourceLineNo">166</span>    }<a name="line.166"></a>
+<span class="sourceLineNo">167</span><a name="line.167"></a>
+<span class="sourceLineNo">168</span>    private BandTransform getRenderingTransformationBandTransform(<a name="line.168"></a>
+<span class="sourceLineNo">169</span>            String script, String[] sourceNames, RenderedImage source) throws JiffleException {<a name="line.169"></a>
+<span class="sourceLineNo">170</span>        // were we able to determine which bands are needed?<a name="line.170"></a>
+<span class="sourceLineNo">171</span>        int[] scriptBands = getTransformationBands(script, sourceNames);<a name="line.171"></a>
+<span class="sourceLineNo">172</span>        if (scriptBands == null) {<a name="line.172"></a>
+<span class="sourceLineNo">173</span>            return null;<a name="line.173"></a>
+<span class="sourceLineNo">174</span>        }<a name="line.174"></a>
+<span class="sourceLineNo">175</span><a name="line.175"></a>
+<span class="sourceLineNo">176</span>        // is there a mismatch between the available bands and the ones used in the script?<a name="line.176"></a>
+<span class="sourceLineNo">177</span>        // if so assume bands mapping has taken place in the RT<a name="line.177"></a>
+<span class="sourceLineNo">178</span>        int maxReadBand = Arrays.stream(scriptBands).max().getAsInt();<a name="line.178"></a>
+<span class="sourceLineNo">179</span>        // build the mapping as a lookup table<a name="line.179"></a>
+<span class="sourceLineNo">180</span>        final int[] map = new int[maxReadBand + 1];<a name="line.180"></a>
+<span class="sourceLineNo">181</span>        boolean mapRequired = false;<a name="line.181"></a>
+<span class="sourceLineNo">182</span>        for (int i = 0; i &lt; scriptBands.length; i++) {<a name="line.182"></a>
+<span class="sourceLineNo">183</span>            int scriptBand = scriptBands[i];<a name="line.183"></a>
+<span class="sourceLineNo">184</span>            map[scriptBand] = i;<a name="line.184"></a>
+<span class="sourceLineNo">185</span>            mapRequired |= scriptBand != i;<a name="line.185"></a>
+<span class="sourceLineNo">186</span>        }<a name="line.186"></a>
+<span class="sourceLineNo">187</span><a name="line.187"></a>
+<span class="sourceLineNo">188</span>        if (!mapRequired) {<a name="line.188"></a>
+<span class="sourceLineNo">189</span>            return null;<a name="line.189"></a>
+<span class="sourceLineNo">190</span>        }<a name="line.190"></a>
+<span class="sourceLineNo">191</span><a name="line.191"></a>
+<span class="sourceLineNo">192</span>        // perform a simple mapping using the above lookup table<a name="line.192"></a>
+<span class="sourceLineNo">193</span>        return (x, y, scriptBand) -&gt; map[scriptBand];<a name="line.193"></a>
+<span class="sourceLineNo">194</span>    }<a name="line.194"></a>
+<span class="sourceLineNo">195</span><a name="line.195"></a>
+<span class="sourceLineNo">196</span>    /**<a name="line.196"></a>
+<span class="sourceLineNo">197</span>     * This is called by the renderer to optimize the read, if possible, we'll customize the band<a name="line.197"></a>
+<span class="sourceLineNo">198</span>     * reading so that we read only what we know will be used by the script. At the time of writing,<a name="line.198"></a>
+<span class="sourceLineNo">199</span>     * this works only if band positions in the script are literals.<a name="line.199"></a>
+<span class="sourceLineNo">200</span>     */<a name="line.200"></a>
+<span class="sourceLineNo">201</span>    public GeneralParameterValue[] customizeReadParams(<a name="line.201"></a>
+<span class="sourceLineNo">202</span>            @DescribeParameter(<a name="line.202"></a>
+<span class="sourceLineNo">203</span>                        name = IN_SCRIPT,<a name="line.203"></a>
+<span class="sourceLineNo">204</span>                        description = "The script performing the map algebra, in Jiffle language"<a name="line.204"></a>
+<span class="sourceLineNo">205</span>                    )<a name="line.205"></a>
+<span class="sourceLineNo">206</span>                    String script,<a name="line.206"></a>
+<span class="sourceLineNo">207</span>            @DescribeParameter(<a name="line.207"></a>
+<span class="sourceLineNo">208</span>                        name = IN_DEST_NAME,<a name="line.208"></a>
+<span class="sourceLineNo">209</span>                        description =<a name="line.209"></a>
+<span class="sourceLineNo">210</span>                                "Name of the output, as used in the script (defaults to 'dest' if not specified)",<a name="line.210"></a>
+<span class="sourceLineNo">211</span>                        min = 0<a name="line.211"></a>
+<span class="sourceLineNo">212</span>                    )<a name="line.212"></a>
+<span class="sourceLineNo">213</span>                    String destName,<a name="line.213"></a>
+<span class="sourceLineNo">214</span>            @DescribeParameter(<a name="line.214"></a>
+<span class="sourceLineNo">215</span>                        name = IN_SOURCE_NAME,<a name="line.215"></a>
+<span class="sourceLineNo">216</span>                        description =<a name="line.216"></a>
+<span class="sourceLineNo">217</span>                                "Name of the inputs, as used in the script (default to src, src1, src2, ... if not specified)",<a name="line.217"></a>
+<span class="sourceLineNo">218</span>                        min = 0<a name="line.218"></a>
+<span class="sourceLineNo">219</span>                    )<a name="line.219"></a>
+<span class="sourceLineNo">220</span>                    String[] sourceNames,<a name="line.220"></a>
+<span class="sourceLineNo">221</span>            @DescribeParameter(<a name="line.221"></a>
+<span class="sourceLineNo">222</span>                        name = TX_BANDS,<a name="line.222"></a>
+<span class="sourceLineNo">223</span>                        description = "Bands read by the transformation",<a name="line.223"></a>
+<span class="sourceLineNo">224</span>                        min = 0<a name="line.224"></a>
+<span class="sourceLineNo">225</span>                    )<a name="line.225"></a>
+<span class="sourceLineNo">226</span>                    int[] usedBands,<a name="line.226"></a>
+<span class="sourceLineNo">227</span>            GridCoverageReader reader,<a name="line.227"></a>
+<span class="sourceLineNo">228</span>            GeneralParameterValue[] params) {<a name="line.228"></a>
+<span class="sourceLineNo">229</span>        try {<a name="line.229"></a>
+<span class="sourceLineNo">230</span>            // do we have a band selection parameter in the input?<a name="line.230"></a>
+<span class="sourceLineNo">231</span>            ParameterValueGroup readerParams = reader.getFormat().getReadParameters();<a name="line.231"></a>
+<span class="sourceLineNo">232</span>            ParameterValue&lt;?&gt; bands =<a name="line.232"></a>
+<span class="sourceLineNo">233</span>                    readerParams.parameter(AbstractGridFormat.BANDS.getName(null));<a name="line.233"></a>
+<span class="sourceLineNo">234</span>            if (bands == null) {<a name="line.234"></a>
+<span class="sourceLineNo">235</span>                LOGGER.log(Level.FINE, "The reader does not support band selection, reading all");<a name="line.235"></a>
+<span class="sourceLineNo">236</span>                return params;<a name="line.236"></a>
+<span class="sourceLineNo">237</span>            }<a name="line.237"></a>
+<span class="sourceLineNo">238</span><a name="line.238"></a>
+<span class="sourceLineNo">239</span>            // cannot do anything if we cannot access the sample model<a name="line.239"></a>
+<span class="sourceLineNo">240</span>            if (!(reader instanceof GridCoverage2DReader)) {<a name="line.240"></a>
+<span class="sourceLineNo">241</span>                LOGGER.log(Level.FINE, "The reader is not a 2D one, reading all bands");<a name="line.241"></a>
+<span class="sourceLineNo">242</span>                return params;<a name="line.242"></a>
+<span class="sourceLineNo">243</span>            }<a name="line.243"></a>
+<span class="sourceLineNo">244</span>            GridCoverage2DReader r2d = (GridCoverage2DReader) reader;<a name="line.244"></a>
+<span class="sourceLineNo">245</span>            ImageLayout layout = r2d.getImageLayout();<a name="line.245"></a>
+<span class="sourceLineNo">246</span>            if (layout == null || layout.getSampleModel(null) == null) {<a name="line.246"></a>
+<span class="sourceLineNo">247</span>                LOGGER.log(Level.FINE, "Cannot determine the reader bands, reading them all");<a name="line.247"></a>
+<span class="sourceLineNo">248</span>                return params;<a name="line.248"></a>
+<span class="sourceLineNo">249</span>            }<a name="line.249"></a>
+<span class="sourceLineNo">250</span>            SampleModel sampleModel = layout.getSampleModel(null);<a name="line.250"></a>
+<span class="sourceLineNo">251</span><a name="line.251"></a>
+<span class="sourceLineNo">252</span>            // are we using less bands than available in the reader?<a name="line.252"></a>
+<span class="sourceLineNo">253</span>            if (usedBands == null) {<a name="line.253"></a>
+<span class="sourceLineNo">254</span>                usedBands = getTransformationBands(script, sourceNames);<a name="line.254"></a>
+<span class="sourceLineNo">255</span>            }<a name="line.255"></a>
+<span class="sourceLineNo">256</span>            if (usedBands == null || usedBands.length &gt;= sampleModel.getNumBands()) {<a name="line.256"></a>
+<span class="sourceLineNo">257</span>                return params;<a name="line.257"></a>
+<span class="sourceLineNo">258</span>            }<a name="line.258"></a>
+<span class="sourceLineNo">259</span><a name="line.259"></a>
+<span class="sourceLineNo">260</span>            return mergeBandParam(params, usedBands);<a name="line.260"></a>
+<span class="sourceLineNo">261</span>        } catch (Exception e) {<a name="line.261"></a>
+<span class="sourceLineNo">262</span>            LOGGER.log(<a name="line.262"></a>
+<span class="sourceLineNo">263</span>                    Level.INFO,<a name="line.263"></a>
+<span class="sourceLineNo">264</span>                    "Failed to determine if we can read less bands based on the Jiffle script, continuing reading all source bands",<a name="line.264"></a>
+<span class="sourceLineNo">265</span>                    e);<a name="line.265"></a>
+<span class="sourceLineNo">266</span>            return params;<a name="line.266"></a>
+<span class="sourceLineNo">267</span>        }<a name="line.267"></a>
+<span class="sourceLineNo">268</span>    }<a name="line.268"></a>
+<span class="sourceLineNo">269</span><a name="line.269"></a>
+<span class="sourceLineNo">270</span>    private GeneralParameterValue[] mergeBandParam(GeneralParameterValue[] params, int[] bands) {<a name="line.270"></a>
+<span class="sourceLineNo">271</span>        // is it already there for some reason?<a name="line.271"></a>
+<span class="sourceLineNo">272</span>        if (params != null) {<a name="line.272"></a>
+<span class="sourceLineNo">273</span>            for (GeneralParameterValue param : params) {<a name="line.273"></a>
+<span class="sourceLineNo">274</span>                if (param.getDescriptor().getName().equals(AbstractGridFormat.BANDS.getName())) {<a name="line.274"></a>
+<span class="sourceLineNo">275</span>                    ((ParameterValue) param).setValue(bands);<a name="line.275"></a>
+<span class="sourceLineNo">276</span>                    return params;<a name="line.276"></a>
+<span class="sourceLineNo">277</span>                }<a name="line.277"></a>
+<span class="sourceLineNo">278</span>            }<a name="line.278"></a>
+<span class="sourceLineNo">279</span>        }<a name="line.279"></a>
+<span class="sourceLineNo">280</span><a name="line.280"></a>
+<span class="sourceLineNo">281</span>        // not found, need to add<a name="line.281"></a>
+<span class="sourceLineNo">282</span>        List&lt;GeneralParameterValue&gt; list =<a name="line.282"></a>
+<span class="sourceLineNo">283</span>                new ArrayList&lt;&gt;(params == null ? Collections.emptyList() : Arrays.asList(params));<a name="line.283"></a>
+<span class="sourceLineNo">284</span>        ParameterValue&lt;int[]&gt; value = AbstractGridFormat.BANDS.createValue();<a name="line.284"></a>
+<span class="sourceLineNo">285</span>        value.setValue(bands);<a name="line.285"></a>
+<span class="sourceLineNo">286</span>        list.add(value);<a name="line.286"></a>
+<span class="sourceLineNo">287</span>        return list.toArray(new GeneralParameterValue[list.size()]);<a name="line.287"></a>
+<span class="sourceLineNo">288</span>    }<a name="line.288"></a>
+<span class="sourceLineNo">289</span><a name="line.289"></a>
+<span class="sourceLineNo">290</span>    /**<a name="line.290"></a>
+<span class="sourceLineNo">291</span>     * Returns the source bands used, or null the bands indexes cannot be computed (e.g., they<a name="line.291"></a>
+<span class="sourceLineNo">292</span>     * depend on script variables)<a name="line.292"></a>
+<span class="sourceLineNo">293</span>     *<a name="line.293"></a>
+<span class="sourceLineNo">294</span>     * @param script<a name="line.294"></a>
+<span class="sourceLineNo">295</span>     * @param sourceNames<a name="line.295"></a>
+<span class="sourceLineNo">296</span>     * @return<a name="line.296"></a>
+<span class="sourceLineNo">297</span>     * @throws JiffleException<a name="line.297"></a>
+<span class="sourceLineNo">298</span>     */<a name="line.298"></a>
+<span class="sourceLineNo">299</span>    private int[] getTransformationBands(String script, String[] sourceNames)<a name="line.299"></a>
+<span class="sourceLineNo">300</span>            throws JiffleException {<a name="line.300"></a>
+<span class="sourceLineNo">301</span>        // a rendering transformation only uses a single input<a name="line.301"></a>
+<span class="sourceLineNo">302</span>        String sourceName = "src";<a name="line.302"></a>
+<span class="sourceLineNo">303</span>        if (sourceNames != null &amp;&amp; sourceNames.length &gt; 0) {<a name="line.303"></a>
+<span class="sourceLineNo">304</span>            sourceName = sourceNames[0];<a name="line.304"></a>
+<span class="sourceLineNo">305</span>        }<a name="line.305"></a>
+<span class="sourceLineNo">306</span><a name="line.306"></a>
+<span class="sourceLineNo">307</span>        // get the reading positions<a name="line.307"></a>
+<span class="sourceLineNo">308</span>        Set&lt;GetSourceValue&gt; positions = Jiffle.getReadPositions(script, Arrays.asList(sourceName));<a name="line.308"></a>
+<span class="sourceLineNo">309</span>        if (positions.isEmpty()) {<a name="line.309"></a>
+<span class="sourceLineNo">310</span>            return null;<a name="line.310"></a>
+<span class="sourceLineNo">311</span>        }<a name="line.311"></a>
+<span class="sourceLineNo">312</span>        // extract the bands, bail out if a band is specified through an expression<a name="line.312"></a>
+<span class="sourceLineNo">313</span>        Set&lt;Integer&gt; bands = new HashSet&lt;&gt;();<a name="line.313"></a>
+<span class="sourceLineNo">314</span>        for (GetSourceValue position : positions) {<a name="line.314"></a>
+<span class="sourceLineNo">315</span>            Band band = position.getPos().getBand();<a name="line.315"></a>
+<span class="sourceLineNo">316</span>            Expression index = band.getIndex();<a name="line.316"></a>
+<span class="sourceLineNo">317</span>            if (index == null) {<a name="line.317"></a>
+<span class="sourceLineNo">318</span>                bands.add(0);<a name="line.318"></a>
+<span class="sourceLineNo">319</span>            } else if (index instanceof ScalarLiteral) {<a name="line.319"></a>
+<span class="sourceLineNo">320</span>                bands.add(Integer.valueOf(((ScalarLiteral) band.getIndex()).getValue()));<a name="line.320"></a>
+<span class="sourceLineNo">321</span>            } else {<a name="line.321"></a>
+<span class="sourceLineNo">322</span>                if (LOGGER.isLoggable(Level.FINE)) {<a name="line.322"></a>
+<span class="sourceLineNo">323</span>                    LOGGER.log(<a name="line.323"></a>
+<span class="sourceLineNo">324</span>                            Level.FINE,<a name="line.324"></a>
+<span class="sourceLineNo">325</span>                            "Cannot determine read bands, the source read spec use an expression "<a name="line.325"></a>
+<span class="sourceLineNo">326</span>                                    + "for the band, not a literal: "<a name="line.326"></a>
+<span class="sourceLineNo">327</span>                                    + position);<a name="line.327"></a>
+<span class="sourceLineNo">328</span>                }<a name="line.328"></a>
+<span class="sourceLineNo">329</span>                return null;<a name="line.329"></a>
+<span class="sourceLineNo">330</span>            }<a name="line.330"></a>
+<span class="sourceLineNo">331</span>        }<a name="line.331"></a>
+<span class="sourceLineNo">332</span><a name="line.332"></a>
+<span class="sourceLineNo">333</span>        return bands.stream().mapToInt(b -&gt; b).sorted().toArray();<a name="line.333"></a>
+<span class="sourceLineNo">334</span>    }<a name="line.334"></a>
+<span class="sourceLineNo">335</span>}<a name="line.335"></a>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</pre>
+</div>
+</body>
+</html>
