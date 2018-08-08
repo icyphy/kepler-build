@@ -788,7 +788,7 @@
 <span class="sourceLineNo">780</span><a name="line.780"></a>
 <span class="sourceLineNo">781</span>            // Define the path to the SSI files on the ptolemy site.<a name="line.781"></a>
 <span class="sourceLineNo">782</span>            // ssiRoot always has a trailing slash.<a name="line.782"></a>
-<span class="sourceLineNo">783</span>            final String ssiRoot = "http://ptolemy.org/";<a name="line.783"></a>
+<span class="sourceLineNo">783</span>            final String ssiRoot = "https://ptolemy.org/";<a name="line.783"></a>
 <span class="sourceLineNo">784</span><a name="line.784"></a>
 <span class="sourceLineNo">785</span>            // Reference required script files.<a name="line.785"></a>
 <span class="sourceLineNo">786</span>            // If the model contains an instance of CopyJavaScriptFiles, then<a name="line.786"></a>
@@ -815,9 +815,9 @@
 <span class="sourceLineNo">807</span><a name="line.807"></a>
 <span class="sourceLineNo">808</span>            // In HTML5, can omit "type" attributes for scripts and stylesheets<a name="line.808"></a>
 <span class="sourceLineNo">809</span>            printWriter.println("&lt;link rel=\"stylesheet\"  href=\"" + jsLibrary<a name="line.809"></a>
-<span class="sourceLineNo">810</span>                    + "javascript/" + FILENAMES[2] + "\" media=\"screen\"/&gt;");<a name="line.810"></a>
+<span class="sourceLineNo">810</span>                    + "js/" + FILENAMES[2] + "\" media=\"screen\"/&gt;");<a name="line.810"></a>
 <span class="sourceLineNo">811</span>            printWriter.println("&lt;link rel=\"stylesheet\"  href=\"" + jsLibrary<a name="line.811"></a>
-<span class="sourceLineNo">812</span>                    + "javascript/" + FILENAMES[4] + "\" media=\"screen\"/&gt;");<a name="line.812"></a>
+<span class="sourceLineNo">812</span>                    + "js/" + FILENAMES[4] + "\" media=\"screen\"/&gt;");<a name="line.812"></a>
 <span class="sourceLineNo">813</span>            if (usePtWebsite) {<a name="line.813"></a>
 <span class="sourceLineNo">814</span>                // FIXME: this absolute path is not very safe.  The<a name="line.814"></a>
 <span class="sourceLineNo">815</span>                // problem is that we don't know where $PTII is located on<a name="line.815"></a>
@@ -831,19 +831,19 @@
 <span class="sourceLineNo">823</span><a name="line.823"></a>
 <span class="sourceLineNo">824</span>            // In HTML5, can omit "type" attributes for scripts and stylesheets<a name="line.824"></a>
 <span class="sourceLineNo">825</span>            // NOTE: Due to a bug somewhere (browser, Javascript, etc.), can't end this with /&gt;. Have to use &lt;/script&gt;.<a name="line.825"></a>
-<span class="sourceLineNo">826</span>            printWriter.println("&lt;script src=\"" + jsLibrary + "javascript/"<a name="line.826"></a>
+<span class="sourceLineNo">826</span>            printWriter.println("&lt;script src=\"" + jsLibrary + "js/"<a name="line.826"></a>
 <span class="sourceLineNo">827</span>                    + FILENAMES[0] + "\"&gt;&lt;/script&gt;");<a name="line.827"></a>
-<span class="sourceLineNo">828</span>            printWriter.println("&lt;script src=\"" + jsLibrary + "javascript/"<a name="line.828"></a>
+<span class="sourceLineNo">828</span>            printWriter.println("&lt;script src=\"" + jsLibrary + "js/"<a name="line.828"></a>
 <span class="sourceLineNo">829</span>                    + FILENAMES[1] + "\"&gt;&lt;/script&gt;");<a name="line.829"></a>
 <span class="sourceLineNo">830</span><a name="line.830"></a>
 <span class="sourceLineNo">831</span>            // FILENAMES[2] is a stylesheet &lt;link, so it goes in the head, see above.<a name="line.831"></a>
 <span class="sourceLineNo">832</span><a name="line.832"></a>
-<span class="sourceLineNo">833</span>            printWriter.println("&lt;script src=\"" + jsLibrary + "javascript/"<a name="line.833"></a>
+<span class="sourceLineNo">833</span>            printWriter.println("&lt;script src=\"" + jsLibrary + "js/"<a name="line.833"></a>
 <span class="sourceLineNo">834</span>                    + FILENAMES[3] + "\"&gt;&lt;/script&gt;");<a name="line.834"></a>
-<span class="sourceLineNo">835</span>            printWriter.println("&lt;script src=\"" + jsLibrary + "javascript/"<a name="line.835"></a>
+<span class="sourceLineNo">835</span>            printWriter.println("&lt;script src=\"" + jsLibrary + "js/"<a name="line.835"></a>
 <span class="sourceLineNo">836</span>                    + FILENAMES[5] + "\"&gt;&lt;/script&gt;");<a name="line.836"></a>
 <span class="sourceLineNo">837</span>            // Could alternatively use a CDS (Content Delivery Service) for the JavaScript library for jquery.<a name="line.837"></a>
-<span class="sourceLineNo">838</span>            // index.println("&lt;script type=\"text/javascript\" src=\"http://ajax.googleapis.com/ajax/libs/jquery/1.4/jquery.min.js\"&gt;&lt;/script&gt;");<a name="line.838"></a>
+<span class="sourceLineNo">838</span>            // index.println("&lt;script type=\"text/js\" src=\"http://ajax.googleapis.com/ajax/libs/jquery/1.4/jquery.min.js\"&gt;&lt;/script&gt;");<a name="line.838"></a>
 <span class="sourceLineNo">839</span><a name="line.839"></a>
 <span class="sourceLineNo">840</span>            // Next, create the image map.<a name="line.840"></a>
 <span class="sourceLineNo">841</span>            String map = _createImageMap(parameters.directoryToExportTo);<a name="line.841"></a>
