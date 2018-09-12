@@ -11,8 +11,8 @@
 <span class="sourceLineNo">003</span> * All rights reserved.<a name="line.3"></a>
 <span class="sourceLineNo">004</span> *<a name="line.4"></a>
 <span class="sourceLineNo">005</span> * '$Author: crawl $'<a name="line.5"></a>
-<span class="sourceLineNo">006</span> * '$Date: 2016-07-12 06:04:25 +0000 (Tue, 12 Jul 2016) $' <a name="line.6"></a>
-<span class="sourceLineNo">007</span> * '$Revision: 34503 $'<a name="line.7"></a>
+<span class="sourceLineNo">006</span> * '$Date: 2018-09-06 23:20:04 +0000 (Thu, 06 Sep 2018) $' <a name="line.6"></a>
+<span class="sourceLineNo">007</span> * '$Revision: 34710 $'<a name="line.7"></a>
 <span class="sourceLineNo">008</span> * <a name="line.8"></a>
 <span class="sourceLineNo">009</span> * Permission is hereby granted, without written agreement and without<a name="line.9"></a>
 <span class="sourceLineNo">010</span> * license or royalty fees, to use, copy, modify, and distribute this<a name="line.10"></a>
@@ -119,7 +119,7 @@
 <span class="sourceLineNo">111</span> *  &lt;/p&gt;<a name="line.111"></a>
 <span class="sourceLineNo">112</span> *  <a name="line.112"></a>
 <span class="sourceLineNo">113</span> *  @author Daniel Crawl<a name="line.113"></a>
-<span class="sourceLineNo">114</span> *  @version $Id: KMLWriter.java 34503 2016-07-12 06:04:25Z crawl $<a name="line.114"></a>
+<span class="sourceLineNo">114</span> *  @version $Id: KMLWriter.java 34710 2018-09-06 23:20:04Z crawl $<a name="line.114"></a>
 <span class="sourceLineNo">115</span> */<a name="line.115"></a>
 <span class="sourceLineNo">116</span>public class KMLWriter extends TypedAtomicActor {<a name="line.116"></a>
 <span class="sourceLineNo">117</span><a name="line.117"></a>
@@ -160,585 +160,646 @@
 <span class="sourceLineNo">152</span>        placemarkNameProperty.setTypeEquals(BaseType.STRING);<a name="line.152"></a>
 <span class="sourceLineNo">153</span>        placemarkNameProperty.getPort().setTypeEquals(BaseType.STRING);<a name="line.153"></a>
 <span class="sourceLineNo">154</span>        new SingletonAttribute(placemarkNameProperty.getPort(), "_showName");<a name="line.154"></a>
-<span class="sourceLineNo">155</span>        <a name="line.155"></a>
-<span class="sourceLineNo">156</span>        output = new TypedIOPort(this, "output", false, true);<a name="line.156"></a>
-<span class="sourceLineNo">157</span>    }<a name="line.157"></a>
-<span class="sourceLineNo">158</span>    <a name="line.158"></a>
-<span class="sourceLineNo">159</span>    @Override<a name="line.159"></a>
-<span class="sourceLineNo">160</span>    public void attributeChanged(Attribute attribute) throws IllegalActionException {<a name="line.160"></a>
-<span class="sourceLineNo">161</span>        if(attribute == outputType) {<a name="line.161"></a>
-<span class="sourceLineNo">162</span>            StringToken token = (StringToken) outputType.getToken();<a name="line.162"></a>
-<span class="sourceLineNo">163</span>            if(token != null) {<a name="line.163"></a>
-<span class="sourceLineNo">164</span>                String val = ((StringToken)token).stringValue();<a name="line.164"></a>
-<span class="sourceLineNo">165</span>                if(val.trim().isEmpty()) {<a name="line.165"></a>
-<span class="sourceLineNo">166</span>                    _outputTypeStr = "file";<a name="line.166"></a>
-<span class="sourceLineNo">167</span>                } else if(_outputTypeStr != null &amp;&amp; <a name="line.167"></a>
-<span class="sourceLineNo">168</span>                    !_outputTypeStr.equals("file") &amp;&amp;<a name="line.168"></a>
-<span class="sourceLineNo">169</span>                    !_outputTypeStr.equals("text") &amp;&amp;<a name="line.169"></a>
-<span class="sourceLineNo">170</span>                    !_outputTypeStr.equals("binary")) {<a name="line.170"></a>
-<span class="sourceLineNo">171</span>                    throw new IllegalActionException(this, "Unsupported type of output: " + val);<a name="line.171"></a>
-<span class="sourceLineNo">172</span>                } else {<a name="line.172"></a>
-<span class="sourceLineNo">173</span>                    _outputTypeStr = val;<a name="line.173"></a>
-<span class="sourceLineNo">174</span>                }<a name="line.174"></a>
-<span class="sourceLineNo">175</span>            }            <a name="line.175"></a>
-<span class="sourceLineNo">176</span>        } else {<a name="line.176"></a>
-<span class="sourceLineNo">177</span>            super.attributeChanged(attribute);<a name="line.177"></a>
-<span class="sourceLineNo">178</span>        }<a name="line.178"></a>
-<span class="sourceLineNo">179</span>    }<a name="line.179"></a>
-<span class="sourceLineNo">180</span>    <a name="line.180"></a>
-<span class="sourceLineNo">181</span>    @Override<a name="line.181"></a>
-<span class="sourceLineNo">182</span>    public void fire() throws IllegalActionException {<a name="line.182"></a>
-<span class="sourceLineNo">183</span>        <a name="line.183"></a>
-<span class="sourceLineNo">184</span>        super.fire();<a name="line.184"></a>
-<span class="sourceLineNo">185</span>        <a name="line.185"></a>
-<span class="sourceLineNo">186</span>        filename.update();<a name="line.186"></a>
-<span class="sourceLineNo">187</span>                <a name="line.187"></a>
-<span class="sourceLineNo">188</span>        String filenameStr = null;<a name="line.188"></a>
-<span class="sourceLineNo">189</span>        if(_outputTypeStr.equals("file")) {        <a name="line.189"></a>
-<span class="sourceLineNo">190</span>            filenameStr = ((StringToken)filename.getToken()).stringValue();<a name="line.190"></a>
-<span class="sourceLineNo">191</span>            if(filenameStr.trim().isEmpty()) {<a name="line.191"></a>
-<span class="sourceLineNo">192</span>                throw new IllegalActionException(this, "Must specify output file.");<a name="line.192"></a>
-<span class="sourceLineNo">193</span>            }<a name="line.193"></a>
-<span class="sourceLineNo">194</span>        }<a name="line.194"></a>
-<span class="sourceLineNo">195</span>        <a name="line.195"></a>
-<span class="sourceLineNo">196</span>        Writer writer = null;<a name="line.196"></a>
-<span class="sourceLineNo">197</span>        try {<a name="line.197"></a>
-<span class="sourceLineNo">198</span>            if(_outputTypeStr.equals("file")) {<a name="line.198"></a>
-<span class="sourceLineNo">199</span>                writer = new FileWriter(filenameStr);<a name="line.199"></a>
-<span class="sourceLineNo">200</span>            } else if(_outputTypeStr.equals("text") || _outputTypeStr.equals("binary")) {<a name="line.200"></a>
-<span class="sourceLineNo">201</span>                writer = new StringWriter();<a name="line.201"></a>
-<span class="sourceLineNo">202</span>            } else {<a name="line.202"></a>
-<span class="sourceLineNo">203</span>                throw new IllegalActionException(this, "Unsupported type of output: " + _outputTypeStr);<a name="line.203"></a>
-<span class="sourceLineNo">204</span>            }<a name="line.204"></a>
-<span class="sourceLineNo">205</span>    <a name="line.205"></a>
-<span class="sourceLineNo">206</span>            <a name="line.206"></a>
-<span class="sourceLineNo">207</span>            folderName.update();<a name="line.207"></a>
-<span class="sourceLineNo">208</span>            String folderNameStr = null;<a name="line.208"></a>
-<span class="sourceLineNo">209</span>            StringToken token = (StringToken) folderName.getToken();<a name="line.209"></a>
-<span class="sourceLineNo">210</span>            if(token != null) {<a name="line.210"></a>
-<span class="sourceLineNo">211</span>                folderNameStr = token.stringValue();<a name="line.211"></a>
-<span class="sourceLineNo">212</span>            }<a name="line.212"></a>
-<span class="sourceLineNo">213</span>            <a name="line.213"></a>
-<span class="sourceLineNo">214</span>            String formattedDateStr = null;<a name="line.214"></a>
-<span class="sourceLineNo">215</span>            DateToken dateToken = null;<a name="line.215"></a>
-<span class="sourceLineNo">216</span>            if(date.numberOfSources() &gt; 0) {<a name="line.216"></a>
-<span class="sourceLineNo">217</span>                dateToken = (DateToken)date.get(0);<a name="line.217"></a>
-<span class="sourceLineNo">218</span>    <a name="line.218"></a>
-<span class="sourceLineNo">219</span>                if(dateToken == null) {<a name="line.219"></a>
-<span class="sourceLineNo">220</span>                    //System.out.println("WARNING: no timestamp.");<a name="line.220"></a>
-<span class="sourceLineNo">221</span>                } else {<a name="line.221"></a>
-<span class="sourceLineNo">222</span>                    //String whenStr = String.format("%02d-%02d-%02d", year, mon, day);<a name="line.222"></a>
-<span class="sourceLineNo">223</span>                    <a name="line.223"></a>
-<span class="sourceLineNo">224</span>                    Date dateVal = new Date(dateToken.getValue());<a name="line.224"></a>
-<span class="sourceLineNo">225</span>                    synchronized(WriteTimestampToKML.KML_TIMESTAMP_FORMAT) {<a name="line.225"></a>
-<span class="sourceLineNo">226</span>                        formattedDateStr = WriteTimestampToKML.KML_TIMESTAMP_FORMAT.format(dateVal);   <a name="line.226"></a>
-<span class="sourceLineNo">227</span>                    }<a name="line.227"></a>
-<span class="sourceLineNo">228</span>                }<a name="line.228"></a>
-<span class="sourceLineNo">229</span>            }<a name="line.229"></a>
-<span class="sourceLineNo">230</span>    <a name="line.230"></a>
-<span class="sourceLineNo">231</span>            final Kml kml = new Kml();<a name="line.231"></a>
-<span class="sourceLineNo">232</span>            final Document doc = kml.createAndSetDocument();<a name="line.232"></a>
-<span class="sourceLineNo">233</span>            <a name="line.233"></a>
-<span class="sourceLineNo">234</span>            // only create a top level folder if a name is specified.<a name="line.234"></a>
-<span class="sourceLineNo">235</span>            Folder topFolder = null;<a name="line.235"></a>
-<span class="sourceLineNo">236</span>            if(folderNameStr != null &amp;&amp; !folderNameStr.trim().isEmpty()) {<a name="line.236"></a>
-<span class="sourceLineNo">237</span>                topFolder = doc.createAndAddFolder();<a name="line.237"></a>
-<span class="sourceLineNo">238</span>                topFolder.setName(folderNameStr);<a name="line.238"></a>
-<span class="sourceLineNo">239</span>            }<a name="line.239"></a>
-<span class="sourceLineNo">240</span>            <a name="line.240"></a>
-<span class="sourceLineNo">241</span>            // add the features read by each input port into a separate<a name="line.241"></a>
-<span class="sourceLineNo">242</span>            // folder<a name="line.242"></a>
-<span class="sourceLineNo">243</span>            for(TypedIOPort port : inputPortList()) {<a name="line.243"></a>
-<span class="sourceLineNo">244</span>                // do not use the class-specific input ports<a name="line.244"></a>
-<span class="sourceLineNo">245</span>                if(port != date &amp;&amp; !(port instanceof ParameterPort)) {<a name="line.245"></a>
-<span class="sourceLineNo">246</span>    <a name="line.246"></a>
-<span class="sourceLineNo">247</span>                    SimpleFeatureCollection features = ((VectorToken)port.get(0)).getVectors();<a name="line.247"></a>
-<span class="sourceLineNo">248</span>                    <a name="line.248"></a>
-<span class="sourceLineNo">249</span>                    // create the folder with the port name.<a name="line.249"></a>
-<span class="sourceLineNo">250</span>                    Folder portFolder;<a name="line.250"></a>
-<span class="sourceLineNo">251</span>                    if(topFolder != null) {<a name="line.251"></a>
-<span class="sourceLineNo">252</span>                        portFolder = topFolder.createAndAddFolder();<a name="line.252"></a>
-<span class="sourceLineNo">253</span>                    } else {<a name="line.253"></a>
-<span class="sourceLineNo">254</span>                        portFolder = doc.createAndAddFolder();<a name="line.254"></a>
-<span class="sourceLineNo">255</span>                    }<a name="line.255"></a>
-<span class="sourceLineNo">256</span>                    portFolder.setName(port.getName());<a name="line.256"></a>
-<span class="sourceLineNo">257</span>                    _addToFolder(portFolder, features, formattedDateStr);                <a name="line.257"></a>
-<span class="sourceLineNo">258</span>                }<a name="line.258"></a>
-<span class="sourceLineNo">259</span>            }<a name="line.259"></a>
-<span class="sourceLineNo">260</span>            <a name="line.260"></a>
-<span class="sourceLineNo">261</span>            //kml.marshal(System.out);<a name="line.261"></a>
-<span class="sourceLineNo">262</span>            kml.marshal(writer);<a name="line.262"></a>
-<span class="sourceLineNo">263</span>                    <a name="line.263"></a>
-<span class="sourceLineNo">264</span>            if(_outputTypeStr.equals("file")) {<a name="line.264"></a>
-<span class="sourceLineNo">265</span>                output.broadcast(new StringToken(filenameStr));<a name="line.265"></a>
-<span class="sourceLineNo">266</span>            } else if(_outputTypeStr.equals("text")) {<a name="line.266"></a>
-<span class="sourceLineNo">267</span>                output.broadcast(new StringToken(writer.toString()));                <a name="line.267"></a>
-<span class="sourceLineNo">268</span>            } else if(_outputTypeStr.equals("binary")) {<a name="line.268"></a>
-<span class="sourceLineNo">269</span>                byte[] bytes = writer.toString().getBytes("UTF-8");<a name="line.269"></a>
-<span class="sourceLineNo">270</span>                Token[] tokens = new Token[bytes.length];<a name="line.270"></a>
-<span class="sourceLineNo">271</span>                for(int i = 0; i &lt; bytes.length; i++) {<a name="line.271"></a>
-<span class="sourceLineNo">272</span>                    tokens[i] = new UnsignedByteToken(bytes[i]);<a name="line.272"></a>
-<span class="sourceLineNo">273</span>                }<a name="line.273"></a>
-<span class="sourceLineNo">274</span>                output.broadcast(new ArrayToken(tokens));<a name="line.274"></a>
-<span class="sourceLineNo">275</span>            }<a name="line.275"></a>
-<span class="sourceLineNo">276</span>            <a name="line.276"></a>
-<span class="sourceLineNo">277</span>        } catch(IOException e) {<a name="line.277"></a>
-<span class="sourceLineNo">278</span>            throw new IllegalActionException(this, e, "Error writing KML.");<a name="line.278"></a>
-<span class="sourceLineNo">279</span>        } finally {<a name="line.279"></a>
-<span class="sourceLineNo">280</span>            if(writer != null) {<a name="line.280"></a>
-<span class="sourceLineNo">281</span>                try {<a name="line.281"></a>
-<span class="sourceLineNo">282</span>                    writer.close();<a name="line.282"></a>
-<span class="sourceLineNo">283</span>                } catch(IOException e) {<a name="line.283"></a>
-<span class="sourceLineNo">284</span>                    throw new IllegalActionException(this, e, "Error writing KML.");<a name="line.284"></a>
-<span class="sourceLineNo">285</span>                }<a name="line.285"></a>
-<span class="sourceLineNo">286</span>            }<a name="line.286"></a>
-<span class="sourceLineNo">287</span>        }<a name="line.287"></a>
-<span class="sourceLineNo">288</span>    }<a name="line.288"></a>
-<span class="sourceLineNo">289</span>    <a name="line.289"></a>
-<span class="sourceLineNo">290</span>    /** Set the input ports to vector. */<a name="line.290"></a>
-<span class="sourceLineNo">291</span>    @Override<a name="line.291"></a>
-<span class="sourceLineNo">292</span>    public void preinitialize() throws IllegalActionException {<a name="line.292"></a>
-<span class="sourceLineNo">293</span>        super.preinitialize();<a name="line.293"></a>
-<span class="sourceLineNo">294</span>        <a name="line.294"></a>
-<span class="sourceLineNo">295</span>        for(TypedIOPort port: inputPortList()) {<a name="line.295"></a>
-<span class="sourceLineNo">296</span>            if(port != date &amp;&amp; !(port instanceof ParameterPort)) {<a name="line.296"></a>
-<span class="sourceLineNo">297</span>                port.setTypeEquals(VectorToken.VECTOR);<a name="line.297"></a>
-<span class="sourceLineNo">298</span>            }<a name="line.298"></a>
-<span class="sourceLineNo">299</span>        }<a name="line.299"></a>
-<span class="sourceLineNo">300</span>        <a name="line.300"></a>
-<span class="sourceLineNo">301</span>        if(_outputTypeStr.equals("file") || _outputTypeStr.equals("text")) {<a name="line.301"></a>
-<span class="sourceLineNo">302</span>            output.setTypeEquals(BaseType.STRING);<a name="line.302"></a>
-<span class="sourceLineNo">303</span>        } else if(_outputTypeStr.equals("binary")) {<a name="line.303"></a>
-<span class="sourceLineNo">304</span>            output.setTypeEquals(new ArrayType(BaseType.UNSIGNED_BYTE));<a name="line.304"></a>
-<span class="sourceLineNo">305</span>        }<a name="line.305"></a>
-<span class="sourceLineNo">306</span>        <a name="line.306"></a>
-<span class="sourceLineNo">307</span>        Token token = fillPolygons.getToken();<a name="line.307"></a>
-<span class="sourceLineNo">308</span>        if(token == null) {<a name="line.308"></a>
-<span class="sourceLineNo">309</span>            _fillPolygons = true;<a name="line.309"></a>
-<span class="sourceLineNo">310</span>        } else {<a name="line.310"></a>
-<span class="sourceLineNo">311</span>            _fillPolygons = ((BooleanToken)token).booleanValue();<a name="line.311"></a>
-<span class="sourceLineNo">312</span>        }<a name="line.312"></a>
-<span class="sourceLineNo">313</span>        <a name="line.313"></a>
-<span class="sourceLineNo">314</span>        _placemarkNameProperty = null;<a name="line.314"></a>
-<span class="sourceLineNo">315</span>        token = placemarkNameProperty.getToken();<a name="line.315"></a>
-<span class="sourceLineNo">316</span>        if(token != null) {<a name="line.316"></a>
-<span class="sourceLineNo">317</span>            _placemarkNameProperty = ((StringToken)token).stringValue().trim();    <a name="line.317"></a>
-<span class="sourceLineNo">318</span>        }<a name="line.318"></a>
-<span class="sourceLineNo">319</span>    }<a name="line.319"></a>
-<span class="sourceLineNo">320</span>    <a name="line.320"></a>
-<span class="sourceLineNo">321</span>    ////////////////////////////////////////////////////////////////////////<a name="line.321"></a>
-<span class="sourceLineNo">322</span>    //// public fields                                                  ////<a name="line.322"></a>
-<span class="sourceLineNo">323</span><a name="line.323"></a>
-<span class="sourceLineNo">324</span>    /** The output type: file, text, or binary. If type if file,<a name="line.324"></a>
-<span class="sourceLineNo">325</span>     *  KML is written to a file with the name specified in &lt;i&gt;filename&lt;/i&gt;,<a name="line.325"></a>
-<span class="sourceLineNo">326</span>     *  and &lt;i&gt;output&lt;/i&gt; is a true boolean token. If type is text,<a name="line.326"></a>
-<span class="sourceLineNo">327</span>     *  KML is written as a string to &lt;i&gt;output&lt;/i&gt;. Otherwise if type is<a name="line.327"></a>
-<span class="sourceLineNo">328</span>     *  binary, KML is written as an unsigned byte array to &lt;i&gt;output&lt;/i&gt;.<a name="line.328"></a>
-<span class="sourceLineNo">329</span>     */<a name="line.329"></a>
-<span class="sourceLineNo">330</span>    public StringParameter outputType;<a name="line.330"></a>
-<span class="sourceLineNo">331</span>    <a name="line.331"></a>
-<span class="sourceLineNo">332</span>    /** The name of the output file. Only required when &lt;i&gt;outputType&lt;/i&gt; is file. */<a name="line.332"></a>
-<span class="sourceLineNo">333</span>    public PortParameter filename;<a name="line.333"></a>
-<span class="sourceLineNo">334</span>        <a name="line.334"></a>
-<span class="sourceLineNo">335</span>    /** The date to use for the timestamp of each feature. */<a name="line.335"></a>
-<span class="sourceLineNo">336</span>    public TypedIOPort date;<a name="line.336"></a>
-<span class="sourceLineNo">337</span>    <a name="line.337"></a>
-<span class="sourceLineNo">338</span>    /** The name of the top level folder containing the features in <a name="line.338"></a>
-<span class="sourceLineNo">339</span>     *  the output KML file.<a name="line.339"></a>
-<span class="sourceLineNo">340</span>     */<a name="line.340"></a>
-<span class="sourceLineNo">341</span>    public PortParameter folderName;<a name="line.341"></a>
-<span class="sourceLineNo">342</span>    <a name="line.342"></a>
-<span class="sourceLineNo">343</span>    /** The name of the output file is sent to this port when the<a name="line.343"></a>
-<span class="sourceLineNo">344</span>     *  data has been written.<a name="line.344"></a>
-<span class="sourceLineNo">345</span>     */<a name="line.345"></a>
-<span class="sourceLineNo">346</span>    public TypedIOPort output;<a name="line.346"></a>
-<span class="sourceLineNo">347</span><a name="line.347"></a>
-<span class="sourceLineNo">348</span>    /** If true, polygons are filled. */<a name="line.348"></a>
-<span class="sourceLineNo">349</span>    public Parameter fillPolygons;<a name="line.349"></a>
-<span class="sourceLineNo">350</span>    <a name="line.350"></a>
-<span class="sourceLineNo">351</span>    /** The name of the property specifying the placemark name. */    <a name="line.351"></a>
-<span class="sourceLineNo">352</span>    public PortParameter placemarkNameProperty;<a name="line.352"></a>
-<span class="sourceLineNo">353</span>    <a name="line.353"></a>
-<span class="sourceLineNo">354</span>    <a name="line.354"></a>
-<span class="sourceLineNo">355</span>    ////////////////////////////////////////////////////////////////////////<a name="line.355"></a>
-<span class="sourceLineNo">356</span>    //// private methods                                                ////<a name="line.356"></a>
-<span class="sourceLineNo">357</span><a name="line.357"></a>
-<span class="sourceLineNo">358</span>    /** Add a set of features to a folder. */<a name="line.358"></a>
-<span class="sourceLineNo">359</span>    private void _addToFolder(Folder folder, SimpleFeatureCollection features,<a name="line.359"></a>
-<span class="sourceLineNo">360</span>        String formattedDateStr) throws IllegalActionException {<a name="line.360"></a>
-<span class="sourceLineNo">361</span>        <a name="line.361"></a>
-<span class="sourceLineNo">362</span>        SimpleFeatureType currentSchema = features.getSchema();<a name="line.362"></a>
-<span class="sourceLineNo">363</span>        CoordinateReferenceSystem srcCRS = currentSchema.getCoordinateReferenceSystem();       <a name="line.363"></a>
-<span class="sourceLineNo">364</span>        <a name="line.364"></a>
-<span class="sourceLineNo">365</span>        if(srcCRS == null) {<a name="line.365"></a>
-<span class="sourceLineNo">366</span>            //throw new IllegalActionException(this, "Unknown input CRS.");<a name="line.366"></a>
-<span class="sourceLineNo">367</span>            System.out.println("WARNING: Unknown input CRS; assuming WGS84.");<a name="line.367"></a>
-<span class="sourceLineNo">368</span>            srcCRS = DefaultGeographicCRS.WGS84;<a name="line.368"></a>
-<span class="sourceLineNo">369</span>        }<a name="line.369"></a>
-<span class="sourceLineNo">370</span>                <a name="line.370"></a>
-<span class="sourceLineNo">371</span>        MathTransform transform = null;<a name="line.371"></a>
-<span class="sourceLineNo">372</span>        if(!GISUtilities.isCRSWGS84(srcCRS)) {<a name="line.372"></a>
-<span class="sourceLineNo">373</span>            System.out.println(getName() + ": source projection is not WGS84");<a name="line.373"></a>
-<span class="sourceLineNo">374</span>            try {<a name="line.374"></a>
-<span class="sourceLineNo">375</span>                transform = CRS.findMathTransform(srcCRS, DefaultGeographicCRS.WGS84, true);<a name="line.375"></a>
-<span class="sourceLineNo">376</span>            } catch (FactoryException e) {<a name="line.376"></a>
-<span class="sourceLineNo">377</span>                throw new IllegalActionException(this, e,<a name="line.377"></a>
-<span class="sourceLineNo">378</span>                        "Unable to find math transform.");<a name="line.378"></a>
-<span class="sourceLineNo">379</span>            }<a name="line.379"></a>
-<span class="sourceLineNo">380</span>        }<a name="line.380"></a>
+<span class="sourceLineNo">155</span>                <a name="line.155"></a>
+<span class="sourceLineNo">156</span>        groupNameProperty = new PortParameter(this, "groupNameProperty");<a name="line.156"></a>
+<span class="sourceLineNo">157</span>        groupNameProperty.setStringMode(true);<a name="line.157"></a>
+<span class="sourceLineNo">158</span>        groupNameProperty.setTypeEquals(BaseType.STRING);<a name="line.158"></a>
+<span class="sourceLineNo">159</span>        groupNameProperty.getPort().setTypeEquals(BaseType.STRING);<a name="line.159"></a>
+<span class="sourceLineNo">160</span>        new SingletonAttribute(groupNameProperty.getPort(), "_showName");<a name="line.160"></a>
+<span class="sourceLineNo">161</span>        <a name="line.161"></a>
+<span class="sourceLineNo">162</span>        output = new TypedIOPort(this, "output", false, true);<a name="line.162"></a>
+<span class="sourceLineNo">163</span>    }<a name="line.163"></a>
+<span class="sourceLineNo">164</span>    <a name="line.164"></a>
+<span class="sourceLineNo">165</span>    @Override<a name="line.165"></a>
+<span class="sourceLineNo">166</span>    public void attributeChanged(Attribute attribute) throws IllegalActionException {<a name="line.166"></a>
+<span class="sourceLineNo">167</span>        if(attribute == outputType) {<a name="line.167"></a>
+<span class="sourceLineNo">168</span>            StringToken token = (StringToken) outputType.getToken();<a name="line.168"></a>
+<span class="sourceLineNo">169</span>            if(token != null) {<a name="line.169"></a>
+<span class="sourceLineNo">170</span>                String val = ((StringToken)token).stringValue();<a name="line.170"></a>
+<span class="sourceLineNo">171</span>                if(val.trim().isEmpty()) {<a name="line.171"></a>
+<span class="sourceLineNo">172</span>                    _outputTypeStr = "file";<a name="line.172"></a>
+<span class="sourceLineNo">173</span>                } else if(_outputTypeStr != null &amp;&amp; <a name="line.173"></a>
+<span class="sourceLineNo">174</span>                    !_outputTypeStr.equals("file") &amp;&amp;<a name="line.174"></a>
+<span class="sourceLineNo">175</span>                    !_outputTypeStr.equals("text") &amp;&amp;<a name="line.175"></a>
+<span class="sourceLineNo">176</span>                    !_outputTypeStr.equals("binary")) {<a name="line.176"></a>
+<span class="sourceLineNo">177</span>                    throw new IllegalActionException(this, "Unsupported type of output: " + val);<a name="line.177"></a>
+<span class="sourceLineNo">178</span>                } else {<a name="line.178"></a>
+<span class="sourceLineNo">179</span>                    _outputTypeStr = val;<a name="line.179"></a>
+<span class="sourceLineNo">180</span>                }<a name="line.180"></a>
+<span class="sourceLineNo">181</span>            }            <a name="line.181"></a>
+<span class="sourceLineNo">182</span>        } else {<a name="line.182"></a>
+<span class="sourceLineNo">183</span>            super.attributeChanged(attribute);<a name="line.183"></a>
+<span class="sourceLineNo">184</span>        }<a name="line.184"></a>
+<span class="sourceLineNo">185</span>    }<a name="line.185"></a>
+<span class="sourceLineNo">186</span>    <a name="line.186"></a>
+<span class="sourceLineNo">187</span>    @Override<a name="line.187"></a>
+<span class="sourceLineNo">188</span>    public void fire() throws IllegalActionException {<a name="line.188"></a>
+<span class="sourceLineNo">189</span>        <a name="line.189"></a>
+<span class="sourceLineNo">190</span>        super.fire();<a name="line.190"></a>
+<span class="sourceLineNo">191</span>        <a name="line.191"></a>
+<span class="sourceLineNo">192</span>        filename.update();<a name="line.192"></a>
+<span class="sourceLineNo">193</span>                <a name="line.193"></a>
+<span class="sourceLineNo">194</span>        String filenameStr = null;<a name="line.194"></a>
+<span class="sourceLineNo">195</span>        if(_outputTypeStr.equals("file")) {        <a name="line.195"></a>
+<span class="sourceLineNo">196</span>            filenameStr = ((StringToken)filename.getToken()).stringValue();<a name="line.196"></a>
+<span class="sourceLineNo">197</span>            if(filenameStr.trim().isEmpty()) {<a name="line.197"></a>
+<span class="sourceLineNo">198</span>                throw new IllegalActionException(this, "Must specify output file.");<a name="line.198"></a>
+<span class="sourceLineNo">199</span>            }<a name="line.199"></a>
+<span class="sourceLineNo">200</span>        }<a name="line.200"></a>
+<span class="sourceLineNo">201</span><a name="line.201"></a>
+<span class="sourceLineNo">202</span>        placemarkNameProperty.update();<a name="line.202"></a>
+<span class="sourceLineNo">203</span>        <a name="line.203"></a>
+<span class="sourceLineNo">204</span>        _placemarkNameProperty = null;<a name="line.204"></a>
+<span class="sourceLineNo">205</span>        Token token = placemarkNameProperty.getToken();<a name="line.205"></a>
+<span class="sourceLineNo">206</span>        if(token != null) {<a name="line.206"></a>
+<span class="sourceLineNo">207</span>            _placemarkNameProperty = ((StringToken)token).stringValue().trim();    <a name="line.207"></a>
+<span class="sourceLineNo">208</span>        }<a name="line.208"></a>
+<span class="sourceLineNo">209</span><a name="line.209"></a>
+<span class="sourceLineNo">210</span>        groupNameProperty.update();<a name="line.210"></a>
+<span class="sourceLineNo">211</span>        <a name="line.211"></a>
+<span class="sourceLineNo">212</span>        _groupNameProperty = null;<a name="line.212"></a>
+<span class="sourceLineNo">213</span>        token = groupNameProperty.getToken();<a name="line.213"></a>
+<span class="sourceLineNo">214</span>        if(token != null) {<a name="line.214"></a>
+<span class="sourceLineNo">215</span>            _groupNameProperty = ((StringToken)token).stringValue().trim();<a name="line.215"></a>
+<span class="sourceLineNo">216</span>            if(_groupNameProperty.isEmpty()) {<a name="line.216"></a>
+<span class="sourceLineNo">217</span>                _groupNameProperty = null;<a name="line.217"></a>
+<span class="sourceLineNo">218</span>            }<a name="line.218"></a>
+<span class="sourceLineNo">219</span>        }<a name="line.219"></a>
+<span class="sourceLineNo">220</span><a name="line.220"></a>
+<span class="sourceLineNo">221</span>        <a name="line.221"></a>
+<span class="sourceLineNo">222</span>        Writer writer = null;<a name="line.222"></a>
+<span class="sourceLineNo">223</span>        try {<a name="line.223"></a>
+<span class="sourceLineNo">224</span>            if(_outputTypeStr.equals("file")) {<a name="line.224"></a>
+<span class="sourceLineNo">225</span>                writer = new FileWriter(filenameStr);<a name="line.225"></a>
+<span class="sourceLineNo">226</span>            } else if(_outputTypeStr.equals("text") || _outputTypeStr.equals("binary")) {<a name="line.226"></a>
+<span class="sourceLineNo">227</span>                writer = new StringWriter();<a name="line.227"></a>
+<span class="sourceLineNo">228</span>            } else {<a name="line.228"></a>
+<span class="sourceLineNo">229</span>                throw new IllegalActionException(this, "Unsupported type of output: " + _outputTypeStr);<a name="line.229"></a>
+<span class="sourceLineNo">230</span>            }<a name="line.230"></a>
+<span class="sourceLineNo">231</span>    <a name="line.231"></a>
+<span class="sourceLineNo">232</span>            <a name="line.232"></a>
+<span class="sourceLineNo">233</span>            folderName.update();<a name="line.233"></a>
+<span class="sourceLineNo">234</span>            String folderNameStr = null;<a name="line.234"></a>
+<span class="sourceLineNo">235</span>            StringToken stringToken = (StringToken) folderName.getToken();<a name="line.235"></a>
+<span class="sourceLineNo">236</span>            if(stringToken != null) {<a name="line.236"></a>
+<span class="sourceLineNo">237</span>                folderNameStr = stringToken.stringValue();<a name="line.237"></a>
+<span class="sourceLineNo">238</span>            }<a name="line.238"></a>
+<span class="sourceLineNo">239</span>            <a name="line.239"></a>
+<span class="sourceLineNo">240</span>            String formattedDateStr = null;<a name="line.240"></a>
+<span class="sourceLineNo">241</span>            DateToken dateToken = null;<a name="line.241"></a>
+<span class="sourceLineNo">242</span>            if(date.numberOfSources() &gt; 0) {<a name="line.242"></a>
+<span class="sourceLineNo">243</span>                dateToken = (DateToken)date.get(0);<a name="line.243"></a>
+<span class="sourceLineNo">244</span>    <a name="line.244"></a>
+<span class="sourceLineNo">245</span>                if(dateToken == null) {<a name="line.245"></a>
+<span class="sourceLineNo">246</span>                    //System.out.println("WARNING: no timestamp.");<a name="line.246"></a>
+<span class="sourceLineNo">247</span>                } else {<a name="line.247"></a>
+<span class="sourceLineNo">248</span>                    //String whenStr = String.format("%02d-%02d-%02d", year, mon, day);<a name="line.248"></a>
+<span class="sourceLineNo">249</span>                    <a name="line.249"></a>
+<span class="sourceLineNo">250</span>                    Date dateVal = new Date(dateToken.getValue());<a name="line.250"></a>
+<span class="sourceLineNo">251</span>                    synchronized(WriteTimestampToKML.KML_TIMESTAMP_FORMAT) {<a name="line.251"></a>
+<span class="sourceLineNo">252</span>                        formattedDateStr = WriteTimestampToKML.KML_TIMESTAMP_FORMAT.format(dateVal);   <a name="line.252"></a>
+<span class="sourceLineNo">253</span>                    }<a name="line.253"></a>
+<span class="sourceLineNo">254</span>                }<a name="line.254"></a>
+<span class="sourceLineNo">255</span>            }<a name="line.255"></a>
+<span class="sourceLineNo">256</span>    <a name="line.256"></a>
+<span class="sourceLineNo">257</span>            final Kml kml = new Kml();<a name="line.257"></a>
+<span class="sourceLineNo">258</span>            final Document doc = kml.createAndSetDocument();<a name="line.258"></a>
+<span class="sourceLineNo">259</span>            <a name="line.259"></a>
+<span class="sourceLineNo">260</span>            // only create a top level folder if a name is specified.<a name="line.260"></a>
+<span class="sourceLineNo">261</span>            Folder topFolder = null;<a name="line.261"></a>
+<span class="sourceLineNo">262</span>            if(folderNameStr != null &amp;&amp; !folderNameStr.trim().isEmpty()) {<a name="line.262"></a>
+<span class="sourceLineNo">263</span>                topFolder = doc.createAndAddFolder();<a name="line.263"></a>
+<span class="sourceLineNo">264</span>                topFolder.setName(folderNameStr);<a name="line.264"></a>
+<span class="sourceLineNo">265</span>            }<a name="line.265"></a>
+<span class="sourceLineNo">266</span>            <a name="line.266"></a>
+<span class="sourceLineNo">267</span>            // add the features read by each input port into a separate<a name="line.267"></a>
+<span class="sourceLineNo">268</span>            // folder<a name="line.268"></a>
+<span class="sourceLineNo">269</span>            for(TypedIOPort port : inputPortList()) {<a name="line.269"></a>
+<span class="sourceLineNo">270</span>                // do not use the class-specific input ports<a name="line.270"></a>
+<span class="sourceLineNo">271</span>                if(port != date &amp;&amp; !(port instanceof ParameterPort)) {<a name="line.271"></a>
+<span class="sourceLineNo">272</span>    <a name="line.272"></a>
+<span class="sourceLineNo">273</span>                    SimpleFeatureCollection features = ((VectorToken)port.get(0)).getVectors();<a name="line.273"></a>
+<span class="sourceLineNo">274</span>                    <a name="line.274"></a>
+<span class="sourceLineNo">275</span>                    // create the folder with the port name.<a name="line.275"></a>
+<span class="sourceLineNo">276</span>                    Folder portFolder;<a name="line.276"></a>
+<span class="sourceLineNo">277</span>                    if(topFolder != null) {<a name="line.277"></a>
+<span class="sourceLineNo">278</span>                        portFolder = topFolder.createAndAddFolder();<a name="line.278"></a>
+<span class="sourceLineNo">279</span>                    } else {<a name="line.279"></a>
+<span class="sourceLineNo">280</span>                        portFolder = doc.createAndAddFolder();<a name="line.280"></a>
+<span class="sourceLineNo">281</span>                    }<a name="line.281"></a>
+<span class="sourceLineNo">282</span>                    portFolder.setName(port.getName());<a name="line.282"></a>
+<span class="sourceLineNo">283</span>                    _addToFolder(portFolder, features, formattedDateStr);                <a name="line.283"></a>
+<span class="sourceLineNo">284</span>                }<a name="line.284"></a>
+<span class="sourceLineNo">285</span>            }<a name="line.285"></a>
+<span class="sourceLineNo">286</span>            <a name="line.286"></a>
+<span class="sourceLineNo">287</span>            //kml.marshal(System.out);<a name="line.287"></a>
+<span class="sourceLineNo">288</span>            kml.marshal(writer);<a name="line.288"></a>
+<span class="sourceLineNo">289</span>                    <a name="line.289"></a>
+<span class="sourceLineNo">290</span>            if(_outputTypeStr.equals("file")) {<a name="line.290"></a>
+<span class="sourceLineNo">291</span>                output.broadcast(new StringToken(filenameStr));<a name="line.291"></a>
+<span class="sourceLineNo">292</span>            } else if(_outputTypeStr.equals("text")) {<a name="line.292"></a>
+<span class="sourceLineNo">293</span>                output.broadcast(new StringToken(writer.toString()));                <a name="line.293"></a>
+<span class="sourceLineNo">294</span>            } else if(_outputTypeStr.equals("binary")) {<a name="line.294"></a>
+<span class="sourceLineNo">295</span>                byte[] bytes = writer.toString().getBytes("UTF-8");<a name="line.295"></a>
+<span class="sourceLineNo">296</span>                Token[] tokens = new Token[bytes.length];<a name="line.296"></a>
+<span class="sourceLineNo">297</span>                for(int i = 0; i &lt; bytes.length; i++) {<a name="line.297"></a>
+<span class="sourceLineNo">298</span>                    tokens[i] = new UnsignedByteToken(bytes[i]);<a name="line.298"></a>
+<span class="sourceLineNo">299</span>                }<a name="line.299"></a>
+<span class="sourceLineNo">300</span>                output.broadcast(new ArrayToken(tokens));<a name="line.300"></a>
+<span class="sourceLineNo">301</span>            }<a name="line.301"></a>
+<span class="sourceLineNo">302</span>            <a name="line.302"></a>
+<span class="sourceLineNo">303</span>        } catch(IOException e) {<a name="line.303"></a>
+<span class="sourceLineNo">304</span>            throw new IllegalActionException(this, e, "Error writing KML.");<a name="line.304"></a>
+<span class="sourceLineNo">305</span>        } finally {<a name="line.305"></a>
+<span class="sourceLineNo">306</span>            if(writer != null) {<a name="line.306"></a>
+<span class="sourceLineNo">307</span>                try {<a name="line.307"></a>
+<span class="sourceLineNo">308</span>                    writer.close();<a name="line.308"></a>
+<span class="sourceLineNo">309</span>                } catch(IOException e) {<a name="line.309"></a>
+<span class="sourceLineNo">310</span>                    throw new IllegalActionException(this, e, "Error writing KML.");<a name="line.310"></a>
+<span class="sourceLineNo">311</span>                }<a name="line.311"></a>
+<span class="sourceLineNo">312</span>            }<a name="line.312"></a>
+<span class="sourceLineNo">313</span>        }<a name="line.313"></a>
+<span class="sourceLineNo">314</span>    }<a name="line.314"></a>
+<span class="sourceLineNo">315</span>    <a name="line.315"></a>
+<span class="sourceLineNo">316</span>    /** Set the input ports to vector. */<a name="line.316"></a>
+<span class="sourceLineNo">317</span>    @Override<a name="line.317"></a>
+<span class="sourceLineNo">318</span>    public void preinitialize() throws IllegalActionException {<a name="line.318"></a>
+<span class="sourceLineNo">319</span>        super.preinitialize();<a name="line.319"></a>
+<span class="sourceLineNo">320</span>        <a name="line.320"></a>
+<span class="sourceLineNo">321</span>        for(TypedIOPort port: inputPortList()) {<a name="line.321"></a>
+<span class="sourceLineNo">322</span>            if(port != date &amp;&amp; !(port instanceof ParameterPort)) {<a name="line.322"></a>
+<span class="sourceLineNo">323</span>                port.setTypeEquals(VectorToken.VECTOR);<a name="line.323"></a>
+<span class="sourceLineNo">324</span>            }<a name="line.324"></a>
+<span class="sourceLineNo">325</span>        }<a name="line.325"></a>
+<span class="sourceLineNo">326</span>        <a name="line.326"></a>
+<span class="sourceLineNo">327</span>        if(_outputTypeStr.equals("file") || _outputTypeStr.equals("text")) {<a name="line.327"></a>
+<span class="sourceLineNo">328</span>            output.setTypeEquals(BaseType.STRING);<a name="line.328"></a>
+<span class="sourceLineNo">329</span>        } else if(_outputTypeStr.equals("binary")) {<a name="line.329"></a>
+<span class="sourceLineNo">330</span>            output.setTypeEquals(new ArrayType(BaseType.UNSIGNED_BYTE));<a name="line.330"></a>
+<span class="sourceLineNo">331</span>        }<a name="line.331"></a>
+<span class="sourceLineNo">332</span>        <a name="line.332"></a>
+<span class="sourceLineNo">333</span>        Token token = fillPolygons.getToken();<a name="line.333"></a>
+<span class="sourceLineNo">334</span>        if(token == null) {<a name="line.334"></a>
+<span class="sourceLineNo">335</span>            _fillPolygons = true;<a name="line.335"></a>
+<span class="sourceLineNo">336</span>        } else {<a name="line.336"></a>
+<span class="sourceLineNo">337</span>            _fillPolygons = ((BooleanToken)token).booleanValue();<a name="line.337"></a>
+<span class="sourceLineNo">338</span>        }        <a name="line.338"></a>
+<span class="sourceLineNo">339</span>        <a name="line.339"></a>
+<span class="sourceLineNo">340</span>    }<a name="line.340"></a>
+<span class="sourceLineNo">341</span>    <a name="line.341"></a>
+<span class="sourceLineNo">342</span>    ////////////////////////////////////////////////////////////////////////<a name="line.342"></a>
+<span class="sourceLineNo">343</span>    //// public fields                                                  ////<a name="line.343"></a>
+<span class="sourceLineNo">344</span><a name="line.344"></a>
+<span class="sourceLineNo">345</span>    /** The output type: file, text, or binary. If type if file,<a name="line.345"></a>
+<span class="sourceLineNo">346</span>     *  KML is written to a file with the name specified in &lt;i&gt;filename&lt;/i&gt;,<a name="line.346"></a>
+<span class="sourceLineNo">347</span>     *  and &lt;i&gt;output&lt;/i&gt; is a true boolean token. If type is text,<a name="line.347"></a>
+<span class="sourceLineNo">348</span>     *  KML is written as a string to &lt;i&gt;output&lt;/i&gt;. Otherwise if type is<a name="line.348"></a>
+<span class="sourceLineNo">349</span>     *  binary, KML is written as an unsigned byte array to &lt;i&gt;output&lt;/i&gt;.<a name="line.349"></a>
+<span class="sourceLineNo">350</span>     */<a name="line.350"></a>
+<span class="sourceLineNo">351</span>    public StringParameter outputType;<a name="line.351"></a>
+<span class="sourceLineNo">352</span>    <a name="line.352"></a>
+<span class="sourceLineNo">353</span>    /** The name of the output file. Only required when &lt;i&gt;outputType&lt;/i&gt; is file. */<a name="line.353"></a>
+<span class="sourceLineNo">354</span>    public PortParameter filename;<a name="line.354"></a>
+<span class="sourceLineNo">355</span>        <a name="line.355"></a>
+<span class="sourceLineNo">356</span>    /** The date to use for the timestamp of each feature. */<a name="line.356"></a>
+<span class="sourceLineNo">357</span>    public TypedIOPort date;<a name="line.357"></a>
+<span class="sourceLineNo">358</span>    <a name="line.358"></a>
+<span class="sourceLineNo">359</span>    /** The name of the top level folder containing the features in <a name="line.359"></a>
+<span class="sourceLineNo">360</span>     *  the output KML file.<a name="line.360"></a>
+<span class="sourceLineNo">361</span>     */<a name="line.361"></a>
+<span class="sourceLineNo">362</span>    public PortParameter folderName;<a name="line.362"></a>
+<span class="sourceLineNo">363</span>    <a name="line.363"></a>
+<span class="sourceLineNo">364</span>    /** The name of the output file is sent to this port when the<a name="line.364"></a>
+<span class="sourceLineNo">365</span>     *  data has been written.<a name="line.365"></a>
+<span class="sourceLineNo">366</span>     */<a name="line.366"></a>
+<span class="sourceLineNo">367</span>    public TypedIOPort output;<a name="line.367"></a>
+<span class="sourceLineNo">368</span><a name="line.368"></a>
+<span class="sourceLineNo">369</span>    /** If true, polygons are filled. */<a name="line.369"></a>
+<span class="sourceLineNo">370</span>    public Parameter fillPolygons;<a name="line.370"></a>
+<span class="sourceLineNo">371</span>    <a name="line.371"></a>
+<span class="sourceLineNo">372</span>    /** The name of the property specifying the placemark name. */    <a name="line.372"></a>
+<span class="sourceLineNo">373</span>    public PortParameter placemarkNameProperty;<a name="line.373"></a>
+<span class="sourceLineNo">374</span>    <a name="line.374"></a>
+<span class="sourceLineNo">375</span>    /** The name of the property specifying the group name. */<a name="line.375"></a>
+<span class="sourceLineNo">376</span>    public PortParameter groupNameProperty;<a name="line.376"></a>
+<span class="sourceLineNo">377</span>    <a name="line.377"></a>
+<span class="sourceLineNo">378</span>    <a name="line.378"></a>
+<span class="sourceLineNo">379</span>    ////////////////////////////////////////////////////////////////////////<a name="line.379"></a>
+<span class="sourceLineNo">380</span>    //// private methods                                                ////<a name="line.380"></a>
 <span class="sourceLineNo">381</span><a name="line.381"></a>
-<span class="sourceLineNo">382</span>        try(SimpleFeatureIterator iterator = features.features();) {<a name="line.382"></a>
-<span class="sourceLineNo">383</span>        <a name="line.383"></a>
-<span class="sourceLineNo">384</span>            while(iterator.hasNext()) {<a name="line.384"></a>
-<span class="sourceLineNo">385</span>               <a name="line.385"></a>
-<span class="sourceLineNo">386</span>                SimpleFeature feature = iterator.next();<a name="line.386"></a>
-<span class="sourceLineNo">387</span>                <a name="line.387"></a>
-<span class="sourceLineNo">388</span>                Geometry geometry = (Geometry) feature.getDefaultGeometry();<a name="line.388"></a>
-<span class="sourceLineNo">389</span>                Geometry newGeometry = geometry;<a name="line.389"></a>
-<span class="sourceLineNo">390</span>                if(transform != null) {<a name="line.390"></a>
-<span class="sourceLineNo">391</span>                    try {<a name="line.391"></a>
-<span class="sourceLineNo">392</span>                        newGeometry = JTS.transform(geometry, transform);<a name="line.392"></a>
-<span class="sourceLineNo">393</span>                    } catch (MismatchedDimensionException | TransformException e) {<a name="line.393"></a>
-<span class="sourceLineNo">394</span>                        throw new IllegalActionException(this, e,<a name="line.394"></a>
-<span class="sourceLineNo">395</span>                                "Error transforming geometry.");<a name="line.395"></a>
-<span class="sourceLineNo">396</span>                    }<a name="line.396"></a>
-<span class="sourceLineNo">397</span>                }<a name="line.397"></a>
-<span class="sourceLineNo">398</span><a name="line.398"></a>
-<span class="sourceLineNo">399</span>                Placemark placemark = folder.createAndAddPlacemark();<a name="line.399"></a>
-<span class="sourceLineNo">400</span>                <a name="line.400"></a>
-<span class="sourceLineNo">401</span>                if(newGeometry instanceof MultiPolygon) {<a name="line.401"></a>
-<span class="sourceLineNo">402</span>                <a name="line.402"></a>
-<span class="sourceLineNo">403</span>                    MultiGeometry multigeometry = placemark.createAndSetMultiGeometry();<a name="line.403"></a>
-<span class="sourceLineNo">404</span>                   <a name="line.404"></a>
-<span class="sourceLineNo">405</span>                    for(int i = 0; i &lt; newGeometry.getNumGeometries(); i++) {<a name="line.405"></a>
-<span class="sourceLineNo">406</span>                        Geometry subGeometry = newGeometry.getGeometryN(i);<a name="line.406"></a>
-<span class="sourceLineNo">407</span>                        <a name="line.407"></a>
-<span class="sourceLineNo">408</span>                        if(subGeometry instanceof Polygon) {<a name="line.408"></a>
-<span class="sourceLineNo">409</span>                            _addPolygon((Polygon)subGeometry,<a name="line.409"></a>
-<span class="sourceLineNo">410</span>                                    multigeometry.createAndAddPolygon());<a name="line.410"></a>
-<span class="sourceLineNo">411</span>                        } else if(subGeometry instanceof Point) {<a name="line.411"></a>
-<span class="sourceLineNo">412</span>                            _addPoint((Point)subGeometry,<a name="line.412"></a>
-<span class="sourceLineNo">413</span>                                    multigeometry.createAndAddPoint());<a name="line.413"></a>
-<span class="sourceLineNo">414</span>                        } else if(subGeometry instanceof LineString) {<a name="line.414"></a>
-<span class="sourceLineNo">415</span>                            _addLineString((LineString)subGeometry,<a name="line.415"></a>
-<span class="sourceLineNo">416</span>                                    multigeometry.createAndAddLineString());<a name="line.416"></a>
-<span class="sourceLineNo">417</span>                        } else {<a name="line.417"></a>
-<span class="sourceLineNo">418</span>                            throw new IllegalActionException(this,<a name="line.418"></a>
-<span class="sourceLineNo">419</span>                                    "Unsupported type of geometry: " +<a name="line.419"></a>
-<span class="sourceLineNo">420</span>                                            subGeometry.getClass());<a name="line.420"></a>
-<span class="sourceLineNo">421</span>                        }                       <a name="line.421"></a>
+<span class="sourceLineNo">382</span>    /** Add a set of features to a folder. */<a name="line.382"></a>
+<span class="sourceLineNo">383</span>    private void _addToFolder(Folder folder, SimpleFeatureCollection features,<a name="line.383"></a>
+<span class="sourceLineNo">384</span>        String formattedDateStr) throws IllegalActionException {<a name="line.384"></a>
+<span class="sourceLineNo">385</span>        <a name="line.385"></a>
+<span class="sourceLineNo">386</span>        SimpleFeatureType currentSchema = features.getSchema();<a name="line.386"></a>
+<span class="sourceLineNo">387</span>        CoordinateReferenceSystem srcCRS = currentSchema.getCoordinateReferenceSystem();       <a name="line.387"></a>
+<span class="sourceLineNo">388</span>        <a name="line.388"></a>
+<span class="sourceLineNo">389</span>        if(srcCRS == null) {<a name="line.389"></a>
+<span class="sourceLineNo">390</span>            //throw new IllegalActionException(this, "Unknown input CRS.");<a name="line.390"></a>
+<span class="sourceLineNo">391</span>            System.out.println("WARNING: Unknown input CRS; assuming WGS84.");<a name="line.391"></a>
+<span class="sourceLineNo">392</span>            srcCRS = DefaultGeographicCRS.WGS84;<a name="line.392"></a>
+<span class="sourceLineNo">393</span>        }<a name="line.393"></a>
+<span class="sourceLineNo">394</span>                <a name="line.394"></a>
+<span class="sourceLineNo">395</span>        MathTransform transform = null;<a name="line.395"></a>
+<span class="sourceLineNo">396</span>        if(!GISUtilities.isCRSWGS84(srcCRS)) {<a name="line.396"></a>
+<span class="sourceLineNo">397</span>            System.out.println(getName() + ": source projection is not WGS84");<a name="line.397"></a>
+<span class="sourceLineNo">398</span>            try {<a name="line.398"></a>
+<span class="sourceLineNo">399</span>                transform = CRS.findMathTransform(srcCRS, DefaultGeographicCRS.WGS84, true);<a name="line.399"></a>
+<span class="sourceLineNo">400</span>            } catch (FactoryException e) {<a name="line.400"></a>
+<span class="sourceLineNo">401</span>                throw new IllegalActionException(this, e,<a name="line.401"></a>
+<span class="sourceLineNo">402</span>                        "Unable to find math transform.");<a name="line.402"></a>
+<span class="sourceLineNo">403</span>            }<a name="line.403"></a>
+<span class="sourceLineNo">404</span>        }<a name="line.404"></a>
+<span class="sourceLineNo">405</span>        <a name="line.405"></a>
+<span class="sourceLineNo">406</span>        // if group name is set, find the groups and create folders for each.<a name="line.406"></a>
+<span class="sourceLineNo">407</span>        Map&lt;String,Folder&gt; groupFolders = new HashMap&lt;String,Folder&gt;();<a name="line.407"></a>
+<span class="sourceLineNo">408</span>        if(_groupNameProperty != null) {<a name="line.408"></a>
+<span class="sourceLineNo">409</span>            try(SimpleFeatureIterator iterator = features.features();) {<a name="line.409"></a>
+<span class="sourceLineNo">410</span>                <a name="line.410"></a>
+<span class="sourceLineNo">411</span>                while(iterator.hasNext()) {<a name="line.411"></a>
+<span class="sourceLineNo">412</span>                   <a name="line.412"></a>
+<span class="sourceLineNo">413</span>                    SimpleFeature feature = iterator.next();<a name="line.413"></a>
+<span class="sourceLineNo">414</span>                    Property property = feature.getProperty(_groupNameProperty);<a name="line.414"></a>
+<span class="sourceLineNo">415</span>                    if(property == null) {<a name="line.415"></a>
+<span class="sourceLineNo">416</span>                        System.err.println("WARNING: missing group " +<a name="line.416"></a>
+<span class="sourceLineNo">417</span>                            _groupNameProperty + " in property");<a name="line.417"></a>
+<span class="sourceLineNo">418</span>                    } else if(!groupFolders.containsKey(property.getValue().toString())) {<a name="line.418"></a>
+<span class="sourceLineNo">419</span>                        Folder groupFolder = folder.createAndAddFolder();<a name="line.419"></a>
+<span class="sourceLineNo">420</span>                        groupFolder.setName(property.getValue().toString());<a name="line.420"></a>
+<span class="sourceLineNo">421</span>                        groupFolders.put(property.getValue().toString(), groupFolder);<a name="line.421"></a>
 <span class="sourceLineNo">422</span>                    }<a name="line.422"></a>
-<span class="sourceLineNo">423</span>                } else if(newGeometry instanceof Polygon) {<a name="line.423"></a>
-<span class="sourceLineNo">424</span>                    _addPolygon((Polygon)newGeometry, placemark.createAndSetPolygon());<a name="line.424"></a>
-<span class="sourceLineNo">425</span>                } else if(newGeometry instanceof Point) {<a name="line.425"></a>
-<span class="sourceLineNo">426</span>                    _addPoint((Point)newGeometry, placemark.createAndSetPoint());<a name="line.426"></a>
-<span class="sourceLineNo">427</span>                } else if(newGeometry instanceof LineString) {<a name="line.427"></a>
-<span class="sourceLineNo">428</span>                    _addLineString((LineString)newGeometry,<a name="line.428"></a>
-<span class="sourceLineNo">429</span>                            placemark.createAndSetLineString());<a name="line.429"></a>
-<span class="sourceLineNo">430</span>                } else {<a name="line.430"></a>
-<span class="sourceLineNo">431</span>                    throw new IllegalActionException(this,<a name="line.431"></a>
-<span class="sourceLineNo">432</span>                            "Unsupported type of geometry: " + newGeometry.getClass());<a name="line.432"></a>
-<span class="sourceLineNo">433</span>                }<a name="line.433"></a>
-<span class="sourceLineNo">434</span><a name="line.434"></a>
-<span class="sourceLineNo">435</span>                String colorStr = "ff0000ff";<a name="line.435"></a>
-<span class="sourceLineNo">436</span>                String curTimeStampStr = null;<a name="line.436"></a>
-<span class="sourceLineNo">437</span><a name="line.437"></a>
-<span class="sourceLineNo">438</span>                // TODO sort names<a name="line.438"></a>
-<span class="sourceLineNo">439</span>                List&lt;Data&gt; dataList = new LinkedList&lt;Data&gt;();<a name="line.439"></a>
-<span class="sourceLineNo">440</span>                <a name="line.440"></a>
-<span class="sourceLineNo">441</span>                for(Property property : feature.getProperties()) {<a name="line.441"></a>
-<span class="sourceLineNo">442</span>                    String propertyNameStr = property.getName().toString();<a name="line.442"></a>
-<span class="sourceLineNo">443</span>                    Object value = property.getValue();<a name="line.443"></a>
-<span class="sourceLineNo">444</span>                    String valueStr = value.toString();<a name="line.444"></a>
-<span class="sourceLineNo">445</span>                    if(!(value instanceof Geometry) &amp;&amp; value != null) {<a name="line.445"></a>
-<span class="sourceLineNo">446</span>                        if(propertyNameStr.toLowerCase().equals("name")) {<a name="line.446"></a>
-<span class="sourceLineNo">447</span>                            placemark.setName(valueStr);<a name="line.447"></a>
-<span class="sourceLineNo">448</span>                        } else {<a name="line.448"></a>
-<span class="sourceLineNo">449</span>                            dataList.add(KmlFactory.createData(valueStr)<a name="line.449"></a>
-<span class="sourceLineNo">450</span>                                    .withName(propertyNameStr));                            <a name="line.450"></a>
-<span class="sourceLineNo">451</span>                        }<a name="line.451"></a>
-<span class="sourceLineNo">452</span>                    }<a name="line.452"></a>
-<span class="sourceLineNo">453</span>                   <a name="line.453"></a>
-<span class="sourceLineNo">454</span>                    if(propertyNameStr.toLowerCase().equals("name") ||<a name="line.454"></a>
-<span class="sourceLineNo">455</span>                        (_placemarkNameProperty != null &amp;&amp;<a name="line.455"></a>
-<span class="sourceLineNo">456</span>                        _placemarkNameProperty.equals(propertyNameStr))) {<a name="line.456"></a>
-<span class="sourceLineNo">457</span>                        placemark.setName(valueStr);<a name="line.457"></a>
-<span class="sourceLineNo">458</span>                    }<a name="line.458"></a>
-<span class="sourceLineNo">459</span><a name="line.459"></a>
-<span class="sourceLineNo">460</span>                    if(propertyNameStr.equals("color")) {<a name="line.460"></a>
-<span class="sourceLineNo">461</span>                        colorStr = _getColorHex(valueStr);<a name="line.461"></a>
-<span class="sourceLineNo">462</span>                    }<a name="line.462"></a>
-<span class="sourceLineNo">463</span>                    <a name="line.463"></a>
-<span class="sourceLineNo">464</span>                    if(formattedDateStr == null &amp;&amp; propertyNameStr.equals("timestamp")) {<a name="line.464"></a>
-<span class="sourceLineNo">465</span>                        curTimeStampStr = valueStr;<a name="line.465"></a>
-<span class="sourceLineNo">466</span>                    }<a name="line.466"></a>
-<span class="sourceLineNo">467</span><a name="line.467"></a>
-<span class="sourceLineNo">468</span>                }<a name="line.468"></a>
-<span class="sourceLineNo">469</span>                placemark.createAndSetExtendedData().setData(dataList);<a name="line.469"></a>
-<span class="sourceLineNo">470</span>                <a name="line.470"></a>
-<span class="sourceLineNo">471</span>                // TODO choose time<a name="line.471"></a>
-<span class="sourceLineNo">472</span>                /*<a name="line.472"></a>
-<span class="sourceLineNo">473</span>                int year = _parseDateObject(feature.getAttribute("YEAR_"));<a name="line.473"></a>
-<span class="sourceLineNo">474</span>                int mon = _parseDateObject(feature.getAttribute("MONTH_"));<a name="line.474"></a>
-<span class="sourceLineNo">475</span>                if(mon == 0) {<a name="line.475"></a>
-<span class="sourceLineNo">476</span>                    mon = 1;<a name="line.476"></a>
-<span class="sourceLineNo">477</span>                }<a name="line.477"></a>
-<span class="sourceLineNo">478</span>                int day = _parseDateObject(feature.getAttribute("DAY_"));<a name="line.478"></a>
-<span class="sourceLineNo">479</span>                if(day == 0) {<a name="line.479"></a>
-<span class="sourceLineNo">480</span>                    day = 1;<a name="line.480"></a>
-<span class="sourceLineNo">481</span>                }<a name="line.481"></a>
-<span class="sourceLineNo">482</span>                */<a name="line.482"></a>
-<span class="sourceLineNo">483</span><a name="line.483"></a>
-<span class="sourceLineNo">484</span>                if(formattedDateStr != null) {<a name="line.484"></a>
-<span class="sourceLineNo">485</span>                    placemark.createAndSetTimeStamp().setWhen(formattedDateStr);                    <a name="line.485"></a>
-<span class="sourceLineNo">486</span>                } else if(curTimeStampStr != null) {<a name="line.486"></a>
-<span class="sourceLineNo">487</span>                    placemark.createAndSetTimeStamp().setWhen(curTimeStampStr);<a name="line.487"></a>
-<span class="sourceLineNo">488</span>                }<a name="line.488"></a>
-<span class="sourceLineNo">489</span>                                <a name="line.489"></a>
-<span class="sourceLineNo">490</span>                Style style = placemark.createAndAddStyle();<a name="line.490"></a>
-<span class="sourceLineNo">491</span>                if(_fillPolygons) {<a name="line.491"></a>
-<span class="sourceLineNo">492</span>                    style.createAndSetPolyStyle()<a name="line.492"></a>
-<span class="sourceLineNo">493</span>                        .withColorMode(ColorMode.NORMAL).setColor(colorStr);<a name="line.493"></a>
-<span class="sourceLineNo">494</span>                } else {<a name="line.494"></a>
-<span class="sourceLineNo">495</span>                    style.createAndSetPolyStyle().setFill(false);<a name="line.495"></a>
-<span class="sourceLineNo">496</span>                    style.createAndSetLineStyle().withWidth(5)<a name="line.496"></a>
-<span class="sourceLineNo">497</span>                        .withColorMode(ColorMode.NORMAL).setColor(colorStr);<a name="line.497"></a>
-<span class="sourceLineNo">498</span>                }<a name="line.498"></a>
-<span class="sourceLineNo">499</span><a name="line.499"></a>
-<span class="sourceLineNo">500</span>            }<a name="line.500"></a>
-<span class="sourceLineNo">501</span>        }<a name="line.501"></a>
-<span class="sourceLineNo">502</span>    }<a name="line.502"></a>
-<span class="sourceLineNo">503</span>    <a name="line.503"></a>
-<span class="sourceLineNo">504</span>    private void _addLineString(LineString lineString, de.micromata.opengis.kml.v_2_2_0.LineString kmlLineString) {<a name="line.504"></a>
-<span class="sourceLineNo">505</span>        for(Coordinate coordinate : lineString.getCoordinates()) {<a name="line.505"></a>
-<span class="sourceLineNo">506</span>            kmlLineString.addToCoordinates(coordinate.x, coordinate.y, 0);<a name="line.506"></a>
-<span class="sourceLineNo">507</span>        }<a name="line.507"></a>
-<span class="sourceLineNo">508</span>    }<a name="line.508"></a>
-<span class="sourceLineNo">509</span>    <a name="line.509"></a>
-<span class="sourceLineNo">510</span>    private void _addPolygon(Polygon polygon, de.micromata.opengis.kml.v_2_2_0.Polygon kmlPolygon) {<a name="line.510"></a>
-<span class="sourceLineNo">511</span>                <a name="line.511"></a>
-<span class="sourceLineNo">512</span>        //System.out.println("add polygon");<a name="line.512"></a>
-<span class="sourceLineNo">513</span>        <a name="line.513"></a>
-<span class="sourceLineNo">514</span>        // convert exterior boundary<a name="line.514"></a>
-<span class="sourceLineNo">515</span>        final LineString exterior = polygon.getExteriorRing();<a name="line.515"></a>
-<span class="sourceLineNo">516</span>        <a name="line.516"></a>
-<span class="sourceLineNo">517</span>        final LinearRing kmlExterior = KmlFactory.createLinearRing();<a name="line.517"></a>
-<span class="sourceLineNo">518</span>        <a name="line.518"></a>
-<span class="sourceLineNo">519</span>        for(Coordinate coordinate : exterior.getCoordinates()) {<a name="line.519"></a>
-<span class="sourceLineNo">520</span>            kmlExterior.addToCoordinates(coordinate.x, coordinate.y, 0);<a name="line.520"></a>
-<span class="sourceLineNo">521</span>        }<a name="line.521"></a>
-<span class="sourceLineNo">522</span>                                    <a name="line.522"></a>
-<span class="sourceLineNo">523</span>        kmlPolygon.setOuterBoundaryIs(KmlFactory.createBoundary().withLinearRing(kmlExterior));<a name="line.523"></a>
-<span class="sourceLineNo">524</span>        <a name="line.524"></a>
-<span class="sourceLineNo">525</span>        // convert any interior boundaries<a name="line.525"></a>
-<span class="sourceLineNo">526</span>        for(int j = 0; j &lt; polygon.getNumInteriorRing(); j++) {<a name="line.526"></a>
-<span class="sourceLineNo">527</span>            <a name="line.527"></a>
-<span class="sourceLineNo">528</span>            final LineString interior = polygon.getInteriorRingN(j);<a name="line.528"></a>
-<span class="sourceLineNo">529</span>            <a name="line.529"></a>
-<span class="sourceLineNo">530</span>            final LinearRing kmlInterior = KmlFactory.createLinearRing();<a name="line.530"></a>
-<span class="sourceLineNo">531</span>            <a name="line.531"></a>
-<span class="sourceLineNo">532</span>            for(Coordinate coordinate : interior.getCoordinates()) {<a name="line.532"></a>
-<span class="sourceLineNo">533</span>                kmlInterior.addToCoordinates(coordinate.x, coordinate.y, 0);<a name="line.533"></a>
-<span class="sourceLineNo">534</span>            }<a name="line.534"></a>
-<span class="sourceLineNo">535</span>                                        <a name="line.535"></a>
-<span class="sourceLineNo">536</span>            kmlPolygon.addToInnerBoundaryIs(KmlFactory.createBoundary().withLinearRing(kmlInterior));<a name="line.536"></a>
-<span class="sourceLineNo">537</span>            <a name="line.537"></a>
-<span class="sourceLineNo">538</span>        }<a name="line.538"></a>
-<span class="sourceLineNo">539</span>    }<a name="line.539"></a>
-<span class="sourceLineNo">540</span>    <a name="line.540"></a>
-<span class="sourceLineNo">541</span>    private void _addPoint(Point point, de.micromata.opengis.kml.v_2_2_0.Point kmlPoint) {<a name="line.541"></a>
-<span class="sourceLineNo">542</span><a name="line.542"></a>
-<span class="sourceLineNo">543</span>        //System.out.println("add point");<a name="line.543"></a>
-<span class="sourceLineNo">544</span><a name="line.544"></a>
-<span class="sourceLineNo">545</span>        for(Coordinate coordinate : point.getCoordinates()) {<a name="line.545"></a>
-<span class="sourceLineNo">546</span>            // TODO this is reversed for geojson<a name="line.546"></a>
-<span class="sourceLineNo">547</span>            //kmlPoint.addToCoordinates(coordinate.y, coordinate.x, 0);//coordinate.z);<a name="line.547"></a>
-<span class="sourceLineNo">548</span>            kmlPoint.addToCoordinates(coordinate.x, coordinate.y, 0);//coordinate.z);<a name="line.548"></a>
-<span class="sourceLineNo">549</span>        }<a name="line.549"></a>
-<span class="sourceLineNo">550</span>               <a name="line.550"></a>
-<span class="sourceLineNo">551</span>    }<a name="line.551"></a>
-<span class="sourceLineNo">552</span>    <a name="line.552"></a>
-<span class="sourceLineNo">553</span>    /*<a name="line.553"></a>
-<span class="sourceLineNo">554</span>    private static int _parseDateObject(Object value) {<a name="line.554"></a>
-<span class="sourceLineNo">555</span>        if(value instanceof Double) {<a name="line.555"></a>
-<span class="sourceLineNo">556</span>            return ((Double)value).intValue(); <a name="line.556"></a>
-<span class="sourceLineNo">557</span>        }<a name="line.557"></a>
-<span class="sourceLineNo">558</span>        return Integer.valueOf(value.toString());<a name="line.558"></a>
-<span class="sourceLineNo">559</span>    }<a name="line.559"></a>
-<span class="sourceLineNo">560</span>     */<a name="line.560"></a>
+<span class="sourceLineNo">423</span>                }                <a name="line.423"></a>
+<span class="sourceLineNo">424</span>            }<a name="line.424"></a>
+<span class="sourceLineNo">425</span>            <a name="line.425"></a>
+<span class="sourceLineNo">426</span>        }<a name="line.426"></a>
+<span class="sourceLineNo">427</span><a name="line.427"></a>
+<span class="sourceLineNo">428</span>        try(SimpleFeatureIterator iterator = features.features();) {<a name="line.428"></a>
+<span class="sourceLineNo">429</span>        <a name="line.429"></a>
+<span class="sourceLineNo">430</span>            while(iterator.hasNext()) {<a name="line.430"></a>
+<span class="sourceLineNo">431</span>               <a name="line.431"></a>
+<span class="sourceLineNo">432</span>                SimpleFeature feature = iterator.next();<a name="line.432"></a>
+<span class="sourceLineNo">433</span>                <a name="line.433"></a>
+<span class="sourceLineNo">434</span>                Geometry geometry = (Geometry) feature.getDefaultGeometry();<a name="line.434"></a>
+<span class="sourceLineNo">435</span>                Geometry newGeometry = geometry;<a name="line.435"></a>
+<span class="sourceLineNo">436</span>                if(transform != null) {<a name="line.436"></a>
+<span class="sourceLineNo">437</span>                    try {<a name="line.437"></a>
+<span class="sourceLineNo">438</span>                        newGeometry = JTS.transform(geometry, transform);<a name="line.438"></a>
+<span class="sourceLineNo">439</span>                    } catch (MismatchedDimensionException | TransformException e) {<a name="line.439"></a>
+<span class="sourceLineNo">440</span>                        throw new IllegalActionException(this, e,<a name="line.440"></a>
+<span class="sourceLineNo">441</span>                                "Error transforming geometry.");<a name="line.441"></a>
+<span class="sourceLineNo">442</span>                    }<a name="line.442"></a>
+<span class="sourceLineNo">443</span>                }<a name="line.443"></a>
+<span class="sourceLineNo">444</span><a name="line.444"></a>
+<span class="sourceLineNo">445</span>                Folder containerFolder = null;<a name="line.445"></a>
+<span class="sourceLineNo">446</span>                if(_groupNameProperty != null) {<a name="line.446"></a>
+<span class="sourceLineNo">447</span>                    Property property = feature.getProperty(_groupNameProperty);<a name="line.447"></a>
+<span class="sourceLineNo">448</span>                    if(property != null) {<a name="line.448"></a>
+<span class="sourceLineNo">449</span>                        containerFolder = groupFolders.get(property.getValue().toString());<a name="line.449"></a>
+<span class="sourceLineNo">450</span>                    }<a name="line.450"></a>
+<span class="sourceLineNo">451</span>                }<a name="line.451"></a>
+<span class="sourceLineNo">452</span>                <a name="line.452"></a>
+<span class="sourceLineNo">453</span>                if(containerFolder == null) {<a name="line.453"></a>
+<span class="sourceLineNo">454</span>                    containerFolder = folder;<a name="line.454"></a>
+<span class="sourceLineNo">455</span>                }<a name="line.455"></a>
+<span class="sourceLineNo">456</span>                <a name="line.456"></a>
+<span class="sourceLineNo">457</span>                Placemark placemark = containerFolder.createAndAddPlacemark();<a name="line.457"></a>
+<span class="sourceLineNo">458</span>                <a name="line.458"></a>
+<span class="sourceLineNo">459</span>                if(newGeometry instanceof MultiPolygon) {<a name="line.459"></a>
+<span class="sourceLineNo">460</span>                <a name="line.460"></a>
+<span class="sourceLineNo">461</span>                    MultiGeometry multigeometry = placemark.createAndSetMultiGeometry();<a name="line.461"></a>
+<span class="sourceLineNo">462</span>                   <a name="line.462"></a>
+<span class="sourceLineNo">463</span>                    for(int i = 0; i &lt; newGeometry.getNumGeometries(); i++) {<a name="line.463"></a>
+<span class="sourceLineNo">464</span>                        Geometry subGeometry = newGeometry.getGeometryN(i);<a name="line.464"></a>
+<span class="sourceLineNo">465</span>                        <a name="line.465"></a>
+<span class="sourceLineNo">466</span>                        if(subGeometry instanceof Polygon) {<a name="line.466"></a>
+<span class="sourceLineNo">467</span>                            _addPolygon((Polygon)subGeometry,<a name="line.467"></a>
+<span class="sourceLineNo">468</span>                                    multigeometry.createAndAddPolygon());<a name="line.468"></a>
+<span class="sourceLineNo">469</span>                        } else if(subGeometry instanceof Point) {<a name="line.469"></a>
+<span class="sourceLineNo">470</span>                            _addPoint((Point)subGeometry,<a name="line.470"></a>
+<span class="sourceLineNo">471</span>                                    multigeometry.createAndAddPoint());<a name="line.471"></a>
+<span class="sourceLineNo">472</span>                        } else if(subGeometry instanceof LineString) {<a name="line.472"></a>
+<span class="sourceLineNo">473</span>                            _addLineString((LineString)subGeometry,<a name="line.473"></a>
+<span class="sourceLineNo">474</span>                                    multigeometry.createAndAddLineString());<a name="line.474"></a>
+<span class="sourceLineNo">475</span>                        } else {<a name="line.475"></a>
+<span class="sourceLineNo">476</span>                            throw new IllegalActionException(this,<a name="line.476"></a>
+<span class="sourceLineNo">477</span>                                    "Unsupported type of geometry: " +<a name="line.477"></a>
+<span class="sourceLineNo">478</span>                                            subGeometry.getClass());<a name="line.478"></a>
+<span class="sourceLineNo">479</span>                        }                       <a name="line.479"></a>
+<span class="sourceLineNo">480</span>                    }<a name="line.480"></a>
+<span class="sourceLineNo">481</span>                } else if(newGeometry instanceof Polygon) {<a name="line.481"></a>
+<span class="sourceLineNo">482</span>                    _addPolygon((Polygon)newGeometry, placemark.createAndSetPolygon());<a name="line.482"></a>
+<span class="sourceLineNo">483</span>                } else if(newGeometry instanceof Point) {<a name="line.483"></a>
+<span class="sourceLineNo">484</span>                    _addPoint((Point)newGeometry, placemark.createAndSetPoint());<a name="line.484"></a>
+<span class="sourceLineNo">485</span>                } else if(newGeometry instanceof LineString) {<a name="line.485"></a>
+<span class="sourceLineNo">486</span>                    _addLineString((LineString)newGeometry,<a name="line.486"></a>
+<span class="sourceLineNo">487</span>                            placemark.createAndSetLineString());<a name="line.487"></a>
+<span class="sourceLineNo">488</span>                } else {<a name="line.488"></a>
+<span class="sourceLineNo">489</span>                    throw new IllegalActionException(this,<a name="line.489"></a>
+<span class="sourceLineNo">490</span>                            "Unsupported type of geometry: " + newGeometry.getClass());<a name="line.490"></a>
+<span class="sourceLineNo">491</span>                }<a name="line.491"></a>
+<span class="sourceLineNo">492</span><a name="line.492"></a>
+<span class="sourceLineNo">493</span>                String colorStr = "ff0000ff";<a name="line.493"></a>
+<span class="sourceLineNo">494</span>                String curTimeStampStr = null;<a name="line.494"></a>
+<span class="sourceLineNo">495</span><a name="line.495"></a>
+<span class="sourceLineNo">496</span>                // TODO sort names<a name="line.496"></a>
+<span class="sourceLineNo">497</span>                List&lt;Data&gt; dataList = new LinkedList&lt;Data&gt;();<a name="line.497"></a>
+<span class="sourceLineNo">498</span>                <a name="line.498"></a>
+<span class="sourceLineNo">499</span>                for(Property property : feature.getProperties()) {<a name="line.499"></a>
+<span class="sourceLineNo">500</span>                    String propertyNameStr = property.getName().toString();<a name="line.500"></a>
+<span class="sourceLineNo">501</span>                    Object value = property.getValue();<a name="line.501"></a>
+<span class="sourceLineNo">502</span>                    String valueStr = value.toString();<a name="line.502"></a>
+<span class="sourceLineNo">503</span>                    if(!(value instanceof Geometry) &amp;&amp; value != null) {<a name="line.503"></a>
+<span class="sourceLineNo">504</span>                        if(propertyNameStr.toLowerCase().equals("name")) {<a name="line.504"></a>
+<span class="sourceLineNo">505</span>                            placemark.setName(valueStr);<a name="line.505"></a>
+<span class="sourceLineNo">506</span>                        } else {<a name="line.506"></a>
+<span class="sourceLineNo">507</span>                            dataList.add(KmlFactory.createData(valueStr)<a name="line.507"></a>
+<span class="sourceLineNo">508</span>                                    .withName(propertyNameStr));                            <a name="line.508"></a>
+<span class="sourceLineNo">509</span>                        }<a name="line.509"></a>
+<span class="sourceLineNo">510</span>                    }<a name="line.510"></a>
+<span class="sourceLineNo">511</span>                   <a name="line.511"></a>
+<span class="sourceLineNo">512</span>                    if(propertyNameStr.toLowerCase().equals("name") ||<a name="line.512"></a>
+<span class="sourceLineNo">513</span>                        (_placemarkNameProperty != null &amp;&amp;<a name="line.513"></a>
+<span class="sourceLineNo">514</span>                        _placemarkNameProperty.equals(propertyNameStr))) {<a name="line.514"></a>
+<span class="sourceLineNo">515</span>                        placemark.setName(valueStr);<a name="line.515"></a>
+<span class="sourceLineNo">516</span>                    }<a name="line.516"></a>
+<span class="sourceLineNo">517</span><a name="line.517"></a>
+<span class="sourceLineNo">518</span>                    if(propertyNameStr.equals("color")) {<a name="line.518"></a>
+<span class="sourceLineNo">519</span>                        colorStr = _getColorHex(valueStr);<a name="line.519"></a>
+<span class="sourceLineNo">520</span>                    }<a name="line.520"></a>
+<span class="sourceLineNo">521</span>                    <a name="line.521"></a>
+<span class="sourceLineNo">522</span>                    if(formattedDateStr == null &amp;&amp; propertyNameStr.equals("timestamp")) {<a name="line.522"></a>
+<span class="sourceLineNo">523</span>                        curTimeStampStr = valueStr;<a name="line.523"></a>
+<span class="sourceLineNo">524</span>                    }<a name="line.524"></a>
+<span class="sourceLineNo">525</span><a name="line.525"></a>
+<span class="sourceLineNo">526</span>                }<a name="line.526"></a>
+<span class="sourceLineNo">527</span>                placemark.createAndSetExtendedData().setData(dataList);<a name="line.527"></a>
+<span class="sourceLineNo">528</span>                <a name="line.528"></a>
+<span class="sourceLineNo">529</span>                // TODO choose time<a name="line.529"></a>
+<span class="sourceLineNo">530</span>                /*<a name="line.530"></a>
+<span class="sourceLineNo">531</span>                int year = _parseDateObject(feature.getAttribute("YEAR_"));<a name="line.531"></a>
+<span class="sourceLineNo">532</span>                int mon = _parseDateObject(feature.getAttribute("MONTH_"));<a name="line.532"></a>
+<span class="sourceLineNo">533</span>                if(mon == 0) {<a name="line.533"></a>
+<span class="sourceLineNo">534</span>                    mon = 1;<a name="line.534"></a>
+<span class="sourceLineNo">535</span>                }<a name="line.535"></a>
+<span class="sourceLineNo">536</span>                int day = _parseDateObject(feature.getAttribute("DAY_"));<a name="line.536"></a>
+<span class="sourceLineNo">537</span>                if(day == 0) {<a name="line.537"></a>
+<span class="sourceLineNo">538</span>                    day = 1;<a name="line.538"></a>
+<span class="sourceLineNo">539</span>                }<a name="line.539"></a>
+<span class="sourceLineNo">540</span>                */<a name="line.540"></a>
+<span class="sourceLineNo">541</span><a name="line.541"></a>
+<span class="sourceLineNo">542</span>                if(formattedDateStr != null) {<a name="line.542"></a>
+<span class="sourceLineNo">543</span>                    placemark.createAndSetTimeStamp().setWhen(formattedDateStr);                    <a name="line.543"></a>
+<span class="sourceLineNo">544</span>                } else if(curTimeStampStr != null) {<a name="line.544"></a>
+<span class="sourceLineNo">545</span>                    placemark.createAndSetTimeStamp().setWhen(curTimeStampStr);<a name="line.545"></a>
+<span class="sourceLineNo">546</span>                }<a name="line.546"></a>
+<span class="sourceLineNo">547</span>                                <a name="line.547"></a>
+<span class="sourceLineNo">548</span>                Style style = placemark.createAndAddStyle();<a name="line.548"></a>
+<span class="sourceLineNo">549</span>                if(_fillPolygons) {<a name="line.549"></a>
+<span class="sourceLineNo">550</span>                    style.createAndSetPolyStyle()<a name="line.550"></a>
+<span class="sourceLineNo">551</span>                        .withColorMode(ColorMode.NORMAL).setColor(colorStr);<a name="line.551"></a>
+<span class="sourceLineNo">552</span>                } else {<a name="line.552"></a>
+<span class="sourceLineNo">553</span>                    style.createAndSetPolyStyle().setFill(false);<a name="line.553"></a>
+<span class="sourceLineNo">554</span>                    style.createAndSetLineStyle().withWidth(5)<a name="line.554"></a>
+<span class="sourceLineNo">555</span>                        .withColorMode(ColorMode.NORMAL).setColor(colorStr);<a name="line.555"></a>
+<span class="sourceLineNo">556</span>                }<a name="line.556"></a>
+<span class="sourceLineNo">557</span><a name="line.557"></a>
+<span class="sourceLineNo">558</span>            }<a name="line.558"></a>
+<span class="sourceLineNo">559</span>        }<a name="line.559"></a>
+<span class="sourceLineNo">560</span>    }<a name="line.560"></a>
 <span class="sourceLineNo">561</span>    <a name="line.561"></a>
-<span class="sourceLineNo">562</span>    /** Get the KML color string from a color name. */<a name="line.562"></a>
-<span class="sourceLineNo">563</span>    private static String _getColorHex(String name) {        <a name="line.563"></a>
-<span class="sourceLineNo">564</span>        int[] rgb = _colorMap.get(name);<a name="line.564"></a>
-<span class="sourceLineNo">565</span>        if(rgb == null) {<a name="line.565"></a>
-<span class="sourceLineNo">566</span>            return "ffffffff";<a name="line.566"></a>
-<span class="sourceLineNo">567</span>        }<a name="line.567"></a>
-<span class="sourceLineNo">568</span>        return String.format("ff%02x%02x%02x",<a name="line.568"></a>
-<span class="sourceLineNo">569</span>            rgb[ColorIndex.Blue.ordinal()],<a name="line.569"></a>
-<span class="sourceLineNo">570</span>            rgb[ColorIndex.Green.ordinal()],<a name="line.570"></a>
-<span class="sourceLineNo">571</span>            rgb[ColorIndex.Red.ordinal()]).toLowerCase();<a name="line.571"></a>
-<span class="sourceLineNo">572</span>    }<a name="line.572"></a>
-<span class="sourceLineNo">573</span>    <a name="line.573"></a>
-<span class="sourceLineNo">574</span>    /** Type of output to write. */<a name="line.574"></a>
-<span class="sourceLineNo">575</span>    private String _outputTypeStr;<a name="line.575"></a>
-<span class="sourceLineNo">576</span>    <a name="line.576"></a>
-<span class="sourceLineNo">577</span>    /** If true, polygons are filled. */<a name="line.577"></a>
-<span class="sourceLineNo">578</span>    private boolean _fillPolygons;<a name="line.578"></a>
-<span class="sourceLineNo">579</span>    <a name="line.579"></a>
-<span class="sourceLineNo">580</span>    /** The name of the property specifying the placemark name. */    <a name="line.580"></a>
-<span class="sourceLineNo">581</span>    private String _placemarkNameProperty;<a name="line.581"></a>
-<span class="sourceLineNo">582</span>    <a name="line.582"></a>
-<span class="sourceLineNo">583</span>    /** Order of colors in colorMap. */<a name="line.583"></a>
-<span class="sourceLineNo">584</span>    private enum ColorIndex {Red, Green, Blue};<a name="line.584"></a>
-<span class="sourceLineNo">585</span>    <a name="line.585"></a>
-<span class="sourceLineNo">586</span>    /** Mapping of HTML/CSS color names to RGB values. */<a name="line.586"></a>
-<span class="sourceLineNo">587</span>    private final static Map&lt;String,int[]&gt; _colorMap = new HashMap&lt;String,int[]&gt;();<a name="line.587"></a>
-<span class="sourceLineNo">588</span>    <a name="line.588"></a>
-<span class="sourceLineNo">589</span>    static {<a name="line.589"></a>
-<span class="sourceLineNo">590</span>        // from https://gist.github.com/XiaoxiaoLi/8031146<a name="line.590"></a>
-<span class="sourceLineNo">591</span>        _colorMap.put("AliceBlue".toLowerCase(), new int[] {0xF0, 0xF8, 0xFF});<a name="line.591"></a>
-<span class="sourceLineNo">592</span>        _colorMap.put("AntiqueWhite".toLowerCase(), new int[] {0xFA, 0xEB, 0xD7});<a name="line.592"></a>
-<span class="sourceLineNo">593</span>        _colorMap.put("Aqua".toLowerCase(), new int[] {0x00, 0xFF, 0xFF});<a name="line.593"></a>
-<span class="sourceLineNo">594</span>        _colorMap.put("Aquamarine".toLowerCase(), new int[] {0x7F, 0xFF, 0xD4});<a name="line.594"></a>
-<span class="sourceLineNo">595</span>        _colorMap.put("Azure".toLowerCase(), new int[] {0xF0, 0xFF, 0xFF});<a name="line.595"></a>
-<span class="sourceLineNo">596</span>        _colorMap.put("Beige".toLowerCase(), new int[] {0xF5, 0xF5, 0xDC});<a name="line.596"></a>
-<span class="sourceLineNo">597</span>        _colorMap.put("Bisque".toLowerCase(), new int[] {0xFF, 0xE4, 0xC4});<a name="line.597"></a>
-<span class="sourceLineNo">598</span>        _colorMap.put("Black".toLowerCase(), new int[] {0x00, 0x00, 0x00});<a name="line.598"></a>
-<span class="sourceLineNo">599</span>        _colorMap.put("BlanchedAlmond".toLowerCase(), new int[] {0xFF, 0xEB, 0xCD});<a name="line.599"></a>
-<span class="sourceLineNo">600</span>        _colorMap.put("Blue".toLowerCase(), new int[] {0x00, 0x00, 0xFF});<a name="line.600"></a>
-<span class="sourceLineNo">601</span>        _colorMap.put("BlueViolet".toLowerCase(), new int[] {0x8A, 0x2B, 0xE2});<a name="line.601"></a>
-<span class="sourceLineNo">602</span>        _colorMap.put("Brown".toLowerCase(), new int[] {0xA5, 0x2A, 0x2A});<a name="line.602"></a>
-<span class="sourceLineNo">603</span>        _colorMap.put("BurlyWood".toLowerCase(), new int[] {0xDE, 0xB8, 0x87});<a name="line.603"></a>
-<span class="sourceLineNo">604</span>        _colorMap.put("CadetBlue".toLowerCase(), new int[] {0x5F, 0x9E, 0xA0});<a name="line.604"></a>
-<span class="sourceLineNo">605</span>        _colorMap.put("Chartreuse".toLowerCase(), new int[] {0x7F, 0xFF, 0x00});<a name="line.605"></a>
-<span class="sourceLineNo">606</span>        _colorMap.put("Chocolate".toLowerCase(), new int[] {0xD2, 0x69, 0x1E});<a name="line.606"></a>
-<span class="sourceLineNo">607</span>        _colorMap.put("Coral".toLowerCase(), new int[] {0xFF, 0x7F, 0x50});<a name="line.607"></a>
-<span class="sourceLineNo">608</span>        _colorMap.put("CornflowerBlue".toLowerCase(), new int[] {0x64, 0x95, 0xED});<a name="line.608"></a>
-<span class="sourceLineNo">609</span>        _colorMap.put("Cornsilk".toLowerCase(), new int[] {0xFF, 0xF8, 0xDC});<a name="line.609"></a>
-<span class="sourceLineNo">610</span>        _colorMap.put("Crimson".toLowerCase(), new int[] {0xDC, 0x14, 0x3C});<a name="line.610"></a>
-<span class="sourceLineNo">611</span>        _colorMap.put("Cyan".toLowerCase(), new int[] {0x00, 0xFF, 0xFF});<a name="line.611"></a>
-<span class="sourceLineNo">612</span>        _colorMap.put("DarkBlue".toLowerCase(), new int[] {0x00, 0x00, 0x8B});<a name="line.612"></a>
-<span class="sourceLineNo">613</span>        _colorMap.put("DarkCyan".toLowerCase(), new int[] {0x00, 0x8B, 0x8B});<a name="line.613"></a>
-<span class="sourceLineNo">614</span>        _colorMap.put("DarkGoldenRod".toLowerCase(), new int[] {0xB8, 0x86, 0x0B});<a name="line.614"></a>
-<span class="sourceLineNo">615</span>        _colorMap.put("DarkGray".toLowerCase(), new int[] {0xA9, 0xA9, 0xA9});<a name="line.615"></a>
-<span class="sourceLineNo">616</span>        _colorMap.put("DarkGreen".toLowerCase(), new int[] {0x00, 0x64, 0x00});<a name="line.616"></a>
-<span class="sourceLineNo">617</span>        _colorMap.put("DarkKhaki".toLowerCase(), new int[] {0xBD, 0xB7, 0x6B});<a name="line.617"></a>
-<span class="sourceLineNo">618</span>        _colorMap.put("DarkMagenta".toLowerCase(), new int[] {0x8B, 0x00, 0x8B});<a name="line.618"></a>
-<span class="sourceLineNo">619</span>        _colorMap.put("DarkOliveGreen".toLowerCase(), new int[] {0x55, 0x6B, 0x2F});<a name="line.619"></a>
-<span class="sourceLineNo">620</span>        _colorMap.put("DarkOrange".toLowerCase(), new int[] {0xFF, 0x8C, 0x00});<a name="line.620"></a>
-<span class="sourceLineNo">621</span>        _colorMap.put("DarkOrchid".toLowerCase(), new int[] {0x99, 0x32, 0xCC});<a name="line.621"></a>
-<span class="sourceLineNo">622</span>        _colorMap.put("DarkRed".toLowerCase(), new int[] {0x8B, 0x00, 0x00});<a name="line.622"></a>
-<span class="sourceLineNo">623</span>        _colorMap.put("DarkSalmon".toLowerCase(), new int[] {0xE9, 0x96, 0x7A});<a name="line.623"></a>
-<span class="sourceLineNo">624</span>        _colorMap.put("DarkSeaGreen".toLowerCase(), new int[] {0x8F, 0xBC, 0x8F});<a name="line.624"></a>
-<span class="sourceLineNo">625</span>        _colorMap.put("DarkSlateBlue".toLowerCase(), new int[] {0x48, 0x3D, 0x8B});<a name="line.625"></a>
-<span class="sourceLineNo">626</span>        _colorMap.put("DarkSlateGray".toLowerCase(), new int[] {0x2F, 0x4F, 0x4F});<a name="line.626"></a>
-<span class="sourceLineNo">627</span>        _colorMap.put("DarkTurquoise".toLowerCase(), new int[] {0x00, 0xCE, 0xD1});<a name="line.627"></a>
-<span class="sourceLineNo">628</span>        _colorMap.put("DarkViolet".toLowerCase(), new int[] {0x94, 0x00, 0xD3});<a name="line.628"></a>
-<span class="sourceLineNo">629</span>        _colorMap.put("DeepPink".toLowerCase(), new int[] {0xFF, 0x14, 0x93});<a name="line.629"></a>
-<span class="sourceLineNo">630</span>        _colorMap.put("DeepSkyBlue".toLowerCase(), new int[] {0x00, 0xBF, 0xFF});<a name="line.630"></a>
-<span class="sourceLineNo">631</span>        _colorMap.put("DimGray".toLowerCase(), new int[] {0x69, 0x69, 0x69});<a name="line.631"></a>
-<span class="sourceLineNo">632</span>        _colorMap.put("DodgerBlue".toLowerCase(), new int[] {0x1E, 0x90, 0xFF});<a name="line.632"></a>
-<span class="sourceLineNo">633</span>        _colorMap.put("FireBrick".toLowerCase(), new int[] {0xB2, 0x22, 0x22});<a name="line.633"></a>
-<span class="sourceLineNo">634</span>        _colorMap.put("FloralWhite".toLowerCase(), new int[] {0xFF, 0xFA, 0xF0});<a name="line.634"></a>
-<span class="sourceLineNo">635</span>        _colorMap.put("ForestGreen".toLowerCase(), new int[] {0x22, 0x8B, 0x22});<a name="line.635"></a>
-<span class="sourceLineNo">636</span>        _colorMap.put("Fuchsia".toLowerCase(), new int[] {0xFF, 0x00, 0xFF});<a name="line.636"></a>
-<span class="sourceLineNo">637</span>        _colorMap.put("Gainsboro".toLowerCase(), new int[] {0xDC, 0xDC, 0xDC});<a name="line.637"></a>
-<span class="sourceLineNo">638</span>        _colorMap.put("GhostWhite".toLowerCase(), new int[] {0xF8, 0xF8, 0xFF});<a name="line.638"></a>
-<span class="sourceLineNo">639</span>        _colorMap.put("Gold".toLowerCase(), new int[] {0xFF, 0xD7, 0x00});<a name="line.639"></a>
-<span class="sourceLineNo">640</span>        _colorMap.put("GoldenRod".toLowerCase(), new int[] {0xDA, 0xA5, 0x20});<a name="line.640"></a>
-<span class="sourceLineNo">641</span>        _colorMap.put("Gray".toLowerCase(), new int[] {0x80, 0x80, 0x80});<a name="line.641"></a>
-<span class="sourceLineNo">642</span>        _colorMap.put("Green".toLowerCase(), new int[] {0x00, 0x80, 0x00});<a name="line.642"></a>
-<span class="sourceLineNo">643</span>        _colorMap.put("GreenYellow".toLowerCase(), new int[] {0xAD, 0xFF, 0x2F});<a name="line.643"></a>
-<span class="sourceLineNo">644</span>        _colorMap.put("HoneyDew".toLowerCase(), new int[] {0xF0, 0xFF, 0xF0});<a name="line.644"></a>
-<span class="sourceLineNo">645</span>        _colorMap.put("HotPink".toLowerCase(), new int[] {0xFF, 0x69, 0xB4});<a name="line.645"></a>
-<span class="sourceLineNo">646</span>        _colorMap.put("IndianRed".toLowerCase(), new int[] {0xCD, 0x5C, 0x5C});<a name="line.646"></a>
-<span class="sourceLineNo">647</span>        _colorMap.put("Indigo".toLowerCase(), new int[] {0x4B, 0x00, 0x82});<a name="line.647"></a>
-<span class="sourceLineNo">648</span>        _colorMap.put("Ivory".toLowerCase(), new int[] {0xFF, 0xFF, 0xF0});<a name="line.648"></a>
-<span class="sourceLineNo">649</span>        _colorMap.put("Khaki".toLowerCase(), new int[] {0xF0, 0xE6, 0x8C});<a name="line.649"></a>
-<span class="sourceLineNo">650</span>        _colorMap.put("Lavender".toLowerCase(), new int[] {0xE6, 0xE6, 0xFA});<a name="line.650"></a>
-<span class="sourceLineNo">651</span>        _colorMap.put("LavenderBlush".toLowerCase(), new int[] {0xFF, 0xF0, 0xF5});<a name="line.651"></a>
-<span class="sourceLineNo">652</span>        _colorMap.put("LawnGreen".toLowerCase(), new int[] {0x7C, 0xFC, 0x00});<a name="line.652"></a>
-<span class="sourceLineNo">653</span>        _colorMap.put("LemonChiffon".toLowerCase(), new int[] {0xFF, 0xFA, 0xCD});<a name="line.653"></a>
-<span class="sourceLineNo">654</span>        _colorMap.put("LightBlue".toLowerCase(), new int[] {0xAD, 0xD8, 0xE6});<a name="line.654"></a>
-<span class="sourceLineNo">655</span>        _colorMap.put("LightCoral".toLowerCase(), new int[] {0xF0, 0x80, 0x80});<a name="line.655"></a>
-<span class="sourceLineNo">656</span>        _colorMap.put("LightCyan".toLowerCase(), new int[] {0xE0, 0xFF, 0xFF});<a name="line.656"></a>
-<span class="sourceLineNo">657</span>        _colorMap.put("LightGoldenRodYellow".toLowerCase(), new int[] {0xFA, 0xFA, 0xD2});<a name="line.657"></a>
-<span class="sourceLineNo">658</span>        _colorMap.put("LightGray".toLowerCase(), new int[] {0xD3, 0xD3, 0xD3});<a name="line.658"></a>
-<span class="sourceLineNo">659</span>        _colorMap.put("LightGreen".toLowerCase(), new int[] {0x90, 0xEE, 0x90});<a name="line.659"></a>
-<span class="sourceLineNo">660</span>        _colorMap.put("LightPink".toLowerCase(), new int[] {0xFF, 0xB6, 0xC1});<a name="line.660"></a>
-<span class="sourceLineNo">661</span>        _colorMap.put("LightSalmon".toLowerCase(), new int[] {0xFF, 0xA0, 0x7A});<a name="line.661"></a>
-<span class="sourceLineNo">662</span>        _colorMap.put("LightSeaGreen".toLowerCase(), new int[] {0x20, 0xB2, 0xAA});<a name="line.662"></a>
-<span class="sourceLineNo">663</span>        _colorMap.put("LightSkyBlue".toLowerCase(), new int[] {0x87, 0xCE, 0xFA});<a name="line.663"></a>
-<span class="sourceLineNo">664</span>        _colorMap.put("LightSlateGray".toLowerCase(), new int[] {0x77, 0x88, 0x99});<a name="line.664"></a>
-<span class="sourceLineNo">665</span>        _colorMap.put("LightSteelBlue".toLowerCase(), new int[] {0xB0, 0xC4, 0xDE});<a name="line.665"></a>
-<span class="sourceLineNo">666</span>        _colorMap.put("LightYellow".toLowerCase(), new int[] {0xFF, 0xFF, 0xE0});<a name="line.666"></a>
-<span class="sourceLineNo">667</span>        _colorMap.put("Lime".toLowerCase(), new int[] {0x00, 0xFF, 0x00});<a name="line.667"></a>
-<span class="sourceLineNo">668</span>        _colorMap.put("LimeGreen".toLowerCase(), new int[] {0x32, 0xCD, 0x32});<a name="line.668"></a>
-<span class="sourceLineNo">669</span>        _colorMap.put("Linen".toLowerCase(), new int[] {0xFA, 0xF0, 0xE6});<a name="line.669"></a>
-<span class="sourceLineNo">670</span>        _colorMap.put("Magenta".toLowerCase(), new int[] {0xFF, 0x00, 0xFF});<a name="line.670"></a>
-<span class="sourceLineNo">671</span>        _colorMap.put("Maroon".toLowerCase(), new int[] {0x80, 0x00, 0x00});<a name="line.671"></a>
-<span class="sourceLineNo">672</span>        _colorMap.put("MediumAquaMarine".toLowerCase(), new int[] {0x66, 0xCD, 0xAA});<a name="line.672"></a>
-<span class="sourceLineNo">673</span>        _colorMap.put("MediumBlue".toLowerCase(), new int[] {0x00, 0x00, 0xCD});<a name="line.673"></a>
-<span class="sourceLineNo">674</span>        _colorMap.put("MediumOrchid".toLowerCase(), new int[] {0xBA, 0x55, 0xD3});<a name="line.674"></a>
-<span class="sourceLineNo">675</span>        _colorMap.put("MediumPurple".toLowerCase(), new int[] {0x93, 0x70, 0xDB});<a name="line.675"></a>
-<span class="sourceLineNo">676</span>        _colorMap.put("MediumSeaGreen".toLowerCase(), new int[] {0x3C, 0xB3, 0x71});<a name="line.676"></a>
-<span class="sourceLineNo">677</span>        _colorMap.put("MediumSlateBlue".toLowerCase(), new int[] {0x7B, 0x68, 0xEE});<a name="line.677"></a>
-<span class="sourceLineNo">678</span>        _colorMap.put("MediumSpringGreen".toLowerCase(), new int[] {0x00, 0xFA, 0x9A});<a name="line.678"></a>
-<span class="sourceLineNo">679</span>        _colorMap.put("MediumTurquoise".toLowerCase(), new int[] {0x48, 0xD1, 0xCC});<a name="line.679"></a>
-<span class="sourceLineNo">680</span>        _colorMap.put("MediumVioletRed".toLowerCase(), new int[] {0xC7, 0x15, 0x85});<a name="line.680"></a>
-<span class="sourceLineNo">681</span>        _colorMap.put("MidnightBlue".toLowerCase(), new int[] {0x19, 0x19, 0x70});<a name="line.681"></a>
-<span class="sourceLineNo">682</span>        _colorMap.put("MintCream".toLowerCase(), new int[] {0xF5, 0xFF, 0xFA});<a name="line.682"></a>
-<span class="sourceLineNo">683</span>        _colorMap.put("MistyRose".toLowerCase(), new int[] {0xFF, 0xE4, 0xE1});<a name="line.683"></a>
-<span class="sourceLineNo">684</span>        _colorMap.put("Moccasin".toLowerCase(), new int[] {0xFF, 0xE4, 0xB5});<a name="line.684"></a>
-<span class="sourceLineNo">685</span>        _colorMap.put("NavajoWhite".toLowerCase(), new int[] {0xFF, 0xDE, 0xAD});<a name="line.685"></a>
-<span class="sourceLineNo">686</span>        _colorMap.put("Navy".toLowerCase(), new int[] {0x00, 0x00, 0x80});<a name="line.686"></a>
-<span class="sourceLineNo">687</span>        _colorMap.put("OldLace".toLowerCase(), new int[] {0xFD, 0xF5, 0xE6});<a name="line.687"></a>
-<span class="sourceLineNo">688</span>        _colorMap.put("Olive".toLowerCase(), new int[] {0x80, 0x80, 0x00});<a name="line.688"></a>
-<span class="sourceLineNo">689</span>        _colorMap.put("OliveDrab".toLowerCase(), new int[] {0x6B, 0x8E, 0x23});<a name="line.689"></a>
-<span class="sourceLineNo">690</span>        _colorMap.put("Orange".toLowerCase(), new int[] {0xFF, 0xA5, 0x00});<a name="line.690"></a>
-<span class="sourceLineNo">691</span>        _colorMap.put("OrangeRed".toLowerCase(), new int[] {0xFF, 0x45, 0x00});<a name="line.691"></a>
-<span class="sourceLineNo">692</span>        _colorMap.put("Orchid".toLowerCase(), new int[] {0xDA, 0x70, 0xD6});<a name="line.692"></a>
-<span class="sourceLineNo">693</span>        _colorMap.put("PaleGoldenRod".toLowerCase(), new int[] {0xEE, 0xE8, 0xAA});<a name="line.693"></a>
-<span class="sourceLineNo">694</span>        _colorMap.put("PaleGreen".toLowerCase(), new int[] {0x98, 0xFB, 0x98});<a name="line.694"></a>
-<span class="sourceLineNo">695</span>        _colorMap.put("PaleTurquoise".toLowerCase(), new int[] {0xAF, 0xEE, 0xEE});<a name="line.695"></a>
-<span class="sourceLineNo">696</span>        _colorMap.put("PaleVioletRed".toLowerCase(), new int[] {0xDB, 0x70, 0x93});<a name="line.696"></a>
-<span class="sourceLineNo">697</span>        _colorMap.put("PapayaWhip".toLowerCase(), new int[] {0xFF, 0xEF, 0xD5});<a name="line.697"></a>
-<span class="sourceLineNo">698</span>        _colorMap.put("PeachPuff".toLowerCase(), new int[] {0xFF, 0xDA, 0xB9});<a name="line.698"></a>
-<span class="sourceLineNo">699</span>        _colorMap.put("Peru".toLowerCase(), new int[] {0xCD, 0x85, 0x3F});<a name="line.699"></a>
-<span class="sourceLineNo">700</span>        _colorMap.put("Pink".toLowerCase(), new int[] {0xFF, 0xC0, 0xCB});<a name="line.700"></a>
-<span class="sourceLineNo">701</span>        _colorMap.put("Plum".toLowerCase(), new int[] {0xDD, 0xA0, 0xDD});<a name="line.701"></a>
-<span class="sourceLineNo">702</span>        _colorMap.put("PowderBlue".toLowerCase(), new int[] {0xB0, 0xE0, 0xE6});<a name="line.702"></a>
-<span class="sourceLineNo">703</span>        _colorMap.put("Purple".toLowerCase(), new int[] {0x80, 0x00, 0x80});<a name="line.703"></a>
-<span class="sourceLineNo">704</span>        _colorMap.put("Red".toLowerCase(), new int[] {0xFF, 0x00, 0x00});<a name="line.704"></a>
-<span class="sourceLineNo">705</span>        _colorMap.put("RosyBrown".toLowerCase(), new int[] {0xBC, 0x8F, 0x8F});<a name="line.705"></a>
-<span class="sourceLineNo">706</span>        _colorMap.put("RoyalBlue".toLowerCase(), new int[] {0x41, 0x69, 0xE1});<a name="line.706"></a>
-<span class="sourceLineNo">707</span>        _colorMap.put("SaddleBrown".toLowerCase(), new int[] {0x8B, 0x45, 0x13});<a name="line.707"></a>
-<span class="sourceLineNo">708</span>        _colorMap.put("Salmon".toLowerCase(), new int[] {0xFA, 0x80, 0x72});<a name="line.708"></a>
-<span class="sourceLineNo">709</span>        _colorMap.put("SandyBrown".toLowerCase(), new int[] {0xF4, 0xA4, 0x60});<a name="line.709"></a>
-<span class="sourceLineNo">710</span>        _colorMap.put("SeaGreen".toLowerCase(), new int[] {0x2E, 0x8B, 0x57});<a name="line.710"></a>
-<span class="sourceLineNo">711</span>        _colorMap.put("SeaShell".toLowerCase(), new int[] {0xFF, 0xF5, 0xEE});<a name="line.711"></a>
-<span class="sourceLineNo">712</span>        _colorMap.put("Sienna".toLowerCase(), new int[] {0xA0, 0x52, 0x2D});<a name="line.712"></a>
-<span class="sourceLineNo">713</span>        _colorMap.put("Silver".toLowerCase(), new int[] {0xC0, 0xC0, 0xC0});<a name="line.713"></a>
-<span class="sourceLineNo">714</span>        _colorMap.put("SkyBlue".toLowerCase(), new int[] {0x87, 0xCE, 0xEB});<a name="line.714"></a>
-<span class="sourceLineNo">715</span>        _colorMap.put("SlateBlue".toLowerCase(), new int[] {0x6A, 0x5A, 0xCD});<a name="line.715"></a>
-<span class="sourceLineNo">716</span>        _colorMap.put("SlateGray".toLowerCase(), new int[] {0x70, 0x80, 0x90});<a name="line.716"></a>
-<span class="sourceLineNo">717</span>        _colorMap.put("Snow".toLowerCase(), new int[] {0xFF, 0xFA, 0xFA});<a name="line.717"></a>
-<span class="sourceLineNo">718</span>        _colorMap.put("SpringGreen".toLowerCase(), new int[] {0x00, 0xFF, 0x7F});<a name="line.718"></a>
-<span class="sourceLineNo">719</span>        _colorMap.put("SteelBlue".toLowerCase(), new int[] {0x46, 0x82, 0xB4});<a name="line.719"></a>
-<span class="sourceLineNo">720</span>        _colorMap.put("Tan".toLowerCase(), new int[] {0xD2, 0xB4, 0x8C});<a name="line.720"></a>
-<span class="sourceLineNo">721</span>        _colorMap.put("Teal".toLowerCase(), new int[] {0x00, 0x80, 0x80});<a name="line.721"></a>
-<span class="sourceLineNo">722</span>        _colorMap.put("Thistle".toLowerCase(), new int[] {0xD8, 0xBF, 0xD8});<a name="line.722"></a>
-<span class="sourceLineNo">723</span>        _colorMap.put("Tomato".toLowerCase(), new int[] {0xFF, 0x63, 0x47});<a name="line.723"></a>
-<span class="sourceLineNo">724</span>        _colorMap.put("Turquoise".toLowerCase(), new int[] {0x40, 0xE0, 0xD0});<a name="line.724"></a>
-<span class="sourceLineNo">725</span>        _colorMap.put("Violet".toLowerCase(), new int[] {0xEE, 0x82, 0xEE});<a name="line.725"></a>
-<span class="sourceLineNo">726</span>        _colorMap.put("Wheat".toLowerCase(), new int[] {0xF5, 0xDE, 0xB3});<a name="line.726"></a>
-<span class="sourceLineNo">727</span>        _colorMap.put("White".toLowerCase(), new int[] {0xFF, 0xFF, 0xFF});<a name="line.727"></a>
-<span class="sourceLineNo">728</span>        _colorMap.put("WhiteSmoke".toLowerCase(), new int[] {0xF5, 0xF5, 0xF5});<a name="line.728"></a>
-<span class="sourceLineNo">729</span>        _colorMap.put("Yellow".toLowerCase(), new int[] {0xFF, 0xFF, 0x00});<a name="line.729"></a>
-<span class="sourceLineNo">730</span>        _colorMap.put("YellowGreen".toLowerCase(), new int[] {0x9A, 0xCD, 0x32});<a name="line.730"></a>
-<span class="sourceLineNo">731</span>    }<a name="line.731"></a>
-<span class="sourceLineNo">732</span>    <a name="line.732"></a>
-<span class="sourceLineNo">733</span>}<a name="line.733"></a>
+<span class="sourceLineNo">562</span>    private void _addLineString(LineString lineString, de.micromata.opengis.kml.v_2_2_0.LineString kmlLineString) {<a name="line.562"></a>
+<span class="sourceLineNo">563</span>        for(Coordinate coordinate : lineString.getCoordinates()) {<a name="line.563"></a>
+<span class="sourceLineNo">564</span>            kmlLineString.addToCoordinates(coordinate.x, coordinate.y, 0);<a name="line.564"></a>
+<span class="sourceLineNo">565</span>        }<a name="line.565"></a>
+<span class="sourceLineNo">566</span>    }<a name="line.566"></a>
+<span class="sourceLineNo">567</span>    <a name="line.567"></a>
+<span class="sourceLineNo">568</span>    private void _addPolygon(Polygon polygon, de.micromata.opengis.kml.v_2_2_0.Polygon kmlPolygon) {<a name="line.568"></a>
+<span class="sourceLineNo">569</span>                <a name="line.569"></a>
+<span class="sourceLineNo">570</span>        //System.out.println("add polygon");<a name="line.570"></a>
+<span class="sourceLineNo">571</span>        <a name="line.571"></a>
+<span class="sourceLineNo">572</span>        // convert exterior boundary<a name="line.572"></a>
+<span class="sourceLineNo">573</span>        final LineString exterior = polygon.getExteriorRing();<a name="line.573"></a>
+<span class="sourceLineNo">574</span>        <a name="line.574"></a>
+<span class="sourceLineNo">575</span>        final LinearRing kmlExterior = KmlFactory.createLinearRing();<a name="line.575"></a>
+<span class="sourceLineNo">576</span>        <a name="line.576"></a>
+<span class="sourceLineNo">577</span>        for(Coordinate coordinate : exterior.getCoordinates()) {<a name="line.577"></a>
+<span class="sourceLineNo">578</span>            kmlExterior.addToCoordinates(coordinate.x, coordinate.y, 0);<a name="line.578"></a>
+<span class="sourceLineNo">579</span>        }<a name="line.579"></a>
+<span class="sourceLineNo">580</span>                                    <a name="line.580"></a>
+<span class="sourceLineNo">581</span>        kmlPolygon.setOuterBoundaryIs(KmlFactory.createBoundary().withLinearRing(kmlExterior));<a name="line.581"></a>
+<span class="sourceLineNo">582</span>        <a name="line.582"></a>
+<span class="sourceLineNo">583</span>        // convert any interior boundaries<a name="line.583"></a>
+<span class="sourceLineNo">584</span>        for(int j = 0; j &lt; polygon.getNumInteriorRing(); j++) {<a name="line.584"></a>
+<span class="sourceLineNo">585</span>            <a name="line.585"></a>
+<span class="sourceLineNo">586</span>            final LineString interior = polygon.getInteriorRingN(j);<a name="line.586"></a>
+<span class="sourceLineNo">587</span>            <a name="line.587"></a>
+<span class="sourceLineNo">588</span>            final LinearRing kmlInterior = KmlFactory.createLinearRing();<a name="line.588"></a>
+<span class="sourceLineNo">589</span>            <a name="line.589"></a>
+<span class="sourceLineNo">590</span>            for(Coordinate coordinate : interior.getCoordinates()) {<a name="line.590"></a>
+<span class="sourceLineNo">591</span>                kmlInterior.addToCoordinates(coordinate.x, coordinate.y, 0);<a name="line.591"></a>
+<span class="sourceLineNo">592</span>            }<a name="line.592"></a>
+<span class="sourceLineNo">593</span>                                        <a name="line.593"></a>
+<span class="sourceLineNo">594</span>            kmlPolygon.addToInnerBoundaryIs(KmlFactory.createBoundary().withLinearRing(kmlInterior));<a name="line.594"></a>
+<span class="sourceLineNo">595</span>            <a name="line.595"></a>
+<span class="sourceLineNo">596</span>        }<a name="line.596"></a>
+<span class="sourceLineNo">597</span>    }<a name="line.597"></a>
+<span class="sourceLineNo">598</span>    <a name="line.598"></a>
+<span class="sourceLineNo">599</span>    private void _addPoint(Point point, de.micromata.opengis.kml.v_2_2_0.Point kmlPoint) {<a name="line.599"></a>
+<span class="sourceLineNo">600</span><a name="line.600"></a>
+<span class="sourceLineNo">601</span>        //System.out.println("add point");<a name="line.601"></a>
+<span class="sourceLineNo">602</span><a name="line.602"></a>
+<span class="sourceLineNo">603</span>        for(Coordinate coordinate : point.getCoordinates()) {<a name="line.603"></a>
+<span class="sourceLineNo">604</span>            // TODO this is reversed for geojson<a name="line.604"></a>
+<span class="sourceLineNo">605</span>            //kmlPoint.addToCoordinates(coordinate.y, coordinate.x, 0);//coordinate.z);<a name="line.605"></a>
+<span class="sourceLineNo">606</span>            kmlPoint.addToCoordinates(coordinate.x, coordinate.y, 0);//coordinate.z);<a name="line.606"></a>
+<span class="sourceLineNo">607</span>        }<a name="line.607"></a>
+<span class="sourceLineNo">608</span>               <a name="line.608"></a>
+<span class="sourceLineNo">609</span>    }<a name="line.609"></a>
+<span class="sourceLineNo">610</span>    <a name="line.610"></a>
+<span class="sourceLineNo">611</span>    /*<a name="line.611"></a>
+<span class="sourceLineNo">612</span>    private static int _parseDateObject(Object value) {<a name="line.612"></a>
+<span class="sourceLineNo">613</span>        if(value instanceof Double) {<a name="line.613"></a>
+<span class="sourceLineNo">614</span>            return ((Double)value).intValue(); <a name="line.614"></a>
+<span class="sourceLineNo">615</span>        }<a name="line.615"></a>
+<span class="sourceLineNo">616</span>        return Integer.valueOf(value.toString());<a name="line.616"></a>
+<span class="sourceLineNo">617</span>    }<a name="line.617"></a>
+<span class="sourceLineNo">618</span>     */<a name="line.618"></a>
+<span class="sourceLineNo">619</span>    <a name="line.619"></a>
+<span class="sourceLineNo">620</span>    /** Get the KML color string from a color name. */<a name="line.620"></a>
+<span class="sourceLineNo">621</span>    private static String _getColorHex(String name) {        <a name="line.621"></a>
+<span class="sourceLineNo">622</span>        int[] rgb = _colorMap.get(name);<a name="line.622"></a>
+<span class="sourceLineNo">623</span>        if(rgb == null) {<a name="line.623"></a>
+<span class="sourceLineNo">624</span>            return "ffffffff";<a name="line.624"></a>
+<span class="sourceLineNo">625</span>        }<a name="line.625"></a>
+<span class="sourceLineNo">626</span>        return String.format("ff%02x%02x%02x",<a name="line.626"></a>
+<span class="sourceLineNo">627</span>            rgb[ColorIndex.Blue.ordinal()],<a name="line.627"></a>
+<span class="sourceLineNo">628</span>            rgb[ColorIndex.Green.ordinal()],<a name="line.628"></a>
+<span class="sourceLineNo">629</span>            rgb[ColorIndex.Red.ordinal()]).toLowerCase();<a name="line.629"></a>
+<span class="sourceLineNo">630</span>    }<a name="line.630"></a>
+<span class="sourceLineNo">631</span>    <a name="line.631"></a>
+<span class="sourceLineNo">632</span>    /** Type of output to write. */<a name="line.632"></a>
+<span class="sourceLineNo">633</span>    private String _outputTypeStr;<a name="line.633"></a>
+<span class="sourceLineNo">634</span>    <a name="line.634"></a>
+<span class="sourceLineNo">635</span>    /** If true, polygons are filled. */<a name="line.635"></a>
+<span class="sourceLineNo">636</span>    private boolean _fillPolygons;<a name="line.636"></a>
+<span class="sourceLineNo">637</span>    <a name="line.637"></a>
+<span class="sourceLineNo">638</span>    /** The name of the property specifying the placemark name. */    <a name="line.638"></a>
+<span class="sourceLineNo">639</span>    private String _placemarkNameProperty;<a name="line.639"></a>
+<span class="sourceLineNo">640</span><a name="line.640"></a>
+<span class="sourceLineNo">641</span>    /** The name of the property specifying the group name. */    <a name="line.641"></a>
+<span class="sourceLineNo">642</span>    private String _groupNameProperty;<a name="line.642"></a>
+<span class="sourceLineNo">643</span>    <a name="line.643"></a>
+<span class="sourceLineNo">644</span>    /** Order of colors in colorMap. */<a name="line.644"></a>
+<span class="sourceLineNo">645</span>    private enum ColorIndex {Red, Green, Blue};<a name="line.645"></a>
+<span class="sourceLineNo">646</span>    <a name="line.646"></a>
+<span class="sourceLineNo">647</span>    /** Mapping of HTML/CSS color names to RGB values. */<a name="line.647"></a>
+<span class="sourceLineNo">648</span>    private final static Map&lt;String,int[]&gt; _colorMap = new HashMap&lt;String,int[]&gt;();<a name="line.648"></a>
+<span class="sourceLineNo">649</span>    <a name="line.649"></a>
+<span class="sourceLineNo">650</span>    static {<a name="line.650"></a>
+<span class="sourceLineNo">651</span>        // from https://gist.github.com/XiaoxiaoLi/8031146<a name="line.651"></a>
+<span class="sourceLineNo">652</span>        _colorMap.put("AliceBlue".toLowerCase(), new int[] {0xF0, 0xF8, 0xFF});<a name="line.652"></a>
+<span class="sourceLineNo">653</span>        _colorMap.put("AntiqueWhite".toLowerCase(), new int[] {0xFA, 0xEB, 0xD7});<a name="line.653"></a>
+<span class="sourceLineNo">654</span>        _colorMap.put("Aqua".toLowerCase(), new int[] {0x00, 0xFF, 0xFF});<a name="line.654"></a>
+<span class="sourceLineNo">655</span>        _colorMap.put("Aquamarine".toLowerCase(), new int[] {0x7F, 0xFF, 0xD4});<a name="line.655"></a>
+<span class="sourceLineNo">656</span>        _colorMap.put("Azure".toLowerCase(), new int[] {0xF0, 0xFF, 0xFF});<a name="line.656"></a>
+<span class="sourceLineNo">657</span>        _colorMap.put("Beige".toLowerCase(), new int[] {0xF5, 0xF5, 0xDC});<a name="line.657"></a>
+<span class="sourceLineNo">658</span>        _colorMap.put("Bisque".toLowerCase(), new int[] {0xFF, 0xE4, 0xC4});<a name="line.658"></a>
+<span class="sourceLineNo">659</span>        _colorMap.put("Black".toLowerCase(), new int[] {0x00, 0x00, 0x00});<a name="line.659"></a>
+<span class="sourceLineNo">660</span>        _colorMap.put("BlanchedAlmond".toLowerCase(), new int[] {0xFF, 0xEB, 0xCD});<a name="line.660"></a>
+<span class="sourceLineNo">661</span>        _colorMap.put("Blue".toLowerCase(), new int[] {0x00, 0x00, 0xFF});<a name="line.661"></a>
+<span class="sourceLineNo">662</span>        _colorMap.put("BlueViolet".toLowerCase(), new int[] {0x8A, 0x2B, 0xE2});<a name="line.662"></a>
+<span class="sourceLineNo">663</span>        _colorMap.put("Brown".toLowerCase(), new int[] {0xA5, 0x2A, 0x2A});<a name="line.663"></a>
+<span class="sourceLineNo">664</span>        _colorMap.put("BurlyWood".toLowerCase(), new int[] {0xDE, 0xB8, 0x87});<a name="line.664"></a>
+<span class="sourceLineNo">665</span>        _colorMap.put("CadetBlue".toLowerCase(), new int[] {0x5F, 0x9E, 0xA0});<a name="line.665"></a>
+<span class="sourceLineNo">666</span>        _colorMap.put("Chartreuse".toLowerCase(), new int[] {0x7F, 0xFF, 0x00});<a name="line.666"></a>
+<span class="sourceLineNo">667</span>        _colorMap.put("Chocolate".toLowerCase(), new int[] {0xD2, 0x69, 0x1E});<a name="line.667"></a>
+<span class="sourceLineNo">668</span>        _colorMap.put("Coral".toLowerCase(), new int[] {0xFF, 0x7F, 0x50});<a name="line.668"></a>
+<span class="sourceLineNo">669</span>        _colorMap.put("CornflowerBlue".toLowerCase(), new int[] {0x64, 0x95, 0xED});<a name="line.669"></a>
+<span class="sourceLineNo">670</span>        _colorMap.put("Cornsilk".toLowerCase(), new int[] {0xFF, 0xF8, 0xDC});<a name="line.670"></a>
+<span class="sourceLineNo">671</span>        _colorMap.put("Crimson".toLowerCase(), new int[] {0xDC, 0x14, 0x3C});<a name="line.671"></a>
+<span class="sourceLineNo">672</span>        _colorMap.put("Cyan".toLowerCase(), new int[] {0x00, 0xFF, 0xFF});<a name="line.672"></a>
+<span class="sourceLineNo">673</span>        _colorMap.put("DarkBlue".toLowerCase(), new int[] {0x00, 0x00, 0x8B});<a name="line.673"></a>
+<span class="sourceLineNo">674</span>        _colorMap.put("DarkCyan".toLowerCase(), new int[] {0x00, 0x8B, 0x8B});<a name="line.674"></a>
+<span class="sourceLineNo">675</span>        _colorMap.put("DarkGoldenRod".toLowerCase(), new int[] {0xB8, 0x86, 0x0B});<a name="line.675"></a>
+<span class="sourceLineNo">676</span>        _colorMap.put("DarkGray".toLowerCase(), new int[] {0xA9, 0xA9, 0xA9});<a name="line.676"></a>
+<span class="sourceLineNo">677</span>        _colorMap.put("DarkGreen".toLowerCase(), new int[] {0x00, 0x64, 0x00});<a name="line.677"></a>
+<span class="sourceLineNo">678</span>        _colorMap.put("DarkKhaki".toLowerCase(), new int[] {0xBD, 0xB7, 0x6B});<a name="line.678"></a>
+<span class="sourceLineNo">679</span>        _colorMap.put("DarkMagenta".toLowerCase(), new int[] {0x8B, 0x00, 0x8B});<a name="line.679"></a>
+<span class="sourceLineNo">680</span>        _colorMap.put("DarkOliveGreen".toLowerCase(), new int[] {0x55, 0x6B, 0x2F});<a name="line.680"></a>
+<span class="sourceLineNo">681</span>        _colorMap.put("DarkOrange".toLowerCase(), new int[] {0xFF, 0x8C, 0x00});<a name="line.681"></a>
+<span class="sourceLineNo">682</span>        _colorMap.put("DarkOrchid".toLowerCase(), new int[] {0x99, 0x32, 0xCC});<a name="line.682"></a>
+<span class="sourceLineNo">683</span>        _colorMap.put("DarkRed".toLowerCase(), new int[] {0x8B, 0x00, 0x00});<a name="line.683"></a>
+<span class="sourceLineNo">684</span>        _colorMap.put("DarkSalmon".toLowerCase(), new int[] {0xE9, 0x96, 0x7A});<a name="line.684"></a>
+<span class="sourceLineNo">685</span>        _colorMap.put("DarkSeaGreen".toLowerCase(), new int[] {0x8F, 0xBC, 0x8F});<a name="line.685"></a>
+<span class="sourceLineNo">686</span>        _colorMap.put("DarkSlateBlue".toLowerCase(), new int[] {0x48, 0x3D, 0x8B});<a name="line.686"></a>
+<span class="sourceLineNo">687</span>        _colorMap.put("DarkSlateGray".toLowerCase(), new int[] {0x2F, 0x4F, 0x4F});<a name="line.687"></a>
+<span class="sourceLineNo">688</span>        _colorMap.put("DarkTurquoise".toLowerCase(), new int[] {0x00, 0xCE, 0xD1});<a name="line.688"></a>
+<span class="sourceLineNo">689</span>        _colorMap.put("DarkViolet".toLowerCase(), new int[] {0x94, 0x00, 0xD3});<a name="line.689"></a>
+<span class="sourceLineNo">690</span>        _colorMap.put("DeepPink".toLowerCase(), new int[] {0xFF, 0x14, 0x93});<a name="line.690"></a>
+<span class="sourceLineNo">691</span>        _colorMap.put("DeepSkyBlue".toLowerCase(), new int[] {0x00, 0xBF, 0xFF});<a name="line.691"></a>
+<span class="sourceLineNo">692</span>        _colorMap.put("DimGray".toLowerCase(), new int[] {0x69, 0x69, 0x69});<a name="line.692"></a>
+<span class="sourceLineNo">693</span>        _colorMap.put("DodgerBlue".toLowerCase(), new int[] {0x1E, 0x90, 0xFF});<a name="line.693"></a>
+<span class="sourceLineNo">694</span>        _colorMap.put("FireBrick".toLowerCase(), new int[] {0xB2, 0x22, 0x22});<a name="line.694"></a>
+<span class="sourceLineNo">695</span>        _colorMap.put("FloralWhite".toLowerCase(), new int[] {0xFF, 0xFA, 0xF0});<a name="line.695"></a>
+<span class="sourceLineNo">696</span>        _colorMap.put("ForestGreen".toLowerCase(), new int[] {0x22, 0x8B, 0x22});<a name="line.696"></a>
+<span class="sourceLineNo">697</span>        _colorMap.put("Fuchsia".toLowerCase(), new int[] {0xFF, 0x00, 0xFF});<a name="line.697"></a>
+<span class="sourceLineNo">698</span>        _colorMap.put("Gainsboro".toLowerCase(), new int[] {0xDC, 0xDC, 0xDC});<a name="line.698"></a>
+<span class="sourceLineNo">699</span>        _colorMap.put("GhostWhite".toLowerCase(), new int[] {0xF8, 0xF8, 0xFF});<a name="line.699"></a>
+<span class="sourceLineNo">700</span>        _colorMap.put("Gold".toLowerCase(), new int[] {0xFF, 0xD7, 0x00});<a name="line.700"></a>
+<span class="sourceLineNo">701</span>        _colorMap.put("GoldenRod".toLowerCase(), new int[] {0xDA, 0xA5, 0x20});<a name="line.701"></a>
+<span class="sourceLineNo">702</span>        _colorMap.put("Gray".toLowerCase(), new int[] {0x80, 0x80, 0x80});<a name="line.702"></a>
+<span class="sourceLineNo">703</span>        _colorMap.put("Green".toLowerCase(), new int[] {0x00, 0x80, 0x00});<a name="line.703"></a>
+<span class="sourceLineNo">704</span>        _colorMap.put("GreenYellow".toLowerCase(), new int[] {0xAD, 0xFF, 0x2F});<a name="line.704"></a>
+<span class="sourceLineNo">705</span>        _colorMap.put("HoneyDew".toLowerCase(), new int[] {0xF0, 0xFF, 0xF0});<a name="line.705"></a>
+<span class="sourceLineNo">706</span>        _colorMap.put("HotPink".toLowerCase(), new int[] {0xFF, 0x69, 0xB4});<a name="line.706"></a>
+<span class="sourceLineNo">707</span>        _colorMap.put("IndianRed".toLowerCase(), new int[] {0xCD, 0x5C, 0x5C});<a name="line.707"></a>
+<span class="sourceLineNo">708</span>        _colorMap.put("Indigo".toLowerCase(), new int[] {0x4B, 0x00, 0x82});<a name="line.708"></a>
+<span class="sourceLineNo">709</span>        _colorMap.put("Ivory".toLowerCase(), new int[] {0xFF, 0xFF, 0xF0});<a name="line.709"></a>
+<span class="sourceLineNo">710</span>        _colorMap.put("Khaki".toLowerCase(), new int[] {0xF0, 0xE6, 0x8C});<a name="line.710"></a>
+<span class="sourceLineNo">711</span>        _colorMap.put("Lavender".toLowerCase(), new int[] {0xE6, 0xE6, 0xFA});<a name="line.711"></a>
+<span class="sourceLineNo">712</span>        _colorMap.put("LavenderBlush".toLowerCase(), new int[] {0xFF, 0xF0, 0xF5});<a name="line.712"></a>
+<span class="sourceLineNo">713</span>        _colorMap.put("LawnGreen".toLowerCase(), new int[] {0x7C, 0xFC, 0x00});<a name="line.713"></a>
+<span class="sourceLineNo">714</span>        _colorMap.put("LemonChiffon".toLowerCase(), new int[] {0xFF, 0xFA, 0xCD});<a name="line.714"></a>
+<span class="sourceLineNo">715</span>        _colorMap.put("LightBlue".toLowerCase(), new int[] {0xAD, 0xD8, 0xE6});<a name="line.715"></a>
+<span class="sourceLineNo">716</span>        _colorMap.put("LightCoral".toLowerCase(), new int[] {0xF0, 0x80, 0x80});<a name="line.716"></a>
+<span class="sourceLineNo">717</span>        _colorMap.put("LightCyan".toLowerCase(), new int[] {0xE0, 0xFF, 0xFF});<a name="line.717"></a>
+<span class="sourceLineNo">718</span>        _colorMap.put("LightGoldenRodYellow".toLowerCase(), new int[] {0xFA, 0xFA, 0xD2});<a name="line.718"></a>
+<span class="sourceLineNo">719</span>        _colorMap.put("LightGray".toLowerCase(), new int[] {0xD3, 0xD3, 0xD3});<a name="line.719"></a>
+<span class="sourceLineNo">720</span>        _colorMap.put("LightGreen".toLowerCase(), new int[] {0x90, 0xEE, 0x90});<a name="line.720"></a>
+<span class="sourceLineNo">721</span>        _colorMap.put("LightPink".toLowerCase(), new int[] {0xFF, 0xB6, 0xC1});<a name="line.721"></a>
+<span class="sourceLineNo">722</span>        _colorMap.put("LightSalmon".toLowerCase(), new int[] {0xFF, 0xA0, 0x7A});<a name="line.722"></a>
+<span class="sourceLineNo">723</span>        _colorMap.put("LightSeaGreen".toLowerCase(), new int[] {0x20, 0xB2, 0xAA});<a name="line.723"></a>
+<span class="sourceLineNo">724</span>        _colorMap.put("LightSkyBlue".toLowerCase(), new int[] {0x87, 0xCE, 0xFA});<a name="line.724"></a>
+<span class="sourceLineNo">725</span>        _colorMap.put("LightSlateGray".toLowerCase(), new int[] {0x77, 0x88, 0x99});<a name="line.725"></a>
+<span class="sourceLineNo">726</span>        _colorMap.put("LightSteelBlue".toLowerCase(), new int[] {0xB0, 0xC4, 0xDE});<a name="line.726"></a>
+<span class="sourceLineNo">727</span>        _colorMap.put("LightYellow".toLowerCase(), new int[] {0xFF, 0xFF, 0xE0});<a name="line.727"></a>
+<span class="sourceLineNo">728</span>        _colorMap.put("Lime".toLowerCase(), new int[] {0x00, 0xFF, 0x00});<a name="line.728"></a>
+<span class="sourceLineNo">729</span>        _colorMap.put("LimeGreen".toLowerCase(), new int[] {0x32, 0xCD, 0x32});<a name="line.729"></a>
+<span class="sourceLineNo">730</span>        _colorMap.put("Linen".toLowerCase(), new int[] {0xFA, 0xF0, 0xE6});<a name="line.730"></a>
+<span class="sourceLineNo">731</span>        _colorMap.put("Magenta".toLowerCase(), new int[] {0xFF, 0x00, 0xFF});<a name="line.731"></a>
+<span class="sourceLineNo">732</span>        _colorMap.put("Maroon".toLowerCase(), new int[] {0x80, 0x00, 0x00});<a name="line.732"></a>
+<span class="sourceLineNo">733</span>        _colorMap.put("MediumAquaMarine".toLowerCase(), new int[] {0x66, 0xCD, 0xAA});<a name="line.733"></a>
+<span class="sourceLineNo">734</span>        _colorMap.put("MediumBlue".toLowerCase(), new int[] {0x00, 0x00, 0xCD});<a name="line.734"></a>
+<span class="sourceLineNo">735</span>        _colorMap.put("MediumOrchid".toLowerCase(), new int[] {0xBA, 0x55, 0xD3});<a name="line.735"></a>
+<span class="sourceLineNo">736</span>        _colorMap.put("MediumPurple".toLowerCase(), new int[] {0x93, 0x70, 0xDB});<a name="line.736"></a>
+<span class="sourceLineNo">737</span>        _colorMap.put("MediumSeaGreen".toLowerCase(), new int[] {0x3C, 0xB3, 0x71});<a name="line.737"></a>
+<span class="sourceLineNo">738</span>        _colorMap.put("MediumSlateBlue".toLowerCase(), new int[] {0x7B, 0x68, 0xEE});<a name="line.738"></a>
+<span class="sourceLineNo">739</span>        _colorMap.put("MediumSpringGreen".toLowerCase(), new int[] {0x00, 0xFA, 0x9A});<a name="line.739"></a>
+<span class="sourceLineNo">740</span>        _colorMap.put("MediumTurquoise".toLowerCase(), new int[] {0x48, 0xD1, 0xCC});<a name="line.740"></a>
+<span class="sourceLineNo">741</span>        _colorMap.put("MediumVioletRed".toLowerCase(), new int[] {0xC7, 0x15, 0x85});<a name="line.741"></a>
+<span class="sourceLineNo">742</span>        _colorMap.put("MidnightBlue".toLowerCase(), new int[] {0x19, 0x19, 0x70});<a name="line.742"></a>
+<span class="sourceLineNo">743</span>        _colorMap.put("MintCream".toLowerCase(), new int[] {0xF5, 0xFF, 0xFA});<a name="line.743"></a>
+<span class="sourceLineNo">744</span>        _colorMap.put("MistyRose".toLowerCase(), new int[] {0xFF, 0xE4, 0xE1});<a name="line.744"></a>
+<span class="sourceLineNo">745</span>        _colorMap.put("Moccasin".toLowerCase(), new int[] {0xFF, 0xE4, 0xB5});<a name="line.745"></a>
+<span class="sourceLineNo">746</span>        _colorMap.put("NavajoWhite".toLowerCase(), new int[] {0xFF, 0xDE, 0xAD});<a name="line.746"></a>
+<span class="sourceLineNo">747</span>        _colorMap.put("Navy".toLowerCase(), new int[] {0x00, 0x00, 0x80});<a name="line.747"></a>
+<span class="sourceLineNo">748</span>        _colorMap.put("OldLace".toLowerCase(), new int[] {0xFD, 0xF5, 0xE6});<a name="line.748"></a>
+<span class="sourceLineNo">749</span>        _colorMap.put("Olive".toLowerCase(), new int[] {0x80, 0x80, 0x00});<a name="line.749"></a>
+<span class="sourceLineNo">750</span>        _colorMap.put("OliveDrab".toLowerCase(), new int[] {0x6B, 0x8E, 0x23});<a name="line.750"></a>
+<span class="sourceLineNo">751</span>        _colorMap.put("Orange".toLowerCase(), new int[] {0xFF, 0xA5, 0x00});<a name="line.751"></a>
+<span class="sourceLineNo">752</span>        _colorMap.put("OrangeRed".toLowerCase(), new int[] {0xFF, 0x45, 0x00});<a name="line.752"></a>
+<span class="sourceLineNo">753</span>        _colorMap.put("Orchid".toLowerCase(), new int[] {0xDA, 0x70, 0xD6});<a name="line.753"></a>
+<span class="sourceLineNo">754</span>        _colorMap.put("PaleGoldenRod".toLowerCase(), new int[] {0xEE, 0xE8, 0xAA});<a name="line.754"></a>
+<span class="sourceLineNo">755</span>        _colorMap.put("PaleGreen".toLowerCase(), new int[] {0x98, 0xFB, 0x98});<a name="line.755"></a>
+<span class="sourceLineNo">756</span>        _colorMap.put("PaleTurquoise".toLowerCase(), new int[] {0xAF, 0xEE, 0xEE});<a name="line.756"></a>
+<span class="sourceLineNo">757</span>        _colorMap.put("PaleVioletRed".toLowerCase(), new int[] {0xDB, 0x70, 0x93});<a name="line.757"></a>
+<span class="sourceLineNo">758</span>        _colorMap.put("PapayaWhip".toLowerCase(), new int[] {0xFF, 0xEF, 0xD5});<a name="line.758"></a>
+<span class="sourceLineNo">759</span>        _colorMap.put("PeachPuff".toLowerCase(), new int[] {0xFF, 0xDA, 0xB9});<a name="line.759"></a>
+<span class="sourceLineNo">760</span>        _colorMap.put("Peru".toLowerCase(), new int[] {0xCD, 0x85, 0x3F});<a name="line.760"></a>
+<span class="sourceLineNo">761</span>        _colorMap.put("Pink".toLowerCase(), new int[] {0xFF, 0xC0, 0xCB});<a name="line.761"></a>
+<span class="sourceLineNo">762</span>        _colorMap.put("Plum".toLowerCase(), new int[] {0xDD, 0xA0, 0xDD});<a name="line.762"></a>
+<span class="sourceLineNo">763</span>        _colorMap.put("PowderBlue".toLowerCase(), new int[] {0xB0, 0xE0, 0xE6});<a name="line.763"></a>
+<span class="sourceLineNo">764</span>        _colorMap.put("Purple".toLowerCase(), new int[] {0x80, 0x00, 0x80});<a name="line.764"></a>
+<span class="sourceLineNo">765</span>        _colorMap.put("Red".toLowerCase(), new int[] {0xFF, 0x00, 0x00});<a name="line.765"></a>
+<span class="sourceLineNo">766</span>        _colorMap.put("RosyBrown".toLowerCase(), new int[] {0xBC, 0x8F, 0x8F});<a name="line.766"></a>
+<span class="sourceLineNo">767</span>        _colorMap.put("RoyalBlue".toLowerCase(), new int[] {0x41, 0x69, 0xE1});<a name="line.767"></a>
+<span class="sourceLineNo">768</span>        _colorMap.put("SaddleBrown".toLowerCase(), new int[] {0x8B, 0x45, 0x13});<a name="line.768"></a>
+<span class="sourceLineNo">769</span>        _colorMap.put("Salmon".toLowerCase(), new int[] {0xFA, 0x80, 0x72});<a name="line.769"></a>
+<span class="sourceLineNo">770</span>        _colorMap.put("SandyBrown".toLowerCase(), new int[] {0xF4, 0xA4, 0x60});<a name="line.770"></a>
+<span class="sourceLineNo">771</span>        _colorMap.put("SeaGreen".toLowerCase(), new int[] {0x2E, 0x8B, 0x57});<a name="line.771"></a>
+<span class="sourceLineNo">772</span>        _colorMap.put("SeaShell".toLowerCase(), new int[] {0xFF, 0xF5, 0xEE});<a name="line.772"></a>
+<span class="sourceLineNo">773</span>        _colorMap.put("Sienna".toLowerCase(), new int[] {0xA0, 0x52, 0x2D});<a name="line.773"></a>
+<span class="sourceLineNo">774</span>        _colorMap.put("Silver".toLowerCase(), new int[] {0xC0, 0xC0, 0xC0});<a name="line.774"></a>
+<span class="sourceLineNo">775</span>        _colorMap.put("SkyBlue".toLowerCase(), new int[] {0x87, 0xCE, 0xEB});<a name="line.775"></a>
+<span class="sourceLineNo">776</span>        _colorMap.put("SlateBlue".toLowerCase(), new int[] {0x6A, 0x5A, 0xCD});<a name="line.776"></a>
+<span class="sourceLineNo">777</span>        _colorMap.put("SlateGray".toLowerCase(), new int[] {0x70, 0x80, 0x90});<a name="line.777"></a>
+<span class="sourceLineNo">778</span>        _colorMap.put("Snow".toLowerCase(), new int[] {0xFF, 0xFA, 0xFA});<a name="line.778"></a>
+<span class="sourceLineNo">779</span>        _colorMap.put("SpringGreen".toLowerCase(), new int[] {0x00, 0xFF, 0x7F});<a name="line.779"></a>
+<span class="sourceLineNo">780</span>        _colorMap.put("SteelBlue".toLowerCase(), new int[] {0x46, 0x82, 0xB4});<a name="line.780"></a>
+<span class="sourceLineNo">781</span>        _colorMap.put("Tan".toLowerCase(), new int[] {0xD2, 0xB4, 0x8C});<a name="line.781"></a>
+<span class="sourceLineNo">782</span>        _colorMap.put("Teal".toLowerCase(), new int[] {0x00, 0x80, 0x80});<a name="line.782"></a>
+<span class="sourceLineNo">783</span>        _colorMap.put("Thistle".toLowerCase(), new int[] {0xD8, 0xBF, 0xD8});<a name="line.783"></a>
+<span class="sourceLineNo">784</span>        _colorMap.put("Tomato".toLowerCase(), new int[] {0xFF, 0x63, 0x47});<a name="line.784"></a>
+<span class="sourceLineNo">785</span>        _colorMap.put("Turquoise".toLowerCase(), new int[] {0x40, 0xE0, 0xD0});<a name="line.785"></a>
+<span class="sourceLineNo">786</span>        _colorMap.put("Violet".toLowerCase(), new int[] {0xEE, 0x82, 0xEE});<a name="line.786"></a>
+<span class="sourceLineNo">787</span>        _colorMap.put("Wheat".toLowerCase(), new int[] {0xF5, 0xDE, 0xB3});<a name="line.787"></a>
+<span class="sourceLineNo">788</span>        _colorMap.put("White".toLowerCase(), new int[] {0xFF, 0xFF, 0xFF});<a name="line.788"></a>
+<span class="sourceLineNo">789</span>        _colorMap.put("WhiteSmoke".toLowerCase(), new int[] {0xF5, 0xF5, 0xF5});<a name="line.789"></a>
+<span class="sourceLineNo">790</span>        _colorMap.put("Yellow".toLowerCase(), new int[] {0xFF, 0xFF, 0x00});<a name="line.790"></a>
+<span class="sourceLineNo">791</span>        _colorMap.put("YellowGreen".toLowerCase(), new int[] {0x9A, 0xCD, 0x32});<a name="line.791"></a>
+<span class="sourceLineNo">792</span>    }<a name="line.792"></a>
+<span class="sourceLineNo">793</span>    <a name="line.793"></a>
+<span class="sourceLineNo">794</span>}<a name="line.794"></a>
 
 
 

@@ -276,7 +276,7 @@ extends <a href="../../../../ptolemy/data/Token.html" title="class in ptolemy.da
 <ul class="blockListLast">
 <li class="blockList">
 <h4>VECTOR</h4>
-<pre>public static final&nbsp;<a href="../../../../org/kepler/gis/data/VectorToken.VectorType.html" title="class in org.kepler.gis.data">VectorToken.VectorType</a> <a href="../../../../src-html/org/kepler/gis/data/VectorToken.html#line.266">VECTOR</a></pre>
+<pre>public static final&nbsp;<a href="../../../../org/kepler/gis/data/VectorToken.VectorType.html" title="class in org.kepler.gis.data">VectorToken.VectorType</a> <a href="../../../../src-html/org/kepler/gis/data/VectorToken.html#line.269">VECTOR</a></pre>
 </li>
 </ul>
 </li>
@@ -341,9 +341,10 @@ extends <a href="../../../../ptolemy/data/Token.html" title="class in ptolemy.da
 <ul class="blockList">
 <li class="blockList">
 <h4>getVectors</h4>
-<pre>public&nbsp;org.geotools.data.simple.SimpleFeatureCollection&nbsp;<a href="../../../../src-html/org/kepler/gis/data/VectorToken.html#line.78">getVectors</a>()
+<pre>public&nbsp;org.geotools.data.simple.SimpleFeatureCollection&nbsp;<a href="../../../../src-html/org/kepler/gis/data/VectorToken.html#line.80">getVectors</a>()
                                                             throws <a href="../../../../ptolemy/kernel/util/IllegalActionException.html" title="class in ptolemy.kernel.util">IllegalActionException</a></pre>
-<div class="block">Get the set of features represented in this token.</div>
+<div class="block">Get the set of features represented in this token.
+ NOTE: if you need to modify the features, make a copy first.</div>
 <dl>
 <dt><span class="throwsLabel">Throws:</span></dt>
 <dd><code><a href="../../../../ptolemy/kernel/util/IllegalActionException.html" title="class in ptolemy.kernel.util">IllegalActionException</a></code></dd>
@@ -356,9 +357,10 @@ extends <a href="../../../../ptolemy/data/Token.html" title="class in ptolemy.da
 <ul class="blockList">
 <li class="blockList">
 <h4>getFilteredVectors</h4>
-<pre>public&nbsp;org.geotools.data.simple.SimpleFeatureCollection&nbsp;<a href="../../../../src-html/org/kepler/gis/data/VectorToken.html#line.99">getFilteredVectors</a>(org.opengis.filter.Filter&nbsp;filter)
+<pre>public&nbsp;org.geotools.data.simple.SimpleFeatureCollection&nbsp;<a href="../../../../src-html/org/kepler/gis/data/VectorToken.html#line.102">getFilteredVectors</a>(org.opengis.filter.Filter&nbsp;filter)
                                                                     throws <a href="../../../../ptolemy/kernel/util/IllegalActionException.html" title="class in ptolemy.kernel.util">IllegalActionException</a></pre>
-<div class="block">Get the filtered set of features represented in this token.</div>
+<div class="block">Get the filtered set of features represented in this token.
+  NOTE: if you need to modify the features, make a copy first.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>filter</code> - A filter to select a subset of the features.</dd>
@@ -373,7 +375,7 @@ extends <a href="../../../../ptolemy/data/Token.html" title="class in ptolemy.da
 <ul class="blockList">
 <li class="blockList">
 <h4>getType</h4>
-<pre>public&nbsp;<a href="../../../../ptolemy/data/type/Type.html" title="interface in ptolemy.data.type">Type</a>&nbsp;<a href="../../../../src-html/org/kepler/gis/data/VectorToken.html#line.119">getType</a>()</pre>
+<pre>public&nbsp;<a href="../../../../ptolemy/data/type/Type.html" title="interface in ptolemy.data.type">Type</a>&nbsp;<a href="../../../../src-html/org/kepler/gis/data/VectorToken.html#line.122">getType</a>()</pre>
 <div class="block">Get the token type.</div>
 <dl>
 <dt><span class="overrideSpecifyLabel">Overrides:</span></dt>
@@ -389,7 +391,7 @@ extends <a href="../../../../ptolemy/data/Token.html" title="class in ptolemy.da
 <ul class="blockList">
 <li class="blockList">
 <h4>isEqualTo</h4>
-<pre>public final&nbsp;<a href="../../../../ptolemy/data/BooleanToken.html" title="class in ptolemy.data">BooleanToken</a>&nbsp;<a href="../../../../src-html/org/kepler/gis/data/VectorToken.html#line.136">isEqualTo</a>(<a href="../../../../ptolemy/data/Token.html" title="class in ptolemy.data">Token</a>&nbsp;rightArgument)
+<pre>public final&nbsp;<a href="../../../../ptolemy/data/BooleanToken.html" title="class in ptolemy.data">BooleanToken</a>&nbsp;<a href="../../../../src-html/org/kepler/gis/data/VectorToken.html#line.139">isEqualTo</a>(<a href="../../../../ptolemy/data/Token.html" title="class in ptolemy.data">Token</a>&nbsp;rightArgument)
                              throws <a href="../../../../ptolemy/kernel/util/IllegalActionException.html" title="class in ptolemy.kernel.util">IllegalActionException</a></pre>
 <div class="block">Test for equality of the values of this Token and the argument Token. If
  the value of this token or the value of the rightArgument token is null,
@@ -413,7 +415,7 @@ extends <a href="../../../../ptolemy/data/Token.html" title="class in ptolemy.da
 <ul class="blockListLast">
 <li class="blockList">
 <h4>toString</h4>
-<pre>public&nbsp;java.lang.String&nbsp;<a href="../../../../src-html/org/kepler/gis/data/VectorToken.html#line.154">toString</a>()</pre>
+<pre>public&nbsp;java.lang.String&nbsp;<a href="../../../../src-html/org/kepler/gis/data/VectorToken.html#line.157">toString</a>()</pre>
 <div class="block">Return a String representation of the VectorToken.</div>
 <dl>
 <dt><span class="overrideSpecifyLabel">Overrides:</span></dt>
