@@ -418,7 +418,7 @@ implements <a href="../../../../ptolemy/actor/continuous/ContinuousStatefulCompo
 <ul class="blockList">
 <li class="blockList">
 <h4>clone</h4>
-<pre>public&nbsp;java.lang.Object&nbsp;<a href="../../../../src-html/ptolemy/domains/continuous/kernel/HybridModalDirector.html#line.107">clone</a>(<a href="../../../../ptolemy/kernel/util/Workspace.html" title="class in ptolemy.kernel.util">Workspace</a>&nbsp;workspace)
+<pre>public&nbsp;java.lang.Object&nbsp;<a href="../../../../src-html/ptolemy/domains/continuous/kernel/HybridModalDirector.html#line.108">clone</a>(<a href="../../../../ptolemy/kernel/util/Workspace.html" title="class in ptolemy.kernel.util">Workspace</a>&nbsp;workspace)
                        throws java.lang.CloneNotSupportedException</pre>
 <div class="block">Clone the actor into the specified workspace. This calls the
   base class and then sets the attribute public members to refer
@@ -445,7 +445,7 @@ implements <a href="../../../../ptolemy/actor/continuous/ContinuousStatefulCompo
 <ul class="blockList">
 <li class="blockList">
 <h4>fire</h4>
-<pre>public&nbsp;void&nbsp;<a href="../../../../src-html/ptolemy/domains/continuous/kernel/HybridModalDirector.html#line.124">fire</a>()
+<pre>public&nbsp;void&nbsp;<a href="../../../../src-html/ptolemy/domains/continuous/kernel/HybridModalDirector.html#line.125">fire</a>()
           throws <a href="../../../../ptolemy/kernel/util/IllegalActionException.html" title="class in ptolemy.kernel.util">IllegalActionException</a></pre>
 <div class="block">Fire the model model for one iteration. Override the base class
   to avoid firing the controller during intermediate stages of a
@@ -469,7 +469,7 @@ implements <a href="../../../../ptolemy/actor/continuous/ContinuousStatefulCompo
 <ul class="blockList">
 <li class="blockList">
 <h4>getErrorTolerance</h4>
-<pre>public final&nbsp;double&nbsp;<a href="../../../../src-html/ptolemy/domains/continuous/kernel/HybridModalDirector.html#line.164">getErrorTolerance</a>()</pre>
+<pre>public final&nbsp;double&nbsp;<a href="../../../../src-html/ptolemy/domains/continuous/kernel/HybridModalDirector.html#line.165">getErrorTolerance</a>()</pre>
 <div class="block">Return error tolerance used for detecting enabled transitions.
   If there is an enclosing continuous director, then get the
   error tolerance from that director. Otherwise, return 1e-4.</div>
@@ -485,7 +485,7 @@ implements <a href="../../../../ptolemy/actor/continuous/ContinuousStatefulCompo
 <ul class="blockList">
 <li class="blockList">
 <h4>getParseTreeEvaluator</h4>
-<pre>public&nbsp;<a href="../../../../ptolemy/data/expr/ParseTreeEvaluator.html" title="class in ptolemy.data.expr">ParseTreeEvaluator</a>&nbsp;<a href="../../../../src-html/ptolemy/domains/continuous/kernel/HybridModalDirector.html#line.179">getParseTreeEvaluator</a>()</pre>
+<pre>public&nbsp;<a href="../../../../ptolemy/data/expr/ParseTreeEvaluator.html" title="class in ptolemy.data.expr">ParseTreeEvaluator</a>&nbsp;<a href="../../../../src-html/ptolemy/domains/continuous/kernel/HybridModalDirector.html#line.180">getParseTreeEvaluator</a>()</pre>
 <div class="block">Return the parse tree evaluator used to evaluate guard expressions.
   In this class, an instance
   of <a href="../../../../ptolemy/domains/modal/kernel/ParseTreeEvaluatorForGuardExpression.html" title="class in ptolemy.domains.modal.kernel"><code>ParseTreeEvaluatorForGuardExpression</code></a> is returned.
@@ -504,7 +504,7 @@ implements <a href="../../../../ptolemy/actor/continuous/ContinuousStatefulCompo
 <ul class="blockList">
 <li class="blockList">
 <h4>isStepSizeAccurate</h4>
-<pre>public&nbsp;boolean&nbsp;<a href="../../../../src-html/ptolemy/domains/continuous/kernel/HybridModalDirector.html#line.192">isStepSizeAccurate</a>()</pre>
+<pre>public&nbsp;boolean&nbsp;<a href="../../../../src-html/ptolemy/domains/continuous/kernel/HybridModalDirector.html#line.193">isStepSizeAccurate</a>()</pre>
 <div class="block">Return true if all actors that were fired in the current iteration
   report that the step size is accurate and if no transition is enabled.</div>
 <dl>
@@ -521,7 +521,7 @@ implements <a href="../../../../ptolemy/actor/continuous/ContinuousStatefulCompo
 <ul class="blockList">
 <li class="blockList">
 <h4>postfire</h4>
-<pre>public&nbsp;boolean&nbsp;<a href="../../../../src-html/ptolemy/domains/continuous/kernel/HybridModalDirector.html#line.398">postfire</a>()
+<pre>public&nbsp;boolean&nbsp;<a href="../../../../src-html/ptolemy/domains/continuous/kernel/HybridModalDirector.html#line.409">postfire</a>()
                  throws <a href="../../../../ptolemy/kernel/util/IllegalActionException.html" title="class in ptolemy.kernel.util">IllegalActionException</a></pre>
 <div class="block">Override the base class so that if there is no enabled transition
   then we record for each comparison operation in each
@@ -546,7 +546,7 @@ implements <a href="../../../../ptolemy/actor/continuous/ContinuousStatefulCompo
 <ul class="blockList">
 <li class="blockList">
 <h4>prefire</h4>
-<pre>public&nbsp;boolean&nbsp;<a href="../../../../src-html/ptolemy/domains/continuous/kernel/HybridModalDirector.html#line.466">prefire</a>()
+<pre>public&nbsp;boolean&nbsp;<a href="../../../../src-html/ptolemy/domains/continuous/kernel/HybridModalDirector.html#line.477">prefire</a>()
                 throws <a href="../../../../ptolemy/kernel/util/IllegalActionException.html" title="class in ptolemy.kernel.util">IllegalActionException</a></pre>
 <div class="block">Override the base class to set current time to match that of
   the enclosing executive director, if there is one, regardless
@@ -573,7 +573,7 @@ implements <a href="../../../../ptolemy/actor/continuous/ContinuousStatefulCompo
 <ul class="blockList">
 <li class="blockList">
 <h4>refinedStepSize</h4>
-<pre>public&nbsp;double&nbsp;<a href="../../../../src-html/ptolemy/domains/continuous/kernel/HybridModalDirector.html#line.496">refinedStepSize</a>()
+<pre>public&nbsp;double&nbsp;<a href="../../../../src-html/ptolemy/domains/continuous/kernel/HybridModalDirector.html#line.507">refinedStepSize</a>()
                        throws <a href="../../../../ptolemy/kernel/util/IllegalActionException.html" title="class in ptolemy.kernel.util">IllegalActionException</a></pre>
 <div class="block">Return the minimum of the step sizes suggested by any
   actors that were fired in the current iteration.</div>
@@ -593,7 +593,7 @@ implements <a href="../../../../ptolemy/actor/continuous/ContinuousStatefulCompo
 <ul class="blockList">
 <li class="blockList">
 <h4>rollBackToCommittedState</h4>
-<pre>public&nbsp;void&nbsp;<a href="../../../../src-html/ptolemy/domains/continuous/kernel/HybridModalDirector.html#line.557">rollBackToCommittedState</a>()
+<pre>public&nbsp;void&nbsp;<a href="../../../../src-html/ptolemy/domains/continuous/kernel/HybridModalDirector.html#line.568">rollBackToCommittedState</a>()
                               throws <a href="../../../../ptolemy/kernel/util/IllegalActionException.html" title="class in ptolemy.kernel.util">IllegalActionException</a></pre>
 <div class="block">Roll back to committed state.
   This will roll back any actors that were fired in the current iteration.</div>
@@ -612,7 +612,7 @@ implements <a href="../../../../ptolemy/actor/continuous/ContinuousStatefulCompo
 <ul class="blockList">
 <li class="blockList">
 <h4>suggestedStepSize</h4>
-<pre>public&nbsp;double&nbsp;<a href="../../../../src-html/ptolemy/domains/continuous/kernel/HybridModalDirector.html#line.619">suggestedStepSize</a>()
+<pre>public&nbsp;double&nbsp;<a href="../../../../src-html/ptolemy/domains/continuous/kernel/HybridModalDirector.html#line.630">suggestedStepSize</a>()
                          throws <a href="../../../../ptolemy/kernel/util/IllegalActionException.html" title="class in ptolemy.kernel.util">IllegalActionException</a></pre>
 <div class="block">Return the minimum of the step sizes suggested by any
   actors that were fired in current iteration.</div>
@@ -633,7 +633,7 @@ implements <a href="../../../../ptolemy/actor/continuous/ContinuousStatefulCompo
 <ul class="blockListLast">
 <li class="blockList">
 <h4>_enclosingContinuousDirector</h4>
-<pre>protected&nbsp;<a href="../../../../ptolemy/domains/continuous/kernel/ContinuousDirector.html" title="class in ptolemy.domains.continuous.kernel">ContinuousDirector</a>&nbsp;<a href="../../../../src-html/ptolemy/domains/continuous/kernel/HybridModalDirector.html#line.654">_enclosingContinuousDirector</a>()</pre>
+<pre>protected&nbsp;<a href="../../../../ptolemy/domains/continuous/kernel/ContinuousDirector.html" title="class in ptolemy.domains.continuous.kernel">ContinuousDirector</a>&nbsp;<a href="../../../../src-html/ptolemy/domains/continuous/kernel/HybridModalDirector.html#line.665">_enclosingContinuousDirector</a>()</pre>
 <div class="block">Return the enclosing continuous director, or null if there
   is none.  The enclosing continuous director is a director
   above this in the hierarchy, possibly separated by composite
