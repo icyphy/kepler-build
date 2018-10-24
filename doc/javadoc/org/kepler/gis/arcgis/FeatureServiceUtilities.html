@@ -137,18 +137,18 @@ extends java.lang.Object</pre>
 <td class="colFirst"><code>static void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../../org/kepler/gis/arcgis/FeatureServiceUtilities.html#addFeatures-java.lang.String-java.lang.String-java.lang.String-java.lang.String-io.vertx.core.Handler-">addFeatures</a></span>(java.lang.String&nbsp;jsonStr,
            java.lang.String&nbsp;featureServiceUrlStr,
-           java.lang.String&nbsp;clientIdStr,
-           java.lang.String&nbsp;clientSecretStr,
+           java.lang.String&nbsp;userNameStr,
+           java.lang.String&nbsp;passwordStr,
            io.vertx.core.Handler&lt;io.vertx.core.AsyncResult&lt;java.lang.String&gt;&gt;&nbsp;handler)</code>
 <div class="block">Add features to a feature service.</div>
 </td>
 </tr>
 <tr id="i1" class="rowColor">
 <td class="colFirst"><code>static void</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../org/kepler/gis/arcgis/FeatureServiceUtilities.html#getAccessToken-java.lang.String-java.lang.String-io.vertx.core.Handler-">getAccessToken</a></span>(java.lang.String&nbsp;clientIdStr,
-              java.lang.String&nbsp;clientSecretStr,
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../org/kepler/gis/arcgis/FeatureServiceUtilities.html#getAccessToken-java.lang.String-java.lang.String-io.vertx.core.Handler-">getAccessToken</a></span>(java.lang.String&nbsp;userNameStr,
+              java.lang.String&nbsp;passwordStr,
               io.vertx.core.Handler&lt;io.vertx.core.AsyncResult&lt;java.lang.String&gt;&gt;&nbsp;handler)</code>
-<div class="block">Get an access token for an oath app.</div>
+<div class="block">Get an access token for ArcGIS.</div>
 </td>
 </tr>
 </table>
@@ -181,16 +181,16 @@ extends java.lang.Object</pre>
 <h4>addFeatures</h4>
 <pre>public static&nbsp;void&nbsp;<a href="../../../../src-html/org/kepler/gis/arcgis/FeatureServiceUtilities.html#line.57">addFeatures</a>(java.lang.String&nbsp;jsonStr,
                                java.lang.String&nbsp;featureServiceUrlStr,
-                               java.lang.String&nbsp;clientIdStr,
-                               java.lang.String&nbsp;clientSecretStr,
+                               java.lang.String&nbsp;userNameStr,
+                               java.lang.String&nbsp;passwordStr,
                                io.vertx.core.Handler&lt;io.vertx.core.AsyncResult&lt;java.lang.String&gt;&gt;&nbsp;handler)</pre>
 <div class="block">Add features to a feature service.</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>jsonStr</code> - The features to add in esri json format.</dd>
 <dd><code>featureServiceUrlStr</code> - The url of the layer in the feature service.</dd>
-<dd><code>cliendIdStr</code> - The client id of the oath app.</dd>
-<dd><code>clientSecretStr</code> - The client secret of the oath app.</dd>
+<dd><code>userNameStr</code> - </dd>
+<dd><code>passwordStr</code> - </dd>
 <dd><code>handler</code> - Asynchronous handler for the result.</dd>
 </dl>
 </li>
@@ -201,10 +201,10 @@ extends java.lang.Object</pre>
 <ul class="blockListLast">
 <li class="blockList">
 <h4>getAccessToken</h4>
-<pre>public static&nbsp;void&nbsp;<a href="../../../../src-html/org/kepler/gis/arcgis/FeatureServiceUtilities.html#line.72">getAccessToken</a>(java.lang.String&nbsp;clientIdStr,
-                                  java.lang.String&nbsp;clientSecretStr,
+<pre>public static&nbsp;void&nbsp;<a href="../../../../src-html/org/kepler/gis/arcgis/FeatureServiceUtilities.html#line.72">getAccessToken</a>(java.lang.String&nbsp;userNameStr,
+                                  java.lang.String&nbsp;passwordStr,
                                   io.vertx.core.Handler&lt;io.vertx.core.AsyncResult&lt;java.lang.String&gt;&gt;&nbsp;handler)</pre>
-<div class="block">Get an access token for an oath app.</div>
+<div class="block">Get an access token for ArcGIS.</div>
 </li>
 </ul>
 </li>
