@@ -908,111 +908,136 @@
 <span class="sourceLineNo">900</span>            _debug("Called wrapup()");<a name="line.900"></a>
 <span class="sourceLineNo">901</span>        }<a name="line.901"></a>
 <span class="sourceLineNo">902</span>        // Invoke initializable methods.<a name="line.902"></a>
-<span class="sourceLineNo">903</span>        if (_initializables != null) {<a name="line.903"></a>
-<span class="sourceLineNo">904</span>            for (Initializable initializable : _initializables) {<a name="line.904"></a>
-<span class="sourceLineNo">905</span>                initializable.wrapup();<a name="line.905"></a>
-<span class="sourceLineNo">906</span>            }<a name="line.906"></a>
-<span class="sourceLineNo">907</span>        }<a name="line.907"></a>
-<span class="sourceLineNo">908</span>    }<a name="line.908"></a>
-<span class="sourceLineNo">909</span><a name="line.909"></a>
-<span class="sourceLineNo">910</span>    ///////////////////////////////////////////////////////////////////<a name="line.910"></a>
-<span class="sourceLineNo">911</span>    ////                         protected methods                 ////<a name="line.911"></a>
-<span class="sourceLineNo">912</span><a name="line.912"></a>
-<span class="sourceLineNo">913</span>    /** Send an actor firing event to all actor firing listeners that<a name="line.913"></a>
-<span class="sourceLineNo">914</span>     *  have registered with this actor.<a name="line.914"></a>
-<span class="sourceLineNo">915</span>     *  @param event The event.<a name="line.915"></a>
-<span class="sourceLineNo">916</span>     */<a name="line.916"></a>
-<span class="sourceLineNo">917</span>    protected final void _actorFiring(FiringEvent event) {<a name="line.917"></a>
-<span class="sourceLineNo">918</span>        if (_notifyingActorFiring) {<a name="line.918"></a>
-<span class="sourceLineNo">919</span>            Iterator&lt;ActorFiringListener&gt; listeners = _actorFiringListeners<a name="line.919"></a>
-<span class="sourceLineNo">920</span>                    .iterator();<a name="line.920"></a>
-<span class="sourceLineNo">921</span><a name="line.921"></a>
-<span class="sourceLineNo">922</span>            while (listeners.hasNext()) {<a name="line.922"></a>
-<span class="sourceLineNo">923</span>                listeners.next().firingEvent(event);<a name="line.923"></a>
-<span class="sourceLineNo">924</span>            }<a name="line.924"></a>
-<span class="sourceLineNo">925</span>        }<a name="line.925"></a>
-<span class="sourceLineNo">926</span>    }<a name="line.926"></a>
-<span class="sourceLineNo">927</span><a name="line.927"></a>
-<span class="sourceLineNo">928</span>    /** Send an actor firing event type to all actor firing listeners that<a name="line.928"></a>
-<span class="sourceLineNo">929</span>     *  have registered with this actor.<a name="line.929"></a>
-<span class="sourceLineNo">930</span>     *  @param type The type.<a name="line.930"></a>
-<span class="sourceLineNo">931</span>     *  @param multiplicity The multiplicity of the firing, that is,<a name="line.931"></a>
-<span class="sourceLineNo">932</span>     *  the number of times the firing will occur or has occurred.<a name="line.932"></a>
-<span class="sourceLineNo">933</span>     */<a name="line.933"></a>
-<span class="sourceLineNo">934</span>    protected final void _actorFiring(FiringEvent.FiringEventType type,<a name="line.934"></a>
-<span class="sourceLineNo">935</span>            int multiplicity) {<a name="line.935"></a>
-<span class="sourceLineNo">936</span>        _actorFiring(new FiringEvent(null, this, type, multiplicity));<a name="line.936"></a>
-<span class="sourceLineNo">937</span>    }<a name="line.937"></a>
-<span class="sourceLineNo">938</span><a name="line.938"></a>
-<span class="sourceLineNo">939</span>    /** Set the dependency between the input and output port to<a name="line.939"></a>
-<span class="sourceLineNo">940</span>     *  represent a time delay with the specified value.<a name="line.940"></a>
-<span class="sourceLineNo">941</span>     *  Subclasses can call this method<a name="line.941"></a>
-<span class="sourceLineNo">942</span>     *  instead of implementing a custom {@link CausalityInterface}<a name="line.942"></a>
-<span class="sourceLineNo">943</span>     *  for the cases where output ports depend on input ports with<a name="line.943"></a>
-<span class="sourceLineNo">944</span>     *  a time delay.<a name="line.944"></a>
-<span class="sourceLineNo">945</span>     *  If the time delay is 0.0, this method nonetheless<a name="line.945"></a>
-<span class="sourceLineNo">946</span>     *  assumes that the output port does not (immediately) depend on<a name="line.946"></a>
-<span class="sourceLineNo">947</span>     *  the input port (this amounts to a superdense time delay of<a name="line.947"></a>
-<span class="sourceLineNo">948</span>     *  (0.0, 1)). There should be one such call for each<a name="line.948"></a>
-<span class="sourceLineNo">949</span>     *  input, output pair that does not have a dependency.<a name="line.949"></a>
-<span class="sourceLineNo">950</span>     *  @param input The input port.<a name="line.950"></a>
-<span class="sourceLineNo">951</span>     *  @param output The output port with a time delay dependency on the<a name="line.951"></a>
-<span class="sourceLineNo">952</span>     *   input port.<a name="line.952"></a>
-<span class="sourceLineNo">953</span>     *  @param timeDelay The time delay.<a name="line.953"></a>
-<span class="sourceLineNo">954</span>     *  @exception IllegalActionException If causality interface<a name="line.954"></a>
-<span class="sourceLineNo">955</span>     *  cannot be computed.<a name="line.955"></a>
-<span class="sourceLineNo">956</span>     *  @see #getCausalityInterface()<a name="line.956"></a>
-<span class="sourceLineNo">957</span>     */<a name="line.957"></a>
-<span class="sourceLineNo">958</span>    protected void _declareDelayDependency(IOPort input, IOPort output,<a name="line.958"></a>
-<span class="sourceLineNo">959</span>            double timeDelay) throws IllegalActionException {<a name="line.959"></a>
-<span class="sourceLineNo">960</span>        CausalityInterface causality = getCausalityInterface();<a name="line.960"></a>
-<span class="sourceLineNo">961</span>        if (timeDelay == 0.0) {<a name="line.961"></a>
-<span class="sourceLineNo">962</span>            causality.declareDelayDependency(input, output, 0.0, 1);<a name="line.962"></a>
-<span class="sourceLineNo">963</span>        } else {<a name="line.963"></a>
-<span class="sourceLineNo">964</span>            causality.declareDelayDependency(input, output, timeDelay, 0);<a name="line.964"></a>
-<span class="sourceLineNo">965</span>        }<a name="line.965"></a>
-<span class="sourceLineNo">966</span>    }<a name="line.966"></a>
-<span class="sourceLineNo">967</span><a name="line.967"></a>
-<span class="sourceLineNo">968</span>    ///////////////////////////////////////////////////////////////////<a name="line.968"></a>
-<span class="sourceLineNo">969</span>    ////                         protected variables               ////<a name="line.969"></a>
-<span class="sourceLineNo">970</span><a name="line.970"></a>
-<span class="sourceLineNo">971</span>    /** The list of ActorFiringListeners registered with this object.<a name="line.971"></a>
-<span class="sourceLineNo">972</span>     *  NOTE: Because of the way we synchronize on this object, it should<a name="line.972"></a>
-<span class="sourceLineNo">973</span>     *  never be reset to null after the first list is created.<a name="line.973"></a>
-<span class="sourceLineNo">974</span>     */<a name="line.974"></a>
-<span class="sourceLineNo">975</span>    protected LinkedList&lt;ActorFiringListener&gt; _actorFiringListeners = null;<a name="line.975"></a>
-<span class="sourceLineNo">976</span><a name="line.976"></a>
-<span class="sourceLineNo">977</span>    /** List of objects whose (pre)initialize() and wrapup() methods<a name="line.977"></a>
-<span class="sourceLineNo">978</span>     *  should be slaved to these.<a name="line.978"></a>
-<span class="sourceLineNo">979</span>     */<a name="line.979"></a>
-<span class="sourceLineNo">980</span>    protected transient Set&lt;Initializable&gt; _initializables;<a name="line.980"></a>
-<span class="sourceLineNo">981</span><a name="line.981"></a>
-<span class="sourceLineNo">982</span>    /** Flag that is true if there are actor firing listeners. */<a name="line.982"></a>
-<span class="sourceLineNo">983</span>    protected boolean _notifyingActorFiring = false;<a name="line.983"></a>
-<span class="sourceLineNo">984</span><a name="line.984"></a>
-<span class="sourceLineNo">985</span>    /** Indicator that a stop has been requested by a call to stop(). */<a name="line.985"></a>
-<span class="sourceLineNo">986</span>    protected boolean _stopRequested = false;<a name="line.986"></a>
-<span class="sourceLineNo">987</span><a name="line.987"></a>
-<span class="sourceLineNo">988</span>    ///////////////////////////////////////////////////////////////////<a name="line.988"></a>
-<span class="sourceLineNo">989</span>    ////                         private variables                 ////<a name="line.989"></a>
-<span class="sourceLineNo">990</span>    // Cached lists of input and output ports.<a name="line.990"></a>
-<span class="sourceLineNo">991</span>    private transient long _inputPortsVersion = -1;<a name="line.991"></a>
+<span class="sourceLineNo">903</span>        // Collect exceptions during wrapup.<a name="line.903"></a>
+<span class="sourceLineNo">904</span>        LinkedList&lt;Throwable&gt; throwables = new LinkedList&lt;Throwable&gt;();<a name="line.904"></a>
+<span class="sourceLineNo">905</span><a name="line.905"></a>
+<span class="sourceLineNo">906</span>        if (_initializables != null) {<a name="line.906"></a>
+<span class="sourceLineNo">907</span>            for (Initializable initializable : _initializables) {<a name="line.907"></a>
+<span class="sourceLineNo">908</span>                try {<a name="line.908"></a>
+<span class="sourceLineNo">909</span>                    initializable.wrapup();<a name="line.909"></a>
+<span class="sourceLineNo">910</span>                } catch (Throwable throwable) {<a name="line.910"></a>
+<span class="sourceLineNo">911</span>                    throwables.add(throwable);<a name="line.911"></a>
+<span class="sourceLineNo">912</span>                }<a name="line.912"></a>
+<span class="sourceLineNo">913</span>            }<a name="line.913"></a>
+<span class="sourceLineNo">914</span>            if (throwables.size() == 1) {<a name="line.914"></a>
+<span class="sourceLineNo">915</span>                Throwable exception = throwables.get(0);<a name="line.915"></a>
+<span class="sourceLineNo">916</span>                if (exception instanceof IllegalActionException) {<a name="line.916"></a>
+<span class="sourceLineNo">917</span>                    throw (IllegalActionException)exception;<a name="line.917"></a>
+<span class="sourceLineNo">918</span>                } else {<a name="line.918"></a>
+<span class="sourceLineNo">919</span>                    throw new IllegalActionException(this, exception,<a name="line.919"></a>
+<span class="sourceLineNo">920</span>                            "Exception thrown during wrapup.");<a name="line.920"></a>
+<span class="sourceLineNo">921</span>                }<a name="line.921"></a>
+<span class="sourceLineNo">922</span>            } else if (throwables.size() &gt; 1) {<a name="line.922"></a>
+<span class="sourceLineNo">923</span>                StringBuffer message = new StringBuffer();<a name="line.923"></a>
+<span class="sourceLineNo">924</span>                for (Throwable throwable : throwables) {<a name="line.924"></a>
+<span class="sourceLineNo">925</span>                    message.append(throwable.getMessage());<a name="line.925"></a>
+<span class="sourceLineNo">926</span>                    message.append("\n======\n");<a name="line.926"></a>
+<span class="sourceLineNo">927</span>                }<a name="line.927"></a>
+<span class="sourceLineNo">928</span>                throw new IllegalActionException(this, throwables.get(0),<a name="line.928"></a>
+<span class="sourceLineNo">929</span>                        "Multiple exceptions thrown during wrapup:\n" <a name="line.929"></a>
+<span class="sourceLineNo">930</span>                        + message.toString());<a name="line.930"></a>
+<span class="sourceLineNo">931</span>            }<a name="line.931"></a>
+<span class="sourceLineNo">932</span>        }<a name="line.932"></a>
+<span class="sourceLineNo">933</span>    }<a name="line.933"></a>
+<span class="sourceLineNo">934</span><a name="line.934"></a>
+<span class="sourceLineNo">935</span>    ///////////////////////////////////////////////////////////////////<a name="line.935"></a>
+<span class="sourceLineNo">936</span>    ////                         protected methods                 ////<a name="line.936"></a>
+<span class="sourceLineNo">937</span><a name="line.937"></a>
+<span class="sourceLineNo">938</span>    /** Send an actor firing event to all actor firing listeners that<a name="line.938"></a>
+<span class="sourceLineNo">939</span>     *  have registered with this actor.<a name="line.939"></a>
+<span class="sourceLineNo">940</span>     *  @param event The event.<a name="line.940"></a>
+<span class="sourceLineNo">941</span>     */<a name="line.941"></a>
+<span class="sourceLineNo">942</span>    protected final void _actorFiring(FiringEvent event) {<a name="line.942"></a>
+<span class="sourceLineNo">943</span>        if (_notifyingActorFiring) {<a name="line.943"></a>
+<span class="sourceLineNo">944</span>            Iterator&lt;ActorFiringListener&gt; listeners = _actorFiringListeners<a name="line.944"></a>
+<span class="sourceLineNo">945</span>                    .iterator();<a name="line.945"></a>
+<span class="sourceLineNo">946</span><a name="line.946"></a>
+<span class="sourceLineNo">947</span>            while (listeners.hasNext()) {<a name="line.947"></a>
+<span class="sourceLineNo">948</span>                listeners.next().firingEvent(event);<a name="line.948"></a>
+<span class="sourceLineNo">949</span>            }<a name="line.949"></a>
+<span class="sourceLineNo">950</span>        }<a name="line.950"></a>
+<span class="sourceLineNo">951</span>    }<a name="line.951"></a>
+<span class="sourceLineNo">952</span><a name="line.952"></a>
+<span class="sourceLineNo">953</span>    /** Send an actor firing event type to all actor firing listeners that<a name="line.953"></a>
+<span class="sourceLineNo">954</span>     *  have registered with this actor.<a name="line.954"></a>
+<span class="sourceLineNo">955</span>     *  @param type The type.<a name="line.955"></a>
+<span class="sourceLineNo">956</span>     *  @param multiplicity The multiplicity of the firing, that is,<a name="line.956"></a>
+<span class="sourceLineNo">957</span>     *  the number of times the firing will occur or has occurred.<a name="line.957"></a>
+<span class="sourceLineNo">958</span>     */<a name="line.958"></a>
+<span class="sourceLineNo">959</span>    protected final void _actorFiring(FiringEvent.FiringEventType type,<a name="line.959"></a>
+<span class="sourceLineNo">960</span>            int multiplicity) {<a name="line.960"></a>
+<span class="sourceLineNo">961</span>        _actorFiring(new FiringEvent(null, this, type, multiplicity));<a name="line.961"></a>
+<span class="sourceLineNo">962</span>    }<a name="line.962"></a>
+<span class="sourceLineNo">963</span><a name="line.963"></a>
+<span class="sourceLineNo">964</span>    /** Set the dependency between the input and output port to<a name="line.964"></a>
+<span class="sourceLineNo">965</span>     *  represent a time delay with the specified value.<a name="line.965"></a>
+<span class="sourceLineNo">966</span>     *  Subclasses can call this method<a name="line.966"></a>
+<span class="sourceLineNo">967</span>     *  instead of implementing a custom {@link CausalityInterface}<a name="line.967"></a>
+<span class="sourceLineNo">968</span>     *  for the cases where output ports depend on input ports with<a name="line.968"></a>
+<span class="sourceLineNo">969</span>     *  a time delay.<a name="line.969"></a>
+<span class="sourceLineNo">970</span>     *  If the time delay is 0.0, this method nonetheless<a name="line.970"></a>
+<span class="sourceLineNo">971</span>     *  assumes that the output port does not (immediately) depend on<a name="line.971"></a>
+<span class="sourceLineNo">972</span>     *  the input port (this amounts to a superdense time delay of<a name="line.972"></a>
+<span class="sourceLineNo">973</span>     *  (0.0, 1)). There should be one such call for each<a name="line.973"></a>
+<span class="sourceLineNo">974</span>     *  input, output pair that does not have a dependency.<a name="line.974"></a>
+<span class="sourceLineNo">975</span>     *  @param input The input port.<a name="line.975"></a>
+<span class="sourceLineNo">976</span>     *  @param output The output port with a time delay dependency on the<a name="line.976"></a>
+<span class="sourceLineNo">977</span>     *   input port.<a name="line.977"></a>
+<span class="sourceLineNo">978</span>     *  @param timeDelay The time delay.<a name="line.978"></a>
+<span class="sourceLineNo">979</span>     *  @exception IllegalActionException If causality interface<a name="line.979"></a>
+<span class="sourceLineNo">980</span>     *  cannot be computed.<a name="line.980"></a>
+<span class="sourceLineNo">981</span>     *  @see #getCausalityInterface()<a name="line.981"></a>
+<span class="sourceLineNo">982</span>     */<a name="line.982"></a>
+<span class="sourceLineNo">983</span>    protected void _declareDelayDependency(IOPort input, IOPort output,<a name="line.983"></a>
+<span class="sourceLineNo">984</span>            double timeDelay) throws IllegalActionException {<a name="line.984"></a>
+<span class="sourceLineNo">985</span>        CausalityInterface causality = getCausalityInterface();<a name="line.985"></a>
+<span class="sourceLineNo">986</span>        if (timeDelay == 0.0) {<a name="line.986"></a>
+<span class="sourceLineNo">987</span>            causality.declareDelayDependency(input, output, 0.0, 1);<a name="line.987"></a>
+<span class="sourceLineNo">988</span>        } else {<a name="line.988"></a>
+<span class="sourceLineNo">989</span>            causality.declareDelayDependency(input, output, timeDelay, 0);<a name="line.989"></a>
+<span class="sourceLineNo">990</span>        }<a name="line.990"></a>
+<span class="sourceLineNo">991</span>    }<a name="line.991"></a>
 <span class="sourceLineNo">992</span><a name="line.992"></a>
-<span class="sourceLineNo">993</span>    private transient List&lt;T&gt; _cachedInputPorts;<a name="line.993"></a>
-<span class="sourceLineNo">994</span><a name="line.994"></a>
-<span class="sourceLineNo">995</span>    private transient long _outputPortsVersion = -1;<a name="line.995"></a>
-<span class="sourceLineNo">996</span><a name="line.996"></a>
-<span class="sourceLineNo">997</span>    private transient List&lt;T&gt; _cachedOutputPorts;<a name="line.997"></a>
-<span class="sourceLineNo">998</span><a name="line.998"></a>
-<span class="sourceLineNo">999</span>    /** The causality interface, if it has been created. */<a name="line.999"></a>
-<span class="sourceLineNo">1000</span>    private CausalityInterface _causalityInterface;<a name="line.1000"></a>
+<span class="sourceLineNo">993</span>    ///////////////////////////////////////////////////////////////////<a name="line.993"></a>
+<span class="sourceLineNo">994</span>    ////                         protected variables               ////<a name="line.994"></a>
+<span class="sourceLineNo">995</span><a name="line.995"></a>
+<span class="sourceLineNo">996</span>    /** The list of ActorFiringListeners registered with this object.<a name="line.996"></a>
+<span class="sourceLineNo">997</span>     *  NOTE: Because of the way we synchronize on this object, it should<a name="line.997"></a>
+<span class="sourceLineNo">998</span>     *  never be reset to null after the first list is created.<a name="line.998"></a>
+<span class="sourceLineNo">999</span>     */<a name="line.999"></a>
+<span class="sourceLineNo">1000</span>    protected LinkedList&lt;ActorFiringListener&gt; _actorFiringListeners = null;<a name="line.1000"></a>
 <span class="sourceLineNo">1001</span><a name="line.1001"></a>
-<span class="sourceLineNo">1002</span>    /** The director for which the causality interface was created. */<a name="line.1002"></a>
-<span class="sourceLineNo">1003</span>    private Director _causalityInterfaceDirector;<a name="line.1003"></a>
-<span class="sourceLineNo">1004</span><a name="line.1004"></a>
-<span class="sourceLineNo">1005</span>    /** Record of the workspace version the last time receivers were created. */<a name="line.1005"></a>
-<span class="sourceLineNo">1006</span>    private long _receiversVersion = -1;<a name="line.1006"></a>
-<span class="sourceLineNo">1007</span>}<a name="line.1007"></a>
+<span class="sourceLineNo">1002</span>    /** List of objects whose (pre)initialize() and wrapup() methods<a name="line.1002"></a>
+<span class="sourceLineNo">1003</span>     *  should be slaved to these.<a name="line.1003"></a>
+<span class="sourceLineNo">1004</span>     */<a name="line.1004"></a>
+<span class="sourceLineNo">1005</span>    protected transient Set&lt;Initializable&gt; _initializables;<a name="line.1005"></a>
+<span class="sourceLineNo">1006</span><a name="line.1006"></a>
+<span class="sourceLineNo">1007</span>    /** Flag that is true if there are actor firing listeners. */<a name="line.1007"></a>
+<span class="sourceLineNo">1008</span>    protected boolean _notifyingActorFiring = false;<a name="line.1008"></a>
+<span class="sourceLineNo">1009</span><a name="line.1009"></a>
+<span class="sourceLineNo">1010</span>    /** Indicator that a stop has been requested by a call to stop(). */<a name="line.1010"></a>
+<span class="sourceLineNo">1011</span>    protected boolean _stopRequested = false;<a name="line.1011"></a>
+<span class="sourceLineNo">1012</span><a name="line.1012"></a>
+<span class="sourceLineNo">1013</span>    ///////////////////////////////////////////////////////////////////<a name="line.1013"></a>
+<span class="sourceLineNo">1014</span>    ////                         private variables                 ////<a name="line.1014"></a>
+<span class="sourceLineNo">1015</span>    // Cached lists of input and output ports.<a name="line.1015"></a>
+<span class="sourceLineNo">1016</span>    private transient long _inputPortsVersion = -1;<a name="line.1016"></a>
+<span class="sourceLineNo">1017</span><a name="line.1017"></a>
+<span class="sourceLineNo">1018</span>    private transient List&lt;T&gt; _cachedInputPorts;<a name="line.1018"></a>
+<span class="sourceLineNo">1019</span><a name="line.1019"></a>
+<span class="sourceLineNo">1020</span>    private transient long _outputPortsVersion = -1;<a name="line.1020"></a>
+<span class="sourceLineNo">1021</span><a name="line.1021"></a>
+<span class="sourceLineNo">1022</span>    private transient List&lt;T&gt; _cachedOutputPorts;<a name="line.1022"></a>
+<span class="sourceLineNo">1023</span><a name="line.1023"></a>
+<span class="sourceLineNo">1024</span>    /** The causality interface, if it has been created. */<a name="line.1024"></a>
+<span class="sourceLineNo">1025</span>    private CausalityInterface _causalityInterface;<a name="line.1025"></a>
+<span class="sourceLineNo">1026</span><a name="line.1026"></a>
+<span class="sourceLineNo">1027</span>    /** The director for which the causality interface was created. */<a name="line.1027"></a>
+<span class="sourceLineNo">1028</span>    private Director _causalityInterfaceDirector;<a name="line.1028"></a>
+<span class="sourceLineNo">1029</span><a name="line.1029"></a>
+<span class="sourceLineNo">1030</span>    /** Record of the workspace version the last time receivers were created. */<a name="line.1030"></a>
+<span class="sourceLineNo">1031</span>    private long _receiversVersion = -1;<a name="line.1031"></a>
+<span class="sourceLineNo">1032</span>}<a name="line.1032"></a>
 
 
 

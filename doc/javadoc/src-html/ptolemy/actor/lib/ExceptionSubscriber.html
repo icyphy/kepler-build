@@ -52,55 +52,53 @@
 <span class="sourceLineNo">044</span> * {@link ptolemy.actor.lib.CatchExceptionAttribute}, the client is<a name="line.44"></a>
 <span class="sourceLineNo">045</span> * the Ptolemy developer (defines commands by dragging and dropping<a name="line.45"></a>
 <span class="sourceLineNo">046</span> * attributes into the model), and the receiver is a Ptolemy entity<a name="line.46"></a>
-<span class="sourceLineNo">047</span> * (such as an attribute that writes to a file, or an actor such as<a name="line.47"></a>
-<span class="sourceLineNo">048</span> * {@link org.ptolemy.ptango.lib.HttpActor} which sends a retry<a name="line.48"></a>
-<span class="sourceLineNo">049</span> * message upon exception with restart policy.<a name="line.49"></a>
-<span class="sourceLineNo">050</span> *<a name="line.50"></a>
-<span class="sourceLineNo">051</span> * @author Elizabeth Latronico<a name="line.51"></a>
-<span class="sourceLineNo">052</span> * @version $Id: ExceptionSubscriber.java 69467 2014-06-29 14:35:19Z beth@berkeley.edu$<a name="line.52"></a>
-<span class="sourceLineNo">053</span> * @since Ptolemy II 10.0<a name="line.53"></a>
-<span class="sourceLineNo">054</span> * @Pt.ProposedRating Red (beth)<a name="line.54"></a>
-<span class="sourceLineNo">055</span> * @Pt.AcceptedRating Red (beth)<a name="line.55"></a>
-<span class="sourceLineNo">056</span> * @see ptolemy.actor.lib.CatchExceptionAttribute<a name="line.56"></a>
-<span class="sourceLineNo">057</span> */<a name="line.57"></a>
-<span class="sourceLineNo">058</span><a name="line.58"></a>
-<span class="sourceLineNo">059</span>public interface ExceptionSubscriber {<a name="line.59"></a>
-<span class="sourceLineNo">060</span>    /** Invoked by an exception handler (e.g. {@link ptolemy.actor.lib.ExceptionManager}) when an<a name="line.60"></a>
-<span class="sourceLineNo">061</span>     *  exception occurs.  Some subscribers may need to set up access to<a name="line.61"></a>
-<span class="sourceLineNo">062</span>     *  resources (such as opening a file) prior to being notified of an<a name="line.62"></a>
-<span class="sourceLineNo">063</span>     *  exception. These could extend AbstractInitalizableAttribute to do so.<a name="line.63"></a>
-<span class="sourceLineNo">064</span>     *<a name="line.64"></a>
-<span class="sourceLineNo">065</span>     * @param policy  The exception handling policy (for example, restart) of<a name="line.65"></a>
-<span class="sourceLineNo">066</span>     * the exception handler; see {@link ptolemy.actor.lib.CatchExceptionAttribute}<a name="line.66"></a>
-<span class="sourceLineNo">067</span>     */<a name="line.67"></a>
-<span class="sourceLineNo">068</span><a name="line.68"></a>
-<span class="sourceLineNo">069</span>    /** Action to execute upon the occurrence of an exception.<a name="line.69"></a>
-<span class="sourceLineNo">070</span>     *  Some ExceptionReactions may need to set up and close access to resources<a name="line.70"></a>
-<span class="sourceLineNo">071</span>     *  (such as opening and closing a file).  These could extend<a name="line.71"></a>
-<span class="sourceLineNo">072</span>     *  AbstractInitalizableAttribute to do so.<a name="line.72"></a>
-<span class="sourceLineNo">073</span>     *<a name="line.73"></a>
-<span class="sourceLineNo">074</span>     * @param policy The handling policy of the exception manager (for example,<a name="line.74"></a>
-<span class="sourceLineNo">075</span>     *  restart); see {@link ptolemy.actor.lib.CatchExceptionAttribute}<a name="line.75"></a>
-<span class="sourceLineNo">076</span>     * @param exception The exception<a name="line.76"></a>
-<span class="sourceLineNo">077</span>     * @return True if the subscriber successfully processed the information;<a name="line.77"></a>
-<span class="sourceLineNo">078</span>     *  false otherwise (for example, an ExceptionEmailer that fails to send<a name="line.78"></a>
-<span class="sourceLineNo">079</span>     *  an email)<a name="line.79"></a>
-<span class="sourceLineNo">080</span>     */<a name="line.80"></a>
+<span class="sourceLineNo">047</span> * (such as an attribute that writes to a file.<a name="line.47"></a>
+<span class="sourceLineNo">048</span> *<a name="line.48"></a>
+<span class="sourceLineNo">049</span> * @author Elizabeth Latronico<a name="line.49"></a>
+<span class="sourceLineNo">050</span> * @version $Id: ExceptionSubscriber.java 69467 2014-06-29 14:35:19Z beth@berkeley.edu$<a name="line.50"></a>
+<span class="sourceLineNo">051</span> * @since Ptolemy II 10.0<a name="line.51"></a>
+<span class="sourceLineNo">052</span> * @Pt.ProposedRating Red (beth)<a name="line.52"></a>
+<span class="sourceLineNo">053</span> * @Pt.AcceptedRating Red (beth)<a name="line.53"></a>
+<span class="sourceLineNo">054</span> * @see ptolemy.actor.lib.CatchExceptionAttribute<a name="line.54"></a>
+<span class="sourceLineNo">055</span> */<a name="line.55"></a>
+<span class="sourceLineNo">056</span><a name="line.56"></a>
+<span class="sourceLineNo">057</span>public interface ExceptionSubscriber {<a name="line.57"></a>
+<span class="sourceLineNo">058</span>    /** Invoked by an exception handler (e.g. {@link ptolemy.actor.lib.ExceptionManager}) when an<a name="line.58"></a>
+<span class="sourceLineNo">059</span>     *  exception occurs.  Some subscribers may need to set up access to<a name="line.59"></a>
+<span class="sourceLineNo">060</span>     *  resources (such as opening a file) prior to being notified of an<a name="line.60"></a>
+<span class="sourceLineNo">061</span>     *  exception. These could extend AbstractInitalizableAttribute to do so.<a name="line.61"></a>
+<span class="sourceLineNo">062</span>     *<a name="line.62"></a>
+<span class="sourceLineNo">063</span>     * @param policy  The exception handling policy (for example, restart) of<a name="line.63"></a>
+<span class="sourceLineNo">064</span>     * the exception handler; see {@link ptolemy.actor.lib.CatchExceptionAttribute}<a name="line.64"></a>
+<span class="sourceLineNo">065</span>     */<a name="line.65"></a>
+<span class="sourceLineNo">066</span><a name="line.66"></a>
+<span class="sourceLineNo">067</span>    /** Action to execute upon the occurrence of an exception.<a name="line.67"></a>
+<span class="sourceLineNo">068</span>     *  Some ExceptionReactions may need to set up and close access to resources<a name="line.68"></a>
+<span class="sourceLineNo">069</span>     *  (such as opening and closing a file).  These could extend<a name="line.69"></a>
+<span class="sourceLineNo">070</span>     *  AbstractInitalizableAttribute to do so.<a name="line.70"></a>
+<span class="sourceLineNo">071</span>     *<a name="line.71"></a>
+<span class="sourceLineNo">072</span>     * @param policy The handling policy of the exception manager (for example,<a name="line.72"></a>
+<span class="sourceLineNo">073</span>     *  restart); see {@link ptolemy.actor.lib.CatchExceptionAttribute}<a name="line.73"></a>
+<span class="sourceLineNo">074</span>     * @param exception The exception<a name="line.74"></a>
+<span class="sourceLineNo">075</span>     * @return True if the subscriber successfully processed the information;<a name="line.75"></a>
+<span class="sourceLineNo">076</span>     *  false otherwise (for example, an ExceptionEmailer that fails to send<a name="line.76"></a>
+<span class="sourceLineNo">077</span>     *  an email)<a name="line.77"></a>
+<span class="sourceLineNo">078</span>     */<a name="line.78"></a>
+<span class="sourceLineNo">079</span><a name="line.79"></a>
+<span class="sourceLineNo">080</span>    public boolean exceptionOccurred(String policy, Throwable exception);<a name="line.80"></a>
 <span class="sourceLineNo">081</span><a name="line.81"></a>
-<span class="sourceLineNo">082</span>    public boolean exceptionOccurred(String policy, Throwable exception);<a name="line.82"></a>
-<span class="sourceLineNo">083</span><a name="line.83"></a>
-<span class="sourceLineNo">084</span>    /** Invoked by an exception handler (e.g. {@link ptolemy.actor.lib.ExceptionManager}) after<a name="line.84"></a>
-<span class="sourceLineNo">085</span>     *  an exception has been handled.<a name="line.85"></a>
-<span class="sourceLineNo">086</span>     *<a name="line.86"></a>
-<span class="sourceLineNo">087</span>     * @param successful True if the exception was successfully handled; false<a name="line.87"></a>
-<span class="sourceLineNo">088</span>     * otherwise<a name="line.88"></a>
-<span class="sourceLineNo">089</span>     * @param message A status message from the exception handler<a name="line.89"></a>
-<span class="sourceLineNo">090</span>     * @return True if the subscriber successfully processed the information;<a name="line.90"></a>
-<span class="sourceLineNo">091</span>     *  false otherwise (for example, an ExceptionEmailer that fails to send<a name="line.91"></a>
-<span class="sourceLineNo">092</span>     *  an email)<a name="line.92"></a>
-<span class="sourceLineNo">093</span>     */<a name="line.93"></a>
-<span class="sourceLineNo">094</span>    public boolean exceptionHandled(boolean successful, String message);<a name="line.94"></a>
-<span class="sourceLineNo">095</span>}<a name="line.95"></a>
+<span class="sourceLineNo">082</span>    /** Invoked by an exception handler (e.g. {@link ptolemy.actor.lib.ExceptionManager}) after<a name="line.82"></a>
+<span class="sourceLineNo">083</span>     *  an exception has been handled.<a name="line.83"></a>
+<span class="sourceLineNo">084</span>     *<a name="line.84"></a>
+<span class="sourceLineNo">085</span>     * @param successful True if the exception was successfully handled; false<a name="line.85"></a>
+<span class="sourceLineNo">086</span>     * otherwise<a name="line.86"></a>
+<span class="sourceLineNo">087</span>     * @param message A status message from the exception handler<a name="line.87"></a>
+<span class="sourceLineNo">088</span>     * @return True if the subscriber successfully processed the information;<a name="line.88"></a>
+<span class="sourceLineNo">089</span>     *  false otherwise (for example, an ExceptionEmailer that fails to send<a name="line.89"></a>
+<span class="sourceLineNo">090</span>     *  an email)<a name="line.90"></a>
+<span class="sourceLineNo">091</span>     */<a name="line.91"></a>
+<span class="sourceLineNo">092</span>    public boolean exceptionHandled(boolean successful, String message);<a name="line.92"></a>
+<span class="sourceLineNo">093</span>}<a name="line.93"></a>
 
 
 
