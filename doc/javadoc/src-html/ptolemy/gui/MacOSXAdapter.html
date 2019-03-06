@@ -188,157 +188,160 @@
 <span class="sourceLineNo">180</span>        // to use a different technique.<a name="line.180"></a>
 <span class="sourceLineNo">181</span>        String version = System.getProperty("java.version");<a name="line.181"></a>
 <span class="sourceLineNo">182</span>        int dot = version.indexOf(".");<a name="line.182"></a>
-<span class="sourceLineNo">183</span>        int majorVersion = Integer.parseInt(version.substring(0, dot));<a name="line.183"></a>
-<span class="sourceLineNo">184</span>        if (majorVersion &gt;= 9) {<a name="line.184"></a>
-<span class="sourceLineNo">185</span>            // Desktop class exists in Java 8, so this will compile.<a name="line.185"></a>
-<span class="sourceLineNo">186</span>            // But the methods we need to not exist, so we use reflection for those.<a name="line.186"></a>
-<span class="sourceLineNo">187</span>            if (Desktop.isDesktopSupported()) {<a name="line.187"></a>
-<span class="sourceLineNo">188</span>                _desktop = Desktop.getDesktop();<a name="line.188"></a>
-<span class="sourceLineNo">189</span>            } else {<a name="line.189"></a>
-<span class="sourceLineNo">190</span>                if (!_printedMacInitializerWarning) {<a name="line.190"></a>
-<span class="sourceLineNo">191</span>                    _printedMacInitializerWarning = true;<a name="line.191"></a>
-<span class="sourceLineNo">192</span>                    System.err.println(<a name="line.192"></a>
-<span class="sourceLineNo">193</span>                            "FIXME: Top.java: java.version is 9 or later, and Desktop is not"<a name="line.193"></a>
-<span class="sourceLineNo">194</span>                            + " supported on this platform, so no Mac menus and key bindings yet.");<a name="line.194"></a>
-<span class="sourceLineNo">195</span>                }<a name="line.195"></a>
-<span class="sourceLineNo">196</span>            }<a name="line.196"></a>
-<span class="sourceLineNo">197</span>            return;<a name="line.197"></a>
-<span class="sourceLineNo">198</span>        }<a name="line.198"></a>
-<span class="sourceLineNo">199</span><a name="line.199"></a>
-<span class="sourceLineNo">200</span>        try {<a name="line.200"></a>
-<span class="sourceLineNo">201</span>            Class applicationClass = null;<a name="line.201"></a>
-<span class="sourceLineNo">202</span>            String applicationClassName = "com.apple.eawt.Application";<a name="line.202"></a>
-<span class="sourceLineNo">203</span>            try {<a name="line.203"></a>
-<span class="sourceLineNo">204</span>                applicationClass = Class.forName(applicationClassName);<a name="line.204"></a>
-<span class="sourceLineNo">205</span>            } catch (NoClassDefFoundError ex) {<a name="line.205"></a>
-<span class="sourceLineNo">206</span>                if (!_printedNoClassDefFoundMessageApplication) {<a name="line.206"></a>
-<span class="sourceLineNo">207</span>                    System.out.println("Warning: Failed to find the \""<a name="line.207"></a>
-<span class="sourceLineNo">208</span>                            + applicationClassName + "\" class: " + ex<a name="line.208"></a>
-<span class="sourceLineNo">209</span>                            + " (applets and -sandbox always causes this)");<a name="line.209"></a>
-<span class="sourceLineNo">210</span>                    _printedNoClassDefFoundMessageApplication = true;<a name="line.210"></a>
-<span class="sourceLineNo">211</span>                }<a name="line.211"></a>
-<span class="sourceLineNo">212</span>                return;<a name="line.212"></a>
-<span class="sourceLineNo">213</span>            } catch (ExceptionInInitializerError ex) {<a name="line.213"></a>
-<span class="sourceLineNo">214</span>                if (ex.getCause() instanceof SecurityException) {<a name="line.214"></a>
-<span class="sourceLineNo">215</span>                    if (!_printedSecurityExceptionMessage) {<a name="line.215"></a>
-<span class="sourceLineNo">216</span>                        System.out.println("Warning: Failed to create new "<a name="line.216"></a>
-<span class="sourceLineNo">217</span>                                + "instance of \"" + applicationClassName<a name="line.217"></a>
-<span class="sourceLineNo">218</span>                                + "\": " + ex<a name="line.218"></a>
-<span class="sourceLineNo">219</span>                                + "(applets and -sandbox always causes this)");<a name="line.219"></a>
-<span class="sourceLineNo">220</span>                    }<a name="line.220"></a>
-<span class="sourceLineNo">221</span>                    return;<a name="line.221"></a>
-<span class="sourceLineNo">222</span>                }<a name="line.222"></a>
-<span class="sourceLineNo">223</span>            }<a name="line.223"></a>
-<span class="sourceLineNo">224</span><a name="line.224"></a>
-<span class="sourceLineNo">225</span>            if (applicationClass == null) {<a name="line.225"></a>
-<span class="sourceLineNo">226</span>                throw new NullPointerException("Internal Error!  class "<a name="line.226"></a>
-<span class="sourceLineNo">227</span>                        + applicationClassName + " was not found "<a name="line.227"></a>
-<span class="sourceLineNo">228</span>                        + "and the exception was missed?");<a name="line.228"></a>
-<span class="sourceLineNo">229</span>            } else {<a name="line.229"></a>
-<span class="sourceLineNo">230</span>                if (_macOSXApplication == null) {<a name="line.230"></a>
-<span class="sourceLineNo">231</span>                    try {<a name="line.231"></a>
-<span class="sourceLineNo">232</span>                        _macOSXApplication = applicationClass<a name="line.232"></a>
-<span class="sourceLineNo">233</span>                                .getConstructor((Class[]) null)<a name="line.233"></a>
-<span class="sourceLineNo">234</span>                                .newInstance((Object[]) null);<a name="line.234"></a>
-<span class="sourceLineNo">235</span>                    } catch (java.lang.reflect.InvocationTargetException ex) {<a name="line.235"></a>
-<span class="sourceLineNo">236</span>                        if (ex.getCause() instanceof SecurityException) {<a name="line.236"></a>
-<span class="sourceLineNo">237</span>                            if (!_printedSecurityExceptionMessage) {<a name="line.237"></a>
-<span class="sourceLineNo">238</span>                                System.out.println("Warning: Failed to get the"<a name="line.238"></a>
-<span class="sourceLineNo">239</span>                                        + "constructor of \""<a name="line.239"></a>
-<span class="sourceLineNo">240</span>                                        + applicationClassName + "\" ("<a name="line.240"></a>
-<span class="sourceLineNo">241</span>                                        + applicationClass + "): " + ex<a name="line.241"></a>
-<span class="sourceLineNo">242</span>                                        + "(applets and -sandbox always causes this)");<a name="line.242"></a>
-<span class="sourceLineNo">243</span>                                _printedSecurityExceptionMessage = true;<a name="line.243"></a>
-<span class="sourceLineNo">244</span>                            }<a name="line.244"></a>
-<span class="sourceLineNo">245</span>                        }<a name="line.245"></a>
-<span class="sourceLineNo">246</span>                        return;<a name="line.246"></a>
-<span class="sourceLineNo">247</span>                    } catch (java.lang.IllegalAccessException ex2) {<a name="line.247"></a>
-<span class="sourceLineNo">248</span>                        if (!_printedIllegalAccessExceptionMessage) {<a name="line.248"></a>
-<span class="sourceLineNo">249</span>                            System.out.println(<a name="line.249"></a>
-<span class="sourceLineNo">250</span>                                    "Warning: Failed to access the Application class "<a name="line.250"></a>
-<span class="sourceLineNo">251</span>                                            + applicationClassName + "\" ("<a name="line.251"></a>
-<span class="sourceLineNo">252</span>                                            + applicationClass + "): " + ex2);<a name="line.252"></a>
-<span class="sourceLineNo">253</span>                            _printedIllegalAccessExceptionMessage = true;<a name="line.253"></a>
-<span class="sourceLineNo">254</span>                        }<a name="line.254"></a>
-<span class="sourceLineNo">255</span>                        return;<a name="line.255"></a>
-<span class="sourceLineNo">256</span>                    }<a name="line.256"></a>
-<span class="sourceLineNo">257</span>                }<a name="line.257"></a>
-<span class="sourceLineNo">258</span>                Class applicationListenerClass = Class<a name="line.258"></a>
-<span class="sourceLineNo">259</span>                        .forName("com.apple.eawt.ApplicationListener");<a name="line.259"></a>
-<span class="sourceLineNo">260</span>                Method addListenerMethod = applicationClass.getDeclaredMethod(<a name="line.260"></a>
-<span class="sourceLineNo">261</span>                        "addApplicationListener",<a name="line.261"></a>
-<span class="sourceLineNo">262</span>                        new Class[] { applicationListenerClass });<a name="line.262"></a>
-<span class="sourceLineNo">263</span><a name="line.263"></a>
-<span class="sourceLineNo">264</span>                // Create a proxy object around this handler that can be<a name="line.264"></a>
-<span class="sourceLineNo">265</span>                // reflectively added as an Apple ApplicationListener<a name="line.265"></a>
-<span class="sourceLineNo">266</span>                Object osxAdapterProxy = Proxy.newProxyInstance(<a name="line.266"></a>
-<span class="sourceLineNo">267</span>                        MacOSXAdapter.class.getClassLoader(),<a name="line.267"></a>
-<span class="sourceLineNo">268</span>                        new Class[] { applicationListenerClass }, adapter);<a name="line.268"></a>
-<span class="sourceLineNo">269</span>                addListenerMethod.invoke(_macOSXApplication,<a name="line.269"></a>
-<span class="sourceLineNo">270</span>                        new Object[] { osxAdapterProxy });<a name="line.270"></a>
-<span class="sourceLineNo">271</span>            }<a name="line.271"></a>
-<span class="sourceLineNo">272</span>        } catch (ClassNotFoundException ex) {<a name="line.272"></a>
-<span class="sourceLineNo">273</span>            if (!_printedNoClassDefFoundMessageApplicationListener) {<a name="line.273"></a>
-<span class="sourceLineNo">274</span>                System.err.println(<a name="line.274"></a>
-<span class="sourceLineNo">275</span>                        "Warning The com.apple.eawt.ApplicationListener class was not found.  "<a name="line.275"></a>
-<span class="sourceLineNo">276</span>                                + "This is a known limitation of Java 9 and later.");<a name="line.276"></a>
-<span class="sourceLineNo">277</span>                _printedNoClassDefFoundMessageApplicationListener = true;<a name="line.277"></a>
-<span class="sourceLineNo">278</span>            }<a name="line.278"></a>
-<span class="sourceLineNo">279</span>        } catch (Exception ex2) {<a name="line.279"></a>
-<span class="sourceLineNo">280</span>            top.report(<a name="line.280"></a>
-<span class="sourceLineNo">281</span>                    "There was a problem invoking the addApplicationListener method",<a name="line.281"></a>
-<span class="sourceLineNo">282</span>                    ex2);<a name="line.282"></a>
-<span class="sourceLineNo">283</span>        }<a name="line.283"></a>
-<span class="sourceLineNo">284</span>    }<a name="line.284"></a>
-<span class="sourceLineNo">285</span>    <a name="line.285"></a>
-<span class="sourceLineNo">286</span>    /** An instance of java.awt.Desktop, upon which methods are invoked.<a name="line.286"></a>
-<span class="sourceLineNo">287</span>     *  This variable is used only if the Java version is 9 or more.<a name="line.287"></a>
-<span class="sourceLineNo">288</span>     *  Our usage is designed to compile with Java 8, using reflection<a name="line.288"></a>
-<span class="sourceLineNo">289</span>     *  to avoid directly referencing methods that are not present in Java 8.<a name="line.289"></a>
-<span class="sourceLineNo">290</span>     */<a name="line.290"></a>
-<span class="sourceLineNo">291</span>    private static Desktop _desktop;<a name="line.291"></a>
-<span class="sourceLineNo">292</span><a name="line.292"></a>
-<span class="sourceLineNo">293</span>    /** An instance of com.apple.eawt.Application, upon which methods are invoked.<a name="line.293"></a>
-<span class="sourceLineNo">294</span>     *  We use Object here instead of com.apple.eawt.Application so as to avoid<a name="line.294"></a>
-<span class="sourceLineNo">295</span>     *  compile-time dependencies on Apple-specific code.<a name="line.295"></a>
-<span class="sourceLineNo">296</span>     *  The _setHandler() method sets macOSXApplication.<a name="line.296"></a>
-<span class="sourceLineNo">297</span>     *  If we are running as an unsigned applet or using -sandbox, then<a name="line.297"></a>
-<span class="sourceLineNo">298</span>     *  this variable will be null.<a name="line.298"></a>
-<span class="sourceLineNo">299</span>     *  This variable is used only if the Java version is 8 or less.<a name="line.299"></a>
-<span class="sourceLineNo">300</span>     */<a name="line.300"></a>
-<span class="sourceLineNo">301</span>    private static Object _macOSXApplication;<a name="line.301"></a>
-<span class="sourceLineNo">302</span><a name="line.302"></a>
-<span class="sourceLineNo">303</span>    /** True if we have printed the IllegalAccess message. */<a name="line.303"></a>
-<span class="sourceLineNo">304</span>    private static boolean _printedIllegalAccessExceptionMessage = false;<a name="line.304"></a>
+<span class="sourceLineNo">183</span> <a name="line.183"></a>
+<span class="sourceLineNo">184</span>        int majorVersion = (dot == -1) ? Integer.parseInt(version)<a name="line.184"></a>
+<span class="sourceLineNo">185</span>                                       : Integer.parseInt(version.substring(0, dot));<a name="line.185"></a>
+<span class="sourceLineNo">186</span>        <a name="line.186"></a>
+<span class="sourceLineNo">187</span>        if (majorVersion &gt;= 9) {<a name="line.187"></a>
+<span class="sourceLineNo">188</span>            // Desktop class exists in Java 8, so this will compile.<a name="line.188"></a>
+<span class="sourceLineNo">189</span>            // But the methods we need to not exist, so we use reflection for those.<a name="line.189"></a>
+<span class="sourceLineNo">190</span>            if (Desktop.isDesktopSupported()) {<a name="line.190"></a>
+<span class="sourceLineNo">191</span>                _desktop = Desktop.getDesktop();<a name="line.191"></a>
+<span class="sourceLineNo">192</span>            } else {<a name="line.192"></a>
+<span class="sourceLineNo">193</span>                if (!_printedMacInitializerWarning) {<a name="line.193"></a>
+<span class="sourceLineNo">194</span>                    _printedMacInitializerWarning = true;<a name="line.194"></a>
+<span class="sourceLineNo">195</span>                    System.err.println(<a name="line.195"></a>
+<span class="sourceLineNo">196</span>                            "FIXME: Top.java: java.version is 9 or later, and Desktop is not"<a name="line.196"></a>
+<span class="sourceLineNo">197</span>                            + " supported on this platform, so no Mac menus and key bindings yet.");<a name="line.197"></a>
+<span class="sourceLineNo">198</span>                }<a name="line.198"></a>
+<span class="sourceLineNo">199</span>            }<a name="line.199"></a>
+<span class="sourceLineNo">200</span>            return;<a name="line.200"></a>
+<span class="sourceLineNo">201</span>        }<a name="line.201"></a>
+<span class="sourceLineNo">202</span><a name="line.202"></a>
+<span class="sourceLineNo">203</span>        try {<a name="line.203"></a>
+<span class="sourceLineNo">204</span>            Class applicationClass = null;<a name="line.204"></a>
+<span class="sourceLineNo">205</span>            String applicationClassName = "com.apple.eawt.Application";<a name="line.205"></a>
+<span class="sourceLineNo">206</span>            try {<a name="line.206"></a>
+<span class="sourceLineNo">207</span>                applicationClass = Class.forName(applicationClassName);<a name="line.207"></a>
+<span class="sourceLineNo">208</span>            } catch (NoClassDefFoundError ex) {<a name="line.208"></a>
+<span class="sourceLineNo">209</span>                if (!_printedNoClassDefFoundMessageApplication) {<a name="line.209"></a>
+<span class="sourceLineNo">210</span>                    System.out.println("Warning: Failed to find the \""<a name="line.210"></a>
+<span class="sourceLineNo">211</span>                            + applicationClassName + "\" class: " + ex<a name="line.211"></a>
+<span class="sourceLineNo">212</span>                            + " (applets and -sandbox always causes this)");<a name="line.212"></a>
+<span class="sourceLineNo">213</span>                    _printedNoClassDefFoundMessageApplication = true;<a name="line.213"></a>
+<span class="sourceLineNo">214</span>                }<a name="line.214"></a>
+<span class="sourceLineNo">215</span>                return;<a name="line.215"></a>
+<span class="sourceLineNo">216</span>            } catch (ExceptionInInitializerError ex) {<a name="line.216"></a>
+<span class="sourceLineNo">217</span>                if (ex.getCause() instanceof SecurityException) {<a name="line.217"></a>
+<span class="sourceLineNo">218</span>                    if (!_printedSecurityExceptionMessage) {<a name="line.218"></a>
+<span class="sourceLineNo">219</span>                        System.out.println("Warning: Failed to create new "<a name="line.219"></a>
+<span class="sourceLineNo">220</span>                                + "instance of \"" + applicationClassName<a name="line.220"></a>
+<span class="sourceLineNo">221</span>                                + "\": " + ex<a name="line.221"></a>
+<span class="sourceLineNo">222</span>                                + "(applets and -sandbox always causes this)");<a name="line.222"></a>
+<span class="sourceLineNo">223</span>                    }<a name="line.223"></a>
+<span class="sourceLineNo">224</span>                    return;<a name="line.224"></a>
+<span class="sourceLineNo">225</span>                }<a name="line.225"></a>
+<span class="sourceLineNo">226</span>            }<a name="line.226"></a>
+<span class="sourceLineNo">227</span><a name="line.227"></a>
+<span class="sourceLineNo">228</span>            if (applicationClass == null) {<a name="line.228"></a>
+<span class="sourceLineNo">229</span>                throw new NullPointerException("Internal Error!  class "<a name="line.229"></a>
+<span class="sourceLineNo">230</span>                        + applicationClassName + " was not found "<a name="line.230"></a>
+<span class="sourceLineNo">231</span>                        + "and the exception was missed?");<a name="line.231"></a>
+<span class="sourceLineNo">232</span>            } else {<a name="line.232"></a>
+<span class="sourceLineNo">233</span>                if (_macOSXApplication == null) {<a name="line.233"></a>
+<span class="sourceLineNo">234</span>                    try {<a name="line.234"></a>
+<span class="sourceLineNo">235</span>                        _macOSXApplication = applicationClass<a name="line.235"></a>
+<span class="sourceLineNo">236</span>                                .getConstructor((Class[]) null)<a name="line.236"></a>
+<span class="sourceLineNo">237</span>                                .newInstance((Object[]) null);<a name="line.237"></a>
+<span class="sourceLineNo">238</span>                    } catch (java.lang.reflect.InvocationTargetException ex) {<a name="line.238"></a>
+<span class="sourceLineNo">239</span>                        if (ex.getCause() instanceof SecurityException) {<a name="line.239"></a>
+<span class="sourceLineNo">240</span>                            if (!_printedSecurityExceptionMessage) {<a name="line.240"></a>
+<span class="sourceLineNo">241</span>                                System.out.println("Warning: Failed to get the"<a name="line.241"></a>
+<span class="sourceLineNo">242</span>                                        + "constructor of \""<a name="line.242"></a>
+<span class="sourceLineNo">243</span>                                        + applicationClassName + "\" ("<a name="line.243"></a>
+<span class="sourceLineNo">244</span>                                        + applicationClass + "): " + ex<a name="line.244"></a>
+<span class="sourceLineNo">245</span>                                        + "(applets and -sandbox always causes this)");<a name="line.245"></a>
+<span class="sourceLineNo">246</span>                                _printedSecurityExceptionMessage = true;<a name="line.246"></a>
+<span class="sourceLineNo">247</span>                            }<a name="line.247"></a>
+<span class="sourceLineNo">248</span>                        }<a name="line.248"></a>
+<span class="sourceLineNo">249</span>                        return;<a name="line.249"></a>
+<span class="sourceLineNo">250</span>                    } catch (java.lang.IllegalAccessException ex2) {<a name="line.250"></a>
+<span class="sourceLineNo">251</span>                        if (!_printedIllegalAccessExceptionMessage) {<a name="line.251"></a>
+<span class="sourceLineNo">252</span>                            System.out.println(<a name="line.252"></a>
+<span class="sourceLineNo">253</span>                                    "Warning: Failed to access the Application class "<a name="line.253"></a>
+<span class="sourceLineNo">254</span>                                            + applicationClassName + "\" ("<a name="line.254"></a>
+<span class="sourceLineNo">255</span>                                            + applicationClass + "): " + ex2);<a name="line.255"></a>
+<span class="sourceLineNo">256</span>                            _printedIllegalAccessExceptionMessage = true;<a name="line.256"></a>
+<span class="sourceLineNo">257</span>                        }<a name="line.257"></a>
+<span class="sourceLineNo">258</span>                        return;<a name="line.258"></a>
+<span class="sourceLineNo">259</span>                    }<a name="line.259"></a>
+<span class="sourceLineNo">260</span>                }<a name="line.260"></a>
+<span class="sourceLineNo">261</span>                Class applicationListenerClass = Class<a name="line.261"></a>
+<span class="sourceLineNo">262</span>                        .forName("com.apple.eawt.ApplicationListener");<a name="line.262"></a>
+<span class="sourceLineNo">263</span>                Method addListenerMethod = applicationClass.getDeclaredMethod(<a name="line.263"></a>
+<span class="sourceLineNo">264</span>                        "addApplicationListener",<a name="line.264"></a>
+<span class="sourceLineNo">265</span>                        new Class[] { applicationListenerClass });<a name="line.265"></a>
+<span class="sourceLineNo">266</span><a name="line.266"></a>
+<span class="sourceLineNo">267</span>                // Create a proxy object around this handler that can be<a name="line.267"></a>
+<span class="sourceLineNo">268</span>                // reflectively added as an Apple ApplicationListener<a name="line.268"></a>
+<span class="sourceLineNo">269</span>                Object osxAdapterProxy = Proxy.newProxyInstance(<a name="line.269"></a>
+<span class="sourceLineNo">270</span>                        MacOSXAdapter.class.getClassLoader(),<a name="line.270"></a>
+<span class="sourceLineNo">271</span>                        new Class[] { applicationListenerClass }, adapter);<a name="line.271"></a>
+<span class="sourceLineNo">272</span>                addListenerMethod.invoke(_macOSXApplication,<a name="line.272"></a>
+<span class="sourceLineNo">273</span>                        new Object[] { osxAdapterProxy });<a name="line.273"></a>
+<span class="sourceLineNo">274</span>            }<a name="line.274"></a>
+<span class="sourceLineNo">275</span>        } catch (ClassNotFoundException ex) {<a name="line.275"></a>
+<span class="sourceLineNo">276</span>            if (!_printedNoClassDefFoundMessageApplicationListener) {<a name="line.276"></a>
+<span class="sourceLineNo">277</span>                System.err.println(<a name="line.277"></a>
+<span class="sourceLineNo">278</span>                        "Warning The com.apple.eawt.ApplicationListener class was not found.  "<a name="line.278"></a>
+<span class="sourceLineNo">279</span>                                + "This is a known limitation of Java 9 and later.");<a name="line.279"></a>
+<span class="sourceLineNo">280</span>                _printedNoClassDefFoundMessageApplicationListener = true;<a name="line.280"></a>
+<span class="sourceLineNo">281</span>            }<a name="line.281"></a>
+<span class="sourceLineNo">282</span>        } catch (Exception ex2) {<a name="line.282"></a>
+<span class="sourceLineNo">283</span>            top.report(<a name="line.283"></a>
+<span class="sourceLineNo">284</span>                    "There was a problem invoking the addApplicationListener method",<a name="line.284"></a>
+<span class="sourceLineNo">285</span>                    ex2);<a name="line.285"></a>
+<span class="sourceLineNo">286</span>        }<a name="line.286"></a>
+<span class="sourceLineNo">287</span>    }<a name="line.287"></a>
+<span class="sourceLineNo">288</span>    <a name="line.288"></a>
+<span class="sourceLineNo">289</span>    /** An instance of java.awt.Desktop, upon which methods are invoked.<a name="line.289"></a>
+<span class="sourceLineNo">290</span>     *  This variable is used only if the Java version is 9 or more.<a name="line.290"></a>
+<span class="sourceLineNo">291</span>     *  Our usage is designed to compile with Java 8, using reflection<a name="line.291"></a>
+<span class="sourceLineNo">292</span>     *  to avoid directly referencing methods that are not present in Java 8.<a name="line.292"></a>
+<span class="sourceLineNo">293</span>     */<a name="line.293"></a>
+<span class="sourceLineNo">294</span>    private static Desktop _desktop;<a name="line.294"></a>
+<span class="sourceLineNo">295</span><a name="line.295"></a>
+<span class="sourceLineNo">296</span>    /** An instance of com.apple.eawt.Application, upon which methods are invoked.<a name="line.296"></a>
+<span class="sourceLineNo">297</span>     *  We use Object here instead of com.apple.eawt.Application so as to avoid<a name="line.297"></a>
+<span class="sourceLineNo">298</span>     *  compile-time dependencies on Apple-specific code.<a name="line.298"></a>
+<span class="sourceLineNo">299</span>     *  The _setHandler() method sets macOSXApplication.<a name="line.299"></a>
+<span class="sourceLineNo">300</span>     *  If we are running as an unsigned applet or using -sandbox, then<a name="line.300"></a>
+<span class="sourceLineNo">301</span>     *  this variable will be null.<a name="line.301"></a>
+<span class="sourceLineNo">302</span>     *  This variable is used only if the Java version is 8 or less.<a name="line.302"></a>
+<span class="sourceLineNo">303</span>     */<a name="line.303"></a>
+<span class="sourceLineNo">304</span>    private static Object _macOSXApplication;<a name="line.304"></a>
 <span class="sourceLineNo">305</span><a name="line.305"></a>
-<span class="sourceLineNo">306</span>    /** True if we have printed the Mac initializer warning. */<a name="line.306"></a>
-<span class="sourceLineNo">307</span>    private static boolean _printedMacInitializerWarning = false;<a name="line.307"></a>
+<span class="sourceLineNo">306</span>    /** True if we have printed the IllegalAccess message. */<a name="line.306"></a>
+<span class="sourceLineNo">307</span>    private static boolean _printedIllegalAccessExceptionMessage = false;<a name="line.307"></a>
 <span class="sourceLineNo">308</span><a name="line.308"></a>
-<span class="sourceLineNo">309</span>    /** True if we have printed the NoClassDefFound message for com.apple.eawt.Application. */<a name="line.309"></a>
-<span class="sourceLineNo">310</span>    private static boolean _printedNoClassDefFoundMessageApplication = false;<a name="line.310"></a>
+<span class="sourceLineNo">309</span>    /** True if we have printed the Mac initializer warning. */<a name="line.309"></a>
+<span class="sourceLineNo">310</span>    private static boolean _printedMacInitializerWarning = false;<a name="line.310"></a>
 <span class="sourceLineNo">311</span><a name="line.311"></a>
-<span class="sourceLineNo">312</span>    /** True if we have printed the NoClassDefFound message for com.apple.eawt.ApplicationListener. */<a name="line.312"></a>
-<span class="sourceLineNo">313</span>    private static boolean _printedNoClassDefFoundMessageApplicationListener = false;<a name="line.313"></a>
-<span class="sourceLineNo">314</span>    <a name="line.314"></a>
-<span class="sourceLineNo">315</span>    /** True if we can't find the setEnabledAboutMenu method and have printed the message. */<a name="line.315"></a>
-<span class="sourceLineNo">316</span>    private static boolean _printedNoSuchMethodExceptionMessageAboutMenu = false;<a name="line.316"></a>
-<span class="sourceLineNo">317</span><a name="line.317"></a>
-<span class="sourceLineNo">318</span>    /** True if we have printed the securityException message. */<a name="line.318"></a>
-<span class="sourceLineNo">319</span>    private static boolean _printedSecurityExceptionMessage = false;<a name="line.319"></a>
+<span class="sourceLineNo">312</span>    /** True if we have printed the NoClassDefFound message for com.apple.eawt.Application. */<a name="line.312"></a>
+<span class="sourceLineNo">313</span>    private static boolean _printedNoClassDefFoundMessageApplication = false;<a name="line.313"></a>
+<span class="sourceLineNo">314</span><a name="line.314"></a>
+<span class="sourceLineNo">315</span>    /** True if we have printed the NoClassDefFound message for com.apple.eawt.ApplicationListener. */<a name="line.315"></a>
+<span class="sourceLineNo">316</span>    private static boolean _printedNoClassDefFoundMessageApplicationListener = false;<a name="line.316"></a>
+<span class="sourceLineNo">317</span>    <a name="line.317"></a>
+<span class="sourceLineNo">318</span>    /** True if we can't find the setEnabledAboutMenu method and have printed the message. */<a name="line.318"></a>
+<span class="sourceLineNo">319</span>    private static boolean _printedNoSuchMethodExceptionMessageAboutMenu = false;<a name="line.319"></a>
 <span class="sourceLineNo">320</span><a name="line.320"></a>
-<span class="sourceLineNo">321</span>    /**  The name of a method in com.apple.eawt.ApplicationListener,<a name="line.321"></a>
-<span class="sourceLineNo">322</span>     *  for example "handleQuit".<a name="line.322"></a>
-<span class="sourceLineNo">323</span>     */<a name="line.323"></a>
-<span class="sourceLineNo">324</span>    private String _proxySignature;<a name="line.324"></a>
-<span class="sourceLineNo">325</span><a name="line.325"></a>
-<span class="sourceLineNo">326</span>    /** The Top level window to perform the operation.  This window is also<a name="line.326"></a>
-<span class="sourceLineNo">327</span>     *  used to report errors.<a name="line.327"></a>
-<span class="sourceLineNo">328</span>     */<a name="line.328"></a>
-<span class="sourceLineNo">329</span>    private Top _top;<a name="line.329"></a>
-<span class="sourceLineNo">330</span><a name="line.330"></a>
-<span class="sourceLineNo">331</span>    /** The Method in Top to be called. */<a name="line.331"></a>
-<span class="sourceLineNo">332</span>    private Method _topMethod;<a name="line.332"></a>
-<span class="sourceLineNo">333</span>}<a name="line.333"></a>
+<span class="sourceLineNo">321</span>    /** True if we have printed the securityException message. */<a name="line.321"></a>
+<span class="sourceLineNo">322</span>    private static boolean _printedSecurityExceptionMessage = false;<a name="line.322"></a>
+<span class="sourceLineNo">323</span><a name="line.323"></a>
+<span class="sourceLineNo">324</span>    /**  The name of a method in com.apple.eawt.ApplicationListener,<a name="line.324"></a>
+<span class="sourceLineNo">325</span>     *  for example "handleQuit".<a name="line.325"></a>
+<span class="sourceLineNo">326</span>     */<a name="line.326"></a>
+<span class="sourceLineNo">327</span>    private String _proxySignature;<a name="line.327"></a>
+<span class="sourceLineNo">328</span><a name="line.328"></a>
+<span class="sourceLineNo">329</span>    /** The Top level window to perform the operation.  This window is also<a name="line.329"></a>
+<span class="sourceLineNo">330</span>     *  used to report errors.<a name="line.330"></a>
+<span class="sourceLineNo">331</span>     */<a name="line.331"></a>
+<span class="sourceLineNo">332</span>    private Top _top;<a name="line.332"></a>
+<span class="sourceLineNo">333</span><a name="line.333"></a>
+<span class="sourceLineNo">334</span>    /** The Method in Top to be called. */<a name="line.334"></a>
+<span class="sourceLineNo">335</span>    private Method _topMethod;<a name="line.335"></a>
+<span class="sourceLineNo">336</span>}<a name="line.336"></a>
 
 
 
