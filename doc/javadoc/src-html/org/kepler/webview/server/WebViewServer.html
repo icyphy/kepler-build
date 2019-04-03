@@ -568,750 +568,765 @@
 <span class="sourceLineNo">560</span>                    }<a name="line.560"></a>
 <span class="sourceLineNo">561</span>                }<a name="line.561"></a>
 <span class="sourceLineNo">562</span>            );<a name="line.562"></a>
-<span class="sourceLineNo">563</span>                        <a name="line.563"></a>
-<span class="sourceLineNo">564</span>        } else {<a name="line.564"></a>
-<span class="sourceLineNo">565</span>            // not starting server, so set latch to 0<a name="line.565"></a>
-<span class="sourceLineNo">566</span>            Shutdown.shutdownLatch.countDown();<a name="line.566"></a>
-<span class="sourceLineNo">567</span>        }<a name="line.567"></a>
-<span class="sourceLineNo">568</span>    }<a name="line.568"></a>
-<span class="sourceLineNo">569</span>    <a name="line.569"></a>
-<span class="sourceLineNo">570</span>    /** Log an http server request.<a name="line.570"></a>
-<span class="sourceLineNo">571</span>     *  @param request The request<a name="line.571"></a>
-<span class="sourceLineNo">572</span>     *  @param user The user<a name="line.572"></a>
-<span class="sourceLineNo">573</span>     *  @param status The status<a name="line.573"></a>
-<span class="sourceLineNo">574</span>     *  @param timestamp The timestamp when the request occurred.<a name="line.574"></a>
-<span class="sourceLineNo">575</span>     */<a name="line.575"></a>
-<span class="sourceLineNo">576</span>    public void log(HttpServerRequest request, User user, int status, long timestamp) {<a name="line.576"></a>
-<span class="sourceLineNo">577</span>        log(request, user, status, timestamp, -1);<a name="line.577"></a>
-<span class="sourceLineNo">578</span>    }<a name="line.578"></a>
-<span class="sourceLineNo">579</span>    <a name="line.579"></a>
-<span class="sourceLineNo">580</span>    /** Log an http server request.<a name="line.580"></a>
-<span class="sourceLineNo">581</span>     *  @param request The request<a name="line.581"></a>
-<span class="sourceLineNo">582</span>     *  @param user The user<a name="line.582"></a>
-<span class="sourceLineNo">583</span>     *  @param status The status<a name="line.583"></a>
-<span class="sourceLineNo">584</span>     *  @param timestamp The timestamp when the request occurred.<a name="line.584"></a>
-<span class="sourceLineNo">585</span>     *  @param length The length of the file successfully sent to the client.<a name="line.585"></a>
-<span class="sourceLineNo">586</span>     */<a name="line.586"></a>
-<span class="sourceLineNo">587</span>    public void log(HttpServerRequest request, User user, int status, long timestamp, long length) {<a name="line.587"></a>
-<span class="sourceLineNo">588</span>        <a name="line.588"></a>
-<span class="sourceLineNo">589</span>        String versionStr;<a name="line.589"></a>
-<span class="sourceLineNo">590</span>        switch(request.version()) {<a name="line.590"></a>
-<span class="sourceLineNo">591</span>        case HTTP_1_1:<a name="line.591"></a>
-<span class="sourceLineNo">592</span>            versionStr = "HTTP/1.1";<a name="line.592"></a>
-<span class="sourceLineNo">593</span>            break;<a name="line.593"></a>
-<span class="sourceLineNo">594</span>        case HTTP_1_0:<a name="line.594"></a>
-<span class="sourceLineNo">595</span>            versionStr = "HTTP/1.0";<a name="line.595"></a>
-<span class="sourceLineNo">596</span>            break;<a name="line.596"></a>
-<span class="sourceLineNo">597</span>        default:<a name="line.597"></a>
-<span class="sourceLineNo">598</span>            versionStr = "-";<a name="line.598"></a>
-<span class="sourceLineNo">599</span>            break;<a name="line.599"></a>
-<span class="sourceLineNo">600</span>        }<a name="line.600"></a>
+<span class="sourceLineNo">563</span>            <a name="line.563"></a>
+<span class="sourceLineNo">564</span>            for(String model: WebViewConfiguration.getPreloadModels()) {<a name="line.564"></a>
+<span class="sourceLineNo">565</span>                System.out.println("Preloading " + model);<a name="line.565"></a>
+<span class="sourceLineNo">566</span>                try {<a name="line.566"></a>
+<span class="sourceLineNo">567</span>                    if(_getModel(model) == null) {<a name="line.567"></a>
+<span class="sourceLineNo">568</span>                        System.err.println("ERROR: Unable to find model for preload: " + model); <a name="line.568"></a>
+<span class="sourceLineNo">569</span>                    }<a name="line.569"></a>
+<span class="sourceLineNo">570</span>                } catch (Exception e) {<a name="line.570"></a>
+<span class="sourceLineNo">571</span>                    System.err.println("ERROR: Unable to preload " + model + ": " + e.getMessage());<a name="line.571"></a>
+<span class="sourceLineNo">572</span>                }<a name="line.572"></a>
+<span class="sourceLineNo">573</span>            }<a name="line.573"></a>
+<span class="sourceLineNo">574</span>            <a name="line.574"></a>
+<span class="sourceLineNo">575</span>            // TODO preload apps<a name="line.575"></a>
+<span class="sourceLineNo">576</span>                        <a name="line.576"></a>
+<span class="sourceLineNo">577</span>        } else {<a name="line.577"></a>
+<span class="sourceLineNo">578</span>            // not starting server, so set latch to 0<a name="line.578"></a>
+<span class="sourceLineNo">579</span>            Shutdown.shutdownLatch.countDown();<a name="line.579"></a>
+<span class="sourceLineNo">580</span>        }<a name="line.580"></a>
+<span class="sourceLineNo">581</span>    }<a name="line.581"></a>
+<span class="sourceLineNo">582</span>    <a name="line.582"></a>
+<span class="sourceLineNo">583</span>    /** Log an http server request.<a name="line.583"></a>
+<span class="sourceLineNo">584</span>     *  @param request The request<a name="line.584"></a>
+<span class="sourceLineNo">585</span>     *  @param user The user<a name="line.585"></a>
+<span class="sourceLineNo">586</span>     *  @param status The status<a name="line.586"></a>
+<span class="sourceLineNo">587</span>     *  @param timestamp The timestamp when the request occurred.<a name="line.587"></a>
+<span class="sourceLineNo">588</span>     */<a name="line.588"></a>
+<span class="sourceLineNo">589</span>    public void log(HttpServerRequest request, User user, int status, long timestamp) {<a name="line.589"></a>
+<span class="sourceLineNo">590</span>        log(request, user, status, timestamp, -1);<a name="line.590"></a>
+<span class="sourceLineNo">591</span>    }<a name="line.591"></a>
+<span class="sourceLineNo">592</span>    <a name="line.592"></a>
+<span class="sourceLineNo">593</span>    /** Log an http server request.<a name="line.593"></a>
+<span class="sourceLineNo">594</span>     *  @param request The request<a name="line.594"></a>
+<span class="sourceLineNo">595</span>     *  @param user The user<a name="line.595"></a>
+<span class="sourceLineNo">596</span>     *  @param status The status<a name="line.596"></a>
+<span class="sourceLineNo">597</span>     *  @param timestamp The timestamp when the request occurred.<a name="line.597"></a>
+<span class="sourceLineNo">598</span>     *  @param length The length of the file successfully sent to the client.<a name="line.598"></a>
+<span class="sourceLineNo">599</span>     */<a name="line.599"></a>
+<span class="sourceLineNo">600</span>    public void log(HttpServerRequest request, User user, int status, long timestamp, long length) {<a name="line.600"></a>
 <span class="sourceLineNo">601</span>        <a name="line.601"></a>
-<span class="sourceLineNo">602</span>        String hostString;<a name="line.602"></a>
-<span class="sourceLineNo">603</span>        SocketAddress address = request.remoteAddress();<a name="line.603"></a>
-<span class="sourceLineNo">604</span>        if(address == null) {<a name="line.604"></a>
-<span class="sourceLineNo">605</span>            hostString = "-";<a name="line.605"></a>
-<span class="sourceLineNo">606</span>        } else {<a name="line.606"></a>
-<span class="sourceLineNo">607</span>            hostString = address.host();<a name="line.607"></a>
-<span class="sourceLineNo">608</span>        }<a name="line.608"></a>
-<span class="sourceLineNo">609</span>        <a name="line.609"></a>
-<span class="sourceLineNo">610</span>        String referrer = request.headers().get("referrer");<a name="line.610"></a>
-<span class="sourceLineNo">611</span>        if(referrer == null) {<a name="line.611"></a>
-<span class="sourceLineNo">612</span>            referrer = "-";<a name="line.612"></a>
+<span class="sourceLineNo">602</span>        String versionStr;<a name="line.602"></a>
+<span class="sourceLineNo">603</span>        switch(request.version()) {<a name="line.603"></a>
+<span class="sourceLineNo">604</span>        case HTTP_1_1:<a name="line.604"></a>
+<span class="sourceLineNo">605</span>            versionStr = "HTTP/1.1";<a name="line.605"></a>
+<span class="sourceLineNo">606</span>            break;<a name="line.606"></a>
+<span class="sourceLineNo">607</span>        case HTTP_1_0:<a name="line.607"></a>
+<span class="sourceLineNo">608</span>            versionStr = "HTTP/1.0";<a name="line.608"></a>
+<span class="sourceLineNo">609</span>            break;<a name="line.609"></a>
+<span class="sourceLineNo">610</span>        default:<a name="line.610"></a>
+<span class="sourceLineNo">611</span>            versionStr = "-";<a name="line.611"></a>
+<span class="sourceLineNo">612</span>            break;<a name="line.612"></a>
 <span class="sourceLineNo">613</span>        }<a name="line.613"></a>
 <span class="sourceLineNo">614</span>        <a name="line.614"></a>
-<span class="sourceLineNo">615</span>        String userAgent = request.headers().get("user-agent");<a name="line.615"></a>
-<span class="sourceLineNo">616</span>        if(userAgent == null) {<a name="line.616"></a>
-<span class="sourceLineNo">617</span>            userAgent = "-";<a name="line.617"></a>
-<span class="sourceLineNo">618</span>        }<a name="line.618"></a>
-<span class="sourceLineNo">619</span>        <a name="line.619"></a>
-<span class="sourceLineNo">620</span>        String userNameStr = "-";<a name="line.620"></a>
-<span class="sourceLineNo">621</span>        if(user != null) {<a name="line.621"></a>
-<span class="sourceLineNo">622</span>            userNameStr = user.principal().getString("username");<a name="line.622"></a>
-<span class="sourceLineNo">623</span>        }<a name="line.623"></a>
-<span class="sourceLineNo">624</span>                    <a name="line.624"></a>
-<span class="sourceLineNo">625</span>        // TODO how to get user-identifier and userid?<a name="line.625"></a>
-<span class="sourceLineNo">626</span>        String message = String.format("%s - %s [%s] \"%s %s %s\" %d %s \"%s\" \"%s\"",<a name="line.626"></a>
-<span class="sourceLineNo">627</span>            hostString,<a name="line.627"></a>
-<span class="sourceLineNo">628</span>            userNameStr,<a name="line.628"></a>
-<span class="sourceLineNo">629</span>            _logTimeFormat.format(new Date(timestamp)),<a name="line.629"></a>
-<span class="sourceLineNo">630</span>            request.method(),<a name="line.630"></a>
-<span class="sourceLineNo">631</span>            request.uri(),<a name="line.631"></a>
-<span class="sourceLineNo">632</span>            versionStr,<a name="line.632"></a>
-<span class="sourceLineNo">633</span>            status,<a name="line.633"></a>
-<span class="sourceLineNo">634</span>            length &lt; 0 ? "-" : String.valueOf(length),<a name="line.634"></a>
-<span class="sourceLineNo">635</span>            referrer,<a name="line.635"></a>
-<span class="sourceLineNo">636</span>            userAgent);<a name="line.636"></a>
-<span class="sourceLineNo">637</span><a name="line.637"></a>
-<span class="sourceLineNo">638</span>        try {<a name="line.638"></a>
-<span class="sourceLineNo">639</span>            _loggingQueue.put(message);<a name="line.639"></a>
-<span class="sourceLineNo">640</span>        } catch (InterruptedException e) {<a name="line.640"></a>
-<span class="sourceLineNo">641</span>            MessageHandler.error("Interuppted adding to logging thread.", e);<a name="line.641"></a>
-<span class="sourceLineNo">642</span>        }<a name="line.642"></a>
-<span class="sourceLineNo">643</span>    }<a name="line.643"></a>
-<span class="sourceLineNo">644</span>    <a name="line.644"></a>
-<span class="sourceLineNo">645</span>    public void log(ServerWebSocket socket, String command, String path) {<a name="line.645"></a>
-<span class="sourceLineNo">646</span>        log(socket, command, path, null);<a name="line.646"></a>
-<span class="sourceLineNo">647</span>    }<a name="line.647"></a>
-<span class="sourceLineNo">648</span><a name="line.648"></a>
-<span class="sourceLineNo">649</span>    public void log(ServerWebSocket socket, String command, String path, Buffer buffer) {<a name="line.649"></a>
-<span class="sourceLineNo">650</span>        <a name="line.650"></a>
-<span class="sourceLineNo">651</span>        final long timestamp = System.currentTimeMillis();<a name="line.651"></a>
-<span class="sourceLineNo">652</span>        <a name="line.652"></a>
-<span class="sourceLineNo">653</span>        String hostString;<a name="line.653"></a>
-<span class="sourceLineNo">654</span>        SocketAddress address = socket.remoteAddress();<a name="line.654"></a>
-<span class="sourceLineNo">655</span>        if(address == null) {<a name="line.655"></a>
-<span class="sourceLineNo">656</span>            hostString = "-";<a name="line.656"></a>
-<span class="sourceLineNo">657</span>        } else {<a name="line.657"></a>
-<span class="sourceLineNo">658</span>            hostString = address.host();<a name="line.658"></a>
-<span class="sourceLineNo">659</span>        }<a name="line.659"></a>
-<span class="sourceLineNo">660</span>        <a name="line.660"></a>
-<span class="sourceLineNo">661</span>        String referrer = socket.headers().get("referrer");<a name="line.661"></a>
-<span class="sourceLineNo">662</span>        if(referrer == null) {<a name="line.662"></a>
-<span class="sourceLineNo">663</span>            referrer = "-";<a name="line.663"></a>
-<span class="sourceLineNo">664</span>        }<a name="line.664"></a>
+<span class="sourceLineNo">615</span>        String hostString;<a name="line.615"></a>
+<span class="sourceLineNo">616</span>        SocketAddress address = request.remoteAddress();<a name="line.616"></a>
+<span class="sourceLineNo">617</span>        if(address == null) {<a name="line.617"></a>
+<span class="sourceLineNo">618</span>            hostString = "-";<a name="line.618"></a>
+<span class="sourceLineNo">619</span>        } else {<a name="line.619"></a>
+<span class="sourceLineNo">620</span>            hostString = address.host();<a name="line.620"></a>
+<span class="sourceLineNo">621</span>        }<a name="line.621"></a>
+<span class="sourceLineNo">622</span>        <a name="line.622"></a>
+<span class="sourceLineNo">623</span>        String referrer = request.headers().get("referrer");<a name="line.623"></a>
+<span class="sourceLineNo">624</span>        if(referrer == null) {<a name="line.624"></a>
+<span class="sourceLineNo">625</span>            referrer = "-";<a name="line.625"></a>
+<span class="sourceLineNo">626</span>        }<a name="line.626"></a>
+<span class="sourceLineNo">627</span>        <a name="line.627"></a>
+<span class="sourceLineNo">628</span>        String userAgent = request.headers().get("user-agent");<a name="line.628"></a>
+<span class="sourceLineNo">629</span>        if(userAgent == null) {<a name="line.629"></a>
+<span class="sourceLineNo">630</span>            userAgent = "-";<a name="line.630"></a>
+<span class="sourceLineNo">631</span>        }<a name="line.631"></a>
+<span class="sourceLineNo">632</span>        <a name="line.632"></a>
+<span class="sourceLineNo">633</span>        String userNameStr = "-";<a name="line.633"></a>
+<span class="sourceLineNo">634</span>        if(user != null) {<a name="line.634"></a>
+<span class="sourceLineNo">635</span>            userNameStr = user.principal().getString("username");<a name="line.635"></a>
+<span class="sourceLineNo">636</span>        }<a name="line.636"></a>
+<span class="sourceLineNo">637</span>                    <a name="line.637"></a>
+<span class="sourceLineNo">638</span>        // TODO how to get user-identifier and userid?<a name="line.638"></a>
+<span class="sourceLineNo">639</span>        String message = String.format("%s - %s [%s] \"%s %s %s\" %d %s \"%s\" \"%s\"",<a name="line.639"></a>
+<span class="sourceLineNo">640</span>            hostString,<a name="line.640"></a>
+<span class="sourceLineNo">641</span>            userNameStr,<a name="line.641"></a>
+<span class="sourceLineNo">642</span>            _logTimeFormat.format(new Date(timestamp)),<a name="line.642"></a>
+<span class="sourceLineNo">643</span>            request.method(),<a name="line.643"></a>
+<span class="sourceLineNo">644</span>            request.uri(),<a name="line.644"></a>
+<span class="sourceLineNo">645</span>            versionStr,<a name="line.645"></a>
+<span class="sourceLineNo">646</span>            status,<a name="line.646"></a>
+<span class="sourceLineNo">647</span>            length &lt; 0 ? "-" : String.valueOf(length),<a name="line.647"></a>
+<span class="sourceLineNo">648</span>            referrer,<a name="line.648"></a>
+<span class="sourceLineNo">649</span>            userAgent);<a name="line.649"></a>
+<span class="sourceLineNo">650</span><a name="line.650"></a>
+<span class="sourceLineNo">651</span>        try {<a name="line.651"></a>
+<span class="sourceLineNo">652</span>            _loggingQueue.put(message);<a name="line.652"></a>
+<span class="sourceLineNo">653</span>        } catch (InterruptedException e) {<a name="line.653"></a>
+<span class="sourceLineNo">654</span>            MessageHandler.error("Interuppted adding to logging thread.", e);<a name="line.654"></a>
+<span class="sourceLineNo">655</span>        }<a name="line.655"></a>
+<span class="sourceLineNo">656</span>    }<a name="line.656"></a>
+<span class="sourceLineNo">657</span>    <a name="line.657"></a>
+<span class="sourceLineNo">658</span>    public void log(ServerWebSocket socket, String command, String path) {<a name="line.658"></a>
+<span class="sourceLineNo">659</span>        log(socket, command, path, null);<a name="line.659"></a>
+<span class="sourceLineNo">660</span>    }<a name="line.660"></a>
+<span class="sourceLineNo">661</span><a name="line.661"></a>
+<span class="sourceLineNo">662</span>    public void log(ServerWebSocket socket, String command, String path, Buffer buffer) {<a name="line.662"></a>
+<span class="sourceLineNo">663</span>        <a name="line.663"></a>
+<span class="sourceLineNo">664</span>        final long timestamp = System.currentTimeMillis();<a name="line.664"></a>
 <span class="sourceLineNo">665</span>        <a name="line.665"></a>
-<span class="sourceLineNo">666</span>        String userAgent = socket.headers().get("user-agent");<a name="line.666"></a>
-<span class="sourceLineNo">667</span>        if(userAgent == null) {<a name="line.667"></a>
-<span class="sourceLineNo">668</span>            userAgent = "-";<a name="line.668"></a>
-<span class="sourceLineNo">669</span>        }<a name="line.669"></a>
-<span class="sourceLineNo">670</span><a name="line.670"></a>
-<span class="sourceLineNo">671</span>        String message = String.format("%s - - [%s] \"%s %s %s %s\" %s %s \"%s\" \"%s\"",<a name="line.671"></a>
-<span class="sourceLineNo">672</span>            hostString,<a name="line.672"></a>
-<span class="sourceLineNo">673</span>            _logTimeFormat.format(new Date(timestamp)),<a name="line.673"></a>
-<span class="sourceLineNo">674</span>            command,<a name="line.674"></a>
-<span class="sourceLineNo">675</span>            path,<a name="line.675"></a>
-<span class="sourceLineNo">676</span>            buffer == null ? "-" : buffer.toString(),<a name="line.676"></a>
-<span class="sourceLineNo">677</span>            "websocket",<a name="line.677"></a>
-<span class="sourceLineNo">678</span>            "-", // status<a name="line.678"></a>
-<span class="sourceLineNo">679</span>            "-", // length<a name="line.679"></a>
-<span class="sourceLineNo">680</span>            referrer,<a name="line.680"></a>
-<span class="sourceLineNo">681</span>            userAgent);<a name="line.681"></a>
-<span class="sourceLineNo">682</span><a name="line.682"></a>
-<span class="sourceLineNo">683</span>        try {<a name="line.683"></a>
-<span class="sourceLineNo">684</span>            _loggingQueue.put(message);<a name="line.684"></a>
-<span class="sourceLineNo">685</span>        } catch (InterruptedException e) {<a name="line.685"></a>
-<span class="sourceLineNo">686</span>            MessageHandler.error("Interuppted adding to logging thread.", e);<a name="line.686"></a>
-<span class="sourceLineNo">687</span>        }<a name="line.687"></a>
-<span class="sourceLineNo">688</span>    }<a name="line.688"></a>
-<span class="sourceLineNo">689</span><a name="line.689"></a>
-<span class="sourceLineNo">690</span>    /** Start the server. */<a name="line.690"></a>
-<span class="sourceLineNo">691</span>    @Override<a name="line.691"></a>
-<span class="sourceLineNo">692</span>    public void start() throws Exception {<a name="line.692"></a>
-<span class="sourceLineNo">693</span>        super.start();<a name="line.693"></a>
-<span class="sourceLineNo">694</span>        <a name="line.694"></a>
-<span class="sourceLineNo">695</span>        _auth = WebViewConfiguration.getAuthProvider();<a name="line.695"></a>
-<span class="sourceLineNo">696</span>        <a name="line.696"></a>
-<span class="sourceLineNo">697</span>        _queryable = ProvenanceRecorder.getDefaultQueryable(null);<a name="line.697"></a>
-<span class="sourceLineNo">698</span>        if(_queryable == null) {<a name="line.698"></a>
-<span class="sourceLineNo">699</span>            throw new Exception("Unable to get provenance queryable.");<a name="line.699"></a>
+<span class="sourceLineNo">666</span>        String hostString;<a name="line.666"></a>
+<span class="sourceLineNo">667</span>        SocketAddress address = socket.remoteAddress();<a name="line.667"></a>
+<span class="sourceLineNo">668</span>        if(address == null) {<a name="line.668"></a>
+<span class="sourceLineNo">669</span>            hostString = "-";<a name="line.669"></a>
+<span class="sourceLineNo">670</span>        } else {<a name="line.670"></a>
+<span class="sourceLineNo">671</span>            hostString = address.host();<a name="line.671"></a>
+<span class="sourceLineNo">672</span>        }<a name="line.672"></a>
+<span class="sourceLineNo">673</span>        <a name="line.673"></a>
+<span class="sourceLineNo">674</span>        String referrer = socket.headers().get("referrer");<a name="line.674"></a>
+<span class="sourceLineNo">675</span>        if(referrer == null) {<a name="line.675"></a>
+<span class="sourceLineNo">676</span>            referrer = "-";<a name="line.676"></a>
+<span class="sourceLineNo">677</span>        }<a name="line.677"></a>
+<span class="sourceLineNo">678</span>        <a name="line.678"></a>
+<span class="sourceLineNo">679</span>        String userAgent = socket.headers().get("user-agent");<a name="line.679"></a>
+<span class="sourceLineNo">680</span>        if(userAgent == null) {<a name="line.680"></a>
+<span class="sourceLineNo">681</span>            userAgent = "-";<a name="line.681"></a>
+<span class="sourceLineNo">682</span>        }<a name="line.682"></a>
+<span class="sourceLineNo">683</span><a name="line.683"></a>
+<span class="sourceLineNo">684</span>        String message = String.format("%s - - [%s] \"%s %s %s %s\" %s %s \"%s\" \"%s\"",<a name="line.684"></a>
+<span class="sourceLineNo">685</span>            hostString,<a name="line.685"></a>
+<span class="sourceLineNo">686</span>            _logTimeFormat.format(new Date(timestamp)),<a name="line.686"></a>
+<span class="sourceLineNo">687</span>            command,<a name="line.687"></a>
+<span class="sourceLineNo">688</span>            path,<a name="line.688"></a>
+<span class="sourceLineNo">689</span>            buffer == null ? "-" : buffer.toString(),<a name="line.689"></a>
+<span class="sourceLineNo">690</span>            "websocket",<a name="line.690"></a>
+<span class="sourceLineNo">691</span>            "-", // status<a name="line.691"></a>
+<span class="sourceLineNo">692</span>            "-", // length<a name="line.692"></a>
+<span class="sourceLineNo">693</span>            referrer,<a name="line.693"></a>
+<span class="sourceLineNo">694</span>            userAgent);<a name="line.694"></a>
+<span class="sourceLineNo">695</span><a name="line.695"></a>
+<span class="sourceLineNo">696</span>        try {<a name="line.696"></a>
+<span class="sourceLineNo">697</span>            _loggingQueue.put(message);<a name="line.697"></a>
+<span class="sourceLineNo">698</span>        } catch (InterruptedException e) {<a name="line.698"></a>
+<span class="sourceLineNo">699</span>            MessageHandler.error("Interuppted adding to logging thread.", e);<a name="line.699"></a>
 <span class="sourceLineNo">700</span>        }<a name="line.700"></a>
-<span class="sourceLineNo">701</span>        <a name="line.701"></a>
-<span class="sourceLineNo">702</span>        Router router = Router.router(vertx);<a name="line.702"></a>
-<span class="sourceLineNo">703</span><a name="line.703"></a>
-<span class="sourceLineNo">704</span>        if(WebViewConfiguration.getHttpServerCorsEnabled()) {<a name="line.704"></a>
-<span class="sourceLineNo">705</span>            String allowOriginPatternStr = WebViewConfiguration.getHttpServerCorsAllowOriginPattern();<a name="line.705"></a>
-<span class="sourceLineNo">706</span>            if(allowOriginPatternStr == null || allowOriginPatternStr.trim().isEmpty()) {<a name="line.706"></a>
-<span class="sourceLineNo">707</span>                throw new Exception("Must specify allow origini pattern for CORS.");<a name="line.707"></a>
-<span class="sourceLineNo">708</span>            }<a name="line.708"></a>
-<span class="sourceLineNo">709</span>            router.route().handler(CorsHandler.create(allowOriginPatternStr)<a name="line.709"></a>
-<span class="sourceLineNo">710</span>                    .allowedMethod(HttpMethod.GET)<a name="line.710"></a>
-<span class="sourceLineNo">711</span>                    .allowedMethod(HttpMethod.POST)<a name="line.711"></a>
-<span class="sourceLineNo">712</span>                    .allowedMethod(HttpMethod.OPTIONS)<a name="line.712"></a>
-<span class="sourceLineNo">713</span>                    .allowCredentials(true)<a name="line.713"></a>
-<span class="sourceLineNo">714</span>                    .allowedHeader("Access-Control-Allow-Credentials")<a name="line.714"></a>
-<span class="sourceLineNo">715</span>                    .allowedHeader("X-PINGARUNER")<a name="line.715"></a>
-<span class="sourceLineNo">716</span>                    .allowedHeader("Content-Type")<a name="line.716"></a>
-<span class="sourceLineNo">717</span>                    .allowedHeader("authorization"));<a name="line.717"></a>
-<span class="sourceLineNo">718</span>            System.out.println("CORS enabled for " + allowOriginPatternStr);<a name="line.718"></a>
-<span class="sourceLineNo">719</span>        }<a name="line.719"></a>
-<span class="sourceLineNo">720</span>                <a name="line.720"></a>
-<span class="sourceLineNo">721</span>        <a name="line.721"></a>
-<span class="sourceLineNo">722</span>        // create cookie and session handlers<a name="line.722"></a>
-<span class="sourceLineNo">723</span>        // authenticated users are cached in the session so authentication<a name="line.723"></a>
-<span class="sourceLineNo">724</span>        // does not need to be performed for each request.<a name="line.724"></a>
-<span class="sourceLineNo">725</span>        router.route().handler(CookieHandler.create());<a name="line.725"></a>
-<span class="sourceLineNo">726</span>        <a name="line.726"></a>
-<span class="sourceLineNo">727</span>        BodyHandler bodyHandler = BodyHandler.create();<a name="line.727"></a>
-<span class="sourceLineNo">728</span>        <a name="line.728"></a>
-<span class="sourceLineNo">729</span>        if(_rootDir != null) {<a name="line.729"></a>
-<span class="sourceLineNo">730</span>            File uploadsDir = new File(_rootDir, "file-uploads");<a name="line.730"></a>
-<span class="sourceLineNo">731</span>            if(!uploadsDir.exists()) {<a name="line.731"></a>
-<span class="sourceLineNo">732</span>                if(!uploadsDir.mkdirs()) {<a name="line.732"></a>
-<span class="sourceLineNo">733</span>                    throw new Exception("Unable to create file uploads directory " + uploadsDir);<a name="line.733"></a>
-<span class="sourceLineNo">734</span>                }<a name="line.734"></a>
-<span class="sourceLineNo">735</span>            }<a name="line.735"></a>
-<span class="sourceLineNo">736</span>            bodyHandler.setUploadsDirectory(uploadsDir.getAbsolutePath());<a name="line.736"></a>
-<span class="sourceLineNo">737</span>        }<a name="line.737"></a>
-<span class="sourceLineNo">738</span>        <a name="line.738"></a>
-<span class="sourceLineNo">739</span>        // NOTE: need to install the BodyHandler before any handlers that<a name="line.739"></a>
-<span class="sourceLineNo">740</span>        // make asynchronous calls such as BasicAuthHandler.<a name="line.740"></a>
-<span class="sourceLineNo">741</span>        router.route().handler(bodyHandler);<a name="line.741"></a>
-<span class="sourceLineNo">742</span>        <a name="line.742"></a>
-<span class="sourceLineNo">743</span>        SessionStore sessionStore = LocalSessionStore.create(_vertx);<a name="line.743"></a>
-<span class="sourceLineNo">744</span>        SessionHandler sessionHandler = SessionHandler.create(sessionStore)<a name="line.744"></a>
-<span class="sourceLineNo">745</span>            .setSessionCookieName("WebViewSession")<a name="line.745"></a>
-<span class="sourceLineNo">746</span>            .setSessionTimeout(WebViewConfiguration.getHttpServerSessionTimeout());<a name="line.746"></a>
-<span class="sourceLineNo">747</span>        router.route().handler(sessionHandler);<a name="line.747"></a>
-<span class="sourceLineNo">748</span>        router.route().handler(UserSessionHandler.create(_auth));<a name="line.748"></a>
-<span class="sourceLineNo">749</span>        <a name="line.749"></a>
-<span class="sourceLineNo">750</span>        //System.out.println("session timeout = " + WebViewConfiguration.getHttpServerSessionTimeout());<a name="line.750"></a>
+<span class="sourceLineNo">701</span>    }<a name="line.701"></a>
+<span class="sourceLineNo">702</span><a name="line.702"></a>
+<span class="sourceLineNo">703</span>    /** Start the server. */<a name="line.703"></a>
+<span class="sourceLineNo">704</span>    @Override<a name="line.704"></a>
+<span class="sourceLineNo">705</span>    public void start() throws Exception {<a name="line.705"></a>
+<span class="sourceLineNo">706</span>        super.start();<a name="line.706"></a>
+<span class="sourceLineNo">707</span>        <a name="line.707"></a>
+<span class="sourceLineNo">708</span>        _auth = WebViewConfiguration.getAuthProvider();<a name="line.708"></a>
+<span class="sourceLineNo">709</span>        <a name="line.709"></a>
+<span class="sourceLineNo">710</span>        _queryable = ProvenanceRecorder.getDefaultQueryable(null);<a name="line.710"></a>
+<span class="sourceLineNo">711</span>        if(_queryable == null) {<a name="line.711"></a>
+<span class="sourceLineNo">712</span>            throw new Exception("Unable to get provenance queryable.");<a name="line.712"></a>
+<span class="sourceLineNo">713</span>        }<a name="line.713"></a>
+<span class="sourceLineNo">714</span>        <a name="line.714"></a>
+<span class="sourceLineNo">715</span>        Router router = Router.router(vertx);<a name="line.715"></a>
+<span class="sourceLineNo">716</span><a name="line.716"></a>
+<span class="sourceLineNo">717</span>        if(WebViewConfiguration.getHttpServerCorsEnabled()) {<a name="line.717"></a>
+<span class="sourceLineNo">718</span>            String allowOriginPatternStr = WebViewConfiguration.getHttpServerCorsAllowOriginPattern();<a name="line.718"></a>
+<span class="sourceLineNo">719</span>            if(allowOriginPatternStr == null || allowOriginPatternStr.trim().isEmpty()) {<a name="line.719"></a>
+<span class="sourceLineNo">720</span>                throw new Exception("Must specify allow origini pattern for CORS.");<a name="line.720"></a>
+<span class="sourceLineNo">721</span>            }<a name="line.721"></a>
+<span class="sourceLineNo">722</span>            router.route().handler(CorsHandler.create(allowOriginPatternStr)<a name="line.722"></a>
+<span class="sourceLineNo">723</span>                    .allowedMethod(HttpMethod.GET)<a name="line.723"></a>
+<span class="sourceLineNo">724</span>                    .allowedMethod(HttpMethod.POST)<a name="line.724"></a>
+<span class="sourceLineNo">725</span>                    .allowedMethod(HttpMethod.OPTIONS)<a name="line.725"></a>
+<span class="sourceLineNo">726</span>                    .allowCredentials(true)<a name="line.726"></a>
+<span class="sourceLineNo">727</span>                    .allowedHeader("Access-Control-Allow-Credentials")<a name="line.727"></a>
+<span class="sourceLineNo">728</span>                    .allowedHeader("X-PINGARUNER")<a name="line.728"></a>
+<span class="sourceLineNo">729</span>                    .allowedHeader("Content-Type")<a name="line.729"></a>
+<span class="sourceLineNo">730</span>                    .allowedHeader("authorization"));<a name="line.730"></a>
+<span class="sourceLineNo">731</span>            System.out.println("CORS enabled for " + allowOriginPatternStr);<a name="line.731"></a>
+<span class="sourceLineNo">732</span>        }<a name="line.732"></a>
+<span class="sourceLineNo">733</span>                <a name="line.733"></a>
+<span class="sourceLineNo">734</span>        <a name="line.734"></a>
+<span class="sourceLineNo">735</span>        // create cookie and session handlers<a name="line.735"></a>
+<span class="sourceLineNo">736</span>        // authenticated users are cached in the session so authentication<a name="line.736"></a>
+<span class="sourceLineNo">737</span>        // does not need to be performed for each request.<a name="line.737"></a>
+<span class="sourceLineNo">738</span>        router.route().handler(CookieHandler.create());<a name="line.738"></a>
+<span class="sourceLineNo">739</span>        <a name="line.739"></a>
+<span class="sourceLineNo">740</span>        BodyHandler bodyHandler = BodyHandler.create();<a name="line.740"></a>
+<span class="sourceLineNo">741</span>        <a name="line.741"></a>
+<span class="sourceLineNo">742</span>        if(_rootDir != null) {<a name="line.742"></a>
+<span class="sourceLineNo">743</span>            File uploadsDir = new File(_rootDir, "file-uploads");<a name="line.743"></a>
+<span class="sourceLineNo">744</span>            if(!uploadsDir.exists()) {<a name="line.744"></a>
+<span class="sourceLineNo">745</span>                if(!uploadsDir.mkdirs()) {<a name="line.745"></a>
+<span class="sourceLineNo">746</span>                    throw new Exception("Unable to create file uploads directory " + uploadsDir);<a name="line.746"></a>
+<span class="sourceLineNo">747</span>                }<a name="line.747"></a>
+<span class="sourceLineNo">748</span>            }<a name="line.748"></a>
+<span class="sourceLineNo">749</span>            bodyHandler.setUploadsDirectory(uploadsDir.getAbsolutePath());<a name="line.749"></a>
+<span class="sourceLineNo">750</span>        }<a name="line.750"></a>
 <span class="sourceLineNo">751</span>        <a name="line.751"></a>
-<span class="sourceLineNo">752</span>        // use custom auth handler with custom auth scheme to prevent<a name="line.752"></a>
-<span class="sourceLineNo">753</span>        // browsers (e.g., chrome) from opening auth dialog.<a name="line.753"></a>
-<span class="sourceLineNo">754</span>        // FIXME read realm from conf file.        <a name="line.754"></a>
-<span class="sourceLineNo">755</span>        AuthHandler authenticationHandler = new WebViewAuthHandlerImpl(_auth, "WebView");<a name="line.755"></a>
-<span class="sourceLineNo">756</span>        <a name="line.756"></a>
-<span class="sourceLineNo">757</span>        Handler&lt;RoutingContext&gt; authorizationHandler = new Handler&lt;RoutingContext&gt;() {<a name="line.757"></a>
-<span class="sourceLineNo">758</span>            @Override<a name="line.758"></a>
-<span class="sourceLineNo">759</span>            public void handle(RoutingContext c) {<a name="line.759"></a>
-<span class="sourceLineNo">760</span>                if(c.user() == null) {<a name="line.760"></a>
-<span class="sourceLineNo">761</span>                    c.next();<a name="line.761"></a>
-<span class="sourceLineNo">762</span>                } else {<a name="line.762"></a>
-<span class="sourceLineNo">763</span>                    c.user().isAuthorized("login", result -&gt; {<a name="line.763"></a>
-<span class="sourceLineNo">764</span>                        if(result.failed()) {<a name="line.764"></a>
-<span class="sourceLineNo">765</span>                            c.response()<a name="line.765"></a>
-<span class="sourceLineNo">766</span>                                .putHeader("Content-type", "text/plain")<a name="line.766"></a>
-<span class="sourceLineNo">767</span>                                .setStatusCode(HttpURLConnection.HTTP_FORBIDDEN)<a name="line.767"></a>
-<span class="sourceLineNo">768</span>                                .end(result.cause().getMessage());<a name="line.768"></a>
-<span class="sourceLineNo">769</span>                        } else {<a name="line.769"></a>
-<span class="sourceLineNo">770</span>                            c.next();<a name="line.770"></a>
-<span class="sourceLineNo">771</span>                        }<a name="line.771"></a>
-<span class="sourceLineNo">772</span>                    });<a name="line.772"></a>
-<span class="sourceLineNo">773</span>                }<a name="line.773"></a>
-<span class="sourceLineNo">774</span>            }            <a name="line.774"></a>
-<span class="sourceLineNo">775</span>        };<a name="line.775"></a>
-<span class="sourceLineNo">776</span>        <a name="line.776"></a>
-<span class="sourceLineNo">777</span>        // everything under /kepler and /app needs to be<a name="line.777"></a>
-<span class="sourceLineNo">778</span>        // authenticated and authorized.<a name="line.778"></a>
-<span class="sourceLineNo">779</span>        router.route("/kepler/*")<a name="line.779"></a>
-<span class="sourceLineNo">780</span>            .handler(authenticationHandler)<a name="line.780"></a>
-<span class="sourceLineNo">781</span>            .handler(authorizationHandler);<a name="line.781"></a>
-<span class="sourceLineNo">782</span>        router.route("/app")<a name="line.782"></a>
-<span class="sourceLineNo">783</span>            .handler(authenticationHandler)<a name="line.783"></a>
-<span class="sourceLineNo">784</span>            .handler(authorizationHandler);<a name="line.784"></a>
-<span class="sourceLineNo">785</span>        <a name="line.785"></a>
-<span class="sourceLineNo">786</span>        // TODO should these be under /kepler?<a name="line.786"></a>
-<span class="sourceLineNo">787</span>        router.getWithRegex("^/wf/(\\d+)$").handler(new WorkflowHandler(this));<a name="line.787"></a>
-<span class="sourceLineNo">788</span>        router.getWithRegex("^/wf/(\\d+(?:\\-\\d+)+)$").handler(new ActorHandler(this));<a name="line.788"></a>
+<span class="sourceLineNo">752</span>        // NOTE: need to install the BodyHandler before any handlers that<a name="line.752"></a>
+<span class="sourceLineNo">753</span>        // make asynchronous calls such as BasicAuthHandler.<a name="line.753"></a>
+<span class="sourceLineNo">754</span>        router.route().handler(bodyHandler);<a name="line.754"></a>
+<span class="sourceLineNo">755</span>        <a name="line.755"></a>
+<span class="sourceLineNo">756</span>        SessionStore sessionStore = LocalSessionStore.create(_vertx);<a name="line.756"></a>
+<span class="sourceLineNo">757</span>        SessionHandler sessionHandler = SessionHandler.create(sessionStore)<a name="line.757"></a>
+<span class="sourceLineNo">758</span>            .setSessionCookieName("WebViewSession")<a name="line.758"></a>
+<span class="sourceLineNo">759</span>            .setSessionTimeout(WebViewConfiguration.getHttpServerSessionTimeout());<a name="line.759"></a>
+<span class="sourceLineNo">760</span>        router.route().handler(sessionHandler);<a name="line.760"></a>
+<span class="sourceLineNo">761</span>        router.route().handler(UserSessionHandler.create(_auth));<a name="line.761"></a>
+<span class="sourceLineNo">762</span>        <a name="line.762"></a>
+<span class="sourceLineNo">763</span>        //System.out.println("session timeout = " + WebViewConfiguration.getHttpServerSessionTimeout());<a name="line.763"></a>
+<span class="sourceLineNo">764</span>        <a name="line.764"></a>
+<span class="sourceLineNo">765</span>        // use custom auth handler with custom auth scheme to prevent<a name="line.765"></a>
+<span class="sourceLineNo">766</span>        // browsers (e.g., chrome) from opening auth dialog.<a name="line.766"></a>
+<span class="sourceLineNo">767</span>        // FIXME read realm from conf file.        <a name="line.767"></a>
+<span class="sourceLineNo">768</span>        AuthHandler authenticationHandler = new WebViewAuthHandlerImpl(_auth, "WebView");<a name="line.768"></a>
+<span class="sourceLineNo">769</span>        <a name="line.769"></a>
+<span class="sourceLineNo">770</span>        Handler&lt;RoutingContext&gt; authorizationHandler = new Handler&lt;RoutingContext&gt;() {<a name="line.770"></a>
+<span class="sourceLineNo">771</span>            @Override<a name="line.771"></a>
+<span class="sourceLineNo">772</span>            public void handle(RoutingContext c) {<a name="line.772"></a>
+<span class="sourceLineNo">773</span>                if(c.user() == null) {<a name="line.773"></a>
+<span class="sourceLineNo">774</span>                    c.next();<a name="line.774"></a>
+<span class="sourceLineNo">775</span>                } else {<a name="line.775"></a>
+<span class="sourceLineNo">776</span>                    c.user().isAuthorized("login", result -&gt; {<a name="line.776"></a>
+<span class="sourceLineNo">777</span>                        if(result.failed()) {<a name="line.777"></a>
+<span class="sourceLineNo">778</span>                            c.response()<a name="line.778"></a>
+<span class="sourceLineNo">779</span>                                .putHeader("Content-type", "text/plain")<a name="line.779"></a>
+<span class="sourceLineNo">780</span>                                .setStatusCode(HttpURLConnection.HTTP_FORBIDDEN)<a name="line.780"></a>
+<span class="sourceLineNo">781</span>                                .end(result.cause().getMessage());<a name="line.781"></a>
+<span class="sourceLineNo">782</span>                        } else {<a name="line.782"></a>
+<span class="sourceLineNo">783</span>                            c.next();<a name="line.783"></a>
+<span class="sourceLineNo">784</span>                        }<a name="line.784"></a>
+<span class="sourceLineNo">785</span>                    });<a name="line.785"></a>
+<span class="sourceLineNo">786</span>                }<a name="line.786"></a>
+<span class="sourceLineNo">787</span>            }            <a name="line.787"></a>
+<span class="sourceLineNo">788</span>        };<a name="line.788"></a>
 <span class="sourceLineNo">789</span>        <a name="line.789"></a>
-<span class="sourceLineNo">790</span>        RunWorkflowHandler runWorkflowHandler = new RunWorkflowHandler(this);<a name="line.790"></a>
-<span class="sourceLineNo">791</span>        router.post("/kepler/runwf").handler(runWorkflowHandler::handleRunWorkflow);<a name="line.791"></a>
-<span class="sourceLineNo">792</span>        router.post("/app").handler(runWorkflowHandler::handleRunApp);<a name="line.792"></a>
-<span class="sourceLineNo">793</span>        <a name="line.793"></a>
-<span class="sourceLineNo">794</span>        router.post("/kepler/runs").handler(new RunsHandler(this));<a name="line.794"></a>
-<span class="sourceLineNo">795</span>        <a name="line.795"></a>
-<span class="sourceLineNo">796</span>        RunIdHandler runIdHandler = new RunIdHandler(this);<a name="line.796"></a>
-<span class="sourceLineNo">797</span>        <a name="line.797"></a>
-<span class="sourceLineNo">798</span>        String runIdRegexStr = "(urn:lsid:[^:]+:[^:]+:[^:]+(?::\\d+)?)";         <a name="line.798"></a>
-<span class="sourceLineNo">799</span>        router.getWithRegex("/kepler/runs/" + runIdRegexStr + "/(\\w+)").blockingHandler(runIdHandler::handleBinary);<a name="line.799"></a>
-<span class="sourceLineNo">800</span>        router.getWithRegex("/kepler/runs/" + runIdRegexStr).handler(runIdHandler);<a name="line.800"></a>
-<span class="sourceLineNo">801</span>        <a name="line.801"></a>
-<span class="sourceLineNo">802</span>        if(WebViewConfiguration.getHttpServerMetadataFileName() != null) {<a name="line.802"></a>
-<span class="sourceLineNo">803</span>            System.out.println("Metadata file set; requests at /login");<a name="line.803"></a>
-<span class="sourceLineNo">804</span>            <a name="line.804"></a>
-<span class="sourceLineNo">805</span>            router.route("/login")<a name="line.805"></a>
-<span class="sourceLineNo">806</span>                .handler(authenticationHandler)            <a name="line.806"></a>
-<span class="sourceLineNo">807</span>                .handler(authorizationHandler);<a name="line.807"></a>
-<span class="sourceLineNo">808</span>            <a name="line.808"></a>
-<span class="sourceLineNo">809</span>            LoginHandler loginHandler = new LoginHandler(this);<a name="line.809"></a>
-<span class="sourceLineNo">810</span>            router.route("/login").handler(loginHandler);<a name="line.810"></a>
-<span class="sourceLineNo">811</span>                        <a name="line.811"></a>
-<span class="sourceLineNo">812</span>            // login session handler to check if session cookie is valid.<a name="line.812"></a>
-<span class="sourceLineNo">813</span>            /*<a name="line.813"></a>
-<span class="sourceLineNo">814</span>            router.route("/loginSession")<a name="line.814"></a>
-<span class="sourceLineNo">815</span>                .handler(authorizationHandler)<a name="line.815"></a>
-<span class="sourceLineNo">816</span>                .handler(loginSessionContext -&gt; {<a name="line.816"></a>
-<span class="sourceLineNo">817</span>                <a name="line.817"></a>
-<span class="sourceLineNo">818</span>                System.out.println("session " + loginSessionContext.session().id());<a name="line.818"></a>
-<span class="sourceLineNo">819</span>                <a name="line.819"></a>
-<span class="sourceLineNo">820</span>                // if not valid, return 400<a name="line.820"></a>
-<span class="sourceLineNo">821</span>                if(loginSessionContext.user() == null) {<a name="line.821"></a>
-<span class="sourceLineNo">822</span>                    System.out.println("user is null");<a name="line.822"></a>
-<span class="sourceLineNo">823</span>                    loginSessionContext.response()<a name="line.823"></a>
-<span class="sourceLineNo">824</span>                        .putHeader("Content-Type", "text/plain")<a name="line.824"></a>
-<span class="sourceLineNo">825</span>                        .setStatusCode(HttpURLConnection.HTTP_BAD_REQUEST)<a name="line.825"></a>
-<span class="sourceLineNo">826</span>                        .end();<a name="line.826"></a>
-<span class="sourceLineNo">827</span>                } else {<a name="line.827"></a>
-<span class="sourceLineNo">828</span>                    // otherwise call login handler to return metadata.<a name="line.828"></a>
-<span class="sourceLineNo">829</span>                    loginSessionContext.next();<a name="line.829"></a>
-<span class="sourceLineNo">830</span>                }<a name="line.830"></a>
-<span class="sourceLineNo">831</span>            });<a name="line.831"></a>
-<span class="sourceLineNo">832</span>            router.route("/loginSession").handler(loginHandler);<a name="line.832"></a>
-<span class="sourceLineNo">833</span>            */<a name="line.833"></a>
-<span class="sourceLineNo">834</span>            <a name="line.834"></a>
-<span class="sourceLineNo">835</span>            // logout handler to remove session and user.<a name="line.835"></a>
-<span class="sourceLineNo">836</span>            router.route("/logout").handler(authenticationHandler);<a name="line.836"></a>
-<span class="sourceLineNo">837</span>            // FIXME what about authorization handler?<a name="line.837"></a>
-<span class="sourceLineNo">838</span>            router.route("/logout").handler(logoutContext -&gt; {<a name="line.838"></a>
-<span class="sourceLineNo">839</span>                //System.out.println("destroying session " + logoutContext.session().id());<a name="line.839"></a>
-<span class="sourceLineNo">840</span>                logoutContext.session().destroy();<a name="line.840"></a>
-<span class="sourceLineNo">841</span>                logoutContext.clearUser();<a name="line.841"></a>
-<span class="sourceLineNo">842</span>                logoutContext.response()<a name="line.842"></a>
-<span class="sourceLineNo">843</span>                    .putHeader("Content-Type", "text/plain")<a name="line.843"></a>
-<span class="sourceLineNo">844</span>                    .end();<a name="line.844"></a>
-<span class="sourceLineNo">845</span>            });<a name="line.845"></a>
-<span class="sourceLineNo">846</span>        }<a name="line.846"></a>
-<span class="sourceLineNo">847</span><a name="line.847"></a>
-<span class="sourceLineNo">848</span>        if(WebViewConfiguration.enableHttpServerTableOfContents()) {<a name="line.848"></a>
-<span class="sourceLineNo">849</span>            String path = WebViewConfiguration.getHttpServerTableOfContentsPath();<a name="line.849"></a>
-<span class="sourceLineNo">850</span>            if(path == null) {<a name="line.850"></a>
-<span class="sourceLineNo">851</span>                path = "^(?:/kepler/toc){0,1}/*$";<a name="line.851"></a>
-<span class="sourceLineNo">852</span>            }<a name="line.852"></a>
-<span class="sourceLineNo">853</span>            System.out.println("Enabling http server table of contents at " + path);<a name="line.853"></a>
-<span class="sourceLineNo">854</span>            router.getWithRegex(path).handler(new TableOfContentsHandler(this));<a name="line.854"></a>
-<span class="sourceLineNo">855</span>        }<a name="line.855"></a>
-<span class="sourceLineNo">856</span>        <a name="line.856"></a>
-<span class="sourceLineNo">857</span>        // add route that handles anything unmatched<a name="line.857"></a>
-<span class="sourceLineNo">858</span>        router.route().handler(new NoMatchHandler(this));<a name="line.858"></a>
-<span class="sourceLineNo">859</span>                <a name="line.859"></a>
-<span class="sourceLineNo">860</span>        if(WebViewConfiguration.enableHttps()) {<a name="line.860"></a>
-<span class="sourceLineNo">861</span>            <a name="line.861"></a>
-<span class="sourceLineNo">862</span>            sessionHandler.setCookieSecureFlag(true);<a name="line.862"></a>
-<span class="sourceLineNo">863</span>            <a name="line.863"></a>
-<span class="sourceLineNo">864</span>            String pemKeyStr = WebViewConfiguration.getHttpsPEMKeyPath();<a name="line.864"></a>
-<span class="sourceLineNo">865</span>            if(pemKeyStr == null) {<a name="line.865"></a>
-<span class="sourceLineNo">866</span>                throw new Exception("Must specify PEM key file for HTTPS server.");<a name="line.866"></a>
-<span class="sourceLineNo">867</span>            }<a name="line.867"></a>
-<span class="sourceLineNo">868</span>            <a name="line.868"></a>
-<span class="sourceLineNo">869</span>            String pemCertStr = WebViewConfiguration.getHttpsPEMCertPath();<a name="line.869"></a>
-<span class="sourceLineNo">870</span>            if(pemCertStr == null) {<a name="line.870"></a>
-<span class="sourceLineNo">871</span>                throw new Exception("Must specify PEM certificate file for HTTPS server.");                <a name="line.871"></a>
-<span class="sourceLineNo">872</span>            }<a name="line.872"></a>
-<span class="sourceLineNo">873</span>            <a name="line.873"></a>
-<span class="sourceLineNo">874</span>            int securePort = WebViewConfiguration.getHttpsServerPort();<a name="line.874"></a>
-<span class="sourceLineNo">875</span>            <a name="line.875"></a>
-<span class="sourceLineNo">876</span>            HttpServerOptions options = new HttpServerOptions()<a name="line.876"></a>
-<span class="sourceLineNo">877</span>                .setSsl(true)<a name="line.877"></a>
-<span class="sourceLineNo">878</span>                .setPemKeyCertOptions(new PemKeyCertOptions()<a name="line.878"></a>
-<span class="sourceLineNo">879</span>                    .setCertPath(pemCertStr)<a name="line.879"></a>
-<span class="sourceLineNo">880</span>                    .setKeyPath(pemKeyStr))<a name="line.880"></a>
-<span class="sourceLineNo">881</span>                .setPort(securePort);<a name="line.881"></a>
-<span class="sourceLineNo">882</span><a name="line.882"></a>
-<span class="sourceLineNo">883</span>            System.out.println("Starting secure web server on port " + securePort);<a name="line.883"></a>
-<span class="sourceLineNo">884</span>            <a name="line.884"></a>
-<span class="sourceLineNo">885</span>            _secureServer = vertx.createHttpServer(options)<a name="line.885"></a>
-<span class="sourceLineNo">886</span>                    .websocketHandler(new WorkflowWebSocketHandler(this))<a name="line.886"></a>
-<span class="sourceLineNo">887</span>                    .requestHandler(router::accept)<a name="line.887"></a>
-<span class="sourceLineNo">888</span>                    .listen();<a name="line.888"></a>
-<span class="sourceLineNo">889</span>           <a name="line.889"></a>
-<span class="sourceLineNo">890</span>            if(WebViewConfiguration.shouldHttpServerRedirect()) {<a name="line.890"></a>
-<span class="sourceLineNo">891</span><a name="line.891"></a>
-<span class="sourceLineNo">892</span>                int status = WebViewConfiguration.getHttpServerRedirectStatus();<a name="line.892"></a>
-<span class="sourceLineNo">893</span>                String hostname = WebViewConfiguration.getHttpServerRedirectHostname();<a name="line.893"></a>
-<span class="sourceLineNo">894</span>                int redirectFromPort = WebViewConfiguration.getHttpServerPort();<a name="line.894"></a>
-<span class="sourceLineNo">895</span>                int redirectToPort = WebViewConfiguration.getHttpServerRedirectPort();<a name="line.895"></a>
-<span class="sourceLineNo">896</span>                <a name="line.896"></a>
-<span class="sourceLineNo">897</span>                String redirectUrl = "https://" + hostname + ":" + redirectToPort;<a name="line.897"></a>
-<span class="sourceLineNo">898</span>                <a name="line.898"></a>
-<span class="sourceLineNo">899</span>                System.out.println("Redirecting web view server port " + redirectFromPort +<a name="line.899"></a>
-<span class="sourceLineNo">900</span>                    " to " + redirectUrl + " with status " + status);<a name="line.900"></a>
-<span class="sourceLineNo">901</span>                <a name="line.901"></a>
-<span class="sourceLineNo">902</span>                _server = vertx.createHttpServer()<a name="line.902"></a>
-<span class="sourceLineNo">903</span>                    .requestHandler(req -&gt; {<a name="line.903"></a>
-<span class="sourceLineNo">904</span>                        req.response().headers().set("Location", redirectUrl + req.path());                        <a name="line.904"></a>
-<span class="sourceLineNo">905</span>                        req.response()<a name="line.905"></a>
-<span class="sourceLineNo">906</span>                            .setStatusCode(status)<a name="line.906"></a>
-<span class="sourceLineNo">907</span>                            .end();<a name="line.907"></a>
-<span class="sourceLineNo">908</span>                    })<a name="line.908"></a>
-<span class="sourceLineNo">909</span>                    .listen(redirectFromPort);<a name="line.909"></a>
-<span class="sourceLineNo">910</span>            }<a name="line.910"></a>
-<span class="sourceLineNo">911</span><a name="line.911"></a>
-<span class="sourceLineNo">912</span>        } else {<a name="line.912"></a>
-<span class="sourceLineNo">913</span>        <a name="line.913"></a>
-<span class="sourceLineNo">914</span>            int port = WebViewConfiguration.getHttpServerPort();<a name="line.914"></a>
-<span class="sourceLineNo">915</span>            <a name="line.915"></a>
-<span class="sourceLineNo">916</span>            System.out.println("Starting web view server on port " + port);<a name="line.916"></a>
-<span class="sourceLineNo">917</span><a name="line.917"></a>
-<span class="sourceLineNo">918</span>            _server = vertx.createHttpServer()<a name="line.918"></a>
-<span class="sourceLineNo">919</span>                .websocketHandler(new WorkflowWebSocketHandler(this))<a name="line.919"></a>
-<span class="sourceLineNo">920</span>                .requestHandler(router::accept)<a name="line.920"></a>
-<span class="sourceLineNo">921</span>                .listen(port);<a name="line.921"></a>
-<span class="sourceLineNo">922</span>        }<a name="line.922"></a>
-<span class="sourceLineNo">923</span>    }<a name="line.923"></a>
-<span class="sourceLineNo">924</span>        <a name="line.924"></a>
-<span class="sourceLineNo">925</span>    public static void removeModel(NamedObj model) {<a name="line.925"></a>
+<span class="sourceLineNo">790</span>        // everything under /kepler and /app needs to be<a name="line.790"></a>
+<span class="sourceLineNo">791</span>        // authenticated and authorized.<a name="line.791"></a>
+<span class="sourceLineNo">792</span>        router.route("/kepler/*")<a name="line.792"></a>
+<span class="sourceLineNo">793</span>            .handler(authenticationHandler)<a name="line.793"></a>
+<span class="sourceLineNo">794</span>            .handler(authorizationHandler);<a name="line.794"></a>
+<span class="sourceLineNo">795</span>        router.route("/app")<a name="line.795"></a>
+<span class="sourceLineNo">796</span>            .handler(authenticationHandler)<a name="line.796"></a>
+<span class="sourceLineNo">797</span>            .handler(authorizationHandler);<a name="line.797"></a>
+<span class="sourceLineNo">798</span>        <a name="line.798"></a>
+<span class="sourceLineNo">799</span>        // TODO should these be under /kepler?<a name="line.799"></a>
+<span class="sourceLineNo">800</span>        router.getWithRegex("^/wf/(\\d+)$").handler(new WorkflowHandler(this));<a name="line.800"></a>
+<span class="sourceLineNo">801</span>        router.getWithRegex("^/wf/(\\d+(?:\\-\\d+)+)$").handler(new ActorHandler(this));<a name="line.801"></a>
+<span class="sourceLineNo">802</span>        <a name="line.802"></a>
+<span class="sourceLineNo">803</span>        RunWorkflowHandler runWorkflowHandler = new RunWorkflowHandler(this);<a name="line.803"></a>
+<span class="sourceLineNo">804</span>        router.post("/kepler/runwf").handler(runWorkflowHandler::handleRunWorkflow);<a name="line.804"></a>
+<span class="sourceLineNo">805</span>        router.post("/app").handler(runWorkflowHandler::handleRunApp);<a name="line.805"></a>
+<span class="sourceLineNo">806</span>        <a name="line.806"></a>
+<span class="sourceLineNo">807</span>        router.post("/kepler/runs").handler(new RunsHandler(this));<a name="line.807"></a>
+<span class="sourceLineNo">808</span>        <a name="line.808"></a>
+<span class="sourceLineNo">809</span>        RunIdHandler runIdHandler = new RunIdHandler(this);<a name="line.809"></a>
+<span class="sourceLineNo">810</span>        <a name="line.810"></a>
+<span class="sourceLineNo">811</span>        String runIdRegexStr = "(urn:lsid:[^:]+:[^:]+:[^:]+(?::\\d+)?)";         <a name="line.811"></a>
+<span class="sourceLineNo">812</span>        router.getWithRegex("/kepler/runs/" + runIdRegexStr + "/(\\w+)").blockingHandler(runIdHandler::handleBinary);<a name="line.812"></a>
+<span class="sourceLineNo">813</span>        router.getWithRegex("/kepler/runs/" + runIdRegexStr).handler(runIdHandler);<a name="line.813"></a>
+<span class="sourceLineNo">814</span>        <a name="line.814"></a>
+<span class="sourceLineNo">815</span>        if(WebViewConfiguration.getHttpServerMetadataFileName() != null) {<a name="line.815"></a>
+<span class="sourceLineNo">816</span>            System.out.println("Metadata file set; requests at /login");<a name="line.816"></a>
+<span class="sourceLineNo">817</span>            <a name="line.817"></a>
+<span class="sourceLineNo">818</span>            router.route("/login")<a name="line.818"></a>
+<span class="sourceLineNo">819</span>                .handler(authenticationHandler)            <a name="line.819"></a>
+<span class="sourceLineNo">820</span>                .handler(authorizationHandler);<a name="line.820"></a>
+<span class="sourceLineNo">821</span>            <a name="line.821"></a>
+<span class="sourceLineNo">822</span>            LoginHandler loginHandler = new LoginHandler(this);<a name="line.822"></a>
+<span class="sourceLineNo">823</span>            router.route("/login").handler(loginHandler);<a name="line.823"></a>
+<span class="sourceLineNo">824</span>                        <a name="line.824"></a>
+<span class="sourceLineNo">825</span>            // login session handler to check if session cookie is valid.<a name="line.825"></a>
+<span class="sourceLineNo">826</span>            /*<a name="line.826"></a>
+<span class="sourceLineNo">827</span>            router.route("/loginSession")<a name="line.827"></a>
+<span class="sourceLineNo">828</span>                .handler(authorizationHandler)<a name="line.828"></a>
+<span class="sourceLineNo">829</span>                .handler(loginSessionContext -&gt; {<a name="line.829"></a>
+<span class="sourceLineNo">830</span>                <a name="line.830"></a>
+<span class="sourceLineNo">831</span>                System.out.println("session " + loginSessionContext.session().id());<a name="line.831"></a>
+<span class="sourceLineNo">832</span>                <a name="line.832"></a>
+<span class="sourceLineNo">833</span>                // if not valid, return 400<a name="line.833"></a>
+<span class="sourceLineNo">834</span>                if(loginSessionContext.user() == null) {<a name="line.834"></a>
+<span class="sourceLineNo">835</span>                    System.out.println("user is null");<a name="line.835"></a>
+<span class="sourceLineNo">836</span>                    loginSessionContext.response()<a name="line.836"></a>
+<span class="sourceLineNo">837</span>                        .putHeader("Content-Type", "text/plain")<a name="line.837"></a>
+<span class="sourceLineNo">838</span>                        .setStatusCode(HttpURLConnection.HTTP_BAD_REQUEST)<a name="line.838"></a>
+<span class="sourceLineNo">839</span>                        .end();<a name="line.839"></a>
+<span class="sourceLineNo">840</span>                } else {<a name="line.840"></a>
+<span class="sourceLineNo">841</span>                    // otherwise call login handler to return metadata.<a name="line.841"></a>
+<span class="sourceLineNo">842</span>                    loginSessionContext.next();<a name="line.842"></a>
+<span class="sourceLineNo">843</span>                }<a name="line.843"></a>
+<span class="sourceLineNo">844</span>            });<a name="line.844"></a>
+<span class="sourceLineNo">845</span>            router.route("/loginSession").handler(loginHandler);<a name="line.845"></a>
+<span class="sourceLineNo">846</span>            */<a name="line.846"></a>
+<span class="sourceLineNo">847</span>            <a name="line.847"></a>
+<span class="sourceLineNo">848</span>            // logout handler to remove session and user.<a name="line.848"></a>
+<span class="sourceLineNo">849</span>            router.route("/logout").handler(authenticationHandler);<a name="line.849"></a>
+<span class="sourceLineNo">850</span>            // FIXME what about authorization handler?<a name="line.850"></a>
+<span class="sourceLineNo">851</span>            router.route("/logout").handler(logoutContext -&gt; {<a name="line.851"></a>
+<span class="sourceLineNo">852</span>                //System.out.println("destroying session " + logoutContext.session().id());<a name="line.852"></a>
+<span class="sourceLineNo">853</span>                logoutContext.session().destroy();<a name="line.853"></a>
+<span class="sourceLineNo">854</span>                logoutContext.clearUser();<a name="line.854"></a>
+<span class="sourceLineNo">855</span>                logoutContext.response()<a name="line.855"></a>
+<span class="sourceLineNo">856</span>                    .putHeader("Content-Type", "text/plain")<a name="line.856"></a>
+<span class="sourceLineNo">857</span>                    .end();<a name="line.857"></a>
+<span class="sourceLineNo">858</span>            });<a name="line.858"></a>
+<span class="sourceLineNo">859</span>        }<a name="line.859"></a>
+<span class="sourceLineNo">860</span><a name="line.860"></a>
+<span class="sourceLineNo">861</span>        if(WebViewConfiguration.enableHttpServerTableOfContents()) {<a name="line.861"></a>
+<span class="sourceLineNo">862</span>            String path = WebViewConfiguration.getHttpServerTableOfContentsPath();<a name="line.862"></a>
+<span class="sourceLineNo">863</span>            if(path == null) {<a name="line.863"></a>
+<span class="sourceLineNo">864</span>                path = "^(?:/kepler/toc){0,1}/*$";<a name="line.864"></a>
+<span class="sourceLineNo">865</span>            }<a name="line.865"></a>
+<span class="sourceLineNo">866</span>            System.out.println("Enabling http server table of contents at " + path);<a name="line.866"></a>
+<span class="sourceLineNo">867</span>            router.getWithRegex(path).handler(new TableOfContentsHandler(this));<a name="line.867"></a>
+<span class="sourceLineNo">868</span>        }<a name="line.868"></a>
+<span class="sourceLineNo">869</span>        <a name="line.869"></a>
+<span class="sourceLineNo">870</span>        // add route that handles anything unmatched<a name="line.870"></a>
+<span class="sourceLineNo">871</span>        router.route().handler(new NoMatchHandler(this));<a name="line.871"></a>
+<span class="sourceLineNo">872</span>                <a name="line.872"></a>
+<span class="sourceLineNo">873</span>        if(WebViewConfiguration.enableHttps()) {<a name="line.873"></a>
+<span class="sourceLineNo">874</span>            <a name="line.874"></a>
+<span class="sourceLineNo">875</span>            sessionHandler.setCookieSecureFlag(true);<a name="line.875"></a>
+<span class="sourceLineNo">876</span>            <a name="line.876"></a>
+<span class="sourceLineNo">877</span>            String pemKeyStr = WebViewConfiguration.getHttpsPEMKeyPath();<a name="line.877"></a>
+<span class="sourceLineNo">878</span>            if(pemKeyStr == null) {<a name="line.878"></a>
+<span class="sourceLineNo">879</span>                throw new Exception("Must specify PEM key file for HTTPS server.");<a name="line.879"></a>
+<span class="sourceLineNo">880</span>            }<a name="line.880"></a>
+<span class="sourceLineNo">881</span>            <a name="line.881"></a>
+<span class="sourceLineNo">882</span>            String pemCertStr = WebViewConfiguration.getHttpsPEMCertPath();<a name="line.882"></a>
+<span class="sourceLineNo">883</span>            if(pemCertStr == null) {<a name="line.883"></a>
+<span class="sourceLineNo">884</span>                throw new Exception("Must specify PEM certificate file for HTTPS server.");                <a name="line.884"></a>
+<span class="sourceLineNo">885</span>            }<a name="line.885"></a>
+<span class="sourceLineNo">886</span>            <a name="line.886"></a>
+<span class="sourceLineNo">887</span>            int securePort = WebViewConfiguration.getHttpsServerPort();<a name="line.887"></a>
+<span class="sourceLineNo">888</span>            <a name="line.888"></a>
+<span class="sourceLineNo">889</span>            // FIXME what if pemCert or pemKey do not exist?<a name="line.889"></a>
+<span class="sourceLineNo">890</span>            <a name="line.890"></a>
+<span class="sourceLineNo">891</span>            HttpServerOptions options = new HttpServerOptions()<a name="line.891"></a>
+<span class="sourceLineNo">892</span>                .setSsl(true)<a name="line.892"></a>
+<span class="sourceLineNo">893</span>                .setPemKeyCertOptions(new PemKeyCertOptions()<a name="line.893"></a>
+<span class="sourceLineNo">894</span>                    .setCertPath(pemCertStr)<a name="line.894"></a>
+<span class="sourceLineNo">895</span>                    .setKeyPath(pemKeyStr))<a name="line.895"></a>
+<span class="sourceLineNo">896</span>                .setPort(securePort);<a name="line.896"></a>
+<span class="sourceLineNo">897</span><a name="line.897"></a>
+<span class="sourceLineNo">898</span>            System.out.println("Starting secure web server on port " + securePort);<a name="line.898"></a>
+<span class="sourceLineNo">899</span>            <a name="line.899"></a>
+<span class="sourceLineNo">900</span>            _secureServer = vertx.createHttpServer(options)<a name="line.900"></a>
+<span class="sourceLineNo">901</span>                    .websocketHandler(new WorkflowWebSocketHandler(this))<a name="line.901"></a>
+<span class="sourceLineNo">902</span>                    .requestHandler(router::accept)<a name="line.902"></a>
+<span class="sourceLineNo">903</span>                    .listen();<a name="line.903"></a>
+<span class="sourceLineNo">904</span>           <a name="line.904"></a>
+<span class="sourceLineNo">905</span>            if(WebViewConfiguration.shouldHttpServerRedirect()) {<a name="line.905"></a>
+<span class="sourceLineNo">906</span><a name="line.906"></a>
+<span class="sourceLineNo">907</span>                int status = WebViewConfiguration.getHttpServerRedirectStatus();<a name="line.907"></a>
+<span class="sourceLineNo">908</span>                String hostname = WebViewConfiguration.getHttpServerRedirectHostname();<a name="line.908"></a>
+<span class="sourceLineNo">909</span>                int redirectFromPort = WebViewConfiguration.getHttpServerPort();<a name="line.909"></a>
+<span class="sourceLineNo">910</span>                int redirectToPort = WebViewConfiguration.getHttpServerRedirectPort();<a name="line.910"></a>
+<span class="sourceLineNo">911</span>                <a name="line.911"></a>
+<span class="sourceLineNo">912</span>                String redirectUrl = "https://" + hostname + ":" + redirectToPort;<a name="line.912"></a>
+<span class="sourceLineNo">913</span>                <a name="line.913"></a>
+<span class="sourceLineNo">914</span>                System.out.println("Redirecting web view server port " + redirectFromPort +<a name="line.914"></a>
+<span class="sourceLineNo">915</span>                    " to " + redirectUrl + " with status " + status);<a name="line.915"></a>
+<span class="sourceLineNo">916</span>                <a name="line.916"></a>
+<span class="sourceLineNo">917</span>                _server = vertx.createHttpServer()<a name="line.917"></a>
+<span class="sourceLineNo">918</span>                    .requestHandler(req -&gt; {<a name="line.918"></a>
+<span class="sourceLineNo">919</span>                        req.response().headers().set("Location", redirectUrl + req.path());                        <a name="line.919"></a>
+<span class="sourceLineNo">920</span>                        req.response()<a name="line.920"></a>
+<span class="sourceLineNo">921</span>                            .setStatusCode(status)<a name="line.921"></a>
+<span class="sourceLineNo">922</span>                            .end();<a name="line.922"></a>
+<span class="sourceLineNo">923</span>                    })<a name="line.923"></a>
+<span class="sourceLineNo">924</span>                    .listen(redirectFromPort);<a name="line.924"></a>
+<span class="sourceLineNo">925</span>            }<a name="line.925"></a>
 <span class="sourceLineNo">926</span><a name="line.926"></a>
-<span class="sourceLineNo">927</span>        // notify any clients that the workflow was closed.            <a name="line.927"></a>
-<span class="sourceLineNo">928</span>        try {<a name="line.928"></a>
-<span class="sourceLineNo">929</span>            WebViewableUtilities.sendEvent(<a name="line.929"></a>
-<span class="sourceLineNo">930</span>                WebViewableUtilities.Event.WorkflowClosed, model);<a name="line.930"></a>
-<span class="sourceLineNo">931</span>        } catch (IllegalActionException e) {<a name="line.931"></a>
-<span class="sourceLineNo">932</span>            MessageHandler.error("Error notifying clients that workflow closed.", e);<a name="line.932"></a>
-<span class="sourceLineNo">933</span>        }<a name="line.933"></a>
-<span class="sourceLineNo">934</span>        <a name="line.934"></a>
-<span class="sourceLineNo">935</span>        WebViewId.removeWorkflow(model);<a name="line.935"></a>
-<span class="sourceLineNo">936</span>        <a name="line.936"></a>
-<span class="sourceLineNo">937</span>        //System.gc();<a name="line.937"></a>
-<span class="sourceLineNo">938</span>        _clientBuffers.remove(model);<a name="line.938"></a>
+<span class="sourceLineNo">927</span>        } else {<a name="line.927"></a>
+<span class="sourceLineNo">928</span>        <a name="line.928"></a>
+<span class="sourceLineNo">929</span>            int port = WebViewConfiguration.getHttpServerPort();<a name="line.929"></a>
+<span class="sourceLineNo">930</span>            <a name="line.930"></a>
+<span class="sourceLineNo">931</span>            System.out.println("Starting web view server on port " + port);<a name="line.931"></a>
+<span class="sourceLineNo">932</span><a name="line.932"></a>
+<span class="sourceLineNo">933</span>            _server = vertx.createHttpServer()<a name="line.933"></a>
+<span class="sourceLineNo">934</span>                .websocketHandler(new WorkflowWebSocketHandler(this))<a name="line.934"></a>
+<span class="sourceLineNo">935</span>                .requestHandler(router::accept)<a name="line.935"></a>
+<span class="sourceLineNo">936</span>                .listen(port);<a name="line.936"></a>
+<span class="sourceLineNo">937</span>        }<a name="line.937"></a>
+<span class="sourceLineNo">938</span>    }<a name="line.938"></a>
 <span class="sourceLineNo">939</span>        <a name="line.939"></a>
-<span class="sourceLineNo">940</span>        //System.out.println("removing " + model + " " + model.hashCode());<a name="line.940"></a>
-<span class="sourceLineNo">941</span>        /*<a name="line.941"></a>
-<span class="sourceLineNo">942</span>        for(CompositeActor master : _models.values()) {<a name="line.942"></a>
-<span class="sourceLineNo">943</span>            System.out.println("master " + master + " " + master.hashCode());<a name="line.943"></a>
-<span class="sourceLineNo">944</span>        }<a name="line.944"></a>
-<span class="sourceLineNo">945</span>        */<a name="line.945"></a>
-<span class="sourceLineNo">946</span>        <a name="line.946"></a>
-<span class="sourceLineNo">947</span>        //System.out.println("remove " + model.hashCode());<a name="line.947"></a>
-<span class="sourceLineNo">948</span><a name="line.948"></a>
-<span class="sourceLineNo">949</span>        //_models.remove(model);<a name="line.949"></a>
-<span class="sourceLineNo">950</span>        <a name="line.950"></a>
-<span class="sourceLineNo">951</span>        //System.out.println("removed workflow " + model.getName());<a name="line.951"></a>
-<span class="sourceLineNo">952</span>    }<a name="line.952"></a>
-<span class="sourceLineNo">953</span>    <a name="line.953"></a>
-<span class="sourceLineNo">954</span>    /** Called during shutdown. */<a name="line.954"></a>
-<span class="sourceLineNo">955</span>    public static void shutdown() {<a name="line.955"></a>
-<span class="sourceLineNo">956</span>                <a name="line.956"></a>
-<span class="sourceLineNo">957</span>        KeplerGraphFrame.removeUpdater(_updater);<a name="line.957"></a>
-<span class="sourceLineNo">958</span>            <a name="line.958"></a>
-<span class="sourceLineNo">959</span>        for(CompositeActor model : _models.values()) {<a name="line.959"></a>
-<span class="sourceLineNo">960</span>            removeModel(model);<a name="line.960"></a>
-<span class="sourceLineNo">961</span>        }<a name="line.961"></a>
-<span class="sourceLineNo">962</span>        <a name="line.962"></a>
-<span class="sourceLineNo">963</span>        _models.clear();<a name="line.963"></a>
-<span class="sourceLineNo">964</span>        <a name="line.964"></a>
-<span class="sourceLineNo">965</span>        for(App app : _apps.values()) {<a name="line.965"></a>
-<span class="sourceLineNo">966</span>            app.close();<a name="line.966"></a>
-<span class="sourceLineNo">967</span>        }<a name="line.967"></a>
-<span class="sourceLineNo">968</span>        <a name="line.968"></a>
-<span class="sourceLineNo">969</span>        _apps.clear();<a name="line.969"></a>
-<span class="sourceLineNo">970</span>        <a name="line.970"></a>
-<span class="sourceLineNo">971</span>        // stop the logging thread<a name="line.971"></a>
-<span class="sourceLineNo">972</span>        _loggingQueue.add(STOP_LOGGING_THREAD_MESSAGE);<a name="line.972"></a>
-<span class="sourceLineNo">973</span>        try {<a name="line.973"></a>
-<span class="sourceLineNo">974</span>            _loggingThread.join(5000);<a name="line.974"></a>
-<span class="sourceLineNo">975</span>        } catch (InterruptedException e) {<a name="line.975"></a>
-<span class="sourceLineNo">976</span>            MessageHandler.error("Interrupted while waiting for logging thread to stop.", e);<a name="line.976"></a>
-<span class="sourceLineNo">977</span>        }<a name="line.977"></a>
-<span class="sourceLineNo">978</span>        _loggingThread = null;<a name="line.978"></a>
-<span class="sourceLineNo">979</span>    }<a name="line.979"></a>
-<span class="sourceLineNo">980</span>    <a name="line.980"></a>
-<span class="sourceLineNo">981</span>    /** Stop the server. */<a name="line.981"></a>
-<span class="sourceLineNo">982</span>    @Override<a name="line.982"></a>
-<span class="sourceLineNo">983</span>    public void stop() throws Exception {<a name="line.983"></a>
-<span class="sourceLineNo">984</span>        super.stop();<a name="line.984"></a>
+<span class="sourceLineNo">940</span>    public static void removeModel(NamedObj model) {<a name="line.940"></a>
+<span class="sourceLineNo">941</span><a name="line.941"></a>
+<span class="sourceLineNo">942</span>        // notify any clients that the workflow was closed.            <a name="line.942"></a>
+<span class="sourceLineNo">943</span>        try {<a name="line.943"></a>
+<span class="sourceLineNo">944</span>            WebViewableUtilities.sendEvent(<a name="line.944"></a>
+<span class="sourceLineNo">945</span>                WebViewableUtilities.Event.WorkflowClosed, model);<a name="line.945"></a>
+<span class="sourceLineNo">946</span>        } catch (IllegalActionException e) {<a name="line.946"></a>
+<span class="sourceLineNo">947</span>            MessageHandler.error("Error notifying clients that workflow closed.", e);<a name="line.947"></a>
+<span class="sourceLineNo">948</span>        }<a name="line.948"></a>
+<span class="sourceLineNo">949</span>        <a name="line.949"></a>
+<span class="sourceLineNo">950</span>        WebViewId.removeWorkflow(model);<a name="line.950"></a>
+<span class="sourceLineNo">951</span>        <a name="line.951"></a>
+<span class="sourceLineNo">952</span>        //System.gc();<a name="line.952"></a>
+<span class="sourceLineNo">953</span>        _clientBuffers.remove(model);<a name="line.953"></a>
+<span class="sourceLineNo">954</span>        <a name="line.954"></a>
+<span class="sourceLineNo">955</span>        //System.out.println("removing " + model + " " + model.hashCode());<a name="line.955"></a>
+<span class="sourceLineNo">956</span>        /*<a name="line.956"></a>
+<span class="sourceLineNo">957</span>        for(CompositeActor master : _models.values()) {<a name="line.957"></a>
+<span class="sourceLineNo">958</span>            System.out.println("master " + master + " " + master.hashCode());<a name="line.958"></a>
+<span class="sourceLineNo">959</span>        }<a name="line.959"></a>
+<span class="sourceLineNo">960</span>        */<a name="line.960"></a>
+<span class="sourceLineNo">961</span>        <a name="line.961"></a>
+<span class="sourceLineNo">962</span>        //System.out.println("remove " + model.hashCode());<a name="line.962"></a>
+<span class="sourceLineNo">963</span><a name="line.963"></a>
+<span class="sourceLineNo">964</span>        //_models.remove(model);<a name="line.964"></a>
+<span class="sourceLineNo">965</span>        <a name="line.965"></a>
+<span class="sourceLineNo">966</span>        //System.out.println("removed workflow " + model.getName());<a name="line.966"></a>
+<span class="sourceLineNo">967</span>    }<a name="line.967"></a>
+<span class="sourceLineNo">968</span>    <a name="line.968"></a>
+<span class="sourceLineNo">969</span>    /** Called during shutdown. */<a name="line.969"></a>
+<span class="sourceLineNo">970</span>    public static void shutdown() {<a name="line.970"></a>
+<span class="sourceLineNo">971</span>                <a name="line.971"></a>
+<span class="sourceLineNo">972</span>        KeplerGraphFrame.removeUpdater(_updater);<a name="line.972"></a>
+<span class="sourceLineNo">973</span>            <a name="line.973"></a>
+<span class="sourceLineNo">974</span>        for(CompositeActor model : _models.values()) {<a name="line.974"></a>
+<span class="sourceLineNo">975</span>            removeModel(model);<a name="line.975"></a>
+<span class="sourceLineNo">976</span>        }<a name="line.976"></a>
+<span class="sourceLineNo">977</span>        <a name="line.977"></a>
+<span class="sourceLineNo">978</span>        _models.clear();<a name="line.978"></a>
+<span class="sourceLineNo">979</span>        <a name="line.979"></a>
+<span class="sourceLineNo">980</span>        for(App app : _apps.values()) {<a name="line.980"></a>
+<span class="sourceLineNo">981</span>            app.close();<a name="line.981"></a>
+<span class="sourceLineNo">982</span>        }<a name="line.982"></a>
+<span class="sourceLineNo">983</span>        <a name="line.983"></a>
+<span class="sourceLineNo">984</span>        _apps.clear();<a name="line.984"></a>
 <span class="sourceLineNo">985</span>        <a name="line.985"></a>
-<span class="sourceLineNo">986</span>        if(_server != null) {<a name="line.986"></a>
-<span class="sourceLineNo">987</span>            //System.out.println("Stopping vertx web server.");<a name="line.987"></a>
-<span class="sourceLineNo">988</span>            _server.close();<a name="line.988"></a>
-<span class="sourceLineNo">989</span>            _server = null;<a name="line.989"></a>
-<span class="sourceLineNo">990</span>        }<a name="line.990"></a>
-<span class="sourceLineNo">991</span>        <a name="line.991"></a>
-<span class="sourceLineNo">992</span>        <a name="line.992"></a>
-<span class="sourceLineNo">993</span>        if(_secureServer != null) {<a name="line.993"></a>
-<span class="sourceLineNo">994</span>            _secureServer.close();<a name="line.994"></a>
-<span class="sourceLineNo">995</span>            _secureServer = null;<a name="line.995"></a>
-<span class="sourceLineNo">996</span>        }<a name="line.996"></a>
-<span class="sourceLineNo">997</span>    }<a name="line.997"></a>
-<span class="sourceLineNo">998</span>        <a name="line.998"></a>
-<span class="sourceLineNo">999</span>    public static Vertx vertx() {<a name="line.999"></a>
-<span class="sourceLineNo">1000</span>        return _vertx;<a name="line.1000"></a>
-<span class="sourceLineNo">1001</span>    }<a name="line.1001"></a>
-<span class="sourceLineNo">1002</span><a name="line.1002"></a>
-<span class="sourceLineNo">1003</span>    private static class ModelUpdater implements KeplerGraphFrameUpdater {<a name="line.1003"></a>
-<span class="sourceLineNo">1004</span><a name="line.1004"></a>
-<span class="sourceLineNo">1005</span>        @Override<a name="line.1005"></a>
-<span class="sourceLineNo">1006</span>        public int compareTo(KeplerGraphFrameUpdater o) {<a name="line.1006"></a>
-<span class="sourceLineNo">1007</span>            return 1;<a name="line.1007"></a>
-<span class="sourceLineNo">1008</span>        }<a name="line.1008"></a>
-<span class="sourceLineNo">1009</span><a name="line.1009"></a>
-<span class="sourceLineNo">1010</span>        @Override<a name="line.1010"></a>
-<span class="sourceLineNo">1011</span>        public void updateFrameComponents(Components components) {<a name="line.1011"></a>
-<span class="sourceLineNo">1012</span>            try {<a name="line.1012"></a>
-<span class="sourceLineNo">1013</span>                CompositeActor model = (CompositeActor) components.getFrame().getModel();<a name="line.1013"></a>
-<span class="sourceLineNo">1014</span>                _addModel(model);<a name="line.1014"></a>
-<span class="sourceLineNo">1015</span>                _models.put(model.getName(), model);<a name="line.1015"></a>
-<span class="sourceLineNo">1016</span>            } catch (Exception e) {<a name="line.1016"></a>
-<span class="sourceLineNo">1017</span>                MessageHandler.error("Error adding model from UI.", e);<a name="line.1017"></a>
-<span class="sourceLineNo">1018</span>            }<a name="line.1018"></a>
+<span class="sourceLineNo">986</span>        // stop the logging thread<a name="line.986"></a>
+<span class="sourceLineNo">987</span>        _loggingQueue.add(STOP_LOGGING_THREAD_MESSAGE);<a name="line.987"></a>
+<span class="sourceLineNo">988</span>        try {<a name="line.988"></a>
+<span class="sourceLineNo">989</span>            _loggingThread.join(5000);<a name="line.989"></a>
+<span class="sourceLineNo">990</span>        } catch (InterruptedException e) {<a name="line.990"></a>
+<span class="sourceLineNo">991</span>            MessageHandler.error("Interrupted while waiting for logging thread to stop.", e);<a name="line.991"></a>
+<span class="sourceLineNo">992</span>        }<a name="line.992"></a>
+<span class="sourceLineNo">993</span>        _loggingThread = null;<a name="line.993"></a>
+<span class="sourceLineNo">994</span>    }<a name="line.994"></a>
+<span class="sourceLineNo">995</span>    <a name="line.995"></a>
+<span class="sourceLineNo">996</span>    /** Stop the server. */<a name="line.996"></a>
+<span class="sourceLineNo">997</span>    @Override<a name="line.997"></a>
+<span class="sourceLineNo">998</span>    public void stop() throws Exception {<a name="line.998"></a>
+<span class="sourceLineNo">999</span>        super.stop();<a name="line.999"></a>
+<span class="sourceLineNo">1000</span>        <a name="line.1000"></a>
+<span class="sourceLineNo">1001</span>        if(_server != null) {<a name="line.1001"></a>
+<span class="sourceLineNo">1002</span>            //System.out.println("Stopping vertx web server.");<a name="line.1002"></a>
+<span class="sourceLineNo">1003</span>            _server.close();<a name="line.1003"></a>
+<span class="sourceLineNo">1004</span>            _server = null;<a name="line.1004"></a>
+<span class="sourceLineNo">1005</span>        }<a name="line.1005"></a>
+<span class="sourceLineNo">1006</span>        <a name="line.1006"></a>
+<span class="sourceLineNo">1007</span>        <a name="line.1007"></a>
+<span class="sourceLineNo">1008</span>        if(_secureServer != null) {<a name="line.1008"></a>
+<span class="sourceLineNo">1009</span>            _secureServer.close();<a name="line.1009"></a>
+<span class="sourceLineNo">1010</span>            _secureServer = null;<a name="line.1010"></a>
+<span class="sourceLineNo">1011</span>        }<a name="line.1011"></a>
+<span class="sourceLineNo">1012</span>    }<a name="line.1012"></a>
+<span class="sourceLineNo">1013</span>        <a name="line.1013"></a>
+<span class="sourceLineNo">1014</span>    public static Vertx vertx() {<a name="line.1014"></a>
+<span class="sourceLineNo">1015</span>        return _vertx;<a name="line.1015"></a>
+<span class="sourceLineNo">1016</span>    }<a name="line.1016"></a>
+<span class="sourceLineNo">1017</span><a name="line.1017"></a>
+<span class="sourceLineNo">1018</span>    private static class ModelUpdater implements KeplerGraphFrameUpdater {<a name="line.1018"></a>
 <span class="sourceLineNo">1019</span><a name="line.1019"></a>
-<span class="sourceLineNo">1020</span>        }<a name="line.1020"></a>
-<span class="sourceLineNo">1021</span><a name="line.1021"></a>
-<span class="sourceLineNo">1022</span>        /** Remove the model associated with the frame from the web server. */<a name="line.1022"></a>
-<span class="sourceLineNo">1023</span>        @Override<a name="line.1023"></a>
-<span class="sourceLineNo">1024</span>        public void dispose(KeplerGraphFrame frame) {<a name="line.1024"></a>
-<span class="sourceLineNo">1025</span>            CompositeActor model = (CompositeActor) frame.getModel();<a name="line.1025"></a>
-<span class="sourceLineNo">1026</span>            removeModel(model);<a name="line.1026"></a>
-<span class="sourceLineNo">1027</span>            _models.remove(model.getName());<a name="line.1027"></a>
-<span class="sourceLineNo">1028</span>        }<a name="line.1028"></a>
-<span class="sourceLineNo">1029</span>        <a name="line.1029"></a>
-<span class="sourceLineNo">1030</span>    }<a name="line.1030"></a>
-<span class="sourceLineNo">1031</span>            <a name="line.1031"></a>
-<span class="sourceLineNo">1032</span>    ///////////////////////////////////////////////////////////////////<a name="line.1032"></a>
-<span class="sourceLineNo">1033</span>    ////                         public variables                  ////<a name="line.1033"></a>
-<span class="sourceLineNo">1034</span>    <a name="line.1034"></a>
-<span class="sourceLineNo">1035</span>    public final static String WS_PATH = "/ws/";<a name="line.1035"></a>
-<span class="sourceLineNo">1036</span>    public final static String WS_RUNWF_PATH = "/ws-runwf";<a name="line.1036"></a>
-<span class="sourceLineNo">1037</span><a name="line.1037"></a>
-<span class="sourceLineNo">1038</span>    ///////////////////////////////////////////////////////////////////<a name="line.1038"></a>
-<span class="sourceLineNo">1039</span>    ////                         package-protected variables       ////<a name="line.1039"></a>
-<span class="sourceLineNo">1040</span><a name="line.1040"></a>
-<span class="sourceLineNo">1041</span><a name="line.1041"></a>
-<span class="sourceLineNo">1042</span>    ///////////////////////////////////////////////////////////////////<a name="line.1042"></a>
-<span class="sourceLineNo">1043</span>    ////                         private methods                   ////<a name="line.1043"></a>
-<span class="sourceLineNo">1044</span><a name="line.1044"></a>
-<span class="sourceLineNo">1045</span>    /** Add a model to the set managed by the server. */<a name="line.1045"></a>
-<span class="sourceLineNo">1046</span>    public static void _addModel(CompositeActor model) throws Exception {<a name="line.1046"></a>
-<span class="sourceLineNo">1047</span>        <a name="line.1047"></a>
-<span class="sourceLineNo">1048</span>        //System.out.println("adding model " + model.getFullName());<a name="line.1048"></a>
-<span class="sourceLineNo">1049</span><a name="line.1049"></a>
-<span class="sourceLineNo">1050</span>        //_models.add(model);<a name="line.1050"></a>
-<span class="sourceLineNo">1051</span><a name="line.1051"></a>
-<span class="sourceLineNo">1052</span>        //System.out.println("put " + model.hashCode());<a name="line.1052"></a>
-<span class="sourceLineNo">1053</span>        _clientBuffers.put(model,  new LinkedList&lt;JsonObject&gt;());<a name="line.1053"></a>
-<span class="sourceLineNo">1054</span>        <a name="line.1054"></a>
-<span class="sourceLineNo">1055</span>        /*<a name="line.1055"></a>
-<span class="sourceLineNo">1056</span>        ProvenanceRecorder recorder = ProvenanceRecorder.getDefaultProvenanceRecorder(model);<a name="line.1056"></a>
-<span class="sourceLineNo">1057</span>        if(recorder != null) {<a name="line.1057"></a>
-<span class="sourceLineNo">1058</span>            recorder.addPiggyback(new WebViewRecording());<a name="line.1058"></a>
-<span class="sourceLineNo">1059</span>        }<a name="line.1059"></a>
-<span class="sourceLineNo">1060</span>        */<a name="line.1060"></a>
-<span class="sourceLineNo">1061</span><a name="line.1061"></a>
-<span class="sourceLineNo">1062</span>        if(model.attributeList(ControlAttribute.class).isEmpty()) {<a name="line.1062"></a>
-<span class="sourceLineNo">1063</span>            ControlAttribute control = new ControlAttribute(model, "_wvControl");<a name="line.1063"></a>
-<span class="sourceLineNo">1064</span>            control.setPersistent(false);<a name="line.1064"></a>
-<span class="sourceLineNo">1065</span>        }<a name="line.1065"></a>
-<span class="sourceLineNo">1066</span>        <a name="line.1066"></a>
-<span class="sourceLineNo">1067</span>        if(model.attributeList(ParametersAttribute.class).isEmpty()) {<a name="line.1067"></a>
-<span class="sourceLineNo">1068</span>            ParametersAttribute parameters = new ParametersAttribute(model, "_wvParameters");<a name="line.1068"></a>
-<span class="sourceLineNo">1069</span>            parameters.setPersistent(false);<a name="line.1069"></a>
-<span class="sourceLineNo">1070</span>        }<a name="line.1070"></a>
-<span class="sourceLineNo">1071</span>        <a name="line.1071"></a>
-<span class="sourceLineNo">1072</span>        /*<a name="line.1072"></a>
-<span class="sourceLineNo">1073</span>        WebViewAttribute timeline = (WebViewAttribute) model.getAttribute("_wfTimeline");<a name="line.1073"></a>
-<span class="sourceLineNo">1074</span>        if(timeline == null) {<a name="line.1074"></a>
-<span class="sourceLineNo">1075</span>            timeline = new WebViewAttribute(model, "_wfTimeline");<a name="line.1075"></a>
-<span class="sourceLineNo">1076</span>            timeline.htmlFile.setExpression("web-view/visjs/wf-timeline.html");<a name="line.1076"></a>
-<span class="sourceLineNo">1077</span>            timeline.title.setExpression("Workflow Execution Timeline");<a name="line.1077"></a>
-<span class="sourceLineNo">1078</span>        }<a name="line.1078"></a>
-<span class="sourceLineNo">1079</span>        timeline.setPersistent(false);<a name="line.1079"></a>
-<span class="sourceLineNo">1080</span>        */<a name="line.1080"></a>
-<span class="sourceLineNo">1081</span>    }<a name="line.1081"></a>
-<span class="sourceLineNo">1082</span>    <a name="line.1082"></a>
-<span class="sourceLineNo">1083</span>    /** Get a clone of a model. */<a name="line.1083"></a>
-<span class="sourceLineNo">1084</span>    private CompositeActor _cloneModel(CompositeActor masterModel) throws CloneNotSupportedException {<a name="line.1084"></a>
-<span class="sourceLineNo">1085</span>        CompositeActor model = (CompositeActor)masterModel.clone(new Workspace());<a name="line.1085"></a>
-<span class="sourceLineNo">1086</span>        _clientBuffers.put(model,  new LinkedList&lt;JsonObject&gt;());<a name="line.1086"></a>
-<span class="sourceLineNo">1087</span>        //System.out.println("put " + model.hashCode());<a name="line.1087"></a>
-<span class="sourceLineNo">1088</span>        return model;<a name="line.1088"></a>
-<span class="sourceLineNo">1089</span>    }<a name="line.1089"></a>
-<span class="sourceLineNo">1090</span><a name="line.1090"></a>
-<span class="sourceLineNo">1091</span>    /** Convert from a JSON object value to a string representation of a Ptolemy token. */<a name="line.1091"></a>
-<span class="sourceLineNo">1092</span>    private static String _convertJSONToTokenString(Object value) {<a name="line.1092"></a>
-<span class="sourceLineNo">1093</span>        if(value instanceof JsonArray) {<a name="line.1093"></a>
-<span class="sourceLineNo">1094</span>            StringBuilder buf = new StringBuilder("{");<a name="line.1094"></a>
-<span class="sourceLineNo">1095</span>            Iterator&lt;Object&gt; iter = ((JsonArray)value).iterator();<a name="line.1095"></a>
-<span class="sourceLineNo">1096</span>            while(iter.hasNext()) {<a name="line.1096"></a>
-<span class="sourceLineNo">1097</span>                Object item = iter.next();<a name="line.1097"></a>
-<span class="sourceLineNo">1098</span>                // strings need to be surrounded by quotes in arrays<a name="line.1098"></a>
-<span class="sourceLineNo">1099</span>                if(item instanceof String) {<a name="line.1099"></a>
-<span class="sourceLineNo">1100</span>                    buf.append("\"")<a name="line.1100"></a>
-<span class="sourceLineNo">1101</span>                        .append(item)<a name="line.1101"></a>
-<span class="sourceLineNo">1102</span>                        .append("\"");<a name="line.1102"></a>
-<span class="sourceLineNo">1103</span>                } else {<a name="line.1103"></a>
-<span class="sourceLineNo">1104</span>                    buf.append(item);<a name="line.1104"></a>
-<span class="sourceLineNo">1105</span>                }<a name="line.1105"></a>
-<span class="sourceLineNo">1106</span>                if(iter.hasNext()) {<a name="line.1106"></a>
-<span class="sourceLineNo">1107</span>                    buf.append(",");<a name="line.1107"></a>
-<span class="sourceLineNo">1108</span>                }<a name="line.1108"></a>
-<span class="sourceLineNo">1109</span>            }<a name="line.1109"></a>
-<span class="sourceLineNo">1110</span>            return buf.append("}").toString();<a name="line.1110"></a>
-<span class="sourceLineNo">1111</span>        } else {<a name="line.1111"></a>
-<span class="sourceLineNo">1112</span>            // FIXME if value is a string and parameter is not in string mode,<a name="line.1112"></a>
-<span class="sourceLineNo">1113</span>            // will this work?<a name="line.1113"></a>
-<span class="sourceLineNo">1114</span>            return value.toString();<a name="line.1114"></a>
-<span class="sourceLineNo">1115</span>        }<a name="line.1115"></a>
-<span class="sourceLineNo">1116</span>    }<a name="line.1116"></a>
-<span class="sourceLineNo">1117</span>    <a name="line.1117"></a>
-<span class="sourceLineNo">1118</span>    @SuppressWarnings("resource")<a name="line.1118"></a>
-<span class="sourceLineNo">1119</span>    private App _getApp(String name) throws Exception {<a name="line.1119"></a>
-<span class="sourceLineNo">1120</span>        <a name="line.1120"></a>
-<span class="sourceLineNo">1121</span>        App masterApp = null;<a name="line.1121"></a>
-<span class="sourceLineNo">1122</span>        synchronized(_apps) {            <a name="line.1122"></a>
-<span class="sourceLineNo">1123</span>            // see if we've already instantiated this app<a name="line.1123"></a>
-<span class="sourceLineNo">1124</span>            masterApp = _apps.get(name);<a name="line.1124"></a>
-<span class="sourceLineNo">1125</span>            if(masterApp == null) {<a name="line.1125"></a>
-<span class="sourceLineNo">1126</span>            <a name="line.1126"></a>
-<span class="sourceLineNo">1127</span>                String className = WebViewConfiguration.getAppClassName(name);<a name="line.1127"></a>
-<span class="sourceLineNo">1128</span>                <a name="line.1128"></a>
-<span class="sourceLineNo">1129</span>                if(className == null || className.trim().isEmpty()) {<a name="line.1129"></a>
-<span class="sourceLineNo">1130</span>                    throw new Exception("Missing class name for app " + name);<a name="line.1130"></a>
-<span class="sourceLineNo">1131</span>                }<a name="line.1131"></a>
-<span class="sourceLineNo">1132</span>                <a name="line.1132"></a>
-<span class="sourceLineNo">1133</span>                try {<a name="line.1133"></a>
-<span class="sourceLineNo">1134</span>                    Class&lt;?&gt; appClass = Class.forName(className);<a name="line.1134"></a>
-<span class="sourceLineNo">1135</span>                    masterApp = (App) appClass.newInstance();<a name="line.1135"></a>
-<span class="sourceLineNo">1136</span>                    _apps.put(name, masterApp);<a name="line.1136"></a>
-<span class="sourceLineNo">1137</span>                } catch(ClassNotFoundException | InstantiationException<a name="line.1137"></a>
-<span class="sourceLineNo">1138</span>                    | IllegalAccessException e) {<a name="line.1138"></a>
-<span class="sourceLineNo">1139</span>                    throw new Exception("Error instantiating app " + name + ": " + e.getMessage());<a name="line.1139"></a>
-<span class="sourceLineNo">1140</span>                }    <a name="line.1140"></a>
-<span class="sourceLineNo">1141</span>            }<a name="line.1141"></a>
-<span class="sourceLineNo">1142</span>        }        <a name="line.1142"></a>
-<span class="sourceLineNo">1143</span>        return (App) masterApp.clone();<a name="line.1143"></a>
-<span class="sourceLineNo">1144</span>    }<a name="line.1144"></a>
-<span class="sourceLineNo">1145</span><a name="line.1145"></a>
-<span class="sourceLineNo">1146</span>    /** Get the model for a specific name. If the model is not already<a name="line.1146"></a>
-<span class="sourceLineNo">1147</span>     *  loaded, then use findFile() to find the model file with the<a name="line.1147"></a>
-<span class="sourceLineNo">1148</span>     *  given name, name.kar and name.xml. Otherwise, return a copy<a name="line.1148"></a>
-<span class="sourceLineNo">1149</span>     *  of the already-loaded model.<a name="line.1149"></a>
-<span class="sourceLineNo">1150</span>     *  @return If a model with the specified name is loaded or can be<a name="line.1150"></a>
-<span class="sourceLineNo">1151</span>     *  found and parsed, returns the model. Otherwise, null.<a name="line.1151"></a>
-<span class="sourceLineNo">1152</span>     */<a name="line.1152"></a>
-<span class="sourceLineNo">1153</span>    private CompositeActor _getModel(String name) throws Exception {<a name="line.1153"></a>
-<span class="sourceLineNo">1154</span>                <a name="line.1154"></a>
-<span class="sourceLineNo">1155</span>        //System.out.println("size = " + _models.size());<a name="line.1155"></a>
-<span class="sourceLineNo">1156</span>        <a name="line.1156"></a>
-<span class="sourceLineNo">1157</span>        synchronized(_models) {<a name="line.1157"></a>
-<span class="sourceLineNo">1158</span>            <a name="line.1158"></a>
-<span class="sourceLineNo">1159</span>            // see if the model is already loaded.<a name="line.1159"></a>
-<span class="sourceLineNo">1160</span>            CompositeActor masterModel = _models.get(name);<a name="line.1160"></a>
-<span class="sourceLineNo">1161</span>            if(masterModel != null) {<a name="line.1161"></a>
-<span class="sourceLineNo">1162</span>                //System.out.println("found master model.");<a name="line.1162"></a>
-<span class="sourceLineNo">1163</span>                return _cloneModel(masterModel);<a name="line.1163"></a>
-<span class="sourceLineNo">1164</span>            }<a name="line.1164"></a>
-<span class="sourceLineNo">1165</span>                    <a name="line.1165"></a>
-<span class="sourceLineNo">1166</span>            // if not, find workflow file and load<a name="line.1166"></a>
-<span class="sourceLineNo">1167</span>            String wfFileStr = findFile(name);<a name="line.1167"></a>
-<span class="sourceLineNo">1168</span>            if(wfFileStr == null) {<a name="line.1168"></a>
-<span class="sourceLineNo">1169</span>                wfFileStr = findFile(name + ".kar");<a name="line.1169"></a>
-<span class="sourceLineNo">1170</span>                if(wfFileStr == null) {<a name="line.1170"></a>
-<span class="sourceLineNo">1171</span>                    wfFileStr = findFile(name + ".xml");<a name="line.1171"></a>
-<span class="sourceLineNo">1172</span>                    if(wfFileStr == null) {<a name="line.1172"></a>
-<span class="sourceLineNo">1173</span>                        return null;<a name="line.1173"></a>
-<span class="sourceLineNo">1174</span>                    }<a name="line.1174"></a>
-<span class="sourceLineNo">1175</span>                }<a name="line.1175"></a>
-<span class="sourceLineNo">1176</span>            }<a name="line.1176"></a>
-<span class="sourceLineNo">1177</span>            <a name="line.1177"></a>
-<span class="sourceLineNo">1178</span>            masterModel = (CompositeActor) ParseWorkflow.parseKAR(new File(wfFileStr), true);<a name="line.1178"></a>
-<span class="sourceLineNo">1179</span>            _addModel(masterModel);<a name="line.1179"></a>
-<span class="sourceLineNo">1180</span>            _models.put(name, masterModel);<a name="line.1180"></a>
-<span class="sourceLineNo">1181</span>            //System.out.println("adding master model " + name);<a name="line.1181"></a>
-<span class="sourceLineNo">1182</span>            <a name="line.1182"></a>
-<span class="sourceLineNo">1183</span>            // see if there is a configuration file for parameters<a name="line.1183"></a>
-<span class="sourceLineNo">1184</span>            File wfFile = new File(wfFileStr);<a name="line.1184"></a>
-<span class="sourceLineNo">1185</span>            File wfDir = wfFile.getParentFile();<a name="line.1185"></a>
-<span class="sourceLineNo">1186</span>            File wfConfFile = new File(wfDir, <a name="line.1186"></a>
-<span class="sourceLineNo">1187</span>                FilenameUtils.getBaseName(wfFileStr) + ".conf");<a name="line.1187"></a>
-<span class="sourceLineNo">1188</span>            if(wfConfFile.exists()) {<a name="line.1188"></a>
-<span class="sourceLineNo">1189</span>                ParseWorkflowUtil.setParametersFromFile(masterModel, wfConfFile.getAbsolutePath());<a name="line.1189"></a>
-<span class="sourceLineNo">1190</span>            }<a name="line.1190"></a>
-<span class="sourceLineNo">1191</span>            <a name="line.1191"></a>
-<span class="sourceLineNo">1192</span>            return _cloneModel(masterModel);<a name="line.1192"></a>
-<span class="sourceLineNo">1193</span>        }<a name="line.1193"></a>
-<span class="sourceLineNo">1194</span>    }<a name="line.1194"></a>
-<span class="sourceLineNo">1195</span>        <a name="line.1195"></a>
-<span class="sourceLineNo">1196</span>    /** Set any parameters for a model from a JSON object. */<a name="line.1196"></a>
-<span class="sourceLineNo">1197</span>    private static void _setModelParameters(NamedObj model, JsonObject json,<a name="line.1197"></a>
-<span class="sourceLineNo">1198</span>        User user) throws IllegalActionException {<a name="line.1198"></a>
-<span class="sourceLineNo">1199</span>        <a name="line.1199"></a>
-<span class="sourceLineNo">1200</span>        // get any parameters<a name="line.1200"></a>
-<span class="sourceLineNo">1201</span>        JsonObject params = null;<a name="line.1201"></a>
-<span class="sourceLineNo">1202</span>        if(json.containsKey("wf_param")) {<a name="line.1202"></a>
-<span class="sourceLineNo">1203</span>            try {<a name="line.1203"></a>
-<span class="sourceLineNo">1204</span>                params = json.getJsonObject("wf_param");<a name="line.1204"></a>
-<span class="sourceLineNo">1205</span>            } catch(ClassCastException e) {<a name="line.1205"></a>
-<span class="sourceLineNo">1206</span>                throw new IllegalActionException("wf_param must be a json object.");<a name="line.1206"></a>
-<span class="sourceLineNo">1207</span>            }<a name="line.1207"></a>
-<span class="sourceLineNo">1208</span>        <a name="line.1208"></a>
-<span class="sourceLineNo">1209</span>            for(Map.Entry&lt;String, Object&gt; entry: params) {<a name="line.1209"></a>
-<span class="sourceLineNo">1210</span>                final String paramName = entry.getKey();<a name="line.1210"></a>
-<span class="sourceLineNo">1211</span>                //System.out.println("attempting to set parameter " + paramName);<a name="line.1211"></a>
-<span class="sourceLineNo">1212</span>                Attribute attribute = model.getAttribute(paramName);<a name="line.1212"></a>
-<span class="sourceLineNo">1213</span>                if(attribute == null || !(attribute instanceof Settable)) {<a name="line.1213"></a>
-<span class="sourceLineNo">1214</span>                    throw new IllegalActionException("Workflow does not have settable parameter " + paramName);<a name="line.1214"></a>
-<span class="sourceLineNo">1215</span>                }<a name="line.1215"></a>
-<span class="sourceLineNo">1216</span>    <a name="line.1216"></a>
-<span class="sourceLineNo">1217</span>                try {<a name="line.1217"></a>
-<span class="sourceLineNo">1218</span>                    String valueStr = _convertJSONToTokenString(entry.getValue());<a name="line.1218"></a>
-<span class="sourceLineNo">1219</span>                    ((Settable)attribute).setExpression(valueStr);<a name="line.1219"></a>
-<span class="sourceLineNo">1220</span>                } catch (IllegalActionException e) {<a name="line.1220"></a>
-<span class="sourceLineNo">1221</span>                    throw new IllegalActionException("Error settings parameter " +<a name="line.1221"></a>
-<span class="sourceLineNo">1222</span>                                paramName + ": " + e.getMessage());<a name="line.1222"></a>
-<span class="sourceLineNo">1223</span>                }<a name="line.1223"></a>
-<span class="sourceLineNo">1224</span>            }<a name="line.1224"></a>
-<span class="sourceLineNo">1225</span>        }<a name="line.1225"></a>
-<span class="sourceLineNo">1226</span>                <a name="line.1226"></a>
-<span class="sourceLineNo">1227</span><a name="line.1227"></a>
-<span class="sourceLineNo">1228</span>        // set user full name if present<a name="line.1228"></a>
-<span class="sourceLineNo">1229</span>        Attribute attribute = model.getAttribute("WebView_FullName");<a name="line.1229"></a>
-<span class="sourceLineNo">1230</span>        if(attribute != null) {<a name="line.1230"></a>
-<span class="sourceLineNo">1231</span>            if(!(attribute instanceof Settable)) {<a name="line.1231"></a>
-<span class="sourceLineNo">1232</span>                System.err.println("WARNING: WebView_FullName parameter is not settable.");<a name="line.1232"></a>
-<span class="sourceLineNo">1233</span>            } else {<a name="line.1233"></a>
-<span class="sourceLineNo">1234</span>                ((Settable)attribute).setExpression(user.principal().getString("fullname"));<a name="line.1234"></a>
-<span class="sourceLineNo">1235</span>            }<a name="line.1235"></a>
-<span class="sourceLineNo">1236</span>            attribute = null;<a name="line.1236"></a>
-<span class="sourceLineNo">1237</span>        }<a name="line.1237"></a>
-<span class="sourceLineNo">1238</span>        <a name="line.1238"></a>
-<span class="sourceLineNo">1239</span>        // set the authorization groups parameter if present        <a name="line.1239"></a>
-<span class="sourceLineNo">1240</span>        attribute = model.getAttribute("WebView_groups");<a name="line.1240"></a>
-<span class="sourceLineNo">1241</span>        if(attribute != null) {<a name="line.1241"></a>
-<span class="sourceLineNo">1242</span>            if(!(attribute instanceof Settable)) {<a name="line.1242"></a>
-<span class="sourceLineNo">1243</span>                System.err.println("WARNING: WebView_group parameter is not settable.");<a name="line.1243"></a>
-<span class="sourceLineNo">1244</span>            } else {<a name="line.1244"></a>
-<span class="sourceLineNo">1245</span>                // add quotes around each string since we use this to set the<a name="line.1245"></a>
-<span class="sourceLineNo">1246</span>                // WebView_groups parameter in the workflow.<a name="line.1246"></a>
-<span class="sourceLineNo">1247</span>                String authGroupsStr = AuthUtilities.getGroups(user).stream()<a name="line.1247"></a>
-<span class="sourceLineNo">1248</span>                    .map(s -&gt; "\"" + s + "\"").collect(Collectors.joining(","));<a name="line.1248"></a>
-<span class="sourceLineNo">1249</span>                //System.out.println(authGroupsStr);<a name="line.1249"></a>
-<span class="sourceLineNo">1250</span>                ((Settable)attribute).setExpression("{" + authGroupsStr + "}");<a name="line.1250"></a>
-<span class="sourceLineNo">1251</span>            }<a name="line.1251"></a>
+<span class="sourceLineNo">1020</span>        @Override<a name="line.1020"></a>
+<span class="sourceLineNo">1021</span>        public int compareTo(KeplerGraphFrameUpdater o) {<a name="line.1021"></a>
+<span class="sourceLineNo">1022</span>            return 1;<a name="line.1022"></a>
+<span class="sourceLineNo">1023</span>        }<a name="line.1023"></a>
+<span class="sourceLineNo">1024</span><a name="line.1024"></a>
+<span class="sourceLineNo">1025</span>        @Override<a name="line.1025"></a>
+<span class="sourceLineNo">1026</span>        public void updateFrameComponents(Components components) {<a name="line.1026"></a>
+<span class="sourceLineNo">1027</span>            try {<a name="line.1027"></a>
+<span class="sourceLineNo">1028</span>                CompositeActor model = (CompositeActor) components.getFrame().getModel();<a name="line.1028"></a>
+<span class="sourceLineNo">1029</span>                _addModel(model);<a name="line.1029"></a>
+<span class="sourceLineNo">1030</span>                _models.put(model.getName(), model);<a name="line.1030"></a>
+<span class="sourceLineNo">1031</span>            } catch (Exception e) {<a name="line.1031"></a>
+<span class="sourceLineNo">1032</span>                MessageHandler.error("Error adding model from UI.", e);<a name="line.1032"></a>
+<span class="sourceLineNo">1033</span>            }<a name="line.1033"></a>
+<span class="sourceLineNo">1034</span><a name="line.1034"></a>
+<span class="sourceLineNo">1035</span>        }<a name="line.1035"></a>
+<span class="sourceLineNo">1036</span><a name="line.1036"></a>
+<span class="sourceLineNo">1037</span>        /** Remove the model associated with the frame from the web server. */<a name="line.1037"></a>
+<span class="sourceLineNo">1038</span>        @Override<a name="line.1038"></a>
+<span class="sourceLineNo">1039</span>        public void dispose(KeplerGraphFrame frame) {<a name="line.1039"></a>
+<span class="sourceLineNo">1040</span>            CompositeActor model = (CompositeActor) frame.getModel();<a name="line.1040"></a>
+<span class="sourceLineNo">1041</span>            removeModel(model);<a name="line.1041"></a>
+<span class="sourceLineNo">1042</span>            _models.remove(model.getName());<a name="line.1042"></a>
+<span class="sourceLineNo">1043</span>        }<a name="line.1043"></a>
+<span class="sourceLineNo">1044</span>        <a name="line.1044"></a>
+<span class="sourceLineNo">1045</span>    }<a name="line.1045"></a>
+<span class="sourceLineNo">1046</span>            <a name="line.1046"></a>
+<span class="sourceLineNo">1047</span>    ///////////////////////////////////////////////////////////////////<a name="line.1047"></a>
+<span class="sourceLineNo">1048</span>    ////                         public variables                  ////<a name="line.1048"></a>
+<span class="sourceLineNo">1049</span>    <a name="line.1049"></a>
+<span class="sourceLineNo">1050</span>    public final static String WS_PATH = "/ws/";<a name="line.1050"></a>
+<span class="sourceLineNo">1051</span>    public final static String WS_RUNWF_PATH = "/ws-runwf";<a name="line.1051"></a>
+<span class="sourceLineNo">1052</span><a name="line.1052"></a>
+<span class="sourceLineNo">1053</span>    ///////////////////////////////////////////////////////////////////<a name="line.1053"></a>
+<span class="sourceLineNo">1054</span>    ////                         package-protected variables       ////<a name="line.1054"></a>
+<span class="sourceLineNo">1055</span><a name="line.1055"></a>
+<span class="sourceLineNo">1056</span><a name="line.1056"></a>
+<span class="sourceLineNo">1057</span>    ///////////////////////////////////////////////////////////////////<a name="line.1057"></a>
+<span class="sourceLineNo">1058</span>    ////                         private methods                   ////<a name="line.1058"></a>
+<span class="sourceLineNo">1059</span><a name="line.1059"></a>
+<span class="sourceLineNo">1060</span>    /** Add a model to the set managed by the server. */<a name="line.1060"></a>
+<span class="sourceLineNo">1061</span>    public static void _addModel(CompositeActor model) throws Exception {<a name="line.1061"></a>
+<span class="sourceLineNo">1062</span>        <a name="line.1062"></a>
+<span class="sourceLineNo">1063</span>        //System.out.println("adding model " + model.getFullName());<a name="line.1063"></a>
+<span class="sourceLineNo">1064</span><a name="line.1064"></a>
+<span class="sourceLineNo">1065</span>        //_models.add(model);<a name="line.1065"></a>
+<span class="sourceLineNo">1066</span><a name="line.1066"></a>
+<span class="sourceLineNo">1067</span>        //System.out.println("put " + model.hashCode());<a name="line.1067"></a>
+<span class="sourceLineNo">1068</span>        _clientBuffers.put(model,  new LinkedList&lt;JsonObject&gt;());<a name="line.1068"></a>
+<span class="sourceLineNo">1069</span>        <a name="line.1069"></a>
+<span class="sourceLineNo">1070</span>        /*<a name="line.1070"></a>
+<span class="sourceLineNo">1071</span>        ProvenanceRecorder recorder = ProvenanceRecorder.getDefaultProvenanceRecorder(model);<a name="line.1071"></a>
+<span class="sourceLineNo">1072</span>        if(recorder != null) {<a name="line.1072"></a>
+<span class="sourceLineNo">1073</span>            recorder.addPiggyback(new WebViewRecording());<a name="line.1073"></a>
+<span class="sourceLineNo">1074</span>        }<a name="line.1074"></a>
+<span class="sourceLineNo">1075</span>        */<a name="line.1075"></a>
+<span class="sourceLineNo">1076</span><a name="line.1076"></a>
+<span class="sourceLineNo">1077</span>        if(model.attributeList(ControlAttribute.class).isEmpty()) {<a name="line.1077"></a>
+<span class="sourceLineNo">1078</span>            ControlAttribute control = new ControlAttribute(model, "_wvControl");<a name="line.1078"></a>
+<span class="sourceLineNo">1079</span>            control.setPersistent(false);<a name="line.1079"></a>
+<span class="sourceLineNo">1080</span>        }<a name="line.1080"></a>
+<span class="sourceLineNo">1081</span>        <a name="line.1081"></a>
+<span class="sourceLineNo">1082</span>        if(model.attributeList(ParametersAttribute.class).isEmpty()) {<a name="line.1082"></a>
+<span class="sourceLineNo">1083</span>            ParametersAttribute parameters = new ParametersAttribute(model, "_wvParameters");<a name="line.1083"></a>
+<span class="sourceLineNo">1084</span>            parameters.setPersistent(false);<a name="line.1084"></a>
+<span class="sourceLineNo">1085</span>        }<a name="line.1085"></a>
+<span class="sourceLineNo">1086</span>        <a name="line.1086"></a>
+<span class="sourceLineNo">1087</span>        /*<a name="line.1087"></a>
+<span class="sourceLineNo">1088</span>        WebViewAttribute timeline = (WebViewAttribute) model.getAttribute("_wfTimeline");<a name="line.1088"></a>
+<span class="sourceLineNo">1089</span>        if(timeline == null) {<a name="line.1089"></a>
+<span class="sourceLineNo">1090</span>            timeline = new WebViewAttribute(model, "_wfTimeline");<a name="line.1090"></a>
+<span class="sourceLineNo">1091</span>            timeline.htmlFile.setExpression("web-view/visjs/wf-timeline.html");<a name="line.1091"></a>
+<span class="sourceLineNo">1092</span>            timeline.title.setExpression("Workflow Execution Timeline");<a name="line.1092"></a>
+<span class="sourceLineNo">1093</span>        }<a name="line.1093"></a>
+<span class="sourceLineNo">1094</span>        timeline.setPersistent(false);<a name="line.1094"></a>
+<span class="sourceLineNo">1095</span>        */<a name="line.1095"></a>
+<span class="sourceLineNo">1096</span>    }<a name="line.1096"></a>
+<span class="sourceLineNo">1097</span>    <a name="line.1097"></a>
+<span class="sourceLineNo">1098</span>    /** Get a clone of a model. */<a name="line.1098"></a>
+<span class="sourceLineNo">1099</span>    private static CompositeActor _cloneModel(CompositeActor masterModel) throws CloneNotSupportedException {<a name="line.1099"></a>
+<span class="sourceLineNo">1100</span>        CompositeActor model = (CompositeActor)masterModel.clone(new Workspace());<a name="line.1100"></a>
+<span class="sourceLineNo">1101</span>        _clientBuffers.put(model,  new LinkedList&lt;JsonObject&gt;());<a name="line.1101"></a>
+<span class="sourceLineNo">1102</span>        //System.out.println("put " + model.hashCode());<a name="line.1102"></a>
+<span class="sourceLineNo">1103</span>        return model;<a name="line.1103"></a>
+<span class="sourceLineNo">1104</span>    }<a name="line.1104"></a>
+<span class="sourceLineNo">1105</span><a name="line.1105"></a>
+<span class="sourceLineNo">1106</span>    /** Convert from a JSON object value to a string representation of a Ptolemy token. */<a name="line.1106"></a>
+<span class="sourceLineNo">1107</span>    private static String _convertJSONToTokenString(Object value) {<a name="line.1107"></a>
+<span class="sourceLineNo">1108</span>        if(value instanceof JsonArray) {<a name="line.1108"></a>
+<span class="sourceLineNo">1109</span>            StringBuilder buf = new StringBuilder("{");<a name="line.1109"></a>
+<span class="sourceLineNo">1110</span>            Iterator&lt;Object&gt; iter = ((JsonArray)value).iterator();<a name="line.1110"></a>
+<span class="sourceLineNo">1111</span>            while(iter.hasNext()) {<a name="line.1111"></a>
+<span class="sourceLineNo">1112</span>                Object item = iter.next();<a name="line.1112"></a>
+<span class="sourceLineNo">1113</span>                // strings need to be surrounded by quotes in arrays<a name="line.1113"></a>
+<span class="sourceLineNo">1114</span>                if(item instanceof String) {<a name="line.1114"></a>
+<span class="sourceLineNo">1115</span>                    buf.append("\"")<a name="line.1115"></a>
+<span class="sourceLineNo">1116</span>                        .append(item)<a name="line.1116"></a>
+<span class="sourceLineNo">1117</span>                        .append("\"");<a name="line.1117"></a>
+<span class="sourceLineNo">1118</span>                } else {<a name="line.1118"></a>
+<span class="sourceLineNo">1119</span>                    buf.append(item);<a name="line.1119"></a>
+<span class="sourceLineNo">1120</span>                }<a name="line.1120"></a>
+<span class="sourceLineNo">1121</span>                if(iter.hasNext()) {<a name="line.1121"></a>
+<span class="sourceLineNo">1122</span>                    buf.append(",");<a name="line.1122"></a>
+<span class="sourceLineNo">1123</span>                }<a name="line.1123"></a>
+<span class="sourceLineNo">1124</span>            }<a name="line.1124"></a>
+<span class="sourceLineNo">1125</span>            return buf.append("}").toString();<a name="line.1125"></a>
+<span class="sourceLineNo">1126</span>        } else {<a name="line.1126"></a>
+<span class="sourceLineNo">1127</span>            // FIXME if value is a string and parameter is not in string mode,<a name="line.1127"></a>
+<span class="sourceLineNo">1128</span>            // will this work?<a name="line.1128"></a>
+<span class="sourceLineNo">1129</span>            return value.toString();<a name="line.1129"></a>
+<span class="sourceLineNo">1130</span>        }<a name="line.1130"></a>
+<span class="sourceLineNo">1131</span>    }<a name="line.1131"></a>
+<span class="sourceLineNo">1132</span>    <a name="line.1132"></a>
+<span class="sourceLineNo">1133</span>    @SuppressWarnings("resource")<a name="line.1133"></a>
+<span class="sourceLineNo">1134</span>    private App _getApp(String name) throws Exception {<a name="line.1134"></a>
+<span class="sourceLineNo">1135</span>        <a name="line.1135"></a>
+<span class="sourceLineNo">1136</span>        App masterApp = null;<a name="line.1136"></a>
+<span class="sourceLineNo">1137</span>        synchronized(_apps) {            <a name="line.1137"></a>
+<span class="sourceLineNo">1138</span>            // see if we've already instantiated this app<a name="line.1138"></a>
+<span class="sourceLineNo">1139</span>            masterApp = _apps.get(name);<a name="line.1139"></a>
+<span class="sourceLineNo">1140</span>            if(masterApp == null) {<a name="line.1140"></a>
+<span class="sourceLineNo">1141</span>            <a name="line.1141"></a>
+<span class="sourceLineNo">1142</span>                String className = WebViewConfiguration.getAppClassName(name);<a name="line.1142"></a>
+<span class="sourceLineNo">1143</span>                <a name="line.1143"></a>
+<span class="sourceLineNo">1144</span>                if(className == null || className.trim().isEmpty()) {<a name="line.1144"></a>
+<span class="sourceLineNo">1145</span>                    throw new Exception("Missing class name for app " + name);<a name="line.1145"></a>
+<span class="sourceLineNo">1146</span>                }<a name="line.1146"></a>
+<span class="sourceLineNo">1147</span>                <a name="line.1147"></a>
+<span class="sourceLineNo">1148</span>                try {<a name="line.1148"></a>
+<span class="sourceLineNo">1149</span>                    Class&lt;?&gt; appClass = Class.forName(className);<a name="line.1149"></a>
+<span class="sourceLineNo">1150</span>                    masterApp = (App) appClass.newInstance();<a name="line.1150"></a>
+<span class="sourceLineNo">1151</span>                    _apps.put(name, masterApp);<a name="line.1151"></a>
+<span class="sourceLineNo">1152</span>                } catch(ClassNotFoundException | InstantiationException<a name="line.1152"></a>
+<span class="sourceLineNo">1153</span>                    | IllegalAccessException e) {<a name="line.1153"></a>
+<span class="sourceLineNo">1154</span>                    throw new Exception("Error instantiating app " + name + ": " + e.getMessage());<a name="line.1154"></a>
+<span class="sourceLineNo">1155</span>                }    <a name="line.1155"></a>
+<span class="sourceLineNo">1156</span>            }<a name="line.1156"></a>
+<span class="sourceLineNo">1157</span>        }        <a name="line.1157"></a>
+<span class="sourceLineNo">1158</span>        return (App) masterApp.clone();<a name="line.1158"></a>
+<span class="sourceLineNo">1159</span>    }<a name="line.1159"></a>
+<span class="sourceLineNo">1160</span><a name="line.1160"></a>
+<span class="sourceLineNo">1161</span>    /** Get the model for a specific name. If the model is not already<a name="line.1161"></a>
+<span class="sourceLineNo">1162</span>     *  loaded, then use findFile() to find the model file with the<a name="line.1162"></a>
+<span class="sourceLineNo">1163</span>     *  given name, name.kar and name.xml. Otherwise, return a copy<a name="line.1163"></a>
+<span class="sourceLineNo">1164</span>     *  of the already-loaded model.<a name="line.1164"></a>
+<span class="sourceLineNo">1165</span>     *  @return If a model with the specified name is loaded or can be<a name="line.1165"></a>
+<span class="sourceLineNo">1166</span>     *  found and parsed, returns the model. Otherwise, null.<a name="line.1166"></a>
+<span class="sourceLineNo">1167</span>     */<a name="line.1167"></a>
+<span class="sourceLineNo">1168</span>    private static CompositeActor _getModel(String name) throws Exception {<a name="line.1168"></a>
+<span class="sourceLineNo">1169</span>                <a name="line.1169"></a>
+<span class="sourceLineNo">1170</span>        //System.out.println("size = " + _models.size());<a name="line.1170"></a>
+<span class="sourceLineNo">1171</span>        <a name="line.1171"></a>
+<span class="sourceLineNo">1172</span>        synchronized(_models) {<a name="line.1172"></a>
+<span class="sourceLineNo">1173</span>            <a name="line.1173"></a>
+<span class="sourceLineNo">1174</span>            // see if the model is already loaded.<a name="line.1174"></a>
+<span class="sourceLineNo">1175</span>            CompositeActor masterModel = _models.get(name);<a name="line.1175"></a>
+<span class="sourceLineNo">1176</span>            if(masterModel != null) {<a name="line.1176"></a>
+<span class="sourceLineNo">1177</span>                //System.out.println("found master model.");<a name="line.1177"></a>
+<span class="sourceLineNo">1178</span>                return _cloneModel(masterModel);<a name="line.1178"></a>
+<span class="sourceLineNo">1179</span>            }<a name="line.1179"></a>
+<span class="sourceLineNo">1180</span>                    <a name="line.1180"></a>
+<span class="sourceLineNo">1181</span>            // if not, find workflow file and load<a name="line.1181"></a>
+<span class="sourceLineNo">1182</span>            String wfFileStr = findFile(name);<a name="line.1182"></a>
+<span class="sourceLineNo">1183</span>            if(wfFileStr == null) {<a name="line.1183"></a>
+<span class="sourceLineNo">1184</span>                wfFileStr = findFile(name + ".kar");<a name="line.1184"></a>
+<span class="sourceLineNo">1185</span>                if(wfFileStr == null) {<a name="line.1185"></a>
+<span class="sourceLineNo">1186</span>                    wfFileStr = findFile(name + ".xml");<a name="line.1186"></a>
+<span class="sourceLineNo">1187</span>                    if(wfFileStr == null) {<a name="line.1187"></a>
+<span class="sourceLineNo">1188</span>                        return null;<a name="line.1188"></a>
+<span class="sourceLineNo">1189</span>                    }<a name="line.1189"></a>
+<span class="sourceLineNo">1190</span>                }<a name="line.1190"></a>
+<span class="sourceLineNo">1191</span>            }<a name="line.1191"></a>
+<span class="sourceLineNo">1192</span>            <a name="line.1192"></a>
+<span class="sourceLineNo">1193</span>            masterModel = (CompositeActor) ParseWorkflow.parseKAR(new File(wfFileStr), true);<a name="line.1193"></a>
+<span class="sourceLineNo">1194</span>            _addModel(masterModel);<a name="line.1194"></a>
+<span class="sourceLineNo">1195</span>            _models.put(name, masterModel);<a name="line.1195"></a>
+<span class="sourceLineNo">1196</span>            //System.out.println("adding master model " + name);<a name="line.1196"></a>
+<span class="sourceLineNo">1197</span>            <a name="line.1197"></a>
+<span class="sourceLineNo">1198</span>            // see if there is a configuration file for parameters<a name="line.1198"></a>
+<span class="sourceLineNo">1199</span>            File wfFile = new File(wfFileStr);<a name="line.1199"></a>
+<span class="sourceLineNo">1200</span>            File wfDir = wfFile.getParentFile();<a name="line.1200"></a>
+<span class="sourceLineNo">1201</span>            File wfConfFile = new File(wfDir, <a name="line.1201"></a>
+<span class="sourceLineNo">1202</span>                FilenameUtils.getBaseName(wfFileStr) + ".conf");<a name="line.1202"></a>
+<span class="sourceLineNo">1203</span>            if(wfConfFile.exists()) {<a name="line.1203"></a>
+<span class="sourceLineNo">1204</span>                ParseWorkflowUtil.setParametersFromFile(masterModel, wfConfFile.getAbsolutePath());<a name="line.1204"></a>
+<span class="sourceLineNo">1205</span>            }<a name="line.1205"></a>
+<span class="sourceLineNo">1206</span>            <a name="line.1206"></a>
+<span class="sourceLineNo">1207</span>            return _cloneModel(masterModel);<a name="line.1207"></a>
+<span class="sourceLineNo">1208</span>        }<a name="line.1208"></a>
+<span class="sourceLineNo">1209</span>    }<a name="line.1209"></a>
+<span class="sourceLineNo">1210</span>        <a name="line.1210"></a>
+<span class="sourceLineNo">1211</span>    /** Set any parameters for a model from a JSON object. */<a name="line.1211"></a>
+<span class="sourceLineNo">1212</span>    private static void _setModelParameters(NamedObj model, JsonObject json,<a name="line.1212"></a>
+<span class="sourceLineNo">1213</span>        User user) throws IllegalActionException {<a name="line.1213"></a>
+<span class="sourceLineNo">1214</span>        <a name="line.1214"></a>
+<span class="sourceLineNo">1215</span>        // get any parameters<a name="line.1215"></a>
+<span class="sourceLineNo">1216</span>        JsonObject params = null;<a name="line.1216"></a>
+<span class="sourceLineNo">1217</span>        if(json.containsKey("wf_param")) {<a name="line.1217"></a>
+<span class="sourceLineNo">1218</span>            try {<a name="line.1218"></a>
+<span class="sourceLineNo">1219</span>                params = json.getJsonObject("wf_param");<a name="line.1219"></a>
+<span class="sourceLineNo">1220</span>            } catch(ClassCastException e) {<a name="line.1220"></a>
+<span class="sourceLineNo">1221</span>                throw new IllegalActionException("wf_param must be a json object.");<a name="line.1221"></a>
+<span class="sourceLineNo">1222</span>            }<a name="line.1222"></a>
+<span class="sourceLineNo">1223</span>        <a name="line.1223"></a>
+<span class="sourceLineNo">1224</span>            for(Map.Entry&lt;String, Object&gt; entry: params) {<a name="line.1224"></a>
+<span class="sourceLineNo">1225</span>                final String paramName = entry.getKey();<a name="line.1225"></a>
+<span class="sourceLineNo">1226</span>                //System.out.println("attempting to set parameter " + paramName);<a name="line.1226"></a>
+<span class="sourceLineNo">1227</span>                Attribute attribute = model.getAttribute(paramName);<a name="line.1227"></a>
+<span class="sourceLineNo">1228</span>                if(attribute == null || !(attribute instanceof Settable)) {<a name="line.1228"></a>
+<span class="sourceLineNo">1229</span>                    throw new IllegalActionException("Workflow does not have settable parameter " + paramName);<a name="line.1229"></a>
+<span class="sourceLineNo">1230</span>                }<a name="line.1230"></a>
+<span class="sourceLineNo">1231</span>    <a name="line.1231"></a>
+<span class="sourceLineNo">1232</span>                try {<a name="line.1232"></a>
+<span class="sourceLineNo">1233</span>                    String valueStr = _convertJSONToTokenString(entry.getValue());<a name="line.1233"></a>
+<span class="sourceLineNo">1234</span>                    ((Settable)attribute).setExpression(valueStr);<a name="line.1234"></a>
+<span class="sourceLineNo">1235</span>                } catch (IllegalActionException e) {<a name="line.1235"></a>
+<span class="sourceLineNo">1236</span>                    throw new IllegalActionException("Error settings parameter " +<a name="line.1236"></a>
+<span class="sourceLineNo">1237</span>                                paramName + ": " + e.getMessage());<a name="line.1237"></a>
+<span class="sourceLineNo">1238</span>                }<a name="line.1238"></a>
+<span class="sourceLineNo">1239</span>            }<a name="line.1239"></a>
+<span class="sourceLineNo">1240</span>        }<a name="line.1240"></a>
+<span class="sourceLineNo">1241</span>                <a name="line.1241"></a>
+<span class="sourceLineNo">1242</span><a name="line.1242"></a>
+<span class="sourceLineNo">1243</span>        // set user full name if present<a name="line.1243"></a>
+<span class="sourceLineNo">1244</span>        Attribute attribute = model.getAttribute("WebView_FullName");<a name="line.1244"></a>
+<span class="sourceLineNo">1245</span>        if(attribute != null) {<a name="line.1245"></a>
+<span class="sourceLineNo">1246</span>            if(!(attribute instanceof Settable)) {<a name="line.1246"></a>
+<span class="sourceLineNo">1247</span>                System.err.println("WARNING: WebView_FullName parameter is not settable.");<a name="line.1247"></a>
+<span class="sourceLineNo">1248</span>            } else {<a name="line.1248"></a>
+<span class="sourceLineNo">1249</span>                ((Settable)attribute).setExpression(user.principal().getString("fullname"));<a name="line.1249"></a>
+<span class="sourceLineNo">1250</span>            }<a name="line.1250"></a>
+<span class="sourceLineNo">1251</span>            attribute = null;<a name="line.1251"></a>
 <span class="sourceLineNo">1252</span>        }<a name="line.1252"></a>
-<span class="sourceLineNo">1253</span><a name="line.1253"></a>
-<span class="sourceLineNo">1254</span>    }<a name="line.1254"></a>
-<span class="sourceLineNo">1255</span>        <a name="line.1255"></a>
-<span class="sourceLineNo">1256</span>    ///////////////////////////////////////////////////////////////////<a name="line.1256"></a>
-<span class="sourceLineNo">1257</span>    ////                         private variables                 ////<a name="line.1257"></a>
-<span class="sourceLineNo">1258</span><a name="line.1258"></a>
-<span class="sourceLineNo">1259</span>    private Queryable _queryable;<a name="line.1259"></a>
-<span class="sourceLineNo">1260</span>    <a name="line.1260"></a>
-<span class="sourceLineNo">1261</span>    /** Authentication provider. */<a name="line.1261"></a>
-<span class="sourceLineNo">1262</span>    private AuthProvider _auth;<a name="line.1262"></a>
-<span class="sourceLineNo">1263</span>    <a name="line.1263"></a>
-<span class="sourceLineNo">1264</span>    /** HTTP server listening for HTTP and WS requests. */<a name="line.1264"></a>
-<span class="sourceLineNo">1265</span>    private HttpServer _server;<a name="line.1265"></a>
-<span class="sourceLineNo">1266</span>    <a name="line.1266"></a>
-<span class="sourceLineNo">1267</span>    /** HTTPS server listening for HTTPS and WSS requests. */<a name="line.1267"></a>
-<span class="sourceLineNo">1268</span>    private HttpServer _secureServer;<a name="line.1268"></a>
-<span class="sourceLineNo">1269</span>        <a name="line.1269"></a>
-<span class="sourceLineNo">1270</span>    /** ModelUpdater used to add/remove workflows when KeplerGraphFrames<a name="line.1270"></a>
-<span class="sourceLineNo">1271</span>     *  are opened/closed.<a name="line.1271"></a>
-<span class="sourceLineNo">1272</span>     */<a name="line.1272"></a>
-<span class="sourceLineNo">1273</span>    private final static ModelUpdater _updater = new ModelUpdater();<a name="line.1273"></a>
-<span class="sourceLineNo">1274</span>    <a name="line.1274"></a>
-<span class="sourceLineNo">1275</span>    /** The module tree. */<a name="line.1275"></a>
-<span class="sourceLineNo">1276</span>    private final static ModuleTree _moduleTree = ModuleTree.instance();<a name="line.1276"></a>
-<span class="sourceLineNo">1277</span>    <a name="line.1277"></a>
-<span class="sourceLineNo">1278</span>    /** The root directory to search for files. If not set, the value is null. */<a name="line.1278"></a>
-<span class="sourceLineNo">1279</span>    private static String _rootDir;<a name="line.1279"></a>
-<span class="sourceLineNo">1280</span><a name="line.1280"></a>
-<span class="sourceLineNo">1281</span>    // TODO need better name<a name="line.1281"></a>
-<span class="sourceLineNo">1282</span>    private final static Map&lt;NamedObj,List&lt;JsonObject&gt;&gt; _clientBuffers =<a name="line.1282"></a>
-<span class="sourceLineNo">1283</span>            Collections.synchronizedMap(new HashMap&lt;NamedObj,List&lt;JsonObject&gt;&gt;());<a name="line.1283"></a>
-<span class="sourceLineNo">1284</span><a name="line.1284"></a>
-<span class="sourceLineNo">1285</span>    public final static Map&lt;String,CompositeActor&gt; _models<a name="line.1285"></a>
-<span class="sourceLineNo">1286</span>        = Collections.synchronizedMap(new HashMap&lt;String,CompositeActor&gt;());<a name="line.1286"></a>
-<span class="sourceLineNo">1287</span><a name="line.1287"></a>
-<span class="sourceLineNo">1288</span>    public final static Map&lt;String,App&gt; _apps<a name="line.1288"></a>
-<span class="sourceLineNo">1289</span>        = Collections.synchronizedMap(new HashMap&lt;String,App&gt;());<a name="line.1289"></a>
-<span class="sourceLineNo">1290</span>    <a name="line.1290"></a>
-<span class="sourceLineNo">1291</span>    /* Timestamp format for logging. */<a name="line.1291"></a>
-<span class="sourceLineNo">1292</span>    private final DateFormat _logTimeFormat = new SimpleDateFormat("dd/MMM/yyyy:HH:mm:ss Z");<a name="line.1292"></a>
-<span class="sourceLineNo">1293</span>    <a name="line.1293"></a>
-<span class="sourceLineNo">1294</span>    private static Thread _loggingThread;<a name="line.1294"></a>
-<span class="sourceLineNo">1295</span>    <a name="line.1295"></a>
-<span class="sourceLineNo">1296</span>    private final static String STOP_LOGGING_THREAD_MESSAGE = "STOP";<a name="line.1296"></a>
-<span class="sourceLineNo">1297</span>    <a name="line.1297"></a>
-<span class="sourceLineNo">1298</span>    private final static LinkedBlockingQueue&lt;String&gt; _loggingQueue = new LinkedBlockingQueue&lt;String&gt;();<a name="line.1298"></a>
-<span class="sourceLineNo">1299</span>    <a name="line.1299"></a>
-<span class="sourceLineNo">1300</span>    /** If true, append index.html to all (unmatched) GETs ending with "/". */<a name="line.1300"></a>
-<span class="sourceLineNo">1301</span>    private static boolean _appendIndexHtml;<a name="line.1301"></a>
-<span class="sourceLineNo">1302</span>        <a name="line.1302"></a>
-<span class="sourceLineNo">1303</span>    private static Vertx _vertx;<a name="line.1303"></a>
-<span class="sourceLineNo">1304</span>    <a name="line.1304"></a>
-<span class="sourceLineNo">1305</span>    private static long _workflowTimeout;<a name="line.1305"></a>
-<span class="sourceLineNo">1306</span>}<a name="line.1306"></a>
+<span class="sourceLineNo">1253</span>        <a name="line.1253"></a>
+<span class="sourceLineNo">1254</span>        // set the authorization groups parameter if present        <a name="line.1254"></a>
+<span class="sourceLineNo">1255</span>        attribute = model.getAttribute("WebView_groups");<a name="line.1255"></a>
+<span class="sourceLineNo">1256</span>        if(attribute != null) {<a name="line.1256"></a>
+<span class="sourceLineNo">1257</span>            if(!(attribute instanceof Settable)) {<a name="line.1257"></a>
+<span class="sourceLineNo">1258</span>                System.err.println("WARNING: WebView_group parameter is not settable.");<a name="line.1258"></a>
+<span class="sourceLineNo">1259</span>            } else {<a name="line.1259"></a>
+<span class="sourceLineNo">1260</span>                // add quotes around each string since we use this to set the<a name="line.1260"></a>
+<span class="sourceLineNo">1261</span>                // WebView_groups parameter in the workflow.<a name="line.1261"></a>
+<span class="sourceLineNo">1262</span>                String authGroupsStr = AuthUtilities.getGroups(user).stream()<a name="line.1262"></a>
+<span class="sourceLineNo">1263</span>                    .map(s -&gt; "\"" + s + "\"").collect(Collectors.joining(","));<a name="line.1263"></a>
+<span class="sourceLineNo">1264</span>                //System.out.println(authGroupsStr);<a name="line.1264"></a>
+<span class="sourceLineNo">1265</span>                ((Settable)attribute).setExpression("{" + authGroupsStr + "}");<a name="line.1265"></a>
+<span class="sourceLineNo">1266</span>            }<a name="line.1266"></a>
+<span class="sourceLineNo">1267</span>        }<a name="line.1267"></a>
+<span class="sourceLineNo">1268</span><a name="line.1268"></a>
+<span class="sourceLineNo">1269</span>    }<a name="line.1269"></a>
+<span class="sourceLineNo">1270</span>        <a name="line.1270"></a>
+<span class="sourceLineNo">1271</span>    ///////////////////////////////////////////////////////////////////<a name="line.1271"></a>
+<span class="sourceLineNo">1272</span>    ////                         private variables                 ////<a name="line.1272"></a>
+<span class="sourceLineNo">1273</span><a name="line.1273"></a>
+<span class="sourceLineNo">1274</span>    private Queryable _queryable;<a name="line.1274"></a>
+<span class="sourceLineNo">1275</span>    <a name="line.1275"></a>
+<span class="sourceLineNo">1276</span>    /** Authentication provider. */<a name="line.1276"></a>
+<span class="sourceLineNo">1277</span>    private AuthProvider _auth;<a name="line.1277"></a>
+<span class="sourceLineNo">1278</span>    <a name="line.1278"></a>
+<span class="sourceLineNo">1279</span>    /** HTTP server listening for HTTP and WS requests. */<a name="line.1279"></a>
+<span class="sourceLineNo">1280</span>    private HttpServer _server;<a name="line.1280"></a>
+<span class="sourceLineNo">1281</span>    <a name="line.1281"></a>
+<span class="sourceLineNo">1282</span>    /** HTTPS server listening for HTTPS and WSS requests. */<a name="line.1282"></a>
+<span class="sourceLineNo">1283</span>    private HttpServer _secureServer;<a name="line.1283"></a>
+<span class="sourceLineNo">1284</span>        <a name="line.1284"></a>
+<span class="sourceLineNo">1285</span>    /** ModelUpdater used to add/remove workflows when KeplerGraphFrames<a name="line.1285"></a>
+<span class="sourceLineNo">1286</span>     *  are opened/closed.<a name="line.1286"></a>
+<span class="sourceLineNo">1287</span>     */<a name="line.1287"></a>
+<span class="sourceLineNo">1288</span>    private final static ModelUpdater _updater = new ModelUpdater();<a name="line.1288"></a>
+<span class="sourceLineNo">1289</span>    <a name="line.1289"></a>
+<span class="sourceLineNo">1290</span>    /** The module tree. */<a name="line.1290"></a>
+<span class="sourceLineNo">1291</span>    private final static ModuleTree _moduleTree = ModuleTree.instance();<a name="line.1291"></a>
+<span class="sourceLineNo">1292</span>    <a name="line.1292"></a>
+<span class="sourceLineNo">1293</span>    /** The root directory to search for files. If not set, the value is null. */<a name="line.1293"></a>
+<span class="sourceLineNo">1294</span>    private static String _rootDir;<a name="line.1294"></a>
+<span class="sourceLineNo">1295</span><a name="line.1295"></a>
+<span class="sourceLineNo">1296</span>    // TODO need better name<a name="line.1296"></a>
+<span class="sourceLineNo">1297</span>    private final static Map&lt;NamedObj,List&lt;JsonObject&gt;&gt; _clientBuffers =<a name="line.1297"></a>
+<span class="sourceLineNo">1298</span>            Collections.synchronizedMap(new HashMap&lt;NamedObj,List&lt;JsonObject&gt;&gt;());<a name="line.1298"></a>
+<span class="sourceLineNo">1299</span><a name="line.1299"></a>
+<span class="sourceLineNo">1300</span>    public final static Map&lt;String,CompositeActor&gt; _models<a name="line.1300"></a>
+<span class="sourceLineNo">1301</span>        = Collections.synchronizedMap(new HashMap&lt;String,CompositeActor&gt;());<a name="line.1301"></a>
+<span class="sourceLineNo">1302</span><a name="line.1302"></a>
+<span class="sourceLineNo">1303</span>    public final static Map&lt;String,App&gt; _apps<a name="line.1303"></a>
+<span class="sourceLineNo">1304</span>        = Collections.synchronizedMap(new HashMap&lt;String,App&gt;());<a name="line.1304"></a>
+<span class="sourceLineNo">1305</span>    <a name="line.1305"></a>
+<span class="sourceLineNo">1306</span>    /* Timestamp format for logging. */<a name="line.1306"></a>
+<span class="sourceLineNo">1307</span>    private final DateFormat _logTimeFormat = new SimpleDateFormat("dd/MMM/yyyy:HH:mm:ss Z");<a name="line.1307"></a>
+<span class="sourceLineNo">1308</span>    <a name="line.1308"></a>
+<span class="sourceLineNo">1309</span>    private static Thread _loggingThread;<a name="line.1309"></a>
+<span class="sourceLineNo">1310</span>    <a name="line.1310"></a>
+<span class="sourceLineNo">1311</span>    private final static String STOP_LOGGING_THREAD_MESSAGE = "STOP";<a name="line.1311"></a>
+<span class="sourceLineNo">1312</span>    <a name="line.1312"></a>
+<span class="sourceLineNo">1313</span>    private final static LinkedBlockingQueue&lt;String&gt; _loggingQueue = new LinkedBlockingQueue&lt;String&gt;();<a name="line.1313"></a>
+<span class="sourceLineNo">1314</span>    <a name="line.1314"></a>
+<span class="sourceLineNo">1315</span>    /** If true, append index.html to all (unmatched) GETs ending with "/". */<a name="line.1315"></a>
+<span class="sourceLineNo">1316</span>    private static boolean _appendIndexHtml;<a name="line.1316"></a>
+<span class="sourceLineNo">1317</span>        <a name="line.1317"></a>
+<span class="sourceLineNo">1318</span>    private static Vertx _vertx;<a name="line.1318"></a>
+<span class="sourceLineNo">1319</span>    <a name="line.1319"></a>
+<span class="sourceLineNo">1320</span>    private static long _workflowTimeout;<a name="line.1320"></a>
+<span class="sourceLineNo">1321</span>}<a name="line.1321"></a>
 
 
 
