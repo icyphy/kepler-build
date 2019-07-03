@@ -434,13 +434,28 @@
 <span class="sourceLineNo">426</span>    private static final long DEFAULT_WEBVIEW_SERVER_SESSION_TIMEOUT = 3600*1000;<a name="line.426"></a>
 <span class="sourceLineNo">427</span><a name="line.427"></a>
 <span class="sourceLineNo">428</span>    public static boolean deployInKubernetes() {<a name="line.428"></a>
-<span class="sourceLineNo">429</span>        return _getConfigurationBoolean("server.deployInKubernetes", false);<a name="line.429"></a>
+<span class="sourceLineNo">429</span>        return _getConfigurationBoolean("server.cluster.deployInKubernetes", false);<a name="line.429"></a>
 <span class="sourceLineNo">430</span>    }<a name="line.430"></a>
 <span class="sourceLineNo">431</span><a name="line.431"></a>
 <span class="sourceLineNo">432</span>    public static String getHazelcastDiscoveryDnsServiceName() {<a name="line.432"></a>
-<span class="sourceLineNo">433</span>        return _getConfigurationString("server.hazelcastDiscoveryK8sDnsService", null);<a name="line.433"></a>
+<span class="sourceLineNo">433</span>        return _getConfigurationString("server.cluster.hazelcastDiscoveryK8sDnsService", null);<a name="line.433"></a>
 <span class="sourceLineNo">434</span>    }<a name="line.434"></a>
-<span class="sourceLineNo">435</span>}<a name="line.435"></a>
+<span class="sourceLineNo">435</span><a name="line.435"></a>
+<span class="sourceLineNo">436</span>    /** Get if vertx should use hazelcast for clustered mode. */<a name="line.436"></a>
+<span class="sourceLineNo">437</span>    public static boolean shouldStartClusterHazelcast() {<a name="line.437"></a>
+<span class="sourceLineNo">438</span>        String typeStr = _getConfigurationString("server.cluster.type", null);<a name="line.438"></a>
+<span class="sourceLineNo">439</span>        return (typeStr != null &amp;&amp; typeStr.equals("hazelcast"));<a name="line.439"></a>
+<span class="sourceLineNo">440</span>    }<a name="line.440"></a>
+<span class="sourceLineNo">441</span>    <a name="line.441"></a>
+<span class="sourceLineNo">442</span>    /** Get if vertx should start in clustered mode. */<a name="line.442"></a>
+<span class="sourceLineNo">443</span>    public static boolean shouldStartCluster() {<a name="line.443"></a>
+<span class="sourceLineNo">444</span>        String typeStr = _getConfigurationString("server.cluster.type", null);<a name="line.444"></a>
+<span class="sourceLineNo">445</span>        return (typeStr != null &amp;&amp; typeStr.trim().length() &gt; 0 &amp;&amp;<a name="line.445"></a>
+<span class="sourceLineNo">446</span>                !typeStr.toLowerCase().equals("none") &amp;&amp;<a name="line.446"></a>
+<span class="sourceLineNo">447</span>                !typeStr.toLowerCase().equals("false"));<a name="line.447"></a>
+<span class="sourceLineNo">448</span>    }<a name="line.448"></a>
+<span class="sourceLineNo">449</span><a name="line.449"></a>
+<span class="sourceLineNo">450</span>}<a name="line.450"></a>
 
 
 
