@@ -17,7 +17,7 @@
     catch(err) {
     }
 //-->
-var methods = {"i0":10,"i1":42,"i2":10,"i3":10,"i4":10,"i5":10,"i6":10,"i7":10,"i8":10,"i9":10,"i10":10,"i11":10,"i12":10,"i13":10,"i14":10,"i15":10,"i16":10,"i17":10,"i18":10,"i19":10,"i20":10,"i21":10,"i22":10,"i23":10,"i24":10,"i25":10,"i26":10,"i27":10,"i28":10,"i29":10,"i30":10,"i31":10,"i32":9,"i33":10,"i34":10,"i35":10,"i36":10,"i37":10,"i38":10,"i39":10,"i40":10,"i41":41,"i42":10,"i43":10,"i44":42,"i45":9,"i46":9,"i47":10,"i48":10};
+var methods = {"i0":10,"i1":42,"i2":10,"i3":10,"i4":10,"i5":10,"i6":10,"i7":10,"i8":10,"i9":10,"i10":10,"i11":10,"i12":10,"i13":10,"i14":10,"i15":10,"i16":10,"i17":10,"i18":10,"i19":10,"i20":10,"i21":10,"i22":10,"i23":10,"i24":10,"i25":10,"i26":10,"i27":10,"i28":10,"i29":10,"i30":10,"i31":10,"i32":9,"i33":10,"i34":10,"i35":10,"i36":10,"i37":10,"i38":10,"i39":10,"i40":10,"i41":41,"i42":10,"i43":10,"i44":42,"i45":9,"i46":9,"i47":9,"i48":10,"i49":10};
 var tabs = {65535:["t0","All Methods"],1:["t1","Static Methods"],2:["t2","Instance Methods"],8:["t4","Concrete Methods"],32:["t6","Deprecated Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
@@ -705,13 +705,20 @@ implements java.lang.Runnable</pre>
 </td>
 </tr>
 <tr id="i47" class="rowColor">
+<td class="colFirst"><code>static java.lang.String</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../ptolemy/actor/Manager.html#timeAndMemoryLong-java.lang.Long-">timeAndMemoryLong</a></span>(java.lang.Long&nbsp;startTime)</code>
+<div class="block">Return a string with the elapsed time since startTime, and
+  the amount of memory used.</div>
+</td>
+</tr>
+<tr id="i48" class="altColor">
 <td class="colFirst"><code>void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../ptolemy/actor/Manager.html#waitForCompletion--">waitForCompletion</a></span>()</code>
 <div class="block">If there is an active thread created by startRun(), then wait
   for it to complete and return.</div>
 </td>
 </tr>
-<tr id="i48" class="altColor">
+<tr id="i49" class="rowColor">
 <td class="colFirst"><code>void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../ptolemy/actor/Manager.html#wrapup--">wrapup</a></span>()</code>
 <div class="block">Wrap up the model by invoking the wrapup method of the toplevel
@@ -874,7 +881,7 @@ implements java.lang.Runnable</pre>
 <ul class="blockList">
 <li class="blockList">
 <h4>minimumStatisticsTime</h4>
-<pre>public static&nbsp;int <a href="../../src-html/ptolemy/actor/Manager.html#line.1556">minimumStatisticsTime</a></pre>
+<pre>public static&nbsp;int <a href="../../src-html/ptolemy/actor/Manager.html#line.1574">minimumStatisticsTime</a></pre>
 <div class="block">The minimum amount of time that may elapse during certain
   operations before statistics are generated.  The Manager and
   other classes in Ptolemy will print out statistics if the
@@ -895,7 +902,7 @@ implements java.lang.Runnable</pre>
 <ul class="blockListLast">
 <li class="blockList">
 <h4>SHUTDOWN_TIME</h4>
-<pre>public static&nbsp;long <a href="../../src-html/ptolemy/actor/Manager.html#line.1562">SHUTDOWN_TIME</a></pre>
+<pre>public static&nbsp;long <a href="../../src-html/ptolemy/actor/Manager.html#line.1580">SHUTDOWN_TIME</a></pre>
 <div class="block">The amount of time to allow for the model to terminate
   gracefully before shutting it down when the JVM is shut down
   due to control-C, user logging out, etc.</div>
@@ -1774,13 +1781,38 @@ public&nbsp;void&nbsp;<a href="../../src-html/ptolemy/actor/Manager.html#line.13
 </dl>
 </li>
 </ul>
+<a name="timeAndMemoryLong-java.lang.Long-">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>timeAndMemoryLong</h4>
+<pre>public static&nbsp;java.lang.String&nbsp;<a href="../../src-html/ptolemy/actor/Manager.html#line.1445">timeAndMemoryLong</a>(java.lang.Long&nbsp;startTime)</pre>
+<div class="block">Return a string with the elapsed time since startTime, and
+  the amount of memory used.
+  This method takes a java.lang.Long object so that ptjacl
+  can properly pass a long number:
+  <pre>
+  set currentTime  [java::call -noconvert java.lang.System currentTimeMillis]
+  java::call ptolemy.actor.Manager timeAndMemoryLong $x
+  </pre></div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>startTime</code> - The start time in milliseconds.  For example,
+  the value returned by <code>(new Date()).getTime()</code>.</dd>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>A string with the elapsed time since startTime, and
+  the amount of memory used.</dd>
+</dl>
+</li>
+</ul>
 <a name="timeAndMemory-long-long-long-">
 <!--   -->
 </a>
 <ul class="blockList">
 <li class="blockList">
 <h4>timeAndMemory</h4>
-<pre>public static&nbsp;java.lang.String&nbsp;<a href="../../src-html/ptolemy/actor/Manager.html#line.1442">timeAndMemory</a>(long&nbsp;startTime,
+<pre>public static&nbsp;java.lang.String&nbsp;<a href="../../src-html/ptolemy/actor/Manager.html#line.1460">timeAndMemory</a>(long&nbsp;startTime,
                                              long&nbsp;totalMemory,
                                              long&nbsp;freeMemory)</pre>
 <div class="block">Return a string with the elapsed time since startTime,
@@ -1804,7 +1836,7 @@ public&nbsp;void&nbsp;<a href="../../src-html/ptolemy/actor/Manager.html#line.13
 <ul class="blockList">
 <li class="blockList">
 <h4>waitForCompletion</h4>
-<pre>public&nbsp;void&nbsp;<a href="../../src-html/ptolemy/actor/Manager.html#line.1457">waitForCompletion</a>()</pre>
+<pre>public&nbsp;void&nbsp;<a href="../../src-html/ptolemy/actor/Manager.html#line.1475">waitForCompletion</a>()</pre>
 <div class="block">If there is an active thread created by startRun(), then wait
   for it to complete and return. The wait is accomplished by
   calling the join() method on the thread.  If there is no
@@ -1822,7 +1854,7 @@ public&nbsp;void&nbsp;<a href="../../src-html/ptolemy/actor/Manager.html#line.13
 <ul class="blockList">
 <li class="blockList">
 <h4>wrapup</h4>
-<pre>public&nbsp;void&nbsp;<a href="../../src-html/ptolemy/actor/Manager.html#line.1491">wrapup</a>()
+<pre>public&nbsp;void&nbsp;<a href="../../src-html/ptolemy/actor/Manager.html#line.1509">wrapup</a>()
             throws <a href="../../ptolemy/kernel/util/KernelException.html" title="class in ptolemy.kernel.util">KernelException</a>,
                    <a href="../../ptolemy/kernel/util/IllegalActionException.html" title="class in ptolemy.kernel.util">IllegalActionException</a></pre>
 <div class="block">Wrap up the model by invoking the wrapup method of the toplevel
@@ -1842,7 +1874,7 @@ public&nbsp;void&nbsp;<a href="../../src-html/ptolemy/actor/Manager.html#line.13
 <ul class="blockList">
 <li class="blockList">
 <h4>_makeManagerOf</h4>
-<pre>protected&nbsp;void&nbsp;<a href="../../src-html/ptolemy/actor/Manager.html#line.1578">_makeManagerOf</a>(<a href="../../ptolemy/actor/CompositeActor.html" title="class in ptolemy.actor">CompositeActor</a>&nbsp;compositeActor)</pre>
+<pre>protected&nbsp;void&nbsp;<a href="../../src-html/ptolemy/actor/Manager.html#line.1596">_makeManagerOf</a>(<a href="../../ptolemy/actor/CompositeActor.html" title="class in ptolemy.actor">CompositeActor</a>&nbsp;compositeActor)</pre>
 <div class="block">Make this manager the manager of the specified composite
   actor. If the composite actor is not null, then the manager is
   removed from the directory of the workspace.  If the composite
@@ -1865,7 +1897,7 @@ public&nbsp;void&nbsp;<a href="../../src-html/ptolemy/actor/Manager.html#line.13
 <li class="blockList">
 <h4>_notifyListenersOfCompletion</h4>
 <pre>@Deprecated
-protected&nbsp;void&nbsp;<a href="../../src-html/ptolemy/actor/Manager.html#line.1593">_notifyListenersOfCompletion</a>()</pre>
+protected&nbsp;void&nbsp;<a href="../../src-html/ptolemy/actor/Manager.html#line.1611">_notifyListenersOfCompletion</a>()</pre>
 <div class="block"><span class="deprecatedLabel">Deprecated.</span>&nbsp;<span class="deprecationComment">Incomplete name, use
   <a href="../../ptolemy/actor/Manager.html#Z:Z_notifyListenersOfSuccessfulCompletion--"><code>_notifyListenersOfSuccessfulCompletion()</code></a></span></div>
 <div class="block">Notify listeners that execution has completed.</div>
@@ -1877,7 +1909,7 @@ protected&nbsp;void&nbsp;<a href="../../src-html/ptolemy/actor/Manager.html#line
 <ul class="blockList">
 <li class="blockList">
 <h4>_notifyListenersOfSuccessfulCompletion</h4>
-<pre>protected&nbsp;void&nbsp;<a href="../../src-html/ptolemy/actor/Manager.html#line.1599">_notifyListenersOfSuccessfulCompletion</a>()</pre>
+<pre>protected&nbsp;void&nbsp;<a href="../../src-html/ptolemy/actor/Manager.html#line.1617">_notifyListenersOfSuccessfulCompletion</a>()</pre>
 <div class="block">Notify listeners that execution has completed successfully.</div>
 </li>
 </ul>
@@ -1887,7 +1919,7 @@ protected&nbsp;void&nbsp;<a href="../../src-html/ptolemy/actor/Manager.html#line
 <ul class="blockList">
 <li class="blockList">
 <h4>_notifyListenersOfStateChange</h4>
-<pre>protected&nbsp;void&nbsp;<a href="../../src-html/ptolemy/actor/Manager.html#line.1624">_notifyListenersOfStateChange</a>()</pre>
+<pre>protected&nbsp;void&nbsp;<a href="../../src-html/ptolemy/actor/Manager.html#line.1642">_notifyListenersOfStateChange</a>()</pre>
 <div class="block">Propagate the state change event to all the execution listeners.</div>
 </li>
 </ul>
@@ -1897,7 +1929,7 @@ protected&nbsp;void&nbsp;<a href="../../src-html/ptolemy/actor/Manager.html#line
 <ul class="blockList">
 <li class="blockList">
 <h4>_registerShutdownHook</h4>
-<pre>protected&nbsp;void&nbsp;<a href="../../src-html/ptolemy/actor/Manager.html#line.1649">_registerShutdownHook</a>()</pre>
+<pre>protected&nbsp;void&nbsp;<a href="../../src-html/ptolemy/actor/Manager.html#line.1667">_registerShutdownHook</a>()</pre>
 <div class="block">Register a shutdown hook to gracefully stop the execution of a model
   if the JVM is shut down (by control-C, the user logging out, etc.).</div>
 </li>
@@ -1908,7 +1940,7 @@ protected&nbsp;void&nbsp;<a href="../../src-html/ptolemy/actor/Manager.html#line
 <ul class="blockListLast">
 <li class="blockList">
 <h4>_setState</h4>
-<pre>protected&nbsp;void&nbsp;<a href="../../src-html/ptolemy/actor/Manager.html#line.1686">_setState</a>(<a href="../../ptolemy/actor/Manager.State.html" title="class in ptolemy.actor">Manager.State</a>&nbsp;newState)</pre>
+<pre>protected&nbsp;void&nbsp;<a href="../../src-html/ptolemy/actor/Manager.html#line.1704">_setState</a>(<a href="../../ptolemy/actor/Manager.State.html" title="class in ptolemy.actor">Manager.State</a>&nbsp;newState)</pre>
 <div class="block">Set the state of execution and notify listeners if the state
   actually changes.</div>
 <dl>
