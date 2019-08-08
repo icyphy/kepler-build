@@ -5,8 +5,8 @@ env:
 
 matrix:
   include:
-    - env: JDK='Oracle JDK 8'
-      jdk: oraclejdk8
+    - env: JDK='Oracle JDK 9'
+      jdk: oraclejdk9
     - env: JDK='Oracle OpenJDK 10'
       jdk: openjdk10
     - env: JDK='Oracle OpenJDK 11'
@@ -21,7 +21,18 @@ before_script:
   - sudo apt-get install lib32z1 lib32ncurses5 ant
   
 script:
-        ./build-kepler.sh
+  # Echo status messages so that Travis knows we are alive.
+  # If you need to get status about available memory, insert "free -m; top -b -n 1 -o %MEM | head -20 " inside the loop.
+  - while sleep 1m; do echo "=====[ $SECONDS seconds still running ]====="; free -m; done &
+
+  - echo "About to call ./build-kepler.sh at $SECONDS seconds."
+
+  - ./build-kepler.sh
+
+  - echo "About to call ./build-kepler.sh at $SECONDS seconds."
+
+  # Killing background sleep loop.
+  - kill %1
 
 deploy:
   - provider: releases
@@ -32,7 +43,7 @@ deploy:
       - $HOME/build/icyphy/finished-kepler-installers/windows/Kepler-2.6.0.1-win.exe
     on:
       tags: true
-      condition: $JDK = 'Oracle JDK 8'
+      condition: $JDK = 'Oracle JDK 9'
     overwrite: true
     skip_cleanup: true    
     verbose: true
@@ -44,5 +55,6 @@ notifications:
      - jones@nceas.ucsb.edu
      - danielcrawl@gmail.com
      - michal.owsiak@man.poznan.pl
+     - cxbrooks@gmail.com
    on_success: always # default: change
    on_failure: always # default: always
