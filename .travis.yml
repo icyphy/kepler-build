@@ -7,6 +7,9 @@ matrix:
   include:
     - env: JDK='Oracle JDK 9'
       jdk: oraclejdk9
+      before_install:
+        - rm "${JAVA_HOME}/lib/security/cacerts"
+        - ln -s /etc/ssl/certs/java/cacerts "${JAVA_HOME}/lib/security/cacerts"
     - env: JDK='Oracle OpenJDK 10'
       jdk: openjdk10
     - env: JDK='Oracle OpenJDK 11'
