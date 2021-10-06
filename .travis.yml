@@ -22,7 +22,10 @@ before_script:
   # Need to install 32-bit libraries so that we can run windres while
   # building Windows installers.
   - sudo apt-get install lib32z1 lib32ncurses5 ant
-  
+  # Fix a cert problem, see https://stackoverflow.com/questions/69387175/git-for-windows-ssl-certificate-problem-certificate-has-expired
+  - sudo ls -l /usr/share/ca-certificates/mozilla/DST_Root_CA_X3.crt
+  - sudo rm -f /usr/share/ca-certificates/mozilla/DST_Root_CA_X3.crt
+  - sudo update-ca-certificates  
 script:
   # Echo status messages so that Travis knows we are alive.
   # If you need to get status about available memory, insert "free -m; top -b -n 1 -o %MEM | head -20 " inside the loop.
