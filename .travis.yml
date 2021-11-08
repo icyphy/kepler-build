@@ -14,6 +14,24 @@ matrix:
       jdk: openjdk10
     - env: JDK='Oracle OpenJDK 11'
       jdk: openjdk11
+      before_install:
+        # Fix "No PSK available. Unable to resume" in jdk 11.0.2
+        # See https://github.com/icyphy/kepler-build/issues/1
+        # and https://stackoverflow.com/questions/52574050/javax-net-ssl-sslexception-no-psk-available-unable-to-resume
+        # Figuring out how to upgrade to jdk 11.0.3 or later might also work.
+        - ant -version
+        - echo ${JAVA_HOME}
+        - ls ${JAVA_HOME}
+        - ls ${JAVA_HOME}/conf
+        - ls ${JAVA_HOME}/conf/security
+        - ls -l ${JAVA_HOME}/conf/security/java.security
+        - cat ${JAVA_HOME}/conf/security/java.security
+        - sed 's/jdk.tls.disabledAlgorithms=/jdk.tls.disabledAlgorithms=TLSv1.3, /' ${JAVA_HOME}/conf/security/java.security > ${JAVA_HOME}/conf/security/java.security.new
+        - diff ${JAVA_HOME}/conf/security/java.security  ${JAVA_HOME}/conf/security/java.security.new       
+        - mv ${JAVA_HOME}/conf/security/java.security.new ${JAVA_HOME}/conf/security/java.security        
+        - ls -l ${JAVA_HOME}/conf/security/java.security
+    - env: JDK='Oracle OpenJDK 12'
+      jdk: openjdk12
 
 sudo: required
 
