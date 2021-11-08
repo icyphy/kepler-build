@@ -29,7 +29,6 @@ matrix:
         - sed 's/jdk.tls.disabledAlgorithms=/jdk.tls.disabledAlgorithms=TLSv1.3, /' ${JAVA_HOME}/conf/security/java.security > /tmp/java.security.new
         - diff /tmp/java.security.new ${JAVA_HOME}/conf/security/java.security || true
         - sudo mv /tmp/java.security.new ${JAVA_HOME}/conf/security/java.security
-        - mv ${JAVA_HOME}/conf/security/java.security.new ${JAVA_HOME}/conf/security/java.security        
         - ls -l ${JAVA_HOME}/conf/security/java.security
         - grep jdk.tls.disabledAlgorithms= ${JAVA_HOME}/conf/security/java.security || true
     - env: JDK='Oracle OpenJDK 12'
