@@ -1,4 +1,4 @@
-dist: focal
+dist: bionic
 
 env:
   global:
@@ -43,7 +43,8 @@ before_script:
   # Need to install 32-bit libraries so that we can run windres while
   # building Windows installers.
   - sudo add-apt-repository universe
-  - sudo apt-get install lib32z1 lib32ncurses6 ant
+  # Under Ubuntu 20.x change lib32ncurses5 to 6
+  - sudo apt-get install lib32z1 lib32ncurses5 ant
   # Fix a cert problem, see https://stackoverflow.com/questions/69387175/git-for-windows-ssl-certificate-problem-certificate-has-expired
   # Ubuntu 20.x focal: this file does not exist
   - sudo ls -l /usr/share/ca-certificates/mozilla/DST_Root_CA_X3.crt || true
