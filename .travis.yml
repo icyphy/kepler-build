@@ -12,8 +12,6 @@ matrix:
       before_install:
         - rm "${JAVA_HOME}/lib/security/cacerts"
         - ln -s /etc/ssl/certs/java/cacerts "${JAVA_HOME}/lib/security/cacerts"
-    - env: JDK='Oracle OpenJDK 10'
-      jdk: openjdk10
     - env: JDK='Oracle OpenJDK 11'
       jdk: openjdk11
       before_install:
@@ -35,7 +33,9 @@ matrix:
         - grep jdk.tls.disabledAlgorithms= ${JAVA_HOME}/conf/security/java.security || true
     - env: JDK='Oracle OpenJDK 12'
       jdk: openjdk12
-
+    # Building under JDK 13 fails because the old doclet interface was removed.  See https://github.com/icyphy/kepler-build/issues/3  
+    # - env: JDK='Oracle OpenJDK 13'
+    #   jdk: openjdk13
 sudo: required
 
 before_script:
